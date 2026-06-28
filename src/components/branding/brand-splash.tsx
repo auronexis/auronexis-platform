@@ -54,8 +54,8 @@ export function BrandSplash({ fullScreen = false, className }: BrandSplashProps)
           "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
         )}
       >
-        <p className="text-xl font-semibold tracking-tight text-foreground">{PLATFORM_NAME}</p>
-        <p className="mt-2 text-sm text-muted">Loading workspace…</p>
+        <div className="text-2xl font-bold tracking-tight text-slate-950">{PLATFORM_NAME}</div>
+        <p className="mt-2 text-sm text-slate-600">Loading workspace…</p>
         <LoadingIndicator />
       </div>
     </div>

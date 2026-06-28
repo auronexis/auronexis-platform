@@ -29,7 +29,10 @@ export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
     <img
       src={BRANDING_ASSETS.approvedCompositeLogo}
       alt="Auroranexis logo"
-      className={cn("h-[30px] w-auto shrink-0 object-contain object-left sm:h-[34px]", className)}
+      className={cn(
+        "h-8 w-auto min-w-[110px] shrink-0 object-contain object-left sm:h-9 sm:min-w-[120px]",
+        className,
+      )}
       onError={() => setFailed(true)}
     />
   );

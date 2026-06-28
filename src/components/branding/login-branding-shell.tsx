@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
-import { getLoginDisplaySubtitle, PLATFORM_NAME } from "@/lib/branding/defaults";
+import { PLATFORM_NAME } from "@/lib/branding/defaults";
 import { cn } from "@/lib/utils/cn";
 
 type LoginBrandingShellProps = {
@@ -11,13 +11,7 @@ type LoginBrandingShellProps = {
   variant?: "staff" | "portal";
 };
 
-function LoginDecorativePanel({
-  backgroundUrl,
-  subtitle,
-}: {
-  backgroundUrl: string;
-  subtitle: string;
-}) {
+function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
   return (
     <aside
       className="relative hidden min-h-screen w-[42%] max-w-xl shrink-0 overflow-hidden lg:block"
@@ -29,8 +23,8 @@ function LoginDecorativePanel({
       />
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
-        <p className="text-lg font-semibold tracking-tight">{PLATFORM_NAME}</p>
-        <p className="mt-2 max-w-sm text-sm leading-relaxed text-primary-foreground/85">{subtitle}</p>
+        <div className="text-2xl font-bold text-white">{PLATFORM_NAME}</div>
+        <p className="mt-2 text-sm text-slate-200">Monitor clients. Detect risks. Prove value.</p>
       </div>
     </aside>
   );
@@ -42,13 +36,12 @@ export function LoginBrandingShell({
   footer,
   variant = "staff",
 }: LoginBrandingShellProps) {
-  const subtitle = getLoginDisplaySubtitle(branding);
   const loginBackground = branding.loginBackgroundUrl ?? BRANDING_ASSETS.loginBackground;
 
   if (variant === "portal") {
     return (
       <div className="flex min-h-screen bg-surface-1">
-        <LoginDecorativePanel backgroundUrl={loginBackground} subtitle={subtitle} />
+        <LoginDecorativePanel backgroundUrl={loginBackground} />
         <div className="flex min-h-screen flex-1 flex-col">
           <div className="flex flex-1 items-center justify-center px-4 py-12">{children}</div>
           {footer}
@@ -59,14 +52,14 @@ export function LoginBrandingShell({
 
   return (
     <div className="flex min-h-screen bg-surface-1">
-      <LoginDecorativePanel backgroundUrl={loginBackground} subtitle={subtitle} />
+      <LoginDecorativePanel backgroundUrl={loginBackground} />
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
           <div className="mb-6 text-center">
-            <p className="mb-4 text-xl font-semibold tracking-tight text-navy-950">{PLATFORM_NAME}</p>
-            <p className="text-sm text-muted">{subtitle}</p>
-            <h1 className="mt-4 text-lg font-semibold text-navy-950">Sign in</h1>
+            <div className="text-2xl font-bold tracking-tight text-slate-950">{PLATFORM_NAME}</div>
+            <div className="mt-2 text-sm text-slate-600">Monitor clients. Detect risks. Prove value.</div>
           </div>
+          <h1 className="text-lg font-semibold text-slate-950">Sign in</h1>
           {children}
           {branding.supportEmail || branding.supportUrl ? (
             <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted">
