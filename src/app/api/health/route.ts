@@ -45,24 +45,33 @@ export async function GET(): Promise<Response> {
   ]);
 
   const checks = {
-    database: database.ok,
+    database: database.level !== "unavailable",
+    databaseLevel: database.level,
     stripeWebhooks: stripeWebhook.tableReachable,
     cron: cron.tableReachable && cron.status !== "unavailable",
     queue: queue.tableReachable && queue.status !== "unavailable",
     cronSecretConfigured: Boolean(getCronSecret()),
   };
 
-  const healthy = checks.database && checks.stripeWebhooks && checks.cron && checks.queue;
+  const optionalHealthy =
+    checks.stripeWebhooks && checks.cron && checks.queue && checks.cronSecretConfigured;
+
+  const status =
+    database.level === "unavailable"
+      ? "unavailable"
+      : optionalHealthy && database.level === "healthy"
+        ? "healthy"
+        : "degraded";
 
   return NextResponse.json(
     {
-      status: healthy ? "healthy" : "degraded",
+      status,
       version: process.env.npm_package_version ?? "0.1.0",
       environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development",
       latencyMs: Date.now() - started,
       checks,
       timestamp: new Date().toISOString(),
     },
-    { status: healthy ? 200 : 503 },
+    { status: database.level === "unavailable" ? 503 : 200 },
   );
 }

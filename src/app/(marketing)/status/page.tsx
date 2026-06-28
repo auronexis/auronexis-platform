@@ -5,7 +5,7 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { StatusBadge, type StatusLevel } from "@/components/marketing/status-badge";
 import { STATUS_COMPONENTS_STATIC } from "@/lib/marketing/content";
 import { COMPANY_NAME } from "@/lib/company/contact";
-import { checkDatabaseHealth } from "@/lib/diagnostics/platform-health";
+import { checkDatabaseHealth, type DatabaseHealthLevel } from "@/lib/diagnostics/platform-health";
 import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
 import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
 import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
@@ -32,6 +32,12 @@ function mapHealth(ok: boolean, degraded = false, allowDegradedInDev = false): S
   return "incident";
 }
 
+function mapDatabaseLevel(level: DatabaseHealthLevel): StatusLevel {
+  if (level === "healthy") return "operational";
+  if (level === "degraded") return "degraded";
+  return "incident";
+}
+
 async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>> {
   const environment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
   const nodeEnv = process.env.NODE_ENV ?? "development";
@@ -47,17 +53,17 @@ async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>
   return {
     Platform: {
       name: "Platform",
-      status: mapHealth(database.ok),
+      status: mapDatabaseLevel(database.level),
       detail: database.message,
     },
     API: {
       name: "API",
-      status: mapHealth(database.ok),
+      status: database.level === "unavailable" ? "incident" : "operational",
       detail: "REST API and application routes",
     },
     Database: {
       name: "Database",
-      status: mapHealth(database.ok),
+      status: mapDatabaseLevel(database.level),
       detail: database.message,
     },
     Billing: {

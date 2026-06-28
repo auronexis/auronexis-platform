@@ -55,8 +55,9 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
   const readinessInput = {
     environment,
     nodeEnv,
-    databaseOk: database.ok,
-    authOk: database.ok,
+    databaseOk: database.level !== "unavailable",
+    databaseLevel: database.level,
+    authOk: database.level !== "unavailable",
     healthProbeOk: false,
     stripeConfigured,
     stripeWebhookReachable: stripeWebhook.tableReachable,

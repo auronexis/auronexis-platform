@@ -165,7 +165,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
                 branding={platformBranding}
                 layout="horizontal"
                 variant="light"
-                className="h-10 w-auto"
+                className="h-[34px] w-auto"
               />
 
               <p className="mt-3 text-sm leading-relaxed text-primary-foreground/75">

@@ -1,3 +1,5 @@
+import type { DatabaseHealthLevel } from "@/lib/diagnostics/platform-health";
+
 export type PlatformReadinessState =
   | "operational"
   | "development"
@@ -14,6 +16,7 @@ export type PlatformReadinessInput = {
   environment: string;
   nodeEnv: string;
   databaseOk: boolean;
+  databaseLevel: DatabaseHealthLevel;
   authOk: boolean;
   healthProbeOk: boolean;
   stripeConfigured: boolean;
@@ -48,13 +51,13 @@ function countOptionalGaps(input: PlatformReadinessInput): number {
 }
 
 function computeReadinessScore(input: PlatformReadinessInput, isDev: boolean): number {
-  if (!input.databaseOk || !input.authOk) {
+  if (input.databaseLevel === "unavailable" || !input.authOk) {
     return 40;
   }
 
   let score = 0;
 
-  score += 35;
+  score += input.databaseLevel === "healthy" ? 35 : 32;
   score += input.queueOk ? 15 : isDev ? 10 : 5;
 
   if (input.healthProbeOk) {
@@ -137,7 +140,7 @@ export function getPlatformReadinessStatus(input: PlatformReadinessInput): Platf
   const isDev = isDevelopmentEnvironment(input.environment, input.nodeEnv);
   const score = computeReadinessScore(input, isDev);
 
-  const criticalFailure = !input.databaseOk || !input.authOk;
+  const criticalFailure = input.databaseLevel === "unavailable" || !input.authOk;
   const activeIncident =
     (input.stripeWebhookFailures ?? 0) > 0 ||
     (!isDev && input.stripeWebhookReachable === false && input.stripeConfigured);
@@ -148,6 +151,8 @@ export function getPlatformReadinessStatus(input: PlatformReadinessInput): Platf
     state = "unavailable";
   } else if (activeIncident) {
     state = "incident";
+  } else if (input.databaseLevel === "degraded") {
+    state = "degraded";
   } else if (isDev) {
     const optionalGaps = countOptionalGaps(input);
     if (optionalGaps === 0) {
@@ -180,7 +185,9 @@ export function evaluateServiceStatus(
 
   switch (key) {
     case "database":
-      return input.databaseOk ? "healthy" : "unavailable";
+      if (input.databaseLevel === "healthy") return "healthy";
+      if (input.databaseLevel === "degraded") return "degraded";
+      return "unavailable";
     case "queue":
       if (input.queueOk) return "healthy";
       return isDev ? "degraded" : "unavailable";
@@ -193,7 +200,7 @@ export function evaluateServiceStatus(
       if (!input.cronSecretConfigured) return isDev ? "degraded" : "degraded";
       return isDev ? "degraded" : "unavailable";
     case "health":
-      if (!input.databaseOk || !input.authOk) return "unavailable";
+      if (input.databaseLevel === "unavailable" || !input.authOk) return "unavailable";
       if (isDev) {
         return input.databaseOk && input.queueOk ? "healthy" : "degraded";
       }
@@ -208,7 +215,7 @@ export function evaluateServiceStatus(
 
 export function buildHealthProbeOk(input: PlatformReadinessInput): boolean {
   const isDev = isDevelopmentEnvironment(input.environment, input.nodeEnv);
-  if (!input.databaseOk || !input.authOk) {
+  if (input.databaseLevel === "unavailable" || !input.authOk) {
     return false;
   }
   if (isDev) {

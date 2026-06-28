@@ -62,10 +62,10 @@ export function LoginBrandingShell({
       <LoginDecorativePanel backgroundUrl={loginBackground} subtitle={subtitle} />
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
-          <div className="mb-8 text-center">
-            <p className="text-xl font-semibold tracking-tight text-navy-950">{PLATFORM_NAME}</p>
-            <h1 className="mt-3 text-2xl font-semibold text-navy-950">Sign in</h1>
-            <p className="mt-2 text-sm text-muted">{subtitle}</p>
+          <div className="mb-6 text-center">
+            <p className="mb-4 text-xl font-semibold tracking-tight text-navy-950">{PLATFORM_NAME}</p>
+            <p className="text-sm text-muted">{subtitle}</p>
+            <h1 className="mt-4 text-lg font-semibold text-navy-950">Sign in</h1>
           </div>
           {children}
           {branding.supportEmail || branding.supportUrl ? (
