@@ -38,7 +38,7 @@ function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
         <img
           src={DARK_SURFACE_LOGO}
           alt="Auroranexis logo"
-          className="w-[185px] w-auto max-w-none object-contain object-left"
+          className="w-[190px] w-auto max-w-none object-contain object-left"
         />
         <p className="mt-3 text-sm leading-relaxed text-white/70">{BRAND_TAGLINE}</p>
       </div>
@@ -75,7 +75,7 @@ export function LoginBrandingShell({
             <img
               src={LIGHT_SURFACE_LOGO}
               alt="Auroranexis logo"
-              className="mx-auto mb-5 w-[165px] w-auto max-w-none object-contain"
+              className="mx-auto mb-5 w-[150px] w-auto max-w-none object-contain"
             />
             <p className="text-sm leading-relaxed text-slate-600">{BRAND_TAGLINE}</p>
           </div>
