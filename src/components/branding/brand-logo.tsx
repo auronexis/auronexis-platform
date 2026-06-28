@@ -1,33 +1,69 @@
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
-import { PLATFORM_NAME } from "@/lib/branding/defaults";
-import { AuroranexisWordmark } from "@/components/branding/auroranexis-wordmark";
+import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { cn } from "@/lib/utils/cn";
 
 type BrandLogoProps = {
-  branding: Pick<ResolvedOrganizationBranding, "companyName">;
+  branding: Pick<
+    ResolvedOrganizationBranding,
+    | "companyName"
+    | "logoUrl"
+    | "logoLightUrl"
+    | "logoDarkUrl"
+    | "logoHorizontalUrl"
+    | "iconUrl"
+  >;
   size?: "sm" | "md" | "lg";
   className?: string;
   variant?: "light" | "dark";
   layout?: "mark" | "horizontal";
 };
 
-const orgTextSizeClasses = {
-  sm: "text-sm",
-  md: "text-base",
-  lg: "text-lg",
+const markSizeClasses = {
+  sm: "h-8 w-8",
+  md: "h-9 w-9",
+  lg: "h-11 w-11",
 };
 
-function resolveWordmarkVariant(
-  variant: BrandLogoProps["variant"],
+const horizontalSizeClasses = {
+  sm: "h-9 w-auto max-w-[min(100%,280px)]",
+  md: "h-10 w-auto max-w-[min(100%,300px)]",
+  lg: "h-11 w-auto max-w-[min(100%,320px)]",
+};
+
+function resolveLogoSrc(
+  branding: BrandLogoProps["branding"],
   layout: BrandLogoProps["layout"],
-): "dark" | "light" | "compact" {
-  if (layout === "mark" && variant === "light") {
-    return "compact";
+  variant: BrandLogoProps["variant"],
+): string {
+  if (layout === "horizontal") {
+    if (variant === "light" && branding.logoLightUrl) {
+      return branding.logoLightUrl;
+    }
+    if (branding.logoHorizontalUrl) {
+      return branding.logoHorizontalUrl;
+    }
+    if (branding.logoUrl) {
+      return branding.logoUrl;
+    }
+    return BRANDING_ASSETS.logoHorizontal;
   }
-  return variant === "light" ? "light" : "dark";
+
+  if (branding.iconUrl) {
+    return branding.iconUrl;
+  }
+  if (branding.logoUrl) {
+    return branding.logoUrl;
+  }
+  if (variant === "light" && branding.logoLightUrl) {
+    return branding.logoLightUrl;
+  }
+  if (variant === "dark" && branding.logoDarkUrl) {
+    return branding.logoDarkUrl;
+  }
+  return BRANDING_ASSETS.logoHorizontal;
 }
 
-/** Organization branding — CSS wordmark only (no image logos in UI). */
+/** Organization logo — existing /public/branding assets only (no text/CSS logos). */
 export function BrandLogo({
   branding,
   size = "md",
@@ -35,26 +71,17 @@ export function BrandLogo({
   variant = "dark",
   layout = "mark",
 }: BrandLogoProps) {
-  if (branding.companyName === PLATFORM_NAME) {
-    return (
-      <AuroranexisWordmark
-        variant={resolveWordmarkVariant(variant, layout)}
-        showMark={layout === "mark"}
-        className={cn(orgTextSizeClasses[size], className)}
-      />
-    );
-  }
+  const src = resolveLogoSrc(branding, layout, variant);
 
   return (
-    <span
+    <img
+      src={src}
+      alt={`${branding.companyName} logo`}
       className={cn(
-        "shrink-0 font-semibold tracking-tight",
-        variant === "light" ? "text-white" : "text-foreground",
-        orgTextSizeClasses[size],
+        "shrink-0 object-contain object-left",
+        layout === "horizontal" ? horizontalSizeClasses[size] : markSizeClasses[size],
         className,
       )}
-    >
-      {branding.companyName}
-    </span>
+    />
   );
 }

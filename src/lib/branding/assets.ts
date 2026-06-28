@@ -1,12 +1,18 @@
 /**
  * Canonical paths for platform branding assets in /public/branding.
  *
- * Inline UI branding uses AuroranexisWordmark (CSS text only).
- * Image assets here are for OpenGraph, metadata, email, and backgrounds only.
+ * Inline UI logos: logo-horizontal.png (default), logo-horizontal-transparent.png,
+ * logo-light.png, logo-dark.png only.
  */
 
 export const BRANDING_ASSETS = {
-  /** Metadata / social — not for inline UI wordmark surfaces. */
+  /** Default platform logo — marketing, login, footer, loading, public pages. */
+  logoHorizontal: "/branding/logo-horizontal.png",
+  logoHorizontalTransparent: "/branding/logo-horizontal-transparent.png",
+  logoLight: "/branding/logo-light.png",
+  logoDark: "/branding/logo-dark.png",
+
+  /** @deprecated Use logoHorizontal */
   approvedCompositeLogo: "/branding/logo-horizontal.png",
 
   loginBackground: "/branding/login-screen.png",
@@ -20,6 +26,9 @@ export const BRANDING_ASSETS = {
 
 export type BrandingAssetKey = keyof typeof BRANDING_ASSETS;
 
-/** UI uses CSS wordmark — no inline image logo paths. */
-export const INLINE_BRANDING_ASSETS = [] as const;
-
+export const INLINE_BRANDING_ASSETS = [
+  BRANDING_ASSETS.logoHorizontal,
+  BRANDING_ASSETS.logoHorizontalTransparent,
+  BRANDING_ASSETS.logoLight,
+  BRANDING_ASSETS.logoDark,
+] as const;
