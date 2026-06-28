@@ -60,7 +60,7 @@ export function BrandSplash({ fullScreen = false, className }: BrandSplashProps)
             aria-hidden
           />
           <img
-            src={BRANDING_ASSETS.icon512}
+            src={BRANDING_ASSETS.uiIcon}
             alt="Auroranexis"
             className="relative h-32 w-32 object-contain motion-safe:animate-pulse motion-reduce:animate-none"
             width={128}

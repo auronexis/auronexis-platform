@@ -61,26 +61,26 @@ test.describe("Public smoke", () => {
   });
 
   test("login page uses Auroranexis branding logo", async ({ page }) => {
-    const assetResponse = await page.request.get("/branding/logo-horizontal.png");
+    const assetResponse = await page.request.get("/branding/auroranexis-logo-horizontal.svg");
     expect(assetResponse.ok()).toBeTruthy();
-    expect(assetResponse.headers()["content-type"]).toMatch(/png|octet-stream/);
+    expect(assetResponse.headers()["content-type"]).toMatch(/svg|xml/);
 
     await page.goto("/login");
     const loginLogo = page.locator("img[alt='Auroranexis logo']");
     await expect(loginLogo).toBeVisible();
-    await expect(loginLogo).toHaveAttribute("src", "/branding/logo-horizontal.png");
+    await expect(loginLogo).toHaveAttribute("src", "/branding/auroranexis-logo-horizontal.svg");
     await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
   });
 
   test("marketing navbar logo uses production branding path", async ({ page }) => {
-    const assetResponse = await page.request.get("/branding/logo-horizontal.png");
+    const assetResponse = await page.request.get("/branding/auroranexis-logo-light.svg");
     expect(assetResponse.ok()).toBeTruthy();
-    expect(assetResponse.headers()["content-type"]).toMatch(/png|octet-stream/);
+    expect(assetResponse.headers()["content-type"]).toMatch(/svg|xml/);
 
     await page.goto("/pricing");
     const headerLogo = page.locator("header img[alt='Auroranexis logo']");
     await expect(headerLogo).toBeVisible();
-    await expect(headerLogo).toHaveAttribute("src", "/branding/logo-horizontal.png");
+    await expect(headerLogo).toHaveAttribute("src", "/branding/auroranexis-logo-light.svg");
   });
 
   test("required public marketing routes stay public", async ({ page }) => {

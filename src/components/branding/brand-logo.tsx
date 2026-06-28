@@ -31,6 +31,10 @@ const horizontalSizeClasses = {
   lg: "h-11 w-auto max-w-[min(100%,320px)]",
 };
 
+/**
+ * Never use composite PNG assets for UI logos because they contain baked backgrounds.
+ * Platform fallbacks must stay on transparent SVG paths in BRANDING_ASSETS.
+ */
 function resolveLogoSrc(
   branding: BrandLogoProps["branding"],
   layout: BrandLogoProps["layout"],
@@ -38,9 +42,9 @@ function resolveLogoSrc(
 ): string {
   if (layout === "horizontal") {
     if (variant === "light") {
-      return branding.logoLightUrl ?? BRANDING_ASSETS.logoLight;
+      return branding.logoLightUrl ?? BRANDING_ASSETS.uiLogoLight;
     }
-    return branding.logoHorizontalUrl ?? BRANDING_ASSETS.logoHorizontal;
+    return branding.logoHorizontalUrl ?? BRANDING_ASSETS.uiLogoHorizontal;
   }
 
   if (branding.iconUrl) {
@@ -51,10 +55,10 @@ function resolveLogoSrc(
     return branding.logoUrl;
   }
 
-  return BRANDING_ASSETS.icon512;
+  return BRANDING_ASSETS.uiIcon;
 }
 
-/** Organization logo mark or horizontal wordmark with platform PNG fallbacks. */
+/** Organization logo mark or horizontal wordmark with transparent SVG platform fallbacks. */
 export function BrandLogo({
   branding,
   size = "md",
