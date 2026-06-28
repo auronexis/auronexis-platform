@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { APP_VERSION } from "@/lib/company/contact";
-import { PRODUCTION_DOMAIN_LIST, PRODUCTION_DOMAIN_REDIRECTS } from "@/lib/deployment/production-domains";
+import { PRODUCTION_DOMAIN_LIST } from "@/lib/deployment/production-domains";
 import { CACHE_HEADER_ROUTES } from "@/lib/deployment/cache-headers";
 import { getDeploymentReadinessSnapshot } from "@/lib/diagnostics/deployment-readiness";
 import { getFirstCustomerReadinessSnapshot } from "@/lib/diagnostics/first-customer-readiness";
@@ -149,7 +149,7 @@ export async function getLaunchCandidateReadinessSnapshot(): Promise<LaunchCandi
   const deploymentChecks = [
     deployment.score >= 95,
     PRODUCTION_DOMAIN_LIST.length === 4,
-    PRODUCTION_DOMAIN_REDIRECTS.length >= 1,
+    deployment.redirectsConfigured,
     CACHE_HEADER_ROUTES.length >= 3,
     deployment.sslReady,
     deployment.robotsReady,

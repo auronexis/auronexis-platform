@@ -10,9 +10,9 @@ type MarketingHeaderProps = {
   className?: string;
 };
 
-const branding = getPlatformBrandingDefaults();
-
 export function MarketingHeader({ className }: MarketingHeaderProps) {
+  const branding = getPlatformBrandingDefaults();
+
   return (
     <header
       className={cn(

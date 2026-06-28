@@ -34,7 +34,7 @@ if (!process.env.DEV_FORCE_PLAN) {
   process.env.DEV_FORCE_PLAN = "enterprise";
 }
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3005";
 
 function webServerEnv(): Record<string, string> {
   const env = { ...process.env } as Record<string, string>;
@@ -85,7 +85,8 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {
-        command: process.env.PLAYWRIGHT_WEBSERVER_COMMAND ?? "npm run build && npm run start",
+        command:
+          process.env.PLAYWRIGHT_WEBSERVER_COMMAND ?? "npm run build && npx next start -p 3005",
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 300_000,

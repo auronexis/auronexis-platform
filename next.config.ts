@@ -1,17 +1,10 @@
 import type { NextConfig } from "next";
-import { PRODUCTION_DOMAIN_REDIRECTS } from "@/lib/deployment/production-domains";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ["pdfkit"],
-  async redirects() {
-    return PRODUCTION_DOMAIN_REDIRECTS.map((rule) => ({
-      source: "/:path*",
-      has: [{ type: "host", value: rule.sourceHost }],
-      destination: `${rule.destination}/:path*`,
-      permanent: rule.permanent,
-    }));
-  },
+  // Hostname redirects (www ↔ apex) are configured in Vercel Domains only.
+  // Do not add matching redirects here — duplicate hops caused ERR_TOO_MANY_REDIRECTS.
 };
 
 export default nextConfig;

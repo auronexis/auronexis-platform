@@ -3,6 +3,10 @@ import "server-only";
 import { APP_VERSION, MARKETING_ROUTES, PUBLIC_SITEMAP_ROUTES } from "@/lib/company/contact";
 import { CACHE_HEADER_ROUTES } from "@/lib/deployment/cache-headers";
 import {
+  hasConflictingHostnameRedirectRules,
+  wouldCauseHostnameRedirectLoop,
+} from "@/lib/deployment/domain-routing";
+import {
   PRODUCTION_DOMAIN_LIST,
   PRODUCTION_DOMAIN_REDIRECTS,
 } from "@/lib/deployment/production-domains";
@@ -70,7 +74,14 @@ export function getDeploymentReadinessSnapshot(): DeploymentReadinessSnapshot {
   const customDomainReady =
     appUrl.includes("auroranexis.com") || Boolean(process.env.VERCEL_URL) || isDev;
   const productionDomainsConfigured = PRODUCTION_DOMAIN_LIST.length === 4;
-  const redirectsConfigured = PRODUCTION_DOMAIN_REDIRECTS.length >= 1;
+  const redirectsConfigured =
+    !hasConflictingHostnameRedirectRules() &&
+    !wouldCauseHostnameRedirectLoop(
+      PRODUCTION_DOMAIN_REDIRECTS.map((rule) => ({
+        fromHost: rule.sourceHost,
+        toHost: rule.destination.replace(/^https?:\/\//, ""),
+      })),
+    );
   const cacheHeadersConfigured = CACHE_HEADER_ROUTES.length >= 3;
   const cronSecretConfigured = Boolean(getCronSecret()) || isDev;
   const vercelDeploymentDetected = Boolean(process.env.VERCEL) || isDev;

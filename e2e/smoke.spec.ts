@@ -52,4 +52,29 @@ test.describe("Public smoke", () => {
     await expect(page.getByRole("button", { name: "Book demo" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Send message" })).toBeVisible();
   });
+
+  test("marketing home loads without auth redirect loop", async ({ page }) => {
+    const response = await page.goto("/");
+    expect(response?.status()).toBeLessThan(400);
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.getByRole("heading", { level: 1, name: /monitor clients/i })).toBeVisible();
+  });
+
+  test("marketing navbar logo uses production branding path", async ({ page }) => {
+    const assetResponse = await page.request.get("/branding/logo-light.svg");
+    expect(assetResponse.ok()).toBeTruthy();
+    expect(assetResponse.headers()["content-type"]).toMatch(/svg|xml/);
+
+    await page.goto("/pricing");
+    const headerLogo = page.locator("header").getByRole("img", { name: /auroranexis logo/i });
+    await expect(headerLogo).toBeVisible();
+    await expect(headerLogo).toHaveAttribute("src", /\/branding\/logo-light\.svg$/);
+  });
+
+  test("required public marketing routes stay public", async ({ page }) => {
+    for (const path of ["/pricing", "/pilot-program", "/features", "/privacy", "/imprint"]) {
+      await page.goto(path);
+      await expect(page).not.toHaveURL(/\/login/);
+    }
+  });
 });

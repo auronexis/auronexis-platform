@@ -17,8 +17,8 @@ export const PLATFORM_METADATA: Metadata = {
   },
   description: SITE_DESCRIPTION,
   icons: {
-    icon: [{ url: BRANDING_ASSETS.favicon, type: "image/png" }],
-    apple: [{ url: BRANDING_ASSETS.icon512Composite, type: "image/png" }],
+    icon: [{ url: BRANDING_ASSETS.favicon, type: "image/svg+xml" }],
+    apple: [{ url: BRANDING_ASSETS.iconMark, type: "image/svg+xml" }],
   },
   openGraph: {
     type: "website",

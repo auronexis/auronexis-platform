@@ -1,6 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { PUBLIC_SITEMAP_ROUTES } from "@/lib/company/contact";
+import {
+  buildAppLoginUrl,
+  isAuthPath,
+  isMarketingPublicPath,
+  isPortalLoginPath,
+} from "@/lib/deployment/domain-routing";
 import type { Database } from "@/types/database";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 
@@ -21,6 +27,10 @@ function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/api/cron/run") ||
     pathname === "/api/docs"
   ) {
+    return true;
+  }
+
+  if (isMarketingPublicPath(pathname)) {
     return true;
   }
 
@@ -56,22 +66,16 @@ export async function updateSession(request: NextRequest) {
           });
         },
       },
-    }
+    },
   );
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isAuthRoute =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/auth");
-
+  const isAuthRoute = isAuthPath(pathname);
   const isPublicRoute =
-    isPublicPath(pathname) ||
-    pathname.startsWith("/client-portal/login") ||
-    isAuthRoute;
+    isPublicPath(pathname) || isPortalLoginPath(pathname) || isAuthRoute;
 
   const isPortalRoute = pathname.startsWith("/client-portal");
 
@@ -91,10 +95,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (!user && !isPublicRoute) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(buildAppLoginUrl(request.nextUrl, pathname));
   }
 
   return supabaseResponse;

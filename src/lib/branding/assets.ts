@@ -1,16 +1,16 @@
 /** Canonical paths for platform branding assets in /public/branding. */
 
-/** Transparent PNGs — full original lockups/marks for inline UI (no baked backgrounds). */
+/** Inline UI logos — SVG with transparent backgrounds (production-safe). */
 export const BRANDING_ASSETS = {
-  /** Navy wordmark — light surfaces (marketing nav, auth card, legal). */
-  logoHorizontal: "/branding/logo-horizontal-on-light.png",
-  /** White wordmark — dark surfaces (docs hero, secondary bands). */
-  logoLight: "/branding/logo-horizontal-transparent.png",
-  logoDark: "/branding/logo-dark-transparent.png",
-  iconMark: "/branding/icon-512-transparent.png",
-  icon512: "/branding/icon-512-transparent.png",
-  favicon: "/branding/favicon.png",
-  /** Original composite PNGs — OG, social, and email only. */
+  /** Navy wordmark — light surfaces (marketing nav on white, auth card, legal). */
+  logoHorizontal: "/branding/logo-horizontal.svg",
+  /** White wordmark — dark surfaces (marketing header, docs hero). */
+  logoLight: "/branding/logo-light.svg",
+  logoDark: "/branding/logo-horizontal.svg",
+  iconMark: "/branding/icon-mark.svg",
+  icon512: "/branding/icon-mark.svg",
+  favicon: "/favicon.svg",
+  /** Original composite PNGs — OG, social, and email only (optional; generate via scripts). */
   logoHorizontalComposite: "/branding/logo-horizontal.png",
   logoLightComposite: "/branding/logo-light.png",
   logoDarkComposite: "/branding/logo-dark.png",
@@ -25,3 +25,10 @@ export const BRANDING_ASSETS = {
 } as const;
 
 export type BrandingAssetKey = keyof typeof BRANDING_ASSETS;
+
+export const INLINE_BRANDING_ASSETS = [
+  BRANDING_ASSETS.logoHorizontal,
+  BRANDING_ASSETS.logoLight,
+  BRANDING_ASSETS.iconMark,
+] as const;
+

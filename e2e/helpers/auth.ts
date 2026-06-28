@@ -20,16 +20,18 @@ export async function loginAsTestUser(page: Page): Promise<void> {
   await page.getByLabel("Password").fill(e2eCredentials.password);
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.waitForURL("**/dashboard**", { timeout: 30_000 });
-  await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.locator("#main-content")).toBeVisible({ timeout: 15_000 });
 }
 
 export async function logoutFromDashboard(page: Page): Promise<void> {
   await page.goto("/dashboard");
-  await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.locator("#main-content")).toBeVisible({ timeout: 15_000 });
   const accountMenu = page.getByRole("button", { name: /Open account menu/i });
   await expect(accountMenu).toBeVisible({ timeout: 15_000 });
   await accountMenu.click();
-  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  const menu = page.getByRole("menu");
+  await expect(menu).toBeVisible({ timeout: 10_000 });
+  await menu.getByRole("menuitem", { name: "Sign out" }).click();
   await page.waitForURL("**/login**", { timeout: 15_000 });
 }
 
