@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { BrandLogo } from "@/components/branding/brand-logo";
-import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
+import { MarketingHeaderLogo } from "@/components/marketing/marketing-header-logo";
 import { MARKETING_NAV } from "@/lib/marketing/content";
 import { MARKETING_ROUTES } from "@/lib/company/contact";
 import { cn } from "@/lib/utils/cn";
@@ -11,8 +10,6 @@ type MarketingHeaderProps = {
 };
 
 export function MarketingHeader({ className }: MarketingHeaderProps) {
-  const branding = getPlatformBrandingDefaults();
-
   return (
     <header
       className={cn(
@@ -22,13 +19,7 @@ export function MarketingHeader({ className }: MarketingHeaderProps) {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link href={MARKETING_ROUTES.home} className={cn(focusRing, "flex shrink-0 items-center")}>
-          <BrandLogo
-            branding={branding}
-            layout="horizontal"
-            size="md"
-            variant="light"
-            className="h-9 w-auto sm:h-10 lg:h-11"
-          />
+          <MarketingHeaderLogo className="h-9 w-auto sm:h-10 lg:h-11" />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">

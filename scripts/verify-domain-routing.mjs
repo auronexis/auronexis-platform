@@ -58,3 +58,5 @@ console.log("verify-domain-routing: PASS");
 console.log(`  marketing hosts: ${marketingHosts.join(", ")}`);
 console.log(`  app hosts: ${appHosts.join(", ")}`);
 console.log("  next.config host redirects: disabled (Vercel-only)");
+console.log("  vercel.json redirects: none (headers/crons only)");
+console.log("  required Vercel domain hop: www.auroranexis.com -> auroranexis.com (single direction only)");

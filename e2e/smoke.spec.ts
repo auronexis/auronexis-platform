@@ -66,9 +66,9 @@ test.describe("Public smoke", () => {
     expect(assetResponse.headers()["content-type"]).toMatch(/svg|xml/);
 
     await page.goto("/pricing");
-    const headerLogo = page.locator("header").getByRole("img", { name: /auroranexis logo/i });
+    const headerLogo = page.locator("header img[alt='Auroranexis logo']");
     await expect(headerLogo).toBeVisible();
-    await expect(headerLogo).toHaveAttribute("src", /\/branding\/logo-light\.svg$/);
+    await expect(headerLogo).toHaveAttribute("src", "/branding/logo-light.svg");
   });
 
   test("required public marketing routes stay public", async ({ page }) => {
