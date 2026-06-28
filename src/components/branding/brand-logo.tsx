@@ -32,8 +32,9 @@ const horizontalSizeClasses = {
 };
 
 /**
- * Never use composite PNG assets for UI logos because they contain baked backgrounds.
- * Platform fallbacks must stay on transparent SVG paths in BRANDING_ASSETS.
+ * Never use generated SVG logos. Approved PNG composite only on dark surfaces;
+ * transparent horizontal PNG on light surfaces. Do not use composite PNGs with
+ * baked backgrounds on light UI — callers should use text-only instead.
  */
 function resolveLogoSrc(
   branding: BrandLogoProps["branding"],
@@ -42,9 +43,13 @@ function resolveLogoSrc(
 ): string {
   if (layout === "horizontal") {
     if (variant === "light") {
-      return branding.logoLightUrl ?? BRANDING_ASSETS.uiLogoLight;
+      return branding.logoLightUrl ?? BRANDING_ASSETS.approvedCompositeLogo;
     }
-    return branding.logoHorizontalUrl ?? BRANDING_ASSETS.uiLogoHorizontal;
+    return (
+      branding.logoHorizontalUrl ??
+      BRANDING_ASSETS.logoHorizontalTransparent ??
+      BRANDING_ASSETS.logoHorizontalOnLight
+    );
   }
 
   if (branding.iconUrl) {
@@ -55,10 +60,10 @@ function resolveLogoSrc(
     return branding.logoUrl;
   }
 
-  return BRANDING_ASSETS.uiIcon;
+  return BRANDING_ASSETS.compositeIcon512;
 }
 
-/** Organization logo mark or horizontal wordmark with transparent SVG platform fallbacks. */
+/** Organization logo mark or horizontal wordmark with approved platform asset fallbacks. */
 export function BrandLogo({
   branding,
   size = "md",

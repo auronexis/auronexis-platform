@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
+import { LoginCardLogo } from "@/components/branding/login-card-logo";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
-import { getLoginDisplaySubtitle } from "@/lib/branding/defaults";
+import { getLoginDisplaySubtitle, PLATFORM_NAME } from "@/lib/branding/defaults";
 import { cn } from "@/lib/utils/cn";
 
 type LoginBrandingShellProps = {
@@ -29,14 +30,8 @@ function LoginDecorativePanel({
       />
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
-        <img
-          src={BRANDING_ASSETS.uiIcon}
-          alt="Auroranexis"
-          className="mb-6 h-12 w-12 object-contain object-left"
-          width={48}
-          height={48}
-        />
-        <p className="max-w-sm text-sm leading-relaxed text-primary-foreground/85">{subtitle}</p>
+        <p className="text-lg font-semibold tracking-tight">{PLATFORM_NAME}</p>
+        <p className="mt-2 max-w-sm text-sm leading-relaxed text-primary-foreground/85">{subtitle}</p>
       </div>
     </aside>
   );
@@ -49,7 +44,7 @@ export function LoginBrandingShell({
   variant = "staff",
 }: LoginBrandingShellProps) {
   const subtitle = getLoginDisplaySubtitle(branding);
-  const loginBackground = branding.loginBackgroundUrl ?? BRANDING_ASSETS.loginScreen;
+  const loginBackground = branding.loginBackgroundUrl ?? BRANDING_ASSETS.loginBackground;
 
   if (variant === "portal") {
     return (
@@ -70,13 +65,7 @@ export function LoginBrandingShell({
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex justify-center">
-              <img
-                src={BRANDING_ASSETS.uiLogoHorizontal}
-                alt="Auroranexis logo"
-                className="h-11 w-auto max-w-[min(100%,280px)] object-contain"
-                width={260}
-                height={52}
-              />
+              <LoginCardLogo />
             </div>
             <h1 className="text-2xl font-semibold text-navy-950">Sign in</h1>
             <p className="mt-2 text-sm text-muted">{subtitle}</p>

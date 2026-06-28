@@ -1,33 +1,31 @@
 /**
  * Canonical paths for platform branding assets in /public/branding.
  *
- * Asset audit (background):
- * - Baked dark background (composite only — never inline UI):
+ * Do not use generated SVG logos. Use approved PNG composite only on dark surfaces;
+ * use text-only on light surfaces if no transparent approved asset exists.
+ *
+ * Baked dark background (composite — dark surfaces only):
  *   logo-horizontal.png, logo-light.png, logo-dark.png, icon-512.png
- * - Processed transparent PNGs (still raster — not for inline UI):
- *   logo-horizontal-transparent.png, logo-light-transparent.png,
- *   logo-dark-transparent.png, icon-512-transparent.png, logo-horizontal-on-light.png
- * - Transparent UI SVGs (inline logos only):
- *   auroranexis-logo-horizontal.svg, auroranexis-logo-light.svg, auroranexis-icon.svg
- * - Decorative / social composites only:
- *   hero-banner.png, login-screen.png, opengraph-1200x630.png, linkedin-banner.png,
- *   splash-screen.png, profile-800.png, favicon.png
+ * Transparent approved raster (light-surface horizontal logos):
+ *   logo-horizontal-transparent.png, logo-horizontal-on-light.png
+ * Decorative / social only:
+ *   login-screen.png, hero-banner.png, opengraph-1200x630.png, linkedin-banner.png, etc.
  */
 
-/** UI assets must be transparent SVGs. Composite PNGs are not allowed in UI. */
 export const BRANDING_ASSETS = {
-  uiLogoHorizontal: "/branding/auroranexis-logo-horizontal.svg",
-  uiLogoLight: "/branding/auroranexis-logo-light.svg",
-  uiIcon: "/branding/auroranexis-icon.svg",
+  /** Full horizontal lockup — marketing nav, dark footer (black tile blends on dark bg). */
+  approvedCompositeLogo: "/branding/logo-horizontal.png",
+  /** Transparent horizontal lockup — login card and light-surface UI. */
+  logoHorizontalTransparent: "/branding/logo-horizontal-transparent.png",
+  logoHorizontalOnLight: "/branding/logo-horizontal-on-light.png",
 
-  compositeLogoHorizontal: "/branding/logo-horizontal.png",
   compositeLogoLight: "/branding/logo-light.png",
   compositeLogoDark: "/branding/logo-dark.png",
   compositeIcon512: "/branding/icon-512.png",
 
+  loginBackground: "/branding/login-screen.png",
   favicon: "/favicon.svg",
   heroBanner: "/branding/hero-banner.png",
-  loginScreen: "/branding/login-screen.png",
   splashScreen: "/branding/splash-screen.png",
   linkedinBanner: "/branding/linkedin-banner.png",
   openGraph: "/branding/opengraph-1200x630.png",
@@ -36,10 +34,11 @@ export const BRANDING_ASSETS = {
 
 export type BrandingAssetKey = keyof typeof BRANDING_ASSETS;
 
-/** Preload / inline UI logo paths — transparent SVGs only. */
+/** Approved inline branding paths — no generated SVG logos. */
 export const INLINE_BRANDING_ASSETS = [
-  BRANDING_ASSETS.uiLogoHorizontal,
-  BRANDING_ASSETS.uiLogoLight,
-  BRANDING_ASSETS.uiIcon,
+  BRANDING_ASSETS.approvedCompositeLogo,
+  BRANDING_ASSETS.logoHorizontalTransparent,
+  BRANDING_ASSETS.logoHorizontalOnLight,
+  BRANDING_ASSETS.compositeIcon512,
 ] as const;
 

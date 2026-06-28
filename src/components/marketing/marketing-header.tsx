@@ -19,7 +19,7 @@ export function MarketingHeader({ className }: MarketingHeaderProps) {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link href={MARKETING_ROUTES.home} className={cn(focusRing, "flex shrink-0 items-center")}>
-          <MarketingHeaderLogo className="h-9 w-auto sm:h-10 lg:h-11" />
+          <MarketingHeaderLogo />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">

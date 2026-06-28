@@ -8,7 +8,7 @@ type MarketingHeaderLogoProps = {
   className?: string;
 };
 
-/** Production marketing nav logo — transparent SVG for dark header. */
+/** Marketing nav — approved composite logo on dark header (32px height). */
 export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
   const [failed, setFailed] = useState(false);
 
@@ -27,12 +27,10 @@ export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
 
   return (
     <img
-      src={BRANDING_ASSETS.uiLogoLight}
+      src={BRANDING_ASSETS.approvedCompositeLogo}
       alt="Auroranexis logo"
-      className={cn(
-        "shrink-0 object-contain object-left max-w-[min(100%,320px)]",
-        className,
-      )}
+      className={cn("shrink-0 object-contain object-left", className)}
+      style={{ height: "32px", width: "auto" }}
       onError={() => setFailed(true)}
     />
   );

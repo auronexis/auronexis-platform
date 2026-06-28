@@ -1,5 +1,5 @@
-import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { cn } from "@/lib/utils/cn";
+import { PLATFORM_NAME } from "@/lib/branding/defaults";
 
 type BrandSplashProps = {
   fullScreen?: boolean;
@@ -34,7 +34,7 @@ function LoadingIndicator() {
   );
 }
 
-/** Premium in-app loading state — centered card, icon mark, status. */
+/** In-app loading state — text-only brand on light card (no black-tile icon). */
 export function BrandSplash({ fullScreen = false, className }: BrandSplashProps) {
   return (
     <div
@@ -54,23 +54,8 @@ export function BrandSplash({ fullScreen = false, className }: BrandSplashProps)
           "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
         )}
       >
-        <div className="relative flex h-32 w-32 items-center justify-center">
-          <div
-            className="pointer-events-none absolute inset-0 scale-125 rounded-full bg-gradient-to-br from-primary/20 via-info/15 to-secondary/20 blur-2xl motion-safe:animate-pulse motion-reduce:animate-none"
-            aria-hidden
-          />
-          <img
-            src={BRANDING_ASSETS.uiIcon}
-            alt="Auroranexis"
-            className="relative h-32 w-32 object-contain motion-safe:animate-pulse motion-reduce:animate-none"
-            width={128}
-            height={128}
-          />
-        </div>
-
-        <p className="mt-6 text-2xl font-semibold tracking-tight text-foreground">Auroranexis</p>
+        <p className="text-2xl font-semibold tracking-tight text-foreground">{PLATFORM_NAME}</p>
         <p className="mt-2 text-sm text-muted">Loading workspace…</p>
-
         <LoadingIndicator />
       </div>
     </div>

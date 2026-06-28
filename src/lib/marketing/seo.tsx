@@ -56,7 +56,7 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: COMPANY_NAME,
     url: metadataBase.toString(),
-    logo: new URL(BRANDING_ASSETS.compositeLogoHorizontal, metadataBase).toString(),
+    logo: new URL(BRANDING_ASSETS.approvedCompositeLogo, metadataBase).toString(),
     email: "info@auroranexis.com",
     sameAs: [],
   };
