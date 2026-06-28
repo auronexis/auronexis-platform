@@ -57,7 +57,7 @@ export function BrandSplash({ fullScreen = false, className }: BrandSplashProps)
         <img
           src={BRANDING_ASSETS.logoHorizontalOnLight}
           alt="Auroranexis logo"
-          className="mx-auto w-[150px] object-contain"
+          className="mx-auto w-[170px] w-auto max-w-none object-contain"
         />
         <p className="mt-2 text-sm text-slate-600">Loading workspace...</p>
         <LoadingIndicator />
