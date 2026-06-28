@@ -1,4 +1,3 @@
-import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { cn } from "@/lib/utils/cn";
 
 type BrandSplashProps = {
@@ -54,11 +53,13 @@ export function BrandSplash({ fullScreen = false, className }: BrandSplashProps)
           "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
         )}
       >
-        <img
-          src={BRANDING_ASSETS.logoHorizontalOnLight}
-          alt="Auroranexis logo"
-          className="mx-auto w-[170px] w-auto max-w-none object-contain"
-        />
+        <div className="mx-auto flex w-[150px] max-w-[150px] justify-center overflow-hidden">
+          <img
+            src="/branding/logo-horizontal-on-light.png"
+            alt="Auroranexis logo"
+            className="block h-auto max-h-[70px] w-full object-contain"
+          />
+        </div>
         <p className="mt-2 text-sm text-slate-600">Loading workspace...</p>
         <LoadingIndicator />
       </div>
