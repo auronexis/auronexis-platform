@@ -60,16 +60,16 @@ test.describe("Public smoke", () => {
     await expect(page.getByRole("heading", { level: 1, name: /monitor clients/i })).toBeVisible();
   });
 
-  test("login page uses text-only branding on light card", async ({ page }) => {
+  test("login page uses official logo on light card", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
-    await expect(page.getByText("Auroranexis", { exact: true }).first()).toBeVisible();
 
     const loginCard = page
       .locator("div.max-w-md.rounded-2xl")
       .filter({ has: page.getByRole("heading", { name: "Sign in" }) });
-    await expect(loginCard.locator("img")).toHaveCount(0);
-    await expect(loginCard.locator("svg")).toHaveCount(0);
+    const cardLogo = loginCard.locator("img[alt='Auroranexis logo']");
+    await expect(cardLogo).toBeVisible();
+    await expect(cardLogo).toHaveAttribute("src", "/branding/logo-horizontal.png");
   });
 
   test("marketing navbar logo uses approved composite asset", async ({ page }) => {

@@ -8,7 +8,7 @@ type MarketingHeaderLogoProps = {
   className?: string;
 };
 
-/** Marketing nav — approved composite logo on dark header. */
+/** Marketing nav — official logo-horizontal.png on dark header. */
 export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
   const [failed, setFailed] = useState(false);
 
@@ -29,10 +29,7 @@ export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
     <img
       src={BRANDING_ASSETS.approvedCompositeLogo}
       alt="Auroranexis logo"
-      className={cn(
-        "h-8 w-auto min-w-[110px] shrink-0 object-contain object-left sm:h-9 sm:min-w-[120px]",
-        className,
-      )}
+      className={cn("h-[32px] w-auto shrink-0 object-contain object-left sm:h-[36px]", className)}
       onError={() => setFailed(true)}
     />
   );

@@ -1,8 +1,19 @@
 import type { ReactNode } from "react";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
-import { PLATFORM_NAME } from "@/lib/branding/defaults";
 import { cn } from "@/lib/utils/cn";
+
+const OFFICIAL_LOGO = BRANDING_ASSETS.approvedCompositeLogo;
+
+const BRAND_TAGLINE = (
+  <>
+    Monitor clients.
+    <br />
+    Detect risks.
+    <br />
+    Prove value.
+  </>
+);
 
 type LoginBrandingShellProps = {
   branding: ResolvedOrganizationBranding;
@@ -23,8 +34,12 @@ function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
       />
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
-        <div className="text-2xl font-bold text-white">{PLATFORM_NAME}</div>
-        <p className="mt-2 text-sm text-slate-200">Monitor clients. Detect risks. Prove value.</p>
+        <img
+          src={OFFICIAL_LOGO}
+          alt="Auroranexis logo"
+          className="w-[180px] object-contain object-left"
+        />
+        <p className="mt-3 text-sm leading-relaxed text-white/70">{BRAND_TAGLINE}</p>
       </div>
     </aside>
   );
@@ -56,8 +71,12 @@ export function LoginBrandingShell({
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
           <div className="mb-6 text-center">
-            <div className="text-2xl font-bold tracking-tight text-slate-950">{PLATFORM_NAME}</div>
-            <div className="mt-2 text-sm text-slate-600">Monitor clients. Detect risks. Prove value.</div>
+            <img
+              src={OFFICIAL_LOGO}
+              alt="Auroranexis logo"
+              className="mx-auto mb-5 w-[140px] object-contain"
+            />
+            <p className="text-sm leading-relaxed text-slate-600">{BRAND_TAGLINE}</p>
           </div>
           <h1 className="text-lg font-semibold text-slate-950">Sign in</h1>
           {children}

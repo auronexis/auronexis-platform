@@ -32,35 +32,24 @@ const horizontalSizeClasses = {
 };
 
 /**
- * Never use generated SVG logos. Approved PNG composite only on dark surfaces;
- * transparent horizontal PNG on light surfaces. Do not use composite PNGs with
- * baked backgrounds on light UI — callers should use text-only instead.
+ * Official platform logo only — /branding/logo-horizontal.png.
+ * Org white-label URLs override when set.
  */
 function resolveLogoSrc(
   branding: BrandLogoProps["branding"],
   layout: BrandLogoProps["layout"],
-  variant: BrandLogoProps["variant"],
 ): string {
   if (layout === "horizontal") {
-    if (variant === "light") {
-      return branding.logoLightUrl ?? BRANDING_ASSETS.approvedCompositeLogo;
-    }
     return (
       branding.logoHorizontalUrl ??
-      BRANDING_ASSETS.logoHorizontalTransparent ??
-      BRANDING_ASSETS.logoHorizontalOnLight
+      branding.logoLightUrl ??
+      branding.logoDarkUrl ??
+      branding.logoUrl ??
+      BRANDING_ASSETS.approvedCompositeLogo
     );
   }
 
-  if (branding.iconUrl) {
-    return branding.iconUrl;
-  }
-
-  if (branding.logoUrl) {
-    return branding.logoUrl;
-  }
-
-  return BRANDING_ASSETS.compositeIcon512;
+  return branding.iconUrl ?? branding.logoUrl ?? BRANDING_ASSETS.approvedCompositeLogo;
 }
 
 /** Organization logo mark or horizontal wordmark with approved platform asset fallbacks. */
@@ -68,10 +57,10 @@ export function BrandLogo({
   branding,
   size = "md",
   className,
-  variant = "dark",
+  variant: _variant = "dark",
   layout = "mark",
 }: BrandLogoProps) {
-  const src = resolveLogoSrc(branding, layout, variant);
+  const src = resolveLogoSrc(branding, layout);
 
   return (
     <img
