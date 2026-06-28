@@ -16,6 +16,7 @@ import {
 
 } from "@/lib/company/contact";
 
+import { AuroranexisWordmark } from "@/components/branding/auroranexis-wordmark";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
 import { getBuildInfo } from "@/lib/diagnostics/platform-health";
@@ -161,11 +162,10 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
             <div>
 
-              <BrandLogo
-                branding={platformBranding}
-                layout="horizontal"
+              <AuroranexisWordmark
                 variant="light"
-                className="h-[34px] w-auto"
+                showMark={false}
+                className="text-[20px] font-semibold"
               />
 
               <p className="mt-3 text-sm leading-relaxed text-primary-foreground/75">

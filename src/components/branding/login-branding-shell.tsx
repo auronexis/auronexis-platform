@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
+import { AuroranexisWordmark } from "@/components/branding/auroranexis-wordmark";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
 import { cn } from "@/lib/utils/cn";
-
-const OFFICIAL_LOGO = BRANDING_ASSETS.approvedCompositeLogo;
 
 const BRAND_TAGLINE = (
   <>
@@ -34,11 +33,7 @@ function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
       />
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
-        <img
-          src={OFFICIAL_LOGO}
-          alt="Auroranexis logo"
-          className="w-[180px] object-contain object-left"
-        />
+        <AuroranexisWordmark variant="light" className="text-[26px] font-semibold" />
         <p className="mt-3 text-sm leading-relaxed text-white/70">{BRAND_TAGLINE}</p>
       </div>
     </aside>
@@ -71,10 +66,10 @@ export function LoginBrandingShell({
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
           <div className="mb-6 text-center">
-            <img
-              src={OFFICIAL_LOGO}
-              alt="Auroranexis logo"
-              className="mx-auto mb-5 w-[140px] object-contain"
+            <AuroranexisWordmark
+              variant="dark"
+              centered
+              className="mb-5 w-full text-2xl font-semibold"
             />
             <p className="text-sm leading-relaxed text-slate-600">{BRAND_TAGLINE}</p>
           </div>

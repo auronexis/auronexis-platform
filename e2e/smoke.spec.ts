@@ -60,27 +60,22 @@ test.describe("Public smoke", () => {
     await expect(page.getByRole("heading", { level: 1, name: /monitor clients/i })).toBeVisible();
   });
 
-  test("login page uses official logo on light card", async ({ page }) => {
+  test("login page uses CSS wordmark on light card", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
 
     const loginCard = page
       .locator("div.max-w-md.rounded-2xl")
       .filter({ has: page.getByRole("heading", { name: "Sign in" }) });
-    const cardLogo = loginCard.locator("img[alt='Auroranexis logo']");
-    await expect(cardLogo).toBeVisible();
-    await expect(cardLogo).toHaveAttribute("src", "/branding/logo-horizontal.png");
+    await expect(loginCard.getByText("Auroranexis", { exact: true })).toBeVisible();
+    await expect(loginCard.locator("img")).toHaveCount(0);
   });
 
-  test("marketing navbar logo uses approved composite asset", async ({ page }) => {
-    const assetResponse = await page.request.get("/branding/logo-horizontal.png");
-    expect(assetResponse.ok()).toBeTruthy();
-    expect(assetResponse.headers()["content-type"]).toMatch(/png|octet-stream/);
-
+  test("marketing navbar uses CSS wordmark", async ({ page }) => {
     await page.goto("/pricing");
-    const headerLogo = page.locator("header img[alt='Auroranexis logo']");
-    await expect(headerLogo).toBeVisible();
-    await expect(headerLogo).toHaveAttribute("src", "/branding/logo-horizontal.png");
+    const header = page.locator("header");
+    await expect(header.getByText("Auroranexis", { exact: true })).toBeVisible();
+    await expect(header.locator("img[alt='Auroranexis logo']")).toHaveCount(0);
   });
 
   test("required public marketing routes stay public", async ({ page }) => {

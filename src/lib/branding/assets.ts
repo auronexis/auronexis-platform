@@ -1,12 +1,12 @@
 /**
  * Canonical paths for platform branding assets in /public/branding.
  *
- * Official inline logo (UI): logo-horizontal.png only.
- * Decorative / social only: login-screen.png, hero-banner.png, opengraph, etc.
+ * Inline UI branding uses AuroranexisWordmark (CSS text only).
+ * Image assets here are for OpenGraph, metadata, email, and backgrounds only.
  */
 
 export const BRANDING_ASSETS = {
-  /** Official horizontal lockup — all public-facing UI (nav, login, loading, footer). */
+  /** Metadata / social — not for inline UI wordmark surfaces. */
   approvedCompositeLogo: "/branding/logo-horizontal.png",
 
   loginBackground: "/branding/login-screen.png",
@@ -20,6 +20,6 @@ export const BRANDING_ASSETS = {
 
 export type BrandingAssetKey = keyof typeof BRANDING_ASSETS;
 
-/** Approved inline branding paths — logo-horizontal.png only. */
-export const INLINE_BRANDING_ASSETS = [BRANDING_ASSETS.approvedCompositeLogo] as const;
+/** UI uses CSS wordmark — no inline image logo paths. */
+export const INLINE_BRANDING_ASSETS = [] as const;
 

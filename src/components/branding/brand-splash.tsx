@@ -1,4 +1,4 @@
-import { BRANDING_ASSETS } from "@/lib/branding/assets";
+import { AuroranexisWordmark } from "@/components/branding/auroranexis-wordmark";
 import { cn } from "@/lib/utils/cn";
 
 type BrandSplashProps = {
@@ -34,7 +34,7 @@ function LoadingIndicator() {
   );
 }
 
-/** In-app loading state — official logo-horizontal.png on light card. */
+/** In-app loading state — CSS wordmark on light card. */
 export function BrandSplash({ fullScreen = false, className }: BrandSplashProps) {
   return (
     <div
@@ -54,11 +54,7 @@ export function BrandSplash({ fullScreen = false, className }: BrandSplashProps)
           "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
         )}
       >
-        <img
-          src={BRANDING_ASSETS.approvedCompositeLogo}
-          alt="Auroranexis logo"
-          className="mx-auto w-[150px] object-contain"
-        />
+        <AuroranexisWordmark variant="dark" centered className="text-2xl font-semibold" />
         <p className="mt-2 text-sm text-slate-600">Loading workspace...</p>
         <LoadingIndicator />
       </div>

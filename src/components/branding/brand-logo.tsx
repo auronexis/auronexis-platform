@@ -1,76 +1,60 @@
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
-import { BRANDING_ASSETS } from "@/lib/branding/assets";
+import { PLATFORM_NAME } from "@/lib/branding/defaults";
+import { AuroranexisWordmark } from "@/components/branding/auroranexis-wordmark";
 import { cn } from "@/lib/utils/cn";
 
 type BrandLogoProps = {
-  branding: Pick<
-    ResolvedOrganizationBranding,
-    | "companyName"
-    | "logoUrl"
-    | "logoLightUrl"
-    | "logoDarkUrl"
-    | "logoHorizontalUrl"
-    | "iconUrl"
-  >;
+  branding: Pick<ResolvedOrganizationBranding, "companyName">;
   size?: "sm" | "md" | "lg";
   className?: string;
   variant?: "light" | "dark";
   layout?: "mark" | "horizontal";
 };
 
-const markSizeClasses = {
-  sm: "h-8 w-8",
-  md: "h-9 w-9",
-  lg: "h-11 w-11",
+const orgTextSizeClasses = {
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-lg",
 };
 
-/** Full horizontal lockup — preserve artwork proportions; avoid max-width clipping. */
-const horizontalSizeClasses = {
-  sm: "h-9 w-auto max-w-[min(100%,280px)]",
-  md: "h-10 w-auto max-w-[min(100%,300px)]",
-  lg: "h-11 w-auto max-w-[min(100%,320px)]",
-};
-
-/**
- * Official platform logo only — /branding/logo-horizontal.png.
- * Org white-label URLs override when set.
- */
-function resolveLogoSrc(
-  branding: BrandLogoProps["branding"],
+function resolveWordmarkVariant(
+  variant: BrandLogoProps["variant"],
   layout: BrandLogoProps["layout"],
-): string {
-  if (layout === "horizontal") {
-    return (
-      branding.logoHorizontalUrl ??
-      branding.logoLightUrl ??
-      branding.logoDarkUrl ??
-      branding.logoUrl ??
-      BRANDING_ASSETS.approvedCompositeLogo
-    );
+): "dark" | "light" | "compact" {
+  if (layout === "mark" && variant === "light") {
+    return "compact";
   }
-
-  return branding.iconUrl ?? branding.logoUrl ?? BRANDING_ASSETS.approvedCompositeLogo;
+  return variant === "light" ? "light" : "dark";
 }
 
-/** Organization logo mark or horizontal wordmark with approved platform asset fallbacks. */
+/** Organization branding — CSS wordmark only (no image logos in UI). */
 export function BrandLogo({
   branding,
   size = "md",
   className,
-  variant: _variant = "dark",
+  variant = "dark",
   layout = "mark",
 }: BrandLogoProps) {
-  const src = resolveLogoSrc(branding, layout);
+  if (branding.companyName === PLATFORM_NAME) {
+    return (
+      <AuroranexisWordmark
+        variant={resolveWordmarkVariant(variant, layout)}
+        showMark={layout === "mark"}
+        className={cn(orgTextSizeClasses[size], className)}
+      />
+    );
+  }
 
   return (
-    <img
-      src={src}
-      alt={`${branding.companyName} logo`}
+    <span
       className={cn(
-        "shrink-0 object-contain object-left",
-        layout === "horizontal" ? horizontalSizeClasses[size] : markSizeClasses[size],
+        "shrink-0 font-semibold tracking-tight",
+        variant === "light" ? "text-white" : "text-foreground",
+        orgTextSizeClasses[size],
         className,
       )}
-    />
+    >
+      {branding.companyName}
+    </span>
   );
 }
