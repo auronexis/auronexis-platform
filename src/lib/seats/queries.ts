@@ -1,0 +1,147 @@
+import { getPlanByPriceId } from "@/lib/billing/plans.server";
+import { isActiveSubscriptionStatus } from "@/lib/stripe/types";
+import type { PlanKey } from "@/lib/billing/plans";
+import {
+  getDefaultSeatLimit,
+  getSeatLimitForPlan,
+} from "@/lib/seats/plans";
+import type { OrganizationSeatUsage } from "@/lib/seats/types";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import type { SessionContext } from "@/lib/tenancy/context";
+
+const SUBSCRIPTION_SELECT = "stripe_price_id, status";
+
+/** Resolve seat limit from subscription state — defaults to Starter (1 seat). */
+export async function getOrganizationSeatLimit(organizationId: string): Promise<{
+  limit: number;
+  planKey: PlanKey | null;
+}> {
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("organization_subscriptions")
+    .select(SUBSCRIPTION_SELECT)
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const subscription = data as { stripe_price_id: string | null; status: string } | null;
+
+  if (!subscription?.stripe_price_id || !isActiveSubscriptionStatus(subscription.status)) {
+    return { limit: getDefaultSeatLimit(), planKey: null };
+  }
+
+  const plan = getPlanByPriceId(subscription.stripe_price_id);
+
+  if (!plan) {
+    return { limit: getDefaultSeatLimit(), planKey: null };
+  }
+
+  return {
+    limit: getSeatLimitForPlan(plan.key),
+    planKey: plan.key,
+  };
+}
+
+/** Count active agency users and pending non-expired invitations. */
+export async function getOrganizationSeatUsage(
+  organizationId: string,
+): Promise<OrganizationSeatUsage> {
+  const admin = createAdminClient();
+  const now = new Date().toISOString();
+
+  const [{ limit, planKey }, activeUsersResult, pendingInvitationsResult] = await Promise.all([
+    getOrganizationSeatLimit(organizationId),
+    admin
+      .from("users")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organizationId)
+      .eq("is_disabled", false),
+    admin
+      .from("team_invitations")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organizationId)
+      .is("accepted_at", null)
+      .gt("expires_at", now),
+  ]);
+
+  if (activeUsersResult.error) {
+    throw new Error(activeUsersResult.error.message);
+  }
+
+  if (pendingInvitationsResult.error) {
+    throw new Error(pendingInvitationsResult.error.message);
+  }
+
+  const activeUsers = activeUsersResult.count ?? 0;
+  const pendingInvitations = pendingInvitationsResult.count ?? 0;
+  const used = activeUsers + pendingInvitations;
+
+  return {
+    organizationId,
+    limit,
+    used,
+    activeUsers,
+    pendingInvitations,
+    isOverLimit: used > limit,
+    isAtLimit: used >= limit,
+    planKey,
+  };
+}
+
+/** Seat usage for the signed-in organization. */
+export async function getOrganizationSeatUsageForSession(
+  session: SessionContext,
+): Promise<OrganizationSeatUsage> {
+  return getOrganizationSeatUsage(session.organization.id);
+}
+
+/** Seat usage via RLS-scoped client — same counts, org isolated by session. */
+export async function getOrganizationSeatUsageFromSession(
+  session: SessionContext,
+): Promise<OrganizationSeatUsage> {
+  const supabase = await createClient();
+  const now = new Date().toISOString();
+  const { limit, planKey } = await getOrganizationSeatLimit(session.organization.id);
+
+  const [activeUsersResult, pendingInvitationsResult] = await Promise.all([
+    supabase
+      .from("users")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", session.organization.id)
+      .eq("is_disabled", false),
+    supabase
+      .from("team_invitations")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", session.organization.id)
+      .is("accepted_at", null)
+      .gt("expires_at", now),
+  ]);
+
+  if (activeUsersResult.error) {
+    throw new Error(activeUsersResult.error.message);
+  }
+
+  if (pendingInvitationsResult.error) {
+    throw new Error(pendingInvitationsResult.error.message);
+  }
+
+  const activeUsers = activeUsersResult.count ?? 0;
+  const pendingInvitations = pendingInvitationsResult.count ?? 0;
+  const used = activeUsers + pendingInvitations;
+
+  return {
+    organizationId: session.organization.id,
+    limit,
+    used,
+    activeUsers,
+    pendingInvitations,
+    isOverLimit: used > limit,
+    isAtLimit: used >= limit,
+    planKey,
+  };
+}

@@ -1,0 +1,45 @@
+export {
+  assertCanCreateClient,
+  assertCanUseFeature,
+  canCreateClient,
+  canUseFeature,
+  checkPlanFeature,
+  checkPlanFeatureForSession,
+  getClientCreateCheckForSession,
+  getPlanFeaturesForSession,
+  requireFeature,
+} from "./guards";
+export {
+  formatClientLimit,
+  formatClientUsage,
+  getDefaultPlanKey,
+  getEnabledModuleLabels,
+  getFeatureUpgradeMessage,
+  getMinimumPlanForFeature,
+  getPlanFeatures,
+  getPlanLimit,
+  getPricingHighlights,
+  getPricingPlanBlockReason,
+  getRequiredPlanLabel,
+  isFeatureEnabled,
+  planMeetsMinimum,
+} from "./features";
+export {
+  getClientLimitUsage,
+  getClientLimitUsageForSession,
+  getCurrentPlan,
+  getOrganizationPlanContext,
+  getOrganizationPlanContextForSession,
+  getOrganizationPlanUsageSummary,
+} from "./queries";
+export type {
+  ActivityFeedLevel,
+  ClientLimitUsage,
+  OrganizationPlanContext,
+  OrganizationPlanUsageSummary,
+  PlanFeatureCheckResult,
+  PlanFeatureKey,
+  PlanFeatures,
+  PlanLimitCheckResult,
+  PlanLimitKey,
+} from "./types";

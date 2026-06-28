@@ -1,0 +1,393 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { recordActivityEvent } from "@/lib/activity/record";
+import { requireSession } from "@/lib/auth/session";
+import { getAppUrl } from "@/lib/env";
+import {
+  canAssignRole,
+  canInviteTeamMembers,
+  canManageOrganizationSettings,
+  canManageTeamMember,
+  getInvitableRoles,
+  getAssignableRoles,
+} from "@/lib/team/guards";
+import {
+  countActiveOwners,
+  getInvitationByToken,
+  getTeamMemberById,
+} from "@/lib/team/queries";
+import { buildInviteUrl } from "@/lib/team/types";
+import { assertCanInviteTeamMember, canAcceptTeamInvite } from "@/lib/seats/guards";
+import { AuthorizationError } from "@/lib/rbac/guards";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import type { Database, InviteRole, UserRole } from "@/types/database";
+
+type TeamInvitationInsert = Database["public"]["Tables"]["team_invitations"]["Insert"];
+
+export type TeamActionState = {
+  error?: string;
+  success?: string;
+  inviteUrl?: string;
+};
+
+export type AcceptInviteActionState = {
+  error?: string;
+};
+
+const inviteSchema = z.object({
+  email: z.string().email("Enter a valid email address."),
+  role: z.enum(["admin", "staff", "viewer"] as const),
+});
+
+const roleSchema = z.object({
+  userId: z.string().uuid(),
+  role: z.enum(["owner", "admin", "staff", "viewer"] as const),
+});
+
+const acceptInviteSchema = z.object({
+  token: z.string().min(1),
+  fullName: z.string().trim().min(2, "Full name is required."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
+});
+
+const organizationSchema = z.object({
+  name: z.string().trim().min(2, "Organization name is required."),
+});
+
+function assertInvitableRole(session: Awaited<ReturnType<typeof requireSession>>, role: InviteRole): void {
+  if (!getInvitableRoles(session).includes(role)) {
+    throw new AuthorizationError();
+  }
+}
+
+/** Invite a team member — Owner/Admin only. */
+export async function inviteTeamMemberAction(
+  _prevState: TeamActionState,
+  formData: FormData,
+): Promise<TeamActionState> {
+  const session = await requireSession();
+
+  if (!canInviteTeamMembers(session)) {
+    throw new AuthorizationError();
+  }
+
+  const parsed = inviteSchema.safeParse({
+    email: formData.get("email"),
+    role: formData.get("role"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid invitation data." };
+  }
+
+  assertInvitableRole(session, parsed.data.role);
+
+  const seatCheck = await assertCanInviteTeamMember(
+    session.organization.id,
+    session.user.id,
+  );
+
+  if (!seatCheck.allowed) {
+    return { error: seatCheck.message };
+  }
+
+  const admin = createAdminClient();
+  const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const payload: TeamInvitationInsert = {
+    organization_id: session.organization.id,
+    email: parsed.data.email.toLowerCase(),
+    role: parsed.data.role,
+    token,
+    invited_by_user_id: session.user.id,
+    expires_at: expiresAt,
+  };
+
+  const { error } = await admin.from("team_invitations").insert(payload as never);
+
+  if (error) {
+    return { error: "Unable to create invitation." };
+  }
+
+  await recordActivityEvent({
+    organizationId: session.organization.id,
+    actorUserId: session.user.id,
+    entityType: "team",
+    entityId: null,
+    action: "invitation_created",
+    title: `Invitation sent to ${parsed.data.email}`,
+    description: `Invited as ${parsed.data.role}.`,
+    metadata: { email: parsed.data.email, role: parsed.data.role },
+  });
+
+  revalidatePath("/settings/team");
+  revalidatePath("/activity");
+
+  return {
+    success: "Invitation created.",
+    inviteUrl: buildInviteUrl(token, getAppUrl()),
+  };
+}
+
+/** Change a team member role — Owner/Admin with restrictions. */
+export async function updateTeamMemberRoleAction(
+  _prevState: TeamActionState,
+  formData: FormData,
+): Promise<TeamActionState> {
+  const session = await requireSession();
+  const parsed = roleSchema.safeParse({
+    userId: formData.get("userId"),
+    role: formData.get("role"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid role data." };
+  }
+
+  const target = await getTeamMemberById(session, parsed.data.userId);
+
+  if (!target) {
+    return { error: "Team member not found." };
+  }
+
+  if (!canManageTeamMember(session, target)) {
+    throw new AuthorizationError();
+  }
+
+  if (!canAssignRole(session, parsed.data.role)) {
+    throw new AuthorizationError();
+  }
+
+  if (target.role === "owner" && parsed.data.role !== "owner") {
+    const ownerCount = await countActiveOwners(session.organization.id);
+    if (ownerCount <= 1) {
+      return { error: "Cannot change role of the last active owner." };
+    }
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("users")
+    .update({ role: parsed.data.role } as never)
+    .eq("id", target.id)
+    .eq("organization_id", session.organization.id);
+
+  if (error) {
+    return { error: "Unable to update team member role." };
+  }
+
+  await recordActivityEvent({
+    organizationId: session.organization.id,
+    actorUserId: session.user.id,
+    entityType: "team",
+    entityId: target.id,
+    action: "role_changed",
+    title: `${target.full_name} role updated`,
+    description: `Changed from ${target.role} to ${parsed.data.role}.`,
+    metadata: { userId: target.id, fromRole: target.role, toRole: parsed.data.role },
+  });
+
+  revalidatePath("/settings/team");
+  revalidatePath("/activity");
+  return { success: "Role updated." };
+}
+
+/** Disable or reactivate a team member. */
+export async function setTeamMemberStatusAction(
+  userId: string,
+  isDisabled: boolean,
+): Promise<TeamActionState> {
+  const session = await requireSession();
+  const target = await getTeamMemberById(session, userId);
+
+  if (!target) {
+    return { error: "Team member not found." };
+  }
+
+  if (!canManageTeamMember(session, target)) {
+    throw new AuthorizationError();
+  }
+
+  if (target.role === "owner" && isDisabled) {
+    const ownerCount = await countActiveOwners(session.organization.id);
+    if (ownerCount <= 1) {
+      return { error: "Cannot disable the last active owner." };
+    }
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("users")
+    .update({ is_disabled: isDisabled } as never)
+    .eq("id", target.id)
+    .eq("organization_id", session.organization.id);
+
+  if (error) {
+    return { error: "Unable to update team member status." };
+  }
+
+  await recordActivityEvent({
+    organizationId: session.organization.id,
+    actorUserId: session.user.id,
+    entityType: "team",
+    entityId: target.id,
+    action: isDisabled ? "user_disabled" : "user_reactivated",
+    title: `${target.full_name} ${isDisabled ? "disabled" : "reactivated"}`,
+    metadata: { userId: target.id, isDisabled },
+  });
+
+  revalidatePath("/settings/team");
+  revalidatePath("/activity");
+  return { success: isDisabled ? "User disabled." : "User reactivated." };
+}
+
+/** Accept a team invitation and create account. */
+export async function acceptInvitationAction(
+  _prevState: AcceptInviteActionState,
+  formData: FormData,
+): Promise<AcceptInviteActionState> {
+  const parsed = acceptInviteSchema.safeParse({
+    token: formData.get("token"),
+    fullName: formData.get("fullName"),
+    password: formData.get("password"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid registration data." };
+  }
+
+  const invitation = await getInvitationByToken(parsed.data.token);
+
+  if (!invitation) {
+    return { error: "Invitation not found." };
+  }
+
+  if (invitation.accepted_at) {
+    return { error: "This invitation has already been accepted." };
+  }
+
+  if (new Date(invitation.expires_at) < new Date()) {
+    return { error: "This invitation has expired." };
+  }
+
+  const seatCheck = await canAcceptTeamInvite(invitation.organization_id);
+
+  if (!seatCheck.allowed) {
+    return { error: seatCheck.message };
+  }
+
+  const admin = createAdminClient();
+
+  const { data: authData, error: authError } = await admin.auth.admin.createUser({
+    email: invitation.email,
+    password: parsed.data.password,
+    email_confirm: true,
+    user_metadata: { full_name: parsed.data.fullName },
+  });
+
+  if (authError || !authData.user) {
+    return { error: authError?.message ?? "Unable to create account." };
+  }
+
+  const { error: profileError } = await admin.from("users").insert({
+    auth_user_id: authData.user.id,
+    organization_id: invitation.organization_id,
+    full_name: parsed.data.fullName,
+    email: invitation.email,
+    role: invitation.role,
+    is_disabled: false,
+  } as never);
+
+  if (profileError) {
+    await admin.auth.admin.deleteUser(authData.user.id);
+    return { error: "Unable to create user profile." };
+  }
+
+  const { error: inviteError } = await admin
+    .from("team_invitations")
+    .update({ accepted_at: new Date().toISOString() } as never)
+    .eq("id", invitation.id);
+
+  if (inviteError) {
+    return { error: "Account created but invitation could not be marked accepted." };
+  }
+
+  await recordActivityEvent({
+    organizationId: invitation.organization_id,
+    actorUserId: null,
+    entityType: "team",
+    entityId: invitation.id,
+    action: "invitation_accepted",
+    title: `${parsed.data.fullName} joined the team`,
+    description: `Accepted invitation as ${invitation.role}.`,
+    metadata: { email: invitation.email, role: invitation.role },
+  });
+
+  const supabase = await createClient();
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: invitation.email,
+    password: parsed.data.password,
+  });
+
+  if (signInError) {
+    redirect("/login");
+  }
+
+  revalidatePath("/", "layout");
+  revalidatePath("/activity");
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
+}
+
+/** Update organization name — Owner/Admin only. */
+export async function updateOrganizationAction(
+  _prevState: TeamActionState,
+  formData: FormData,
+): Promise<TeamActionState> {
+  const session = await requireSession();
+
+  if (!canManageOrganizationSettings(session)) {
+    throw new AuthorizationError();
+  }
+
+  const parsed = organizationSchema.safeParse({
+    name: formData.get("name"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid organization name." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("organizations")
+    .update({ name: parsed.data.name } as never)
+    .eq("id", session.organization.id);
+
+  if (error) {
+    return { error: "Unable to update organization." };
+  }
+
+  await recordActivityEvent({
+    organizationId: session.organization.id,
+    actorUserId: session.user.id,
+    entityType: "organization",
+    entityId: session.organization.id,
+    action: "organization_updated",
+    title: "Organization name updated",
+    description: parsed.data.name,
+    metadata: { name: parsed.data.name },
+  });
+
+  revalidatePath("/settings/organization");
+  revalidatePath("/activity");
+  revalidatePath("/", "layout");
+  return { success: "Organization updated." };
+}
+
+export { getAssignableRoles, getInvitableRoles };

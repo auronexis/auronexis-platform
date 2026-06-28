@@ -1,0 +1,197 @@
+import { COMPANY_NAME, INFO_EMAIL, SALES_EMAIL, SECURITY_EMAIL, SUPPORT_EMAIL } from "@/lib/company/contact";
+
+export type LegalPageKey =
+  | "imprint"
+  | "privacy"
+  | "terms"
+  | "cookies"
+  | "securityPolicy"
+  | "subprocessors"
+  | "dataProcessingAgreement"
+  | "acceptableUse";
+
+export type LegalPageContent = {
+  title: string;
+  description: string;
+  lastUpdated: string;
+  sections: Array<{ heading: string; body: string }>;
+};
+
+export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
+  imprint: {
+    title: "Imprint",
+    description: "Legal disclosure and company information.",
+    lastUpdated: "June 2025",
+    sections: [
+      {
+        heading: "Service provider",
+        body: `${COMPANY_NAME} provides the Auroranexis operations platform for agencies and service providers. Contact: ${INFO_EMAIL}.`,
+      },
+      {
+        heading: "Support",
+        body: `General inquiries: ${INFO_EMAIL}. Product support: ${SUPPORT_EMAIL}. Security reports: ${SECURITY_EMAIL}.`,
+      },
+      {
+        heading: "Responsible for content",
+        body: `${COMPANY_NAME} — content on this platform is provided for operational use by registered workspace members and authorized portal users.`,
+      },
+    ],
+  },
+  privacy: {
+    title: "Privacy Policy",
+    description: "How we collect, use, and protect personal data.",
+    lastUpdated: "June 2025",
+    sections: [
+      {
+        heading: "Overview",
+        body: `${COMPANY_NAME} processes personal data to provide the Auroranexis SaaS platform, customer support, billing, and security operations. This policy applies to workspace users and client portal users.`,
+      },
+      {
+        heading: "Data we process",
+        body: "Account data (name, email, organization), operational data you enter (clients, reports, risks, incidents), usage and audit logs, billing identifiers via Stripe, and connector tokens stored encrypted at rest.",
+      },
+      {
+        heading: "Your rights",
+        body: "Depending on your jurisdiction you may request access, correction, export, or deletion. Workspace administrators can manage GDPR requests in the Compliance center. Contact privacy@auroranexis.com or use in-app GDPR tooling.",
+      },
+      {
+        heading: "Sub-processors",
+        body: "We use Supabase (database and auth), Vercel (hosting), Stripe (billing), Resend (email delivery), and optional OpenAI (AI features when enabled). A current sub-processor list is available on request.",
+      },
+    ],
+  },
+  terms: {
+    title: "Terms of Service",
+    description: "Terms governing use of the Auroranexis platform.",
+    lastUpdated: "June 2025",
+    sections: [
+      {
+        heading: "Acceptance",
+        body: `By creating an account or using ${COMPANY_NAME}, you agree to these Terms on behalf of yourself and your organization.`,
+      },
+      {
+        heading: "Service",
+        body: "Auroranexis provides a multi-tenant operations workspace including reporting, risk and incident tracking, automation, integrations, and optional AI-assisted features subject to your subscription plan.",
+      },
+      {
+        heading: "Acceptable use",
+        body: "You must not misuse the platform, attempt unauthorized access, upload malicious content, or use the service in violation of applicable law. You are responsible for data you store and share with your clients via the portal.",
+      },
+      {
+        heading: "Billing",
+        body: "Paid plans are billed via Stripe. Fees, renewal, and cancellation terms are shown at checkout and in your billing settings. Pilot discounts apply only for the agreed pilot period.",
+      },
+      {
+        heading: "Limitation of liability",
+        body: "The service is provided as-is during pilot and early access periods. Liability is limited to the extent permitted by applicable law. Contact legal@auroranexis.com for enterprise agreements.",
+      },
+    ],
+  },
+  cookies: {
+    title: "Cookie Policy",
+    description: "Cookies and similar technologies used on Auroranexis.",
+    lastUpdated: "June 2025",
+    sections: [
+      {
+        heading: "Essential cookies",
+        body: "We use session cookies for authentication (Supabase Auth) and security. These are required for the application to function.",
+      },
+      {
+        heading: "Preferences",
+        body: "Appearance preferences (theme, compact mode) may be stored in localStorage on your device.",
+      },
+      {
+        heading: "Analytics",
+        body: "When enabled, PostHog may set analytics cookies to understand product usage. You can disable analytics by not configuring PostHog in your deployment or by browser controls where applicable.",
+      },
+      {
+        heading: "Contact",
+        body: `Questions about cookies: ${SUPPORT_EMAIL}.`,
+      },
+    ],
+  },
+  securityPolicy: {
+    title: "Security Policy",
+    description: "Security practices and responsible disclosure for Auroranexis.",
+    lastUpdated: "June 2026",
+    sections: [
+      {
+        heading: "Scope",
+        body: `${COMPANY_NAME} maintains administrative, technical, and organizational measures appropriate for a B2B SaaS platform processing customer operational data.`,
+      },
+      {
+        heading: "Encryption and access",
+        body: "Data is encrypted in transit via TLS. Access to production systems is restricted to authorized personnel with role-based controls and audit logging.",
+      },
+      {
+        heading: "Vulnerability reporting",
+        body: `Report security issues to ${SECURITY_EMAIL}. We aim to acknowledge reports within 5 business days. Do not perform destructive testing without written approval.`,
+      },
+      {
+        heading: "Certifications",
+        body: "We describe readiness for frameworks such as SOC 2 and ISO 27001 but do not claim certifications unless explicitly published in a current attestation.",
+      },
+    ],
+  },
+  subprocessors: {
+    title: "Sub-processors",
+    description: "Third-party processors used to deliver the Auroranexis platform.",
+    lastUpdated: "June 2026",
+    sections: [
+      {
+        heading: "Current sub-processors",
+        body: "Supabase (database, authentication, storage — EU-capable regions), Vercel (application hosting), Stripe (billing), Resend (transactional email), optional OpenAI (AI features when enabled by customer).",
+      },
+      {
+        heading: "Updates",
+        body: "Material changes to sub-processors will be communicated to workspace administrators with reasonable notice. Enterprise customers may request a DPA addendum.",
+      },
+      {
+        heading: "Contact",
+        body: `Sub-processor inquiries: ${INFO_EMAIL}.`,
+      },
+    ],
+  },
+  dataProcessingAgreement: {
+    title: "Data Processing Agreement",
+    description: "Outline of data processing terms for business customers (Germany/EU).",
+    lastUpdated: "June 2026",
+    sections: [
+      {
+        heading: "Roles",
+        body: "Customer acts as controller for client and operational data entered into the workspace. Auroranexis acts as processor when handling that data on the customer's instructions.",
+      },
+      {
+        heading: "Processing purpose",
+        body: "Processing is limited to providing the Auroranexis platform, support, billing, security monitoring, and optional AI features enabled by the customer.",
+      },
+      {
+        heading: "Sub-processors and transfers",
+        body: "Sub-processors are listed in our Sub-processors page. Transfers outside the EEA, if any, use appropriate safeguards such as Standard Contractual Clauses.",
+      },
+      {
+        heading: "Execution",
+        body: `Enterprise and pilot customers may request a countersigned DPA via ${SALES_EMAIL}. This page is an outline only and does not replace a signed agreement.`,
+      },
+    ],
+  },
+  acceptableUse: {
+    title: "Acceptable Use Policy",
+    description: "Rules for acceptable use of the Auroranexis platform.",
+    lastUpdated: "June 2026",
+    sections: [
+      {
+        heading: "Permitted use",
+        body: "Use the platform for lawful business operations, client reporting, automation, and integrations within your subscription limits.",
+      },
+      {
+        heading: "Prohibited use",
+        body: "Do not attempt unauthorized access, distribute malware, scrape in violation of terms, resell access without agreement, or store unlawful content.",
+      },
+      {
+        heading: "Enforcement",
+        body: `${COMPANY_NAME} may suspend accounts that violate this policy or applicable law. Report abuse to ${SECURITY_EMAIL}.`,
+      },
+    ],
+  },
+};
