@@ -30,14 +30,25 @@ const horizontalSizeClasses = {
   lg: "h-11 w-auto max-w-[min(100%,320px)]",
 };
 
+function platformFallback(variant: BrandLogoProps["variant"]): string {
+  return variant === "light"
+    ? BRANDING_ASSETS.logoHorizontalTransparent
+    : BRANDING_ASSETS.logoHorizontalOnLight;
+}
+
 function resolveLogoSrc(
   branding: BrandLogoProps["branding"],
   layout: BrandLogoProps["layout"],
   variant: BrandLogoProps["variant"],
 ): string {
+  const onDarkSurface = variant === "light";
+
   if (layout === "horizontal") {
-    if (variant === "light" && branding.logoLightUrl) {
+    if (onDarkSurface && branding.logoLightUrl) {
       return branding.logoLightUrl;
+    }
+    if (!onDarkSurface && branding.logoDarkUrl) {
+      return branding.logoDarkUrl;
     }
     if (branding.logoHorizontalUrl) {
       return branding.logoHorizontalUrl;
@@ -45,7 +56,7 @@ function resolveLogoSrc(
     if (branding.logoUrl) {
       return branding.logoUrl;
     }
-    return BRANDING_ASSETS.logoHorizontal;
+    return platformFallback(variant);
   }
 
   if (branding.iconUrl) {
@@ -54,16 +65,16 @@ function resolveLogoSrc(
   if (branding.logoUrl) {
     return branding.logoUrl;
   }
-  if (variant === "light" && branding.logoLightUrl) {
+  if (onDarkSurface && branding.logoLightUrl) {
     return branding.logoLightUrl;
   }
-  if (variant === "dark" && branding.logoDarkUrl) {
+  if (!onDarkSurface && branding.logoDarkUrl) {
     return branding.logoDarkUrl;
   }
-  return BRANDING_ASSETS.logoHorizontal;
+  return platformFallback(variant);
 }
 
-/** Organization logo — existing /public/branding assets only (no text/CSS logos). */
+/** Organization logo — transparent/on-light assets only in UI (no logo-horizontal.png). */
 export function BrandLogo({
   branding,
   size = "md",

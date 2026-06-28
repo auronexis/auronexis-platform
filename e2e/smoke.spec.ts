@@ -60,7 +60,7 @@ test.describe("Public smoke", () => {
     await expect(page.getByRole("heading", { level: 1, name: /monitor clients/i })).toBeVisible();
   });
 
-  test("login page uses logo-horizontal on light card", async ({ page }) => {
+  test("login page uses transparent logo on light card", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
 
@@ -69,14 +69,14 @@ test.describe("Public smoke", () => {
       .filter({ has: page.getByRole("heading", { name: "Sign in" }) });
     const cardLogo = loginCard.locator("img[alt='Auroranexis logo']");
     await expect(cardLogo).toBeVisible();
-    await expect(cardLogo).toHaveAttribute("src", "/branding/logo-horizontal.png");
+    await expect(cardLogo).toHaveAttribute("src", "/branding/logo-horizontal-on-light.png");
   });
 
-  test("marketing navbar uses logo-horizontal", async ({ page }) => {
+  test("marketing navbar uses transparent logo", async ({ page }) => {
     await page.goto("/pricing");
     const headerLogo = page.locator("header img[alt='Auroranexis logo']");
     await expect(headerLogo).toBeVisible();
-    await expect(headerLogo).toHaveAttribute("src", "/branding/logo-horizontal.png");
+    await expect(headerLogo).toHaveAttribute("src", "/branding/logo-horizontal-transparent.png");
   });
 
   test("required public marketing routes stay public", async ({ page }) => {

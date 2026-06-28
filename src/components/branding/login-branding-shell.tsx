@@ -3,7 +3,8 @@ import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
 import { cn } from "@/lib/utils/cn";
 
-const PLATFORM_LOGO = BRANDING_ASSETS.logoHorizontal;
+const DARK_SURFACE_LOGO = BRANDING_ASSETS.logoHorizontalTransparent;
+const LIGHT_SURFACE_LOGO = BRANDING_ASSETS.logoHorizontalOnLight;
 
 const BRAND_TAGLINE = (
   <>
@@ -35,7 +36,7 @@ function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
         <img
-          src={PLATFORM_LOGO}
+          src={DARK_SURFACE_LOGO}
           alt="Auroranexis logo"
           className="w-[180px] object-contain object-left"
         />
@@ -72,7 +73,7 @@ export function LoginBrandingShell({
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
           <div className="mb-6 text-center">
             <img
-              src={PLATFORM_LOGO}
+              src={LIGHT_SURFACE_LOGO}
               alt="Auroranexis logo"
               className="mx-auto mb-5 w-[140px] object-contain"
             />

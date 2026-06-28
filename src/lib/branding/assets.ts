@@ -1,19 +1,24 @@
 /**
  * Canonical paths for platform branding assets in /public/branding.
  *
- * Inline UI logos: logo-horizontal.png (default), logo-horizontal-transparent.png,
- * logo-light.png, logo-dark.png only.
+ * UI logos: logo-horizontal-transparent.png (dark surfaces),
+ * logo-horizontal-on-light.png (light surfaces).
+ * logo-horizontal.png is metadata/OpenGraph only — never inline UI.
  */
 
 export const BRANDING_ASSETS = {
-  /** Default platform logo — marketing, login, footer, loading, public pages. */
+  /** Metadata / OpenGraph only — black background, not for inline UI. */
   logoHorizontal: "/branding/logo-horizontal.png",
+  /** @deprecated Metadata only — use logoHorizontalTransparent or logoHorizontalOnLight in UI. */
+  approvedCompositeLogo: "/branding/logo-horizontal.png",
+
+  /** Dark UI — navbar, footer, login left panel. */
   logoHorizontalTransparent: "/branding/logo-horizontal-transparent.png",
+  /** Light UI — white login card, loading screen. */
+  logoHorizontalOnLight: "/branding/logo-horizontal-on-light.png",
+
   logoLight: "/branding/logo-light.png",
   logoDark: "/branding/logo-dark.png",
-
-  /** @deprecated Use logoHorizontal */
-  approvedCompositeLogo: "/branding/logo-horizontal.png",
 
   loginBackground: "/branding/login-screen.png",
   favicon: "/favicon.svg",
@@ -27,8 +32,8 @@ export const BRANDING_ASSETS = {
 export type BrandingAssetKey = keyof typeof BRANDING_ASSETS;
 
 export const INLINE_BRANDING_ASSETS = [
-  BRANDING_ASSETS.logoHorizontal,
   BRANDING_ASSETS.logoHorizontalTransparent,
+  BRANDING_ASSETS.logoHorizontalOnLight,
   BRANDING_ASSETS.logoLight,
   BRANDING_ASSETS.logoDark,
 ] as const;

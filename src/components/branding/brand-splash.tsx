@@ -34,7 +34,7 @@ function LoadingIndicator() {
   );
 }
 
-/** In-app loading state — logo-horizontal.png on light card. */
+/** In-app loading state — logo-horizontal-on-light.png on light card. */
 export function BrandSplash({ fullScreen = false, className }: BrandSplashProps) {
   return (
     <div
@@ -55,7 +55,7 @@ export function BrandSplash({ fullScreen = false, className }: BrandSplashProps)
         )}
       >
         <img
-          src={BRANDING_ASSETS.logoHorizontal}
+          src={BRANDING_ASSETS.logoHorizontalOnLight}
           alt="Auroranexis logo"
           className="mx-auto w-[150px] object-contain"
         />

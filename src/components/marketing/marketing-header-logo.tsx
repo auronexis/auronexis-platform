@@ -5,11 +5,11 @@ type MarketingHeaderLogoProps = {
   className?: string;
 };
 
-/** Marketing nav — logo-horizontal.png on dark header. */
+/** Marketing nav — logo-horizontal-transparent.png on dark header. */
 export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
   return (
     <img
-      src={BRANDING_ASSETS.logoHorizontal}
+      src={BRANDING_ASSETS.logoHorizontalTransparent}
       alt="Auroranexis logo"
       className={cn("h-[32px] w-auto shrink-0 object-contain object-left sm:h-[36px]", className)}
     />
