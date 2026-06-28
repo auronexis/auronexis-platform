@@ -33,6 +33,8 @@ function LoginDecorativePanel({
           src={BRANDING_ASSETS.logoLight}
           alt="Auroranexis logo"
           className="mb-6 h-11 w-auto max-w-[280px] object-contain object-left"
+          width={280}
+          height={48}
         />
         <p className="max-w-sm text-sm leading-relaxed text-primary-foreground/85">{subtitle}</p>
       </div>
@@ -69,9 +71,11 @@ export function LoginBrandingShell({
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex justify-center">
               <img
-                src={BRANDING_ASSETS.logoLight}
+                src={BRANDING_ASSETS.logoHorizontal}
                 alt="Auroranexis logo"
                 className="h-11 w-auto max-w-[min(100%,280px)] object-contain"
+                width={280}
+                height={48}
               />
             </div>
             <h1 className="text-2xl font-semibold text-navy-950">Sign in</h1>

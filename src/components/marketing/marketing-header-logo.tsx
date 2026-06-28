@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { cn } from "@/lib/utils/cn";
-
-const MARKETING_LOGO_SRC = "/branding/logo-light.svg";
 
 type MarketingHeaderLogoProps = {
   className?: string;
 };
 
-/** Production marketing nav logo — absolute public path only. */
+/** Production marketing nav logo — real Auroranexis horizontal PNG. */
 export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
   const [failed, setFailed] = useState(false);
 
@@ -28,7 +27,7 @@ export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
 
   return (
     <img
-      src={MARKETING_LOGO_SRC}
+      src={BRANDING_ASSETS.logoHorizontal}
       alt="Auroranexis logo"
       className={cn(
         "shrink-0 object-contain object-left max-w-[min(100%,320px)]",

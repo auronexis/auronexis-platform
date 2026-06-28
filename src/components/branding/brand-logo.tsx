@@ -1,5 +1,4 @@
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
-import { getCompanyInitial } from "@/lib/branding/defaults";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { cn } from "@/lib/utils/cn";
 
@@ -7,7 +6,6 @@ type BrandLogoProps = {
   branding: Pick<
     ResolvedOrganizationBranding,
     | "companyName"
-    | "primaryColor"
     | "logoUrl"
     | "logoLightUrl"
     | "logoDarkUrl"
@@ -24,12 +22,6 @@ const markSizeClasses = {
   sm: "h-8 w-8",
   md: "h-9 w-9",
   lg: "h-11 w-11",
-};
-
-const markFallbackClasses = {
-  sm: "h-8 w-8 rounded-lg",
-  md: "h-9 w-9 rounded-xl",
-  lg: "h-11 w-11 rounded-xl",
 };
 
 /** Full horizontal lockup — preserve artwork proportions; avoid max-width clipping. */
@@ -59,10 +51,10 @@ function resolveLogoSrc(
     return branding.logoUrl;
   }
 
-  return BRANDING_ASSETS.iconMark;
+  return BRANDING_ASSETS.icon512;
 }
 
-/** Organization logo mark or horizontal wordmark with platform asset fallbacks. */
+/** Organization logo mark or horizontal wordmark with platform PNG fallbacks. */
 export function BrandLogo({
   branding,
   size = "md",
@@ -72,31 +64,15 @@ export function BrandLogo({
 }: BrandLogoProps) {
   const src = resolveLogoSrc(branding, layout, variant);
 
-  if (src) {
-    return (
-      <img
-        src={src}
-        alt={`${branding.companyName} logo`}
-        className={cn(
-          "shrink-0 object-contain object-left",
-          layout === "horizontal" ? horizontalSizeClasses[size] : markSizeClasses[size],
-          className,
-        )}
-      />
-    );
-  }
-
   return (
-    <div
+    <img
+      src={src}
+      alt={`${branding.companyName} logo`}
       className={cn(
-        "flex shrink-0 items-center justify-center text-sm font-bold tracking-tight text-white",
-        markFallbackClasses[size],
+        "shrink-0 object-contain object-left",
+        layout === "horizontal" ? horizontalSizeClasses[size] : markSizeClasses[size],
         className,
       )}
-      style={{ backgroundColor: branding.primaryColor }}
-      aria-hidden
-    >
-      {getCompanyInitial(branding.companyName)}
-    </div>
+    />
   );
 }
