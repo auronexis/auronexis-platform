@@ -1,11 +1,7 @@
 import type { ReactNode } from "react";
-import { BrandLogo } from "@/components/branding/brand-logo";
-import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
-import {
-  getLoginDisplaySubtitle,
-  getLoginDisplayTitle,
-} from "@/lib/branding/defaults";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
+import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
+import { getLoginDisplaySubtitle } from "@/lib/branding/defaults";
 import { cn } from "@/lib/utils/cn";
 
 type LoginBrandingShellProps = {
@@ -17,11 +13,9 @@ type LoginBrandingShellProps = {
 
 function LoginDecorativePanel({
   backgroundUrl,
-  title,
   subtitle,
 }: {
   backgroundUrl: string;
-  title: string;
   subtitle: string;
 }) {
   return (
@@ -35,8 +29,12 @@ function LoginDecorativePanel({
       />
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
-        <p className="text-lg font-semibold tracking-tight">{title}</p>
-        <p className="mt-2 max-w-sm text-sm leading-relaxed text-primary-foreground/85">{subtitle}</p>
+        <img
+          src={BRANDING_ASSETS.logoLight}
+          alt="Auroranexis logo"
+          className="mb-6 h-11 w-auto max-w-[280px] object-contain object-left"
+        />
+        <p className="max-w-sm text-sm leading-relaxed text-primary-foreground/85">{subtitle}</p>
       </div>
     </aside>
   );
@@ -48,14 +46,13 @@ export function LoginBrandingShell({
   footer,
   variant = "staff",
 }: LoginBrandingShellProps) {
-  const title = getLoginDisplayTitle(branding);
   const subtitle = getLoginDisplaySubtitle(branding);
   const loginBackground = branding.loginBackgroundUrl ?? BRANDING_ASSETS.loginScreen;
 
   if (variant === "portal") {
     return (
       <div className="flex min-h-screen bg-surface-1">
-        <LoginDecorativePanel backgroundUrl={loginBackground} title={title} subtitle={subtitle} />
+        <LoginDecorativePanel backgroundUrl={loginBackground} subtitle={subtitle} />
         <div className="flex min-h-screen flex-1 flex-col">
           <div className="flex flex-1 items-center justify-center px-4 py-12">{children}</div>
           {footer}
@@ -66,14 +63,18 @@ export function LoginBrandingShell({
 
   return (
     <div className="flex min-h-screen bg-surface-1">
-      <LoginDecorativePanel backgroundUrl={loginBackground} title={title} subtitle={subtitle} />
+      <LoginDecorativePanel backgroundUrl={loginBackground} subtitle={subtitle} />
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex justify-center">
-              <BrandLogo branding={branding} layout="horizontal" className="h-11 w-auto" />
+              <img
+                src={BRANDING_ASSETS.logoLight}
+                alt="Auroranexis logo"
+                className="h-11 w-auto max-w-[min(100%,280px)] object-contain"
+              />
             </div>
-            <h1 className="text-2xl font-semibold text-navy-950">{title}</h1>
+            <h1 className="text-2xl font-semibold text-navy-950">Sign in</h1>
             <p className="mt-2 text-sm text-muted">{subtitle}</p>
           </div>
           {children}

@@ -60,6 +60,18 @@ test.describe("Public smoke", () => {
     await expect(page.getByRole("heading", { level: 1, name: /monitor clients/i })).toBeVisible();
   });
 
+  test("login page uses Auroranexis branding logo", async ({ page }) => {
+    const assetResponse = await page.request.get("/branding/logo-light.svg");
+    const svgBody = await assetResponse.text();
+    expect(svgBody).toContain("Auroranexis");
+
+    await page.goto("/login");
+    const loginLogo = page.locator("img[alt='Auroranexis logo']");
+    await expect(loginLogo).toBeVisible();
+    await expect(loginLogo).toHaveAttribute("src", "/branding/logo-light.svg");
+    await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
+  });
+
   test("marketing navbar logo uses production branding path", async ({ page }) => {
     const assetResponse = await page.request.get("/branding/logo-light.svg");
     expect(assetResponse.ok()).toBeTruthy();

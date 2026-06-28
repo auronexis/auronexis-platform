@@ -5,11 +5,8 @@ import { PortalLoginForm } from "@/components/client-portal/portal-login-form";
 import { PortalFooter } from "@/components/client-portal/portal-ui";
 import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
 import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
+import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { getClientPortalSession } from "@/lib/client-portal/session";
-import {
-  getPlatformBrandingFallback,
-  getPublishedBrandingByHostname,
-} from "@/lib/white-label/queries";
 
 export const metadata: Metadata = {
   title: "Client Portal Login",
@@ -23,8 +20,7 @@ export default async function ClientPortalLoginPage() {
   }
 
   const host = (await headers()).get("host") ?? "";
-  const branding =
-    (await getPublishedBrandingByHostname(host)) ?? getPlatformBrandingFallback();
+  const branding = await resolveAuthBranding(host);
 
   return (
     <>

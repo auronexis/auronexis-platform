@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
 import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
+import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { getSession } from "@/lib/auth/session";
-import {
-  getPlatformBrandingFallback,
-  getPublishedBrandingByHostname,
-} from "@/lib/white-label/queries";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -23,8 +20,7 @@ export default async function LoginPage() {
   }
 
   const host = (await headers()).get("host") ?? "";
-  const branding =
-    (await getPublishedBrandingByHostname(host)) ?? getPlatformBrandingFallback();
+  const branding = await resolveAuthBranding(host);
 
   return (
     <>
