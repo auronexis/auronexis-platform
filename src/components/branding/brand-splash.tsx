@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils/cn";
 type BrandSplashProps = {
   fullScreen?: boolean;
   className?: string;
+  variant?: "light" | "dark";
 };
 
 function LoadingIndicator() {
@@ -33,8 +34,12 @@ function LoadingIndicator() {
   );
 }
 
-/** In-app loading state — logo-horizontal-on-light.png on light card. */
-export function BrandSplash({ fullScreen = false, className }: BrandSplashProps) {
+/** In-app loading state — light card uses on-light logo; dark/dashboard uses transparent logo. */
+export function BrandSplash({
+  fullScreen = false,
+  className,
+  variant = "light",
+}: BrandSplashProps) {
   return (
     <div
       className={cn(
@@ -53,13 +58,21 @@ export function BrandSplash({ fullScreen = false, className }: BrandSplashProps)
           "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
         )}
       >
-        <div className="mx-auto flex w-[150px] max-w-[150px] justify-center overflow-hidden">
+        {variant === "dark" ? (
           <img
-            src="/branding/logo-horizontal-on-light.png"
+            src="/branding/logo-horizontal-transparent.png"
             alt="Auroranexis logo"
-            className="block h-auto max-h-[70px] w-full object-contain"
+            className="mx-auto h-auto w-[150px] max-w-[150px] object-contain opacity-90"
           />
-        </div>
+        ) : (
+          <div className="mx-auto flex w-[150px] max-w-[150px] justify-center overflow-hidden">
+            <img
+              src="/branding/logo-horizontal-on-light.png"
+              alt="Auroranexis logo"
+              className="block h-auto max-h-[70px] w-full object-contain"
+            />
+          </div>
+        )}
         <p className="mt-2 text-sm text-slate-600">Loading workspace...</p>
         <LoadingIndicator />
       </div>
