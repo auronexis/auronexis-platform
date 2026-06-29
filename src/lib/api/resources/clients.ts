@@ -10,14 +10,24 @@ import { z } from "zod";
 const clientBodySchema = z.object({
   name: z.string().trim().min(2),
   status: z.enum(["active", "watch", "critical", "archived"]).optional(),
+  ownerId: z.string().uuid().optional().nullable(),
+  healthScore: z.number().int().min(0).max(100).optional().nullable(),
   contactName: z.string().trim().optional().nullable(),
   contactEmail: z.string().email().optional().nullable(),
   notes: z.string().trim().optional().nullable(),
 });
 
-export async function apiListClients(ctx: ApiContext) {
+export async function apiListClients(
+  ctx: ApiContext,
+  options?: { status?: string; search?: string },
+) {
   const session = apiContextToSession(ctx);
-  return listClients(session);
+  return listClients(session, {
+    status: clientBodySchema.shape.status.safeParse(options?.status).success
+      ? (options?.status as "active" | "watch" | "critical" | "archived")
+      : undefined,
+    search: options?.search,
+  });
 }
 
 export async function apiGetClient(ctx: ApiContext, clientId: string) {
@@ -39,6 +49,8 @@ export async function apiCreateClient(ctx: ApiContext, body: unknown) {
       organization_id: ctx.organization.id,
       name: parsed.name,
       status: parsed.status ?? "active",
+      owner_id: parsed.ownerId ?? null,
+      health_score: parsed.healthScore ?? null,
       contact_name: parsed.contactName ?? null,
       contact_email: parsed.contactEmail ?? null,
       notes: parsed.notes ?? null,
@@ -76,6 +88,8 @@ export async function apiUpdateClient(ctx: ApiContext, clientId: string, body: u
     .update({
       ...(parsed.name ? { name: parsed.name } : {}),
       ...(parsed.status ? { status: parsed.status } : {}),
+      ...(parsed.ownerId !== undefined ? { owner_id: parsed.ownerId } : {}),
+      ...(parsed.healthScore !== undefined ? { health_score: parsed.healthScore } : {}),
       ...(parsed.contactName !== undefined ? { contact_name: parsed.contactName } : {}),
       ...(parsed.contactEmail !== undefined ? { contact_email: parsed.contactEmail } : {}),
       ...(parsed.notes !== undefined ? { notes: parsed.notes } : {}),

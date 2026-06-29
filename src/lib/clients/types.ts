@@ -8,7 +8,19 @@ export type ClientView = ClientWithoutRevenue & {
   monthly_revenue?: number | null;
 };
 
+export type ClientOwner = {
+  id: string;
+  full_name: string;
+};
+
+export type ClientWithRelations = ClientView & {
+  owner: ClientOwner | null;
+};
+
 export const CLIENT_STATUSES: ClientStatus[] = ["active", "watch", "critical", "archived"];
+
+/** Statuses shown in list filters (excludes archived — use dedicated archived filter). */
+export const CLIENT_LIST_STATUSES: ClientStatus[] = ["active", "watch", "critical"];
 
 export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
   active: "Active",
@@ -18,10 +30,13 @@ export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
 };
 
 const BASE_COLUMNS =
-  "id, organization_id, name, status, contact_name, contact_email, notes, created_at, updated_at";
+  "id, organization_id, name, status, owner_id, health_score, contact_name, contact_email, notes, created_at, updated_at";
 
 export const CLIENT_SELECT_COLUMNS = BASE_COLUMNS;
 export const CLIENT_SELECT_COLUMNS_WITH_REVENUE = `${BASE_COLUMNS}, monthly_revenue`;
+
+export const CLIENT_LIST_SELECT = `${CLIENT_SELECT_COLUMNS}, owner:users!clients_owner_id_fkey(id, full_name)`;
+export const CLIENT_LIST_SELECT_WITH_REVENUE = `${CLIENT_SELECT_COLUMNS_WITH_REVENUE}, owner:users!clients_owner_id_fkey(id, full_name)`;
 
 export function formatClientRevenue(value: number | null | undefined): string {
   if (value == null) {
@@ -41,4 +56,28 @@ export function formatClientDate(value: string): string {
     day: "numeric",
     year: "numeric",
   }).format(new Date(value));
+}
+
+export function formatHealthScore(value: number | null | undefined): string {
+  if (value == null) {
+    return "—";
+  }
+
+  return String(value);
+}
+
+export function healthScoreTone(value: number | null | undefined): "healthy" | "watch" | "critical" | "muted" {
+  if (value == null) {
+    return "muted";
+  }
+
+  if (value >= 70) {
+    return "healthy";
+  }
+
+  if (value >= 40) {
+    return "watch";
+  }
+
+  return "critical";
 }

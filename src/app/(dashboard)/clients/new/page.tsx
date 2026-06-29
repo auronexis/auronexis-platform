@@ -5,6 +5,7 @@ import { ClientForm } from "@/components/clients/client-form";
 import { SeatLimitWarning } from "@/components/seats/seat-limit-warning";
 import { PageHeader } from "@/components/layout/page-header";
 import { createClientAction } from "@/lib/clients/actions";
+import { listOrgUsers } from "@/lib/clients/queries";
 import { requireSession } from "@/lib/auth/session";
 import { getClientCreateCheckForSession } from "@/lib/plans/guards";
 import { canAccessModule, canViewRevenue } from "@/lib/rbac/permissions";
@@ -23,6 +24,7 @@ export default async function NewClientPage() {
   }
 
   const clientLimitCheck = await getClientCreateCheckForSession(session);
+  const orgUsers = await listOrgUsers(session);
 
   return (
     <>
@@ -45,6 +47,8 @@ export default async function NewClientPage() {
       <div className="max-w-3xl rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
         <ClientForm
           action={createClientAction}
+          orgUsers={orgUsers}
+          defaultOwnerId={session.user.id}
           showRevenue={canViewRevenue(session.role)}
           submitLabel="Create client"
           pendingLabel="Creating…"

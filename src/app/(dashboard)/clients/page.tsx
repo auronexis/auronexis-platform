@@ -1,30 +1,38 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { ClientFilters } from "@/components/clients/client-filters";
 import { ClientList } from "@/components/clients/client-list";
 import { PageHeader } from "@/components/layout/page-header";
-import { ArchiveFilterTabs } from "@/components/ui/archive-filter-tabs";
 import { Button } from "@/components/ui/button";
 import { listClients } from "@/lib/clients/queries";
 import { requireSession } from "@/lib/auth/session";
-import { canAccessModule, canViewRevenue } from "@/lib/rbac/permissions";
+import { canAccessModule } from "@/lib/rbac/permissions";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
+import { CLIENT_STATUSES } from "@/lib/clients/types";
+import type { ClientStatus } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "Clients",
 };
 
 type ClientsPageProps = {
-  searchParams: Promise<{ archived?: string }>;
+  searchParams: Promise<{ status?: string; q?: string }>;
 };
 
 export default async function ClientsPage({ searchParams }: ClientsPageProps) {
   await requireModuleAccess("clients");
   const session = await requireSession();
   const params = await searchParams;
-  const includeArchived = params.archived === "1";
-  const clients = await listClients(session, { includeArchived });
-  const showRevenue = canViewRevenue(session.role);
+  const status = CLIENT_STATUSES.includes(params.status as ClientStatus)
+    ? (params.status as ClientStatus)
+    : undefined;
+  const search = params.q?.trim() || undefined;
+  const clients = await listClients(session, { status, search });
   const canCreate = canAccessModule(session.role, "clients", "create");
+  const canManage =
+    canAccessModule(session.role, "clients", "update") ||
+    canAccessModule(session.role, "clients", "delete");
 
   return (
     <>
@@ -35,20 +43,17 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
         action={
           canCreate ? (
             <Link href="/clients/new">
-              <Button>Add client</Button>
+              <Button>Add Client</Button>
             </Link>
           ) : undefined
         }
       />
 
-      <ArchiveFilterTabs
-        tabs={[
-          { label: "Active clients", href: "/clients", active: !includeArchived },
-          { label: "Include archived", href: "/clients?archived=1", active: includeArchived },
-        ]}
-      />
+      <Suspense fallback={null}>
+        <ClientFilters />
+      </Suspense>
 
-      <ClientList clients={clients} showRevenue={showRevenue} />
+      <ClientList clients={clients} canManage={canManage} />
     </>
   );
 }

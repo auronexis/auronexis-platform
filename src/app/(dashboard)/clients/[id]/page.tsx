@@ -5,7 +5,8 @@ import { ActivityTimeline } from "@/components/activity/activity-timeline";
 import { ClientSuccessSection } from "@/components/clients/success/client-success-section";
 import { PredictiveIntelligenceSection } from "@/components/predictive/predictive-client-section";
 import { ClientKnowledgeSection } from "@/components/knowledge/client-knowledge-section";
-import { ArchiveClientButton } from "@/components/clients/archive-client-button";
+import { ClientRowActions } from "@/components/clients/client-row-actions";
+import { ClientHealthScore } from "@/components/clients/client-health-score";
 import { ClientForm } from "@/components/clients/client-form";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { IncidentStatusBadge } from "@/components/incidents/incident-status-badge";
@@ -44,7 +45,7 @@ import { canManagePortalUsers } from "@/lib/client-portal/guards";
 import { listPortalUsersForClient } from "@/lib/client-portal/queries";
 import { getClientOverview } from "@/lib/client-overview/queries";
 import { updateClientAction } from "@/lib/clients/actions";
-import { getClientById } from "@/lib/clients";
+import { getClientById, listOrgUsers } from "@/lib/clients";
 import { formatClientDate } from "@/lib/clients/types";
 import { formatIncidentDate } from "@/lib/incidents/types";
 import { formatMargin, formatCurrency } from "@/lib/profitability/types";
@@ -81,12 +82,14 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const { id } = await params;
   const canManagePortal = canManagePortalUsers(session);
   const canManageSla = canManageOrganizationSettings(session);
+  const canEdit = canAccessModule(session.role, "clients", "update");
 
-  const [client, overview, portalUsers, slaPolicies] = await Promise.all([
+  const [client, overview, portalUsers, slaPolicies, orgUsers] = await Promise.all([
     getClientById(session, id),
     getClientOverview(session, id),
     canManagePortal ? listPortalUsersForClient(session, id) : Promise.resolve([]),
     listSlaPolicies(session),
+    canEdit ? listOrgUsers(session) : Promise.resolve([]),
   ]);
 
   if (!client) {
@@ -99,11 +102,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   );
 
   const showRevenue = canViewRevenue(session.role);
-  const canEdit = canAccessModule(session.role, "clients", "update");
-  const canArchive =
-    canAccessModule(session.role, "clients", "delete") && client.status !== "archived";
+  const canManage =
+    canAccessModule(session.role, "clients", "update") ||
+    canAccessModule(session.role, "clients", "delete");
   const boundUpdateAction = updateClientAction.bind(null, client.id);
   const profitability = overview.kpis.profitability;
+  const ownerName =
+    orgUsers.find((user) => user.id === client.owner_id)?.full_name ?? "—";
 
   const metadataRail = (
     <DetailMetadataRail title="Client overview">
@@ -112,7 +117,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       </DetailMetadataItem>
       <DetailMetadataItem label="Contact">{client.contact_name ?? "—"}</DetailMetadataItem>
       <DetailMetadataItem label="Email">{client.contact_email ?? "—"}</DetailMetadataItem>
-      <DetailMetadataItem label="Health">
+      <DetailMetadataItem label="Owner">{ownerName}</DetailMetadataItem>
+      <DetailMetadataItem label="Health score">
+        <ClientHealthScore score={client.health_score} />
+      </DetailMetadataItem>
+      <DetailMetadataItem label="Computed health">
         <ClientHealthBadge health={profitability?.health ?? "watch"} />
       </DetailMetadataItem>
       <DetailMetadataItem label="Open risks">{overview.kpis.openRisksCount}</DetailMetadataItem>
@@ -182,6 +191,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             </DetailMetadataItem>
             <DetailMetadataItem label="Contact person">{client.contact_name ?? "—"}</DetailMetadataItem>
             <DetailMetadataItem label="Contact email">{client.contact_email ?? "—"}</DetailMetadataItem>
+            <DetailMetadataItem label="Owner">{ownerName}</DetailMetadataItem>
+            <DetailMetadataItem label="Health score">
+              <ClientHealthScore score={client.health_score} />
+            </DetailMetadataItem>
           </dl>
         </DetailSection>
 
@@ -369,19 +382,26 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <ClientForm
                 action={boundUpdateAction}
                 client={client}
+                orgUsers={orgUsers}
                 showRevenue={showRevenue}
                 submitLabel="Save changes"
                 pendingLabel="Saving…"
               />
             </DetailSection>
 
-            {canArchive ? (
+            {canManage ? (
               <DetailActionSection
-                title="Archive client"
-                description="Archived clients are removed from the active list but remain in the system."
+                title="Client actions"
+                description="Archive to hide from active lists, or permanently delete the client record."
                 variant="danger"
               >
-                <ArchiveClientButton clientId={client.id} clientName={client.name} />
+                <ClientRowActions
+                  clientId={client.id}
+                  clientName={client.name}
+                  canManage={canManage}
+                  isArchived={client.status === "archived"}
+                  variant="detail"
+                />
               </DetailActionSection>
             ) : null}
           </>

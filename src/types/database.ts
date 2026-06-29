@@ -270,6 +270,8 @@ export type Database = {
           organization_id: string;
           name: string;
           status: ClientStatus;
+          owner_id: string | null;
+          health_score: number | null;
           contact_name: string | null;
           contact_email: string | null;
           monthly_revenue: number | null;
@@ -283,6 +285,8 @@ export type Database = {
           organization_id: string;
           name: string;
           status?: ClientStatus;
+          owner_id?: string | null;
+          health_score?: number | null;
           contact_name?: string | null;
           contact_email?: string | null;
           monthly_revenue?: number | null;
@@ -296,6 +300,8 @@ export type Database = {
           organization_id?: string;
           name?: string;
           status?: ClientStatus;
+          owner_id?: string | null;
+          health_score?: number | null;
           contact_name?: string | null;
           contact_email?: string | null;
           monthly_revenue?: number | null;
@@ -310,6 +316,13 @@ export type Database = {
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "clients_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
           {

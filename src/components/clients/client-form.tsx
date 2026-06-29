@@ -15,6 +15,7 @@ import type { ClientActionState } from "@/lib/clients/actions";
 import type { ClientView } from "@/lib/clients/types";
 import { formGrid } from "@/lib/ui/form-tokens";
 import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
+import type { AppUser } from "@/types/database";
 
 type ClientFormProps = {
   action: (
@@ -22,6 +23,8 @@ type ClientFormProps = {
     formData: FormData,
   ) => Promise<ClientActionState>;
   client?: ClientView;
+  orgUsers?: Pick<AppUser, "id" | "full_name">[];
+  defaultOwnerId?: string;
   showRevenue: boolean;
   submitLabel: string;
   pendingLabel: string;
@@ -33,12 +36,15 @@ const initialState: ClientActionState = {};
 export function ClientForm({
   action,
   client,
+  orgUsers = [],
+  defaultOwnerId,
   showRevenue,
   submitLabel,
   pendingLabel,
   disabled = false,
 }: ClientFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialState);
+  const defaultOwner = client?.owner_id ?? defaultOwnerId ?? orgUsers[0]?.id ?? "";
 
   useFormActionFeedback(state, isPending, { successMessage: "Client updated" });
 
@@ -65,6 +71,32 @@ export function ClientForm({
                 value: status,
                 label: CLIENT_STATUS_LABELS[status],
               }))}
+            />
+            {orgUsers.length > 0 ? (
+              <Select
+                id="ownerId"
+                name="ownerId"
+                label="Owner"
+                defaultValue={defaultOwner}
+                disabled={disabled}
+                options={orgUsers.map((user) => ({
+                  value: user.id,
+                  label: user.full_name,
+                }))}
+              />
+            ) : null}
+            <Input
+              name="healthScore"
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              label="Health score"
+              defaultValue={
+                client?.health_score != null ? String(client.health_score) : ""
+              }
+              placeholder="0–100"
+              disabled={disabled}
             />
           </div>
         </FormSection>

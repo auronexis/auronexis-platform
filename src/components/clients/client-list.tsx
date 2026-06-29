@@ -1,3 +1,5 @@
+import { ClientHealthScore } from "@/components/clients/client-health-score";
+import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { ClickableRow } from "@/components/ui/clickable-row";
 import {
@@ -9,20 +11,20 @@ import {
   AuroraTableHead,
   AuroraTableHeaderCell,
 } from "@/components/ui/table";
-import type { ClientView } from "@/lib/clients/types";
-import { formatClientDate, formatClientRevenue } from "@/lib/clients/types";
+import type { ClientWithRelations } from "@/lib/clients/types";
+import { formatClientDate } from "@/lib/clients/types";
 
 type ClientListProps = {
-  clients: ClientView[];
-  showRevenue: boolean;
+  clients: ClientWithRelations[];
+  canManage: boolean;
 };
 
-export function ClientList({ clients, showRevenue }: ClientListProps) {
+export function ClientList({ clients, canManage }: ClientListProps) {
   if (clients.length === 0) {
     return (
       <AuroraTableEmpty
-        title="Waiting for your first client"
-        description="Add an agency customer to start monitoring operational health across your portfolio."
+        title="No clients yet"
+        description="Add a client to start monitoring operational health across your portfolio."
       />
     );
   }
@@ -32,11 +34,12 @@ export function ClientList({ clients, showRevenue }: ClientListProps) {
       <AuroraTable>
         <AuroraTableHead>
           <tr>
-            <AuroraTableHeaderCell>Client</AuroraTableHeaderCell>
+            <AuroraTableHeaderCell>Name</AuroraTableHeaderCell>
             <AuroraTableHeaderCell>Status</AuroraTableHeaderCell>
-            <AuroraTableHeaderCell>Contact</AuroraTableHeaderCell>
-            {showRevenue ? <AuroraTableHeaderCell>Monthly revenue</AuroraTableHeaderCell> : null}
-            <AuroraTableHeaderCell>Updated</AuroraTableHeaderCell>
+            <AuroraTableHeaderCell>Health</AuroraTableHeaderCell>
+            <AuroraTableHeaderCell>Owner</AuroraTableHeaderCell>
+            <AuroraTableHeaderCell>Created</AuroraTableHeaderCell>
+            {canManage ? <AuroraTableHeaderCell>Actions</AuroraTableHeaderCell> : null}
           </tr>
         </AuroraTableHead>
         <AuroraTableBody>
@@ -52,26 +55,25 @@ export function ClientList({ clients, showRevenue }: ClientListProps) {
               <AuroraTableCell className="whitespace-nowrap">
                 <ClientStatusBadge status={client.status} />
               </AuroraTableCell>
-              <AuroraTableCell>
-                {client.contact_name ? (
-                  <div>
-                    <p>{client.contact_name}</p>
-                    {client.contact_email ? (
-                      <p className="text-xs text-muted">{client.contact_email}</p>
-                    ) : null}
-                  </div>
-                ) : (
-                  <span className="text-muted">—</span>
-                )}
+              <AuroraTableCell className="whitespace-nowrap">
+                <ClientHealthScore score={client.health_score} />
               </AuroraTableCell>
-              {showRevenue ? (
-                <AuroraTableCell className="whitespace-nowrap text-muted">
-                  {formatClientRevenue(client.monthly_revenue)}
+              <AuroraTableCell className="whitespace-nowrap text-muted">
+                {client.owner?.full_name ?? "—"}
+              </AuroraTableCell>
+              <AuroraTableCell className="whitespace-nowrap text-muted">
+                {formatClientDate(client.created_at)}
+              </AuroraTableCell>
+              {canManage ? (
+                <AuroraTableCell className="whitespace-nowrap">
+                  <ClientRowActions
+                    clientId={client.id}
+                    clientName={client.name}
+                    canManage={canManage}
+                    isArchived={client.status === "archived"}
+                  />
                 </AuroraTableCell>
               ) : null}
-              <AuroraTableCell className="whitespace-nowrap text-muted">
-                {formatClientDate(client.updated_at)}
-              </AuroraTableCell>
             </ClickableRow>
           ))}
         </AuroraTableBody>

@@ -29,6 +29,25 @@ const optionalText = z
 const clientFieldsSchema = z.object({
   name: z.string().trim().min(2, "Client name is required."),
   status: z.enum(["active", "watch", "critical", "archived"] as const),
+  ownerId: optionalText,
+  healthScore: z
+    .string()
+    .optional()
+    .transform((value) => {
+      if (!value || value.trim().length === 0) {
+        return null;
+      }
+
+      const parsed = Number(value);
+      if (Number.isNaN(parsed) || parsed < 0 || parsed > 100) {
+        return Number.NaN;
+      }
+
+      return Math.round(parsed);
+    })
+    .refine((value) => value === null || !Number.isNaN(value), {
+      message: "Health score must be between 0 and 100.",
+    }),
   contactName: optionalText,
   contactEmail: z
     .string()
@@ -64,6 +83,8 @@ function parseClientForm(formData: FormData) {
   return clientFieldsSchema.safeParse({
     name: formData.get("name"),
     status: formData.get("status") ?? "active",
+    ownerId: formData.get("ownerId"),
+    healthScore: formData.get("healthScore"),
     contactName: formData.get("contactName"),
     contactEmail: formData.get("contactEmail"),
     notes: formData.get("notes"),
@@ -71,13 +92,33 @@ function parseClientForm(formData: FormData) {
   });
 }
 
+async function verifyOwnerInOrg(organizationId: string, ownerId: string | null): Promise<boolean> {
+  if (!ownerId) {
+    return true;
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", ownerId)
+    .eq("organization_id", organizationId)
+    .eq("is_disabled", false)
+    .maybeSingle();
+
+  return Boolean(data);
+}
+
 function buildClientPayload(
   parsed: z.infer<typeof clientFieldsSchema>,
   includeRevenue: boolean,
+  defaultOwnerId?: string,
 ) {
   return {
     name: parsed.name,
     status: parsed.status,
+    owner_id: parsed.ownerId ?? defaultOwnerId ?? null,
+    health_score: parsed.healthScore,
     contact_name: parsed.contactName ?? null,
     contact_email: parsed.contactEmail ?? null,
     notes: parsed.notes ?? null,
@@ -108,10 +149,15 @@ export async function createClientAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid client data." };
   }
 
+  const ownerId = parsed.data.ownerId ?? session.user.id;
+  if (!(await verifyOwnerInOrg(session.organization.id, ownerId))) {
+    return { error: "Selected owner is not valid." };
+  }
+
   const supabase = await createClient();
   const insertPayload: ClientInsert = {
     organization_id: session.organization.id,
-    ...buildClientPayload(parsed.data, canViewRevenue(session.role)),
+    ...buildClientPayload(parsed.data, canViewRevenue(session.role), ownerId),
   };
 
   const { data, error } = await supabase
@@ -168,6 +214,10 @@ export async function updateClientAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid client data." };
+  }
+
+  if (!(await verifyOwnerInOrg(session.organization.id, parsed.data.ownerId ?? null))) {
+    return { error: "Selected owner is not valid." };
   }
 
   const supabase = await createClient();
@@ -228,8 +278,15 @@ export async function updateClientAction(
   return {};
 }
 
+type ArchiveClientOptions = {
+  redirectTo?: string | false;
+};
+
 /** Archive a client (status → archived) — Owner/Admin only. */
-export async function archiveClientAction(clientId: string): Promise<void> {
+export async function archiveClientAction(
+  clientId: string,
+  options: ArchiveClientOptions = {},
+): Promise<void> {
   const session = await requireSession();
   requirePermission(session.role, "clients", "delete");
 
@@ -277,5 +334,51 @@ export async function archiveClientAction(clientId: string): Promise<void> {
   revalidatePath("/clients");
   revalidatePath(`/clients/${clientId}`);
   revalidatePath("/activity");
-  redirect("/clients");
+
+  if (options.redirectTo !== false) {
+    redirect(options.redirectTo ?? "/clients");
+  }
+}
+
+/** Permanently delete a client — Owner/Admin only. */
+export async function deleteClientAction(clientId: string): Promise<void> {
+  const session = await requireSession();
+  requirePermission(session.role, "clients", "delete");
+
+  const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from("clients")
+    .select("name")
+    .eq("id", clientId)
+    .eq("organization_id", session.organization.id)
+    .maybeSingle();
+
+  if (!existing) {
+    throw new Error("Client not found.");
+  }
+
+  const clientName = (existing as { name: string }).name;
+
+  const { error } = await supabase
+    .from("clients")
+    .delete()
+    .eq("id", clientId)
+    .eq("organization_id", session.organization.id);
+
+  if (error) {
+    throw new Error("Unable to delete client.");
+  }
+
+  await recordActivityEvent({
+    organizationId: session.organization.id,
+    actorUserId: session.user.id,
+    entityType: "client",
+    entityId: clientId,
+    action: "deleted",
+    title: `Client deleted: ${clientName}`,
+    metadata: { clientId, name: clientName },
+  });
+
+  revalidatePath("/clients");
+  revalidatePath("/activity");
 }
