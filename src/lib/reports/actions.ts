@@ -182,6 +182,7 @@ export async function createReportAction(
     actorUserId: session.user.id,
     entityType: "report",
     entityId: created.id,
+    eventType: "report.created",
     action: "created",
     title: `Report created: ${parsed.data.title}`,
     metadata: { reportId: created.id, title: parsed.data.title },
@@ -287,6 +288,7 @@ export async function updateReportAction(
     actorUserId: session.user.id,
     entityType: "report",
     entityId: reportId,
+    eventType: "report.updated",
     action,
     title:
       action === "report_marked_ready"

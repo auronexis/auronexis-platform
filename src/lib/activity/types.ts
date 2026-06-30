@@ -9,6 +9,23 @@ export type ActivityEntityType =
   | "team"
   | "organization";
 
+/** Canonical dot-notation event types for Sprint 7 activity producers. */
+export type ActivityEventType =
+  | "client.created"
+  | "client.updated"
+  | "client.archived"
+  | "client.deleted"
+  | "team.invited"
+  | "team.role_updated"
+  | "team.user_disabled"
+  | "team.user_reactivated"
+  | "sla.created"
+  | "sla.updated"
+  | "sla.deleted"
+  | "report.created"
+  | "report.updated"
+  | "settings.updated";
+
 export type ActivityFilter =
   | "all"
   | "clients"
@@ -26,6 +43,23 @@ export const ACTIVITY_ENTITY_LABELS: Record<ActivityEntityType, string> = {
   financial: "Financial",
   team: "Team",
   organization: "Organization",
+};
+
+export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
+  "client.created": "Client created",
+  "client.updated": "Client updated",
+  "client.archived": "Client archived",
+  "client.deleted": "Client deleted",
+  "team.invited": "Team invited",
+  "team.role_updated": "Role updated",
+  "team.user_disabled": "User disabled",
+  "team.user_reactivated": "User reactivated",
+  "sla.created": "SLA created",
+  "sla.updated": "SLA updated",
+  "sla.deleted": "SLA deleted",
+  "report.created": "Report created",
+  "report.updated": "Report updated",
+  "settings.updated": "Settings updated",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {
@@ -56,6 +90,7 @@ export type ActivityEventView = {
   actor_user_id: string | null;
   entity_type: ActivityEntityType;
   entity_id: string | null;
+  event_type: string;
   action: string;
   title: string;
   description: string | null;
@@ -65,15 +100,30 @@ export type ActivityEventView = {
 };
 
 export type RecordActivityInput = {
-  organizationId: string;
+  organizationId?: string;
   actorUserId?: string | null;
   entityType: ActivityEntityType;
   entityId?: string | null;
-  action: string;
+  /** Preferred canonical event type (e.g. client.created). */
+  eventType?: ActivityEventType | string;
+  /** Legacy action slug — kept for backward compatibility with existing producers. */
+  action?: string;
   title: string;
   description?: string | null;
   metadata?: Record<string, unknown>;
 };
+
+export function formatActivityEventType(eventType: string): string {
+  if (eventType in ACTIVITY_EVENT_TYPE_LABELS) {
+    return ACTIVITY_EVENT_TYPE_LABELS[eventType as ActivityEventType];
+  }
+
+  return eventType
+    .split(".")
+    .map((part) => part.replace(/_/g, " "))
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" · ");
+}
 
 export function formatActivityTimestamp(value: string): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -83,6 +133,28 @@ export function formatActivityTimestamp(value: string): string {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+export function formatActivityRelativeTime(value: string): string {
+  const date = new Date(value);
+  const diffMs = date.getTime() - Date.now();
+  const diffMinutes = Math.round(diffMs / (1000 * 60));
+
+  if (Math.abs(diffMinutes) < 60) {
+    return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(diffMinutes, "minute");
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (Math.abs(diffHours) < 48) {
+    return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(diffHours, "hour");
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  if (Math.abs(diffDays) < 14) {
+    return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(diffDays, "day");
+  }
+
+  return formatActivityTimestamp(value);
 }
 
 export function getActivityEntityHref(

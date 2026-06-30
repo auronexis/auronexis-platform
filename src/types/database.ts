@@ -1198,6 +1198,7 @@ export type Database = {
           actor_user_id: string | null;
           entity_type: ActivityEntityType;
           entity_id: string | null;
+          event_type: string;
           action: string;
           title: string;
           description: string | null;
@@ -1210,6 +1211,7 @@ export type Database = {
           actor_user_id?: string | null;
           entity_type: ActivityEntityType;
           entity_id?: string | null;
+          event_type?: string;
           action: string;
           title: string;
           description?: string | null;
@@ -1222,6 +1224,7 @@ export type Database = {
           actor_user_id?: string | null;
           entity_type?: ActivityEntityType;
           entity_id?: string | null;
+          event_type?: string;
           action?: string;
           title?: string;
           description?: string | null;

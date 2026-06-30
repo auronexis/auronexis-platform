@@ -308,7 +308,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
       schedulingEnabled ? getUpcomingReportSchedules(session, 5) : Promise.resolve([]),
 
-      getRecentActivityEvents(session, 8),
+      getRecentActivityEvents(session, 5),
 
     ]);
 

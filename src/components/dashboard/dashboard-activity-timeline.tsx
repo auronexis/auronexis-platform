@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { ActivityEventView, ActivityEntityType } from "@/lib/activity/types";
 import {
-  formatActivityTimestamp,
+  formatActivityEventType,
+  formatActivityRelativeTime,
   getActivityEntityHref,
 } from "@/lib/activity/types";
 import { cn } from "@/lib/utils/cn";
@@ -81,7 +82,9 @@ export function DashboardActivityTimeline({
               ) : null}
 
               <p className="mt-1 text-xs text-muted/80">
-                {actorName} · {formatActivityTimestamp(event.created_at)}
+                {formatActivityEventType(event.event_type)}
+                {" · "}
+                {actorName} · {formatActivityRelativeTime(event.created_at)}
               </p>
             </div>
           </li>

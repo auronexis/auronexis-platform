@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AccessDenied } from "@/components/authorization/access-denied";
 import { sessionHasPermission } from "@/lib/authorization/guards";
-import { ActivityFeed } from "@/components/activity/activity-feed";
+import { ActivityList } from "@/components/activity/activity-list";
 import { ActivityFilterTabs } from "@/components/activity/activity-filter-tabs";
 import { PageHeader } from "@/components/layout/page-header";
 import { LoadingCard } from "@/components/ui/loading-card";
@@ -62,9 +62,9 @@ export default async function ActivityPage({ searchParams }: ActivityPageProps) 
         <ActivityFilterTabs />
       </Suspense>
       <PageSurface className="mt-6">
-        <ActivityFeed
+        <ActivityList
           events={events}
-          emptyMessage="No activity matches this filter"
+          emptyTitle="No activity matches this filter"
           emptyDescription="Try a broader filter, or check back after your team makes operational changes."
         />
       </PageSurface>
