@@ -45,16 +45,32 @@ export type PortalReportView = {
   reporting_period_end: string;
   status: string;
   executive_summary: string | null;
+  summary: string | null;
   key_wins: string | null;
   key_risks: string | null;
   next_actions: string | null;
   sent_at: string | null;
+  published_at: string | null;
+  health_score: number | null;
+  sla_score: number | null;
+  version: number;
   updated_at: string;
 };
 
 export type PortalReportListItem = Pick<
   PortalReportView,
-  "id" | "title" | "reporting_period_start" | "reporting_period_end" | "sent_at" | "status" | "updated_at"
+  | "id"
+  | "title"
+  | "reporting_period_start"
+  | "reporting_period_end"
+  | "sent_at"
+  | "status"
+  | "updated_at"
+  | "published_at"
+  | "summary"
+  | "health_score"
+  | "sla_score"
+  | "version"
 >;
 
 export type PortalTimelineEvent = {
@@ -93,10 +109,10 @@ export const PORTAL_CLIENT_SELECT =
   "id, organization_id, name, status, contact_name, contact_email, owner_id, sla_policy_id, health_score";
 
 export const PORTAL_REPORT_SELECT =
-  "id, title, reporting_period_start, reporting_period_end, status, executive_summary, key_wins, key_risks, next_actions, sent_at, updated_at";
+  "id, title, reporting_period_start, reporting_period_end, status, executive_summary, summary, key_wins, key_risks, next_actions, sent_at, published_at, health_score, sla_score, version, updated_at";
 
 export const PORTAL_REPORT_LIST_SELECT =
-  "id, title, reporting_period_start, reporting_period_end, sent_at, status, updated_at";
+  "id, title, reporting_period_start, reporting_period_end, sent_at, status, updated_at, published_at, summary, health_score, sla_score, version";
 
 export const PORTAL_RISK_SELECT = "id, title, severity, status, due_date, created_at";
 

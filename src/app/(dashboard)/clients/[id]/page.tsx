@@ -27,7 +27,10 @@ import {
   DetailViewAllLink,
 } from "@/components/layout/detail-page";
 import { ClientHealthBadge } from "@/components/profitability/client-health-badge";
-import { ReportStatusBadge } from "@/components/reports/report-status-badge";
+import { GenerateReportButton } from "@/components/reports/generate-report-button";
+import { ReportCard } from "@/components/reports/report-card";
+import { ReportPublishDialog } from "@/components/reports/report-publish-dialog";
+import { ReportVersionHistory } from "@/components/reports/report-version-history";
 import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
 import { RiskStatusBadge } from "@/components/risks/risk-status-badge";
 import { CreatePortalUserForm } from "@/components/client-portal/create-portal-user-form";
@@ -54,7 +57,8 @@ import { getClientHealthDetail } from "@/lib/health/record";
 import { formatClientDate } from "@/lib/clients/types";
 import { formatIncidentDate } from "@/lib/incidents/types";
 import { formatMargin, formatCurrency } from "@/lib/profitability/types";
-import { formatReportDate, formatReportPeriod } from "@/lib/reports/types";
+import { canCreateReport, canManageReportLifecycle, canPublishReport } from "@/lib/reports/guards";
+import { getReportHistory, listReportsV2 } from "@/lib/reports-v2";
 import { formatRiskDate } from "@/lib/risks/types";
 import { canViewRevenue } from "@/lib/rbac/permissions";
 import { listSlaPolicies, getClientSlaAssignment } from "@/lib/sla/queries";
@@ -102,12 +106,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const canManageSla = canManageSlaPolicies(session);
   const canEdit = sessionHasPermission(session, "clients.write");
 
-  const [client, overview, portalUsers, slaPolicies, orgUsers] = await Promise.all([
+  const [client, overview, portalUsers, slaPolicies, orgUsers, recentReportsResult] = await Promise.all([
     getClientById(session, id),
     getClientOverview(session, id),
     canManagePortal ? listPortalUsersForClient(session, id) : Promise.resolve([]),
     listSlaPolicies(session),
     canEdit ? listOrgUsers(session) : Promise.resolve([]),
+    listReportsV2(session, { clientId: id, limit: 5 }),
   ]);
 
   if (!client) {
@@ -123,6 +128,16 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     session.organization.id,
     client.sla_policy_id,
   );
+
+  const recentReports = recentReportsResult.data ?? [];
+  const primaryReport = recentReports[0] ?? overview.latestReport ?? null;
+  const reportHistoryResult = primaryReport
+    ? await getReportHistory(session, primaryReport.id)
+    : { data: [], error: null };
+  const reportVersions = reportHistoryResult.data ?? [];
+  const canCreateReports = canCreateReport(session);
+  const canGenerateReports = canManageReportLifecycle(session);
+  const canPublishReports = canPublishReport(session);
 
   const showRevenue = canViewRevenue(session.role);
   const canManage = sessionHasPermission(session, "clients.write");
@@ -240,30 +255,46 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <ClientKnowledgeSection clientId={client.id} clientName={client.name} />
 
         <DetailSection
-          title="Latest report"
-          description="Most recent report activity for this client."
+          title="Recent reports"
+          description="Generate, publish, and review report versions for this client."
+          action={
+            canCreateReports ? (
+              <DetailViewAllLink href={`/reports/new?clientId=${client.id}`}>
+                New report
+              </DetailViewAllLink>
+            ) : undefined
+          }
         >
-          {overview.latestReport ? (
-            <div className="space-y-3">
-              <p className="font-semibold text-foreground">{overview.latestReport.title}</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <ReportStatusBadge status={overview.latestReport.status} />
-                <DetailMetaText>
-                  {formatReportPeriod(
-                    overview.latestReport.reporting_period_start,
-                    overview.latestReport.reporting_period_end,
-                  )}
-                </DetailMetaText>
-              </div>
-              <DetailMetaText>
-                Updated {formatReportDate(overview.latestReport.updated_at)}
-              </DetailMetaText>
-              <Link href={`/reports/${overview.latestReport.id}`} className={linkText}>
-                Open report
-              </Link>
-            </div>
+          {recentReports.length === 0 ? (
+            <DetailEmpty message="No reports for this client yet." />
           ) : (
-            <DetailEmpty message="No published reports yet." />
+            <div className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {recentReports.map((report) => (
+                  <ReportCard key={report.id} report={report} />
+                ))}
+              </div>
+              {primaryReport ? (
+                <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle pt-4">
+                  {canGenerateReports && primaryReport.status === "draft" ? (
+                    <GenerateReportButton reportId={primaryReport.id} />
+                  ) : null}
+                  {canPublishReports && primaryReport.status === "generated" ? (
+                    <ReportPublishDialog
+                      reportId={primaryReport.id}
+                      reportTitle={primaryReport.title}
+                    />
+                  ) : null}
+                  <Link href={`/reports/${primaryReport.id}`} className={linkText}>
+                    Open latest report
+                  </Link>
+                </div>
+              ) : null}
+              <div>
+                <p className="mb-3 text-sm font-medium text-foreground">Version history</p>
+                <ReportVersionHistory versions={reportVersions} />
+              </div>
+            </div>
           )}
         </DetailSection>
 

@@ -26,13 +26,13 @@ export default async function ClientPortalReportsPage() {
     <>
       <PortalPageHeader
         title="Report Center"
-        description="Review and download operational reports shared with your organization."
+        description="Review published operational reports shared with your organization."
       />
 
       {reports.length === 0 ? (
         <PortalEmptyState
           title="No reports available"
-          description="Your agency will share reports here once they are sent."
+          description="Your agency will share reports here once they are published."
         />
       ) : (
         <PortalTableShell>
@@ -40,9 +40,10 @@ export default async function ClientPortalReportsPage() {
             <thead>
               <tr>
                 <th className={portalTableHeadClass}>Report</th>
-                <th className={portalTableHeadClass}>Reporting period</th>
-                <th className={portalTableHeadClass}>Status</th>
-                <th className={portalTableHeadClass}>Generated</th>
+                <th className={portalTableHeadClass}>Period</th>
+                <th className={portalTableHeadClass}>Health</th>
+                <th className={portalTableHeadClass}>SLA</th>
+                <th className={portalTableHeadClass}>Published</th>
                 <th className={`${portalTableHeadClass} text-right`}>Actions</th>
               </tr>
             </thead>
@@ -54,7 +55,12 @@ export default async function ClientPortalReportsPage() {
                   ariaLabel={`Open report ${report.title}`}
                 >
                   <td className={`font-semibold text-foreground ${portalTableCellClass}`}>
-                    {report.title}
+                    <p>{report.title}</p>
+                    {report.summary ? (
+                      <p className="mt-1 line-clamp-2 text-xs font-normal text-muted">
+                        {report.summary}
+                      </p>
+                    ) : null}
                   </td>
                   <td className={`whitespace-nowrap ${portalTableCellClass}`}>
                     {formatReportPeriod(
@@ -63,12 +69,13 @@ export default async function ClientPortalReportsPage() {
                     )}
                   </td>
                   <td className={portalTableCellClass}>
-                    <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium capitalize text-primary">
-                      {report.status}
-                    </span>
+                    {report.health_score ?? "—"}
+                  </td>
+                  <td className={portalTableCellClass}>
+                    {report.sla_score != null ? `${report.sla_score}%` : "—"}
                   </td>
                   <td className={`whitespace-nowrap ${portalTableCellClass} text-muted`}>
-                    {formatReportDate(report.sent_at)}
+                    {formatReportDate(report.published_at ?? report.sent_at)}
                   </td>
                   <td className={`${portalTableCellClass} text-right`}>
                     <div

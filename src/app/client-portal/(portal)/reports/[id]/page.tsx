@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PortalActionLink, PortalCard, PortalSentBadge } from "@/components/client-portal/portal-ui";
+import { PortalActionLink, PortalCard } from "@/components/client-portal/portal-ui";
 import { getPortalReportById } from "@/lib/client-portal/queries";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
 import { formatReportDate, formatReportPeriod } from "@/lib/reports/types";
@@ -46,14 +46,54 @@ export default async function ClientPortalReportDetailPage({ params }: PortalRep
             <span>
               {formatReportPeriod(report.reporting_period_start, report.reporting_period_end)}
             </span>
-            <PortalSentBadge />
-            {report.sent_at ? <span>Generated {formatReportDate(report.sent_at)}</span> : null}
+            <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+              Published
+            </span>
+            {report.version ? <span>Version {report.version}</span> : null}
+            {report.published_at ? (
+              <span>Published {formatReportDate(report.published_at)}</span>
+            ) : report.sent_at ? (
+              <span>Shared {formatReportDate(report.sent_at)}</span>
+            ) : null}
           </div>
         </div>
         <PortalActionLink href={`/client-portal/reports/${report.id}/export`}>
           Download PDF
         </PortalActionLink>
       </div>
+
+      {(report.summary || report.health_score != null || report.sla_score != null) && (
+        <PortalCard className="mb-6">
+          <dl className="grid gap-6 sm:grid-cols-3">
+            {report.summary ? (
+              <div className="sm:col-span-3">
+                <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  Summary
+                </dt>
+                <dd className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                  {report.summary}
+                </dd>
+              </div>
+            ) : null}
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                Health score
+              </dt>
+              <dd className="mt-2 text-2xl font-semibold text-foreground">
+                {report.health_score ?? "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                SLA compliance
+              </dt>
+              <dd className="mt-2 text-2xl font-semibold text-foreground">
+                {report.sla_score != null ? `${report.sla_score}%` : "—"}
+              </dd>
+            </div>
+          </dl>
+        </PortalCard>
+      )}
 
       <PortalCard>
         <dl className="space-y-8">

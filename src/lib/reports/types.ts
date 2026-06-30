@@ -30,29 +30,27 @@ export type RelatedOpenIncident = {
 
 export const REPORT_STATUSES: ReportStatus[] = [
   "draft",
-  "ready",
+  "generated",
   "published",
-  "sent",
   "archived",
 ];
 
-export const STAFF_REPORT_STATUSES: ReportStatus[] = ["draft", "ready"];
+export const STAFF_REPORT_STATUSES: ReportStatus[] = ["draft", "generated"];
 
 /** Statuses editable via the report form (lifecycle actions handle the rest). */
-export const EDITABLE_REPORT_STATUSES: ReportStatus[] = ["draft", "ready"];
+export const EDITABLE_REPORT_STATUSES: ReportStatus[] = ["draft", "generated"];
 
-export const PORTAL_VISIBLE_REPORT_STATUSES: ReportStatus[] = ["published", "sent"];
+export const PORTAL_VISIBLE_REPORT_STATUSES: ReportStatus[] = ["published"];
 
 export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
   draft: "Draft",
-  ready: "Ready",
+  generated: "Generated",
   published: "Published",
-  sent: "Sent",
   archived: "Archived",
 };
 
 export const REPORT_SELECT_COLUMNS =
-  "id, organization_id, client_id, title, reporting_period_start, reporting_period_end, status, executive_summary, key_wins, key_risks, next_actions, assigned_user_id, sent_at, created_at, updated_at";
+  "id, organization_id, client_id, title, reporting_period_start, reporting_period_end, status, executive_summary, summary, key_wins, key_risks, next_actions, assigned_user_id, sent_at, published_at, version, root_report_id, health_score, sla_score, created_at, updated_at";
 
 export const REPORT_LIST_SELECT = `
   ${REPORT_SELECT_COLUMNS},
@@ -82,4 +80,9 @@ export function toDateInputValue(value: string | null | undefined): string {
   }
 
   return value.slice(0, 10);
+}
+
+/** @deprecated Use published_at for portal display; sent_at tracks email delivery. */
+export function wasReportDelivered(report: Pick<Report, "sent_at">): boolean {
+  return Boolean(report.sent_at);
 }

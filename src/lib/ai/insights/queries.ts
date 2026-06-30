@@ -129,7 +129,7 @@ async function countPublishedReportsInRange(
     .from("reports")
     .select("id", { count: "exact", head: true })
     .eq("organization_id", session.organization.id)
-    .in("status", ["published", "sent"])
+    .in("status", ["published", "generated"])
     .gte("updated_at", start)
     .lte("updated_at", end);
 
@@ -151,7 +151,7 @@ async function getDaysSinceLastPublishedReport(
     .from("reports")
     .select("updated_at")
     .eq("organization_id", session.organization.id)
-    .in("status", ["published", "sent"])
+    .in("status", ["published", "generated"])
     .order("updated_at", { ascending: false })
     .limit(1);
 

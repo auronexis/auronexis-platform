@@ -127,11 +127,9 @@ function drawPill(
 
 function reportStatusColors(status: ReportStatus): { fill: string; color: string } {
   switch (status) {
-    case "sent":
-      return { fill: LIGHT_GREEN, color: GREEN };
     case "published":
-      return { fill: "#ede9fe", color: "#6d28d9" };
-    case "ready":
+      return { fill: LIGHT_GREEN, color: GREEN };
+    case "generated":
       return { fill: "#fef3c7", color: "#d97706" };
     case "archived":
       return { fill: "#f1f5f9", color: SLATE };

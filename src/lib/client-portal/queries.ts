@@ -12,6 +12,11 @@ import type {
   PortalRiskView,
   PortalTimelineEvent,
 } from "@/lib/client-portal/types";
+import type {
+  ClientReportMetrics,
+  RelatedOpenIncident,
+  RelatedOpenRisk,
+} from "@/lib/reports/types";
 import {
   HEALTH_SNAPSHOT_PORTAL_SELECT,
   PORTAL_INCIDENT_SELECT,
@@ -22,12 +27,8 @@ import {
   PORTAL_USER_SELECT,
 } from "@/lib/client-portal/types";
 import type { ClientSlaAssignment } from "@/lib/sla/types";
-import {
-  PORTAL_VISIBLE_REPORT_STATUSES,
-  type ClientReportMetrics,
-  type RelatedOpenIncident,
-  type RelatedOpenRisk,
-} from "@/lib/reports/types";
+import { listPortalPublishedReportsV2 } from "@/lib/reports-v2/queries";
+import { PORTAL_VISIBLE_REPORT_STATUSES } from "@/lib/reports/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { ClientPortalUser, SlaPolicy } from "@/types/database";
 
@@ -96,24 +97,29 @@ export async function getPortalDashboardData(
   };
 }
 
-/** Published and sent reports visible to the portal user. */
+/** Published reports visible to the portal user — newest version per series. */
 export async function listPortalReports(
   session: ClientPortalSessionContext,
 ): Promise<PortalReportListItem[]> {
-  const supabase = await createClient();
+  const { data } = await listPortalPublishedReportsV2(
+    session.organization.id,
+    session.client.id,
+  );
 
-  const { data, error } = await supabase
-    .from("reports")
-    .select(PORTAL_REPORT_LIST_SELECT)
-    .eq("client_id", session.client.id)
-    .in("status", PORTAL_VISIBLE_REPORT_STATUSES)
-    .order("updated_at", { ascending: false, nullsFirst: false });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data ?? []) as PortalReportListItem[];
+  return (data ?? []).map((report) => ({
+    id: report.id,
+    title: report.title,
+    reporting_period_start: report.reporting_period_start,
+    reporting_period_end: report.reporting_period_end,
+    sent_at: report.sent_at,
+    status: report.status,
+    updated_at: report.updated_at,
+    published_at: report.published_at,
+    summary: report.summary,
+    health_score: report.health_score,
+    sla_score: report.sla_score,
+    version: report.version,
+  })) as PortalReportListItem[];
 }
 
 /** Single published or sent report for portal viewing. */

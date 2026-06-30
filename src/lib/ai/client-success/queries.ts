@@ -71,10 +71,10 @@ function buildPeriodRanges(reference = new Date()) {
 async function countReportsByStatus(
   session: SessionContext,
   clientId: string,
-  status: "draft" | "published" | "sent",
+  status: "draft" | "published" | "generated",
 ): Promise<number> {
   const supabase = await createClient();
-  const statuses = status === "draft" ? ["draft"] : ["published", "sent"];
+  const statuses = status === "draft" ? ["draft"] : ["published", "generated"];
 
   const { count, error } = await supabase
     .from("reports")
@@ -100,7 +100,7 @@ async function countReportsPublishedInRange(
     .select("id", { count: "exact", head: true })
     .eq("organization_id", session.organization.id)
     .eq("client_id", clientId)
-    .in("status", ["published", "sent"])
+    .in("status", ["published", "generated"])
     .gte("updated_at", start)
     .lte("updated_at", end);
 
@@ -140,7 +140,7 @@ async function getDaysSinceLastPublishedReport(
     .select("updated_at")
     .eq("organization_id", session.organization.id)
     .eq("client_id", clientId)
-    .in("status", ["published", "sent"])
+    .in("status", ["published", "generated"])
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -160,7 +160,7 @@ async function getLatestPublishedReport(
     .select("id, organization_id, client_id, title, status, reporting_period_start, reporting_period_end, executive_summary, key_wins, key_risks, next_actions, assigned_user_id, sent_at, created_at, updated_at")
     .eq("organization_id", session.organization.id)
     .eq("client_id", clientId)
-    .in("status", ["published", "sent"])
+    .in("status", ["published", "generated"])
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();

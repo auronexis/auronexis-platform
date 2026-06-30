@@ -2,21 +2,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AccessDenied } from "@/components/authorization/access-denied";
 import { sessionHasPermission } from "@/lib/authorization/guards";
-import { ReportList } from "@/components/reports/report-list";
+import { ReportCard } from "@/components/reports/report-card";
+import { ReportEmptyState } from "@/components/reports/report-empty-state";
+import { ReportVersionHistory } from "@/components/reports/report-version-history";
 import { PageHeader } from "@/components/layout/page-header";
 import { ArchiveFilterTabs } from "@/components/ui/archive-filter-tabs";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { canCreateReport } from "@/lib/reports/guards";
-import { listReports } from "@/lib/reports/queries";
+import { listReportsV2 } from "@/lib/reports-v2/queries";
 import { requireSession } from "@/lib/auth/session";
+import type { ReportStatusV2 } from "@/lib/reports-v2/types";
 
 export const metadata: Metadata = {
   title: "Reports",
 };
 
 type ReportsPageProps = {
-  searchParams: Promise<{ archived?: string }>;
+  searchParams: Promise<{ tab?: string }>;
 };
 
 export default async function ReportsPage({ searchParams }: ReportsPageProps) {
@@ -36,8 +39,19 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   }
 
   const params = await searchParams;
-  const includeArchived = params.archived === "1";
-  const reports = await listReports(session, { includeArchived });
+  const tab = params.tab ?? "draft";
+  const statusMap: Record<string, ReportStatusV2 | ReportStatusV2[]> = {
+    draft: "draft",
+    published: "published",
+    archived: "archived",
+    generated: "generated",
+  };
+  const statusFilter = statusMap[tab] ?? "draft";
+
+  const { data: reports } = await listReportsV2(session, {
+    status: tab === "draft" ? ["draft", "generated"] : statusFilter,
+  });
+  const reportList = reports ?? [];
 
   const canCreate = canCreateReport(session);
 
@@ -46,7 +60,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
       <PageHeader
         module="reports"
         title="Reports"
-        description="Demonstrate delivered value and operational outcomes to clients."
+        description="Generate, publish, and version client-facing operational reports."
         action={
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/reports/templates">
@@ -68,12 +82,32 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
       <ArchiveFilterTabs
         tabs={[
-          { label: "Active reports", href: "/reports", active: !includeArchived },
-          { label: "Include archived", href: "/reports?archived=1", active: includeArchived },
+          { label: "Draft", href: "/reports?tab=draft", active: tab === "draft" },
+          { label: "Published", href: "/reports?tab=published", active: tab === "published" },
+          { label: "Archived", href: "/reports?tab=archived", active: tab === "archived" },
         ]}
       />
 
-      <ReportList reports={reports} />
+      {reportList.length === 0 ? (
+        <ReportEmptyState
+          title={`No ${tab} reports`}
+          description="Create a report or switch tabs to view other report states."
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {reportList.map((report) => (
+            <ReportCard key={report.id} report={report} />
+          ))}
+        </div>
+      )}
+
+      <section className="mt-12">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">Version history</h2>
+        <p className="mb-4 text-sm text-muted">
+          Open a report detail page to view the full version history for that report series.
+        </p>
+        <ReportVersionHistory versions={[]} />
+      </section>
     </>
   );
 }

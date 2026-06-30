@@ -54,7 +54,7 @@ export async function fetchPublishedReports(
     .from("reports")
     .select("id, title, status, executive_summary, updated_at, client_id, clients(name)")
     .eq("organization_id", session.organization.id)
-    .in("status", ["published", "sent"]);
+    .in("status", ["published", "generated"]);
 
   if (clientId) query = query.eq("client_id", clientId);
 

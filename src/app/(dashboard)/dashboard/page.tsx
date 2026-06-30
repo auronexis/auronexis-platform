@@ -16,6 +16,7 @@ import { AIInsightsCard } from "@/components/dashboard/ai-insights-card";
 import { CustomerSuccessDashboardCard } from "@/components/clients/success/clients-success-workspace";
 import { ClientHealthOverview } from "@/components/dashboard/client-health-overview";
 import { DashboardHealthEngine } from "@/components/health/dashboard-health-engine";
+import { DashboardReportsOverview } from "@/components/reports/dashboard-reports-overview";
 import { CommandCenterHero } from "@/components/dashboard/command-center-hero";
 import { DashboardActivityTimeline } from "@/components/dashboard/dashboard-activity-timeline";
 import { DashboardBusinessUpgradeCard } from "@/components/dashboard/dashboard-business-upgrade-card";
@@ -278,6 +279,16 @@ export default async function DashboardPage() {
               className="min-h-[320px]"
             >
               <DashboardHealthEngine metrics={data.healthMetrics} />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-7 xl:col-span-4">
+            <DashboardPanel
+              title="Reports overview"
+              description="Publishing activity and report quality metrics."
+              className="min-h-[320px]"
+            >
+              <DashboardReportsOverview metrics={data.reportsMetrics} />
             </DashboardPanel>
           </div>
 

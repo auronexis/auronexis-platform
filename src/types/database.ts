@@ -22,7 +22,7 @@ export type IncidentSeverity = "low" | "medium" | "high" | "critical";
 
 export type IncidentStatus = "open" | "investigating" | "resolved" | "archived";
 
-export type ReportStatus = "draft" | "ready" | "published" | "sent" | "archived";
+export type ReportStatus = "draft" | "generated" | "published" | "archived";
 
 export type NotificationType =
   | "report_generated"
@@ -555,6 +555,12 @@ export type Database = {
           next_actions: string | null;
           assigned_user_id: string;
           sent_at: string | null;
+          published_at: string | null;
+          version: number;
+          root_report_id: string | null;
+          summary: string | null;
+          health_score: number | null;
+          sla_score: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -567,11 +573,17 @@ export type Database = {
           reporting_period_end: string;
           status?: ReportStatus;
           executive_summary?: string | null;
+          summary?: string | null;
           key_wins?: string | null;
           key_risks?: string | null;
           next_actions?: string | null;
           assigned_user_id: string;
           sent_at?: string | null;
+          published_at?: string | null;
+          version?: number;
+          root_report_id?: string | null;
+          health_score?: number | null;
+          sla_score?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -584,11 +596,17 @@ export type Database = {
           reporting_period_end?: string;
           status?: ReportStatus;
           executive_summary?: string | null;
+          summary?: string | null;
           key_wins?: string | null;
           key_risks?: string | null;
           next_actions?: string | null;
           assigned_user_id?: string;
           sent_at?: string | null;
+          published_at?: string | null;
+          version?: number;
+          root_report_id?: string | null;
+          health_score?: number | null;
+          sla_score?: number | null;
           created_at?: string;
           updated_at?: string;
         };

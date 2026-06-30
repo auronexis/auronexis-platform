@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { GenerateReportButton } from "@/components/reports/generate-report-button";
+import { ReportHealthChart } from "@/components/reports/report-health-chart";
+import { ReportPublishDialog } from "@/components/reports/report-publish-dialog";
+import { ReportSlaCard } from "@/components/reports/report-sla-card";
+import { ReportSummaryCard } from "@/components/reports/report-summary-card";
+import { ReportVersionHistory } from "@/components/reports/report-version-history";
 import { ArchiveReportButton } from "@/components/reports/archive-report-button";
 import { ExportReportPdfButton } from "@/components/reports/export-report-pdf-button";
 import { ReportEmailHistory } from "@/components/reports/report-email-history";
 import { SendReportEmailButton } from "@/components/reports/send-report-email-button";
-import { MarkReportReadyButton } from "@/components/reports/mark-report-ready-button";
 import { MarkReportSentButton } from "@/components/reports/mark-report-sent-button";
-import { PublishReportButton } from "@/components/reports/publish-report-button";
 import { ReportClientInsights } from "@/components/reports/report-client-insights";
 import { ReportForm } from "@/components/reports/report-form";
 import { ReportEditableWithAI } from "@/components/reports/ai/report-editable-with-ai";
@@ -59,6 +63,7 @@ import {
 } from "@/lib/plans";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
 import { requireSession } from "@/lib/auth/session";
+import { getReportHistory } from "@/lib/reports-v2/history";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -94,7 +99,7 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
     canSendReportEmail(session) && canSendReportEmailForStatus(report.status);
   const canViewEmailHistory = canViewReportEmailHistory(session);
   const canMarkReady = canManageLifecycle && report.status === "draft";
-  const canPublish = canPublishReport(session) && report.status === "ready";
+  const canPublish = canPublishReport(session) && report.status === "generated";
   const canMarkSent = canManageLifecycle && report.status === "published";
   const canArchive = canManageLifecycle && report.status !== "archived";
   const boundUpdateAction = updateReportAction.bind(null, report.id);
@@ -117,6 +122,7 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
     ]);
 
   const aiUsageSummary = await getAIUsageSummaryForSession(session, planKey);
+  const versionHistory = await getReportHistory(session, report.id);
 
   const aiEnabled = aiAccess.allowed;
   const aiUpgradeMessage = getFeatureUpgradeMessage("ai_report_assistant");
@@ -207,7 +213,7 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
             </DetailMetaText>
             <DetailMetaSeparator />
             <DetailMetaText>Updated {formatReportDate(report.updated_at)}</DetailMetaText>
-            {report.status === "sent" && report.sent_at ? (
+            {report.sent_at ? (
               <>
                 <DetailMetaSeparator />
                 <DetailMetaText className="text-success">
@@ -273,19 +279,19 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
 
         {canMarkReady ? (
           <DetailActionSection
-            title="Mark ready"
-            description="Approve this report internally before publishing to the client portal."
+            title="Generate report"
+            description="Build executive summary, health score, and SLA metrics for this period."
           >
-            <MarkReportReadyButton reportId={report.id} reportTitle={report.title} />
+            <GenerateReportButton reportId={report.id} />
           </DetailActionSection>
         ) : null}
 
         {canPublish ? (
           <DetailActionSection
             title="Publish to client portal"
-            description="Make this report visible to the client in their portal. Email delivery can follow separately."
+            description="Make this report visible to the client in their portal."
           >
-            <PublishReportButton reportId={report.id} reportTitle={report.title} />
+            <ReportPublishDialog reportId={report.id} reportTitle={report.title} />
           </DetailActionSection>
         ) : null}
 
@@ -322,7 +328,23 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
           title="Client insights"
           description="Operational context and related open items for this client."
         >
-          <ReportClientInsights
+          <DetailSection title="Report summary" description="Auto-generated executive summary and KPIs.">
+          <ReportSummaryCard
+            summary={report.summary}
+            executiveSummary={report.executive_summary}
+          />
+        </DetailSection>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ReportHealthChart trend={null} healthScore={report.health_score} />
+          <ReportSlaCard slaScore={report.sla_score} />
+        </div>
+
+        <DetailSection title="Version history" description="Previous versions in this report series.">
+          <ReportVersionHistory versions={versionHistory.data ?? []} />
+        </DetailSection>
+
+        <ReportClientInsights
             metrics={metrics}
             relatedRisks={relatedRisks}
             relatedIncidents={relatedIncidents}

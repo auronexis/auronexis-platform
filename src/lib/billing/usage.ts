@@ -126,7 +126,7 @@ async function countReports(organizationId: string, since: string, publishedOnly
     .gte("created_at", since);
 
   if (publishedOnly) {
-    query = query.in("status", ["published", "sent"]);
+    query = query.eq("status", "published");
   }
 
   const { count } = await query;

@@ -127,7 +127,7 @@ async function buildHistoricalWindows(session: SessionContext): Promise<Historic
     const [incidents, risks, reportsPublished, slaBreaches, automation] = await Promise.all([
       incidentsEnabled ? countInRange(session, "incidents", start) : 0,
       risksEnabled ? countInRange(session, "risks", start) : 0,
-      countInRange(session, "reports", start, { status: ["published", "sent"] }),
+      countInRange(session, "reports", start, { status: ["published", "generated"] }),
       slaEnabled ? countSlaBreachesSince(session, start) : 0,
       automationEnabled ? getAutomationStats(session, start) : { runs: 0, successRate: null },
     ]);

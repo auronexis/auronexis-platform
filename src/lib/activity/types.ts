@@ -24,6 +24,10 @@ export type ActivityEventType =
   | "sla.deleted"
   | "report.created"
   | "report.updated"
+  | "report.generated"
+  | "report.published"
+  | "report.archived"
+  | "report.versioned"
   | "settings.updated"
   | "health.changed"
   | "portal.login"
@@ -62,6 +66,10 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "sla.deleted": "SLA deleted",
   "report.created": "Report created",
   "report.updated": "Report updated",
+  "report.generated": "Report generated",
+  "report.published": "Report published",
+  "report.archived": "Report archived",
+  "report.versioned": "Report versioned",
   "settings.updated": "Settings updated",
   "health.changed": "Health changed",
   "portal.login": "Portal login",

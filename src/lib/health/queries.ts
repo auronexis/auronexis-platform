@@ -79,7 +79,7 @@ export async function gatherClientHealthMetrics(
         .select("id, status, updated_at")
         .eq("organization_id", organizationId)
         .eq("client_id", clientId)
-        .in("status", ["ready", "published", "sent"])
+        .in("status", ["published"])
         .gte("updated_at", reportSince)
         .limit(1),
       supabase

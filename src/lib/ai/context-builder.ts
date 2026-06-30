@@ -106,7 +106,7 @@ async function getPreviousReportSummary(
   }>;
 
   const completedCount = reports.filter((report) =>
-    ["published", "sent", "ready"].includes(report.status),
+    ["published", "generated"].includes(report.status),
   ).length;
 
   const previous = reports.find((report) => report.id !== excludeReportId);

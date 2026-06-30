@@ -6,6 +6,8 @@ import { getIncidentDashboardMetrics } from "@/lib/incidents/queries";
 
 import { getHealthDashboardMetrics } from "@/lib/health/queries";
 
+import { getReportsOverviewMetrics } from "@/lib/reports-v2/queries";
+
 import { getClientHealthCounts, getProfitabilitySummary } from "@/lib/profitability/queries";
 
 import { canUseFeature } from "@/lib/plans/guards";
@@ -294,7 +296,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
 
 
-  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics] =
+  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics] =
 
     await Promise.all([
 
@@ -314,6 +316,8 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
       getHealthDashboardMetrics(session),
 
+      getReportsOverviewMetrics(session),
+
     ]);
 
 
@@ -324,6 +328,13 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
     escalationMetrics,
     businessMetrics,
     healthMetrics,
+    reportsMetrics: reportsMetrics.data ?? {
+      publishedThisMonth: 0,
+      draftCount: draftReportsCount,
+      averageHealthScore: null,
+      averageSlaScore: null,
+      latestReport: null,
+    },
     canViewFinancial,
     draftReportsCount,
     upcomingSchedules,

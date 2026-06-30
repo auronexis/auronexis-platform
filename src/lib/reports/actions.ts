@@ -40,7 +40,7 @@ const reportFieldsSchema = z
     clientId: z.string().uuid("Select a client."),
     reportingPeriodStart: z.string().trim().min(1, "Reporting period start is required."),
     reportingPeriodEnd: z.string().trim().min(1, "Reporting period end is required."),
-    status: z.enum(["draft", "ready", "published", "sent", "archived"] as const),
+    status: z.enum(["draft", "generated", "published", "archived"] as const),
     executiveSummary: optionalText,
     keyWins: optionalText,
     keyRisks: optionalText,
@@ -177,6 +177,12 @@ export async function createReportAction(
     return { error: "Unable to create report." };
   }
 
+  await supabase
+    .from("reports")
+    .update({ root_report_id: created.id } as never)
+    .eq("id", created.id)
+    .eq("organization_id", session.organization.id);
+
   await recordActivityEvent({
     organizationId: session.organization.id,
     actorUserId: session.user.id,
@@ -279,8 +285,8 @@ export async function updateReportAction(
   }
 
   const action =
-    parsed.data.status === "ready" && existing.status === "draft"
-      ? "report_marked_ready"
+    parsed.data.status === "generated" && existing.status === "draft"
+      ? "report_generated"
       : "updated";
 
   await recordActivityEvent({
@@ -288,11 +294,11 @@ export async function updateReportAction(
     actorUserId: session.user.id,
     entityType: "report",
     entityId: reportId,
-    eventType: "report.updated",
+    eventType: action === "report_generated" ? "report.generated" : "report.updated",
     action,
     title:
-      action === "report_marked_ready"
-        ? `Report marked ready: ${parsed.data.title}`
+      action === "report_generated"
+        ? `Report generated: ${parsed.data.title}`
         : `Report updated: ${parsed.data.title}`,
     metadata: { reportId, title: parsed.data.title, status: parsed.data.status },
   });
@@ -303,115 +309,23 @@ export async function updateReportAction(
   return { success: "Report updated." };
 }
 
-/** Mark a report as ready — Owner/Admin only. */
+/** Mark a report as generated — delegates to Reports Engine V2. */
 export async function markReportReadyAction(reportId: string): Promise<void> {
-  const session = await requireSession();
-
-  if (!canManageReportLifecycle(session)) {
-    throw new AuthorizationError();
+  const { generateReportV2Action, publishReportV2Action } = await import("@/lib/reports-v2/actions");
+  const result = await generateReportV2Action(reportId);
+  if (result.error) {
+    throw new Error(result.error);
   }
-
-  const existing = await getReportById(session, reportId);
-
-  if (!existing) {
-    throw new Error("Report not found.");
-  }
-
-  if (existing.status !== "draft") {
-    throw new Error("Only draft reports can be marked ready.");
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("reports")
-    .update({ status: "ready" } as never)
-    .eq("id", reportId)
-    .eq("organization_id", session.organization.id);
-
-  if (error) {
-    throw new Error("Unable to mark report as ready.");
-  }
-
-  await recordActivityEvent({
-    organizationId: session.organization.id,
-    actorUserId: session.user.id,
-    entityType: "report",
-    entityId: reportId,
-    action: "report_marked_ready",
-    title: `Report marked ready: ${existing.title}`,
-    metadata: { reportId, title: existing.title, clientId: existing.client_id },
-  });
-
-  revalidatePath("/reports");
-  revalidatePath(`/reports/${reportId}`);
-  revalidatePath("/activity");
   redirect(`/reports/${reportId}`);
 }
 
-/** Publish a report to the client portal — Owner/Admin only. */
+/** Publish a report to the client portal — delegates to Reports Engine V2. */
 export async function publishReportAction(reportId: string): Promise<void> {
-  const session = await requireSession();
-
-  if (!canPublishReport(session)) {
-    throw new AuthorizationError();
-  }
-
-  const existing = await getReportById(session, reportId);
-
-  if (!existing) {
-    throw new Error("Report not found.");
-  }
-
-  if (existing.status !== "ready") {
-    throw new Error("Only ready reports can be published.");
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("reports")
-    .update({ status: "published" } as never)
-    .eq("id", reportId)
-    .eq("organization_id", session.organization.id);
-
-  if (error) {
-    throw new Error("Unable to publish report.");
-  }
-
-  await recordActivityEvent({
-    organizationId: session.organization.id,
-    actorUserId: session.user.id,
-    entityType: "report",
-    entityId: reportId,
-    action: "report_published",
-    title: `Report published: ${existing.title}`,
-    description: "Visible in the client portal.",
-    metadata: { reportId, title: existing.title, clientId: existing.client_id },
-  });
-
-  await dispatchAutomation({
-    trigger: "report_published",
-    organizationId: session.organization.id,
-    entityType: "report",
-    entityId: reportId,
-    clientId: existing.client_id,
-    actorUserId: session.user.id,
-    payload: {
-      title: existing.title,
-      reportId,
-      clientId: existing.client_id,
-      clientName: existing.clients?.name,
-    },
-  });
-
-  revalidatePath("/reports");
-  revalidatePath(`/reports/${reportId}`);
-  revalidatePath("/activity");
-  revalidatePath("/notifications");
-  revalidatePath("/", "layout");
-  redirect(`/reports/${reportId}`);
+  const { publishReportV2Action } = await import("@/lib/reports-v2/actions");
+  await publishReportV2Action(reportId);
 }
 
-/** Mark a report as sent — Owner/Admin only (published → sent). */
+/** Record email delivery timestamp while keeping published status. */
 export async function markReportSentAction(reportId: string): Promise<void> {
   const session = await requireSession();
 
@@ -431,7 +345,6 @@ export async function markReportSentAction(reportId: string): Promise<void> {
 
   const supabase = await createClient();
   const updatePayload: ReportUpdate = {
-    status: "sent",
     sent_at: new Date().toISOString(),
   };
 

@@ -198,7 +198,6 @@ export async function sendReportByEmailAction(
   }
 
   const sentReportUpdate = {
-    status: "sent" as const,
     sent_at: new Date().toISOString(),
   };
 
