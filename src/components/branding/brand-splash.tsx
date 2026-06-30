@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useFormStatus } from "react-dom";
+import { BRANDING_ASSETS } from "@/lib/branding/assets";
 
 type BrandSplashProps = {
   fullScreen?: boolean;
@@ -8,12 +10,14 @@ type BrandSplashProps = {
   message?: string;
 };
 
-/** Dark loading / sign-out splash — text only, inline styles so colors cannot be overridden. */
+/** Dark loading / sign-out splash — logo + message with inline styles so colors cannot be overridden. */
 export function BrandSplash({
   fullScreen = false,
   className,
   message = "Loading workspace...",
 }: BrandSplashProps) {
+  const [logoFailed, setLogoFailed] = useState(false);
+
   return (
     <div
       className={className}
@@ -41,17 +45,34 @@ export function BrandSplash({
           backdropFilter: "blur(12px)",
         }}
       >
-        <div
-          style={{
-            fontSize: "30px",
-            lineHeight: "36px",
-            fontWeight: 700,
-            letterSpacing: "-0.025em",
-            color: "#ffffff",
-          }}
-        >
-          Auroranexis
-        </div>
+        {logoFailed ? (
+          <div
+            style={{
+              fontSize: "24px",
+              lineHeight: "32px",
+              fontWeight: 700,
+              letterSpacing: "-0.025em",
+              color: "#ffffff",
+            }}
+          >
+            Auroranexis
+          </div>
+        ) : (
+          <img
+            src={BRANDING_ASSETS.logoHorizontalTransparent}
+            alt="Auroranexis"
+            onError={() => setLogoFailed(true)}
+            style={{
+              display: "block",
+              margin: "0 auto",
+              height: "48px",
+              width: "auto",
+              maxWidth: "240px",
+              objectFit: "contain",
+              opacity: 1,
+            }}
+          />
+        )}
         <p
           style={{
             marginTop: "12px",

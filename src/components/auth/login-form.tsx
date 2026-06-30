@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { TurnstileField } from "@/components/security/turnstile-field";
 import { signIn, type AuthActionState } from "@/lib/auth/actions";
+import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { cn } from "@/lib/utils/cn";
 
 const initialState: AuthActionState = {};
@@ -19,11 +20,21 @@ const inputClassName = cn(
 
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
+  const [logoFailed, setLogoFailed] = useState(false);
 
   return (
     <form action={formAction} className="space-y-4 text-slate-950 [color-scheme:light]">
       <div className="mb-8 text-center">
-        <div className="text-3xl font-bold tracking-tight text-slate-950">Auroranexis</div>
+        {logoFailed ? (
+          <div className="text-2xl font-bold tracking-tight text-slate-950">Auroranexis</div>
+        ) : (
+          <img
+            src={BRANDING_ASSETS.logoHorizontalOnLight}
+            alt="Auroranexis"
+            className="mx-auto h-10 w-auto max-h-12 max-w-[240px] object-contain opacity-100"
+            onError={() => setLogoFailed(true)}
+          />
+        )}
         <p className="mt-3 text-base leading-relaxed text-slate-700">
           Monitor clients.
           <br />
