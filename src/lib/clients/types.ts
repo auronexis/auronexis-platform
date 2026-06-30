@@ -29,11 +29,19 @@ export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
   archived: "Archived",
 };
 
-const BASE_COLUMNS =
-  "id, organization_id, name, status, owner_id, health_score, contact_name, contact_email, notes, created_at, updated_at";
+const BASE_COLUMNS_V1 =
+  "id, organization_id, name, status, contact_name, contact_email, notes, created_at, updated_at";
 
-export const CLIENT_SELECT_COLUMNS = BASE_COLUMNS;
-export const CLIENT_SELECT_COLUMNS_WITH_REVENUE = `${BASE_COLUMNS}, monthly_revenue`;
+const BASE_COLUMNS_V2 =
+  "id, organization_id, name, status, owner_id, health_score, sla_policy_id, contact_name, contact_email, notes, created_at, updated_at";
+
+/** Preferred select — requires clients v2 columns (owner_id, health_score). */
+export const CLIENT_SELECT_COLUMNS = BASE_COLUMNS_V2;
+export const CLIENT_SELECT_COLUMNS_WITH_REVENUE = `${BASE_COLUMNS_V2}, monthly_revenue`;
+
+/** Fallback when v2 migration has not been applied yet. */
+export const CLIENT_SELECT_COLUMNS_V1 = BASE_COLUMNS_V1;
+export const CLIENT_SELECT_COLUMNS_V1_WITH_REVENUE = `${BASE_COLUMNS_V1}, monthly_revenue`;
 
 export function formatClientRevenue(value: number | null | undefined): string {
   if (value == null) {

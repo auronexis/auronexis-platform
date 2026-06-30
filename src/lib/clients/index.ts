@@ -8,7 +8,8 @@ export {
   formatHealthScore,
   healthScoreTone,
 } from "./types";
-export { listClients, getClientById, listOrgUsers } from "./queries";
+export { listClients, listClientsSafe, getClientById, listOrgUsers } from "./queries";
+export type { ListClientsResult } from "./queries";
 export {
   createClientAction,
   updateClientAction,

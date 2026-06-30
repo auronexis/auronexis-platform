@@ -5,7 +5,8 @@ import { ClientFilters } from "@/components/clients/client-filters";
 import { ClientList } from "@/components/clients/client-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { listClients } from "@/lib/clients/queries";
+import { FormAlert } from "@/components/ui/form-alert";
+import { listClientsSafe } from "@/lib/clients/queries";
 import { requireSession } from "@/lib/auth/session";
 import { canAccessModule } from "@/lib/rbac/permissions";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
@@ -28,7 +29,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
     ? (params.status as ClientStatus)
     : undefined;
   const search = params.q?.trim() || undefined;
-  const clients = await listClients(session, { status, search });
+  const { clients, error: loadError } = await listClientsSafe(session, { status, search });
   const canCreate = canAccessModule(session.role, "clients", "create");
   const canManage =
     canAccessModule(session.role, "clients", "update") ||
@@ -52,6 +53,12 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
       <Suspense fallback={null}>
         <ClientFilters />
       </Suspense>
+
+      {loadError ? (
+        <FormAlert variant="error">
+          Unable to load clients. {loadError}
+        </FormAlert>
+      ) : null}
 
       <ClientList clients={clients} canManage={canManage} />
     </>
