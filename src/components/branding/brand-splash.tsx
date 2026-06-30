@@ -60,17 +60,19 @@ export function BrandSplash({
           "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
         )}
       >
-        <div
-          className={cn(
-            "text-2xl font-bold tracking-tight",
-            isDark ? "text-white" : "text-slate-950",
-          )}
-        >
-          Auroranexis
+        <div className="text-center">
+          <div
+            className={cn(
+              "text-3xl font-bold tracking-tight",
+              isDark ? "text-white" : "text-slate-950",
+            )}
+          >
+            Auroranexis
+          </div>
+          <p className={cn("mt-3 text-sm", isDark ? "text-slate-300" : "text-slate-600")}>
+            Loading workspace...
+          </p>
         </div>
-        <p className={cn("mt-2 text-sm", isDark ? "text-slate-300" : "text-slate-600")}>
-          Loading workspace...
-        </p>
         <LoadingIndicator />
       </div>
     </div>

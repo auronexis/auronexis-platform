@@ -70,9 +70,9 @@ export function LoginBrandingShell({
       <LoginDecorativePanel backgroundUrl={loginBackground} />
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-white p-6 shadow-sm dark:bg-white">
-          <div className="mb-6 text-center">
-            <div className="text-2xl font-bold tracking-tight text-slate-950">Auroranexis</div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+          <div className="mb-8 text-center">
+            <div className="text-3xl font-bold tracking-tight text-slate-950">Auroranexis</div>
+            <p className="mt-3 text-base leading-relaxed text-slate-700">
               Monitor clients.
               <br />
               Detect risks.
