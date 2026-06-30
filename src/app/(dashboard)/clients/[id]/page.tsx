@@ -353,10 +353,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               )}
             </DetailSection>
 
-            <DetailSection
-              title="Create portal user"
-              description="Portal login URL: /client-portal/login"
-            >
+            <DetailSection title="Create portal user">
+              <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+                Portal login URL:{" "}
+                <span className="font-medium text-blue-600 dark:text-blue-300">/client-portal/login</span>
+              </p>
               <CreatePortalUserForm clientId={client.id} />
             </DetailSection>
           </>

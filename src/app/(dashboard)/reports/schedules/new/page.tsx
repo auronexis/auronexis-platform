@@ -45,7 +45,7 @@ export default async function NewReportSchedulePage() {
           }
         />
         <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-1 p-12 text-center">
-          <p className="text-lg font-medium text-navy-950">Add a client first</p>
+          <p className="text-lg font-medium text-foreground">Add a client first</p>
           <p className="mt-2 text-sm text-muted">
             Report schedules must be linked to an existing client record.
           </p>

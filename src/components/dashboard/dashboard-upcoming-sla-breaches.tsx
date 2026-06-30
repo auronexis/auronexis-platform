@@ -22,7 +22,7 @@ export function DashboardUpcomingSlaBreaches({ items }: DashboardUpcomingSlaBrea
         <li key={`${item.entityType}-${item.id}`} className="py-3 first:pt-0 last:pb-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <Link href={item.href} className="font-medium text-navy-950 hover:text-accent-blue">
+              <Link href={item.href} className="font-medium text-foreground hover:text-primary">
                 {item.title}
               </Link>
               <p className="mt-1 text-xs text-muted">

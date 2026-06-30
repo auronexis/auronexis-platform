@@ -40,7 +40,7 @@ export function ReportEmailHistory({ deliveries }: ReportEmailHistoryProps) {
         <tbody className="divide-y divide-border">
           {deliveries.map((delivery) => (
             <tr key={delivery.id}>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-navy-950">
+              <td className="whitespace-nowrap px-6 py-4 text-sm text-foreground">
                 {delivery.recipient_email}
               </td>
               <td className="whitespace-nowrap px-6 py-4">

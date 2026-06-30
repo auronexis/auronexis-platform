@@ -15,7 +15,7 @@ export function PortalUserList({ users }: PortalUserListProps) {
       {users.map((user) => (
         <li key={user.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div>
-            <p className="font-medium text-navy-950">{user.full_name}</p>
+            <p className="font-medium text-foreground">{user.full_name}</p>
             <p className="text-sm text-muted">{user.email}</p>
           </div>
           <div className="flex items-center gap-3">

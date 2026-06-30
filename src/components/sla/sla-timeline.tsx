@@ -111,7 +111,7 @@ export function SlaTimeline({ sla }: SlaTimelineProps) {
               <p
                 className={cn(
                   "text-sm font-medium",
-                  step.state === "inactive" ? "text-muted" : "text-navy-950",
+                  step.state === "inactive" ? "text-muted" : "text-foreground",
                 )}
               >
                 {step.label}

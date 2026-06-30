@@ -85,7 +85,7 @@ export function BrandingPreview({ branding }: BrandingPreviewProps) {
 function PreviewCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-border bg-surface-1 p-4 shadow-sm">
-      <h3 className="mb-3 text-sm font-semibold text-navy-950">{title}</h3>
+      <h3 className="mb-3 text-sm font-semibold text-foreground">{title}</h3>
       {children}
     </div>
   );

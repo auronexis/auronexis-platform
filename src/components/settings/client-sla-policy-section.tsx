@@ -33,26 +33,26 @@ export function ClientSlaPolicySection({
   return (
     <div className="space-y-6">
       <div className="rounded-lg border border-border bg-muted/10 p-4">
-        <p className="text-sm font-semibold text-navy-950">{assignmentHeading(assignment)}</p>
+        <p className="text-sm font-semibold text-foreground">{assignmentHeading(assignment)}</p>
         {policy ? (
           <dl className="mt-4 grid gap-4 sm:grid-cols-3">
             <div>
               <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                 Policy name
               </dt>
-              <dd className="mt-1 text-sm text-navy-950">{policy.name}</dd>
+              <dd className="mt-1 text-sm text-foreground">{policy.name}</dd>
             </div>
             <div>
               <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                 Incident response
               </dt>
-              <dd className="mt-1 text-sm text-navy-950">{formatSlaHours(policy.incident_hours)}</dd>
+              <dd className="mt-1 text-sm text-foreground">{formatSlaHours(policy.incident_hours)}</dd>
             </div>
             <div>
               <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                 Risk response
               </dt>
-              <dd className="mt-1 text-sm text-navy-950">{formatSlaHours(policy.risk_hours)}</dd>
+              <dd className="mt-1 text-sm text-foreground">{formatSlaHours(policy.risk_hours)}</dd>
             </div>
           </dl>
         ) : (

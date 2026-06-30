@@ -88,7 +88,7 @@ export default async function EscalationRuleDetailPage({ params }: EscalationRul
           </div>
 
           <div className="rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-navy-950">Rule status</h2>
+            <h2 className="text-sm font-semibold text-foreground">Rule status</h2>
             <p className="mt-1 text-sm text-muted">
               Disabled rules are ignored when operational triggers fire.
             </p>
@@ -98,7 +98,7 @@ export default async function EscalationRuleDetailPage({ params }: EscalationRul
           </div>
 
           <div className="rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-navy-950">Delete rule</h2>
+            <h2 className="text-sm font-semibold text-foreground">Delete rule</h2>
             <p className="mt-1 text-sm text-muted">
               Deleting a rule stops future escalations but preserves past execution history.
             </p>

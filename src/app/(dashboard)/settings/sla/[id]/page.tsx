@@ -79,7 +79,7 @@ export default async function SlaPolicyDetailPage({ params }: SlaPolicyDetailPag
           </div>
 
           <div className="rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-navy-950">Default policy</h2>
+            <h2 className="text-sm font-semibold text-foreground">Default policy</h2>
             <p className="mt-1 text-sm text-muted">
               Only one policy can be the organization default. Clients without an assigned policy
               inherit this default.
@@ -94,7 +94,7 @@ export default async function SlaPolicyDetailPage({ params }: SlaPolicyDetailPag
           </div>
 
           <div className="rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-navy-950">Delete policy</h2>
+            <h2 className="text-sm font-semibold text-foreground">Delete policy</h2>
             <p className="mt-1 text-sm text-muted">
               Deleting a policy clears client assignments that reference it.
             </p>
