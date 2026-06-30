@@ -108,6 +108,9 @@ export type PortalDashboardData = {
 export const PORTAL_CLIENT_SELECT =
   "id, organization_id, name, status, contact_name, contact_email, owner_id, sla_policy_id, health_score";
 
+export const PORTAL_CLIENT_SELECT_MINIMAL =
+  "id, organization_id, name, status, contact_name, contact_email";
+
 export const PORTAL_REPORT_SELECT =
   "id, title, reporting_period_start, reporting_period_end, status, executive_summary, summary, key_wins, key_risks, next_actions, sent_at, published_at, health_score, sla_score, version, updated_at";
 

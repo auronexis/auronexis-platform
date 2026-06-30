@@ -1,4 +1,4 @@
--- Activity system v2 — event_type column, indexes, insert policy
+-- Activity system v2 — event_type column, indexes, insert policy (idempotent)
 
 ALTER TABLE public.activity_events
   ADD COLUMN IF NOT EXISTS event_type TEXT;
@@ -23,14 +23,28 @@ SET event_type = CASE
 END
 WHERE event_type IS NULL;
 
-ALTER TABLE public.activity_events
-  ALTER COLUMN event_type SET NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'activity_events'
+      AND column_name = 'event_type'
+      AND is_nullable = 'YES'
+  ) THEN
+    ALTER TABLE public.activity_events
+      ALTER COLUMN event_type SET NOT NULL;
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_activity_events_event_type
   ON public.activity_events (organization_id, event_type);
 
 CREATE INDEX IF NOT EXISTS idx_activity_events_entity_id
   ON public.activity_events (organization_id, entity_type, entity_id);
+
+DROP POLICY IF EXISTS activity_events_insert_own_org ON public.activity_events;
 
 CREATE POLICY activity_events_insert_own_org
   ON public.activity_events

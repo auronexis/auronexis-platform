@@ -16,6 +16,7 @@ export function ReportPublishDialog({
   disabled = false,
 }: ReportPublishDialogProps) {
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   return (
@@ -31,8 +32,18 @@ export function ReportPublishDialog({
               Publish &quot;{reportTitle}&quot; to the client portal? Clients will see the latest
               published version only.
             </p>
+            {error ? (
+              <p className="mt-3 text-sm text-danger">{error}</p>
+            ) : null}
             <div className="mt-6 flex justify-end gap-3">
-              <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setOpen(false);
+                  setError(null);
+                }}
+              >
                 Cancel
               </Button>
               <Button
@@ -40,7 +51,11 @@ export function ReportPublishDialog({
                 disabled={pending}
                 onClick={() =>
                   startTransition(async () => {
-                    await publishReportV2Action(reportId);
+                    setError(null);
+                    const result = await publishReportV2Action(reportId);
+                    if (result?.error) {
+                      setError(result.error);
+                    }
                   })
                 }
               >

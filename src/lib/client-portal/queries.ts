@@ -50,13 +50,12 @@ export async function listPortalUsersForClient(
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.warn("[client-portal] listPortalUsersForClient failed:", error.message);
+    return [];
   }
 
   return (data ?? []) as ClientPortalUser[];
 }
-
-/** Dashboard summary for the signed-in portal user. */
 export async function getPortalDashboardData(
   session: ClientPortalSessionContext,
 ): Promise<PortalDashboardData> {
@@ -85,15 +84,18 @@ export async function getPortalDashboardData(
   ]);
 
   if (risksResult.error || incidentsResult.error || latestReportResult.error) {
-    throw new Error("Unable to load portal dashboard.");
+    console.warn("[client-portal] getPortalDashboardData partial failure");
   }
 
   return {
     clientName: session.client.name,
     clientStatus: session.client.status,
-    openRisksCount: risksResult.count ?? 0,
-    openIncidentsCount: incidentsResult.count ?? 0,
-    latestReport: (latestReportResult.data as PortalReportListItem | null) ?? null,
+    openRisksCount: risksResult.error ? 0 : (risksResult.count ?? 0),
+    openIncidentsCount: incidentsResult.error ? 0 : (incidentsResult.count ?? 0),
+    latestReport:
+      latestReportResult.error || !latestReportResult.data
+        ? null
+        : ((latestReportResult.data as PortalReportListItem) ?? null),
   };
 }
 
@@ -138,7 +140,8 @@ export async function getPortalReportById(
     .maybeSingle();
 
   if (error) {
-    throw new Error(error.message);
+    console.warn("[client-portal] getPortalReportById failed:", error.message);
+    return null;
   }
 
   return (data as PortalReportView | null) ?? null;
@@ -158,7 +161,8 @@ export async function listPortalRisks(
     .order("due_date", { ascending: true, nullsFirst: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.warn("[client-portal] listPortalRisks failed:", error.message);
+    return [];
   }
 
   return (data ?? []) as PortalRiskView[];
@@ -178,7 +182,8 @@ export async function listPortalIncidents(
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.warn("[client-portal] listPortalIncidents failed:", error.message);
+    return [];
   }
 
   return (data ?? []) as PortalIncidentView[];
@@ -217,7 +222,13 @@ export async function getPortalReportMetrics(
   ]);
 
   if (openRisks.error || criticalRisks.error || openIncidents.error || criticalIncidents.error) {
-    throw new Error("Unable to load report metrics.");
+    console.warn("[client-portal] getPortalReportMetrics failed");
+    return {
+      openRisksCount: 0,
+      criticalRisksCount: 0,
+      openIncidentsCount: 0,
+      criticalIncidentsCount: 0,
+    };
   }
 
   return {
@@ -243,7 +254,8 @@ export async function getPortalRelatedOpenRisks(
     .order("due_date", { ascending: true, nullsFirst: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.warn("[client-portal] getPortalRelatedOpenRisks failed:", error.message);
+    return [];
   }
 
   return (data ?? []) as RelatedOpenRisk[];
@@ -264,7 +276,8 @@ export async function getPortalRelatedOpenIncidents(
     .order("due_at", { ascending: true, nullsFirst: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.warn("[client-portal] getPortalRelatedOpenIncidents failed:", error.message);
+    return [];
   }
 
   return (data ?? []) as RelatedOpenIncident[];
@@ -476,44 +489,66 @@ export async function getPortalOverviewData(
   session: ClientPortalSessionContext,
   supportEmail: string | null,
 ): Promise<PortalOverviewData> {
-  const [healthSnapshot, latestReportResult, slaAssignment, recentEvents, contacts] =
-    await Promise.all([
-      getPortalLatestHealthSnapshot(session),
-      (async () => {
-        const supabase = await createClient();
-        return supabase
-          .from("reports")
-          .select(PORTAL_REPORT_LIST_SELECT)
-          .eq("client_id", session.client.id)
-          .in("status", PORTAL_VISIBLE_REPORT_STATUSES)
-          .order("updated_at", { ascending: false, nullsFirst: false })
-          .limit(1)
-          .maybeSingle();
-      })(),
-      getPortalSlaAssignment(session),
-      listPortalTimelineEvents(session, 5),
-      getPortalContacts(session, supportEmail),
-    ]);
+  try {
+    const [healthSnapshot, latestReportResult, slaAssignment, recentEvents, contacts] =
+      await Promise.all([
+        getPortalLatestHealthSnapshot(session),
+        (async () => {
+          const supabase = await createClient();
+          return supabase
+            .from("reports")
+            .select(PORTAL_REPORT_LIST_SELECT)
+            .eq("organization_id", session.organization.id)
+            .eq("client_id", session.client.id)
+            .in("status", PORTAL_VISIBLE_REPORT_STATUSES)
+            .order("updated_at", { ascending: false, nullsFirst: false })
+            .limit(1)
+            .maybeSingle();
+        })(),
+        getPortalSlaAssignment(session),
+        listPortalTimelineEvents(session, 5),
+        getPortalContacts(session, supportEmail),
+      ]);
 
-  const latestReport =
-    latestReportResult.error || !latestReportResult.data
-      ? null
-      : (latestReportResult.data as PortalReportListItem);
+    const latestReport =
+      latestReportResult.error || !latestReportResult.data
+        ? null
+        : (latestReportResult.data as PortalReportListItem);
 
-  return {
-    clientName: session.client.name,
-    health: healthSnapshot
-      ? {
-          score: healthSnapshot.score,
-          status: healthSnapshot.status,
-          delta: healthSnapshot.delta,
-          reason: healthSnapshot.reason,
-          calculated_at: healthSnapshot.calculated_at,
-        }
-      : null,
-    latestReport,
-    slaAssignment,
-    recentEvents,
-    contacts,
-  };
+    return {
+      clientName: session.client.name,
+      health: healthSnapshot
+        ? {
+            score: healthSnapshot.score,
+            status: healthSnapshot.status,
+            delta: healthSnapshot.delta,
+            reason: healthSnapshot.reason,
+            calculated_at: healthSnapshot.calculated_at,
+          }
+        : null,
+      latestReport,
+      slaAssignment,
+      recentEvents,
+      contacts,
+    };
+  } catch (error) {
+    console.warn("[client-portal] getPortalOverviewData failed:", error);
+    return {
+      clientName: session.client.name,
+      health: null,
+      latestReport: null,
+      slaAssignment: {
+        assignedPolicyId: null,
+        effectivePolicy: null,
+        source: "none",
+      },
+      recentEvents: [],
+      contacts: {
+        contactName: session.client.contact_name,
+        contactEmail: session.client.contact_email,
+        accountOwnerName: null,
+        supportEmail,
+      },
+    };
+  }
 }

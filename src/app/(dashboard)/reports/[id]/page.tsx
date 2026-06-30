@@ -113,16 +113,21 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
 
   const [metrics, relatedRisks, relatedIncidents, emailDeliveries, aiAccess, planKey] =
     await Promise.all([
-      getClientReportMetrics(session, report.client_id),
-      getRelatedOpenRisks(session, report.client_id),
-      getRelatedOpenIncidents(session, report.client_id),
+      getClientReportMetrics(session, report.client_id).catch(() => ({
+        openRisksCount: 0,
+        criticalRisksCount: 0,
+        openIncidentsCount: 0,
+        criticalIncidentsCount: 0,
+      })),
+      getRelatedOpenRisks(session, report.client_id).catch(() => []),
+      getRelatedOpenIncidents(session, report.client_id).catch(() => []),
       canViewEmailHistory ? listReportEmailDeliveries(session, report.id) : Promise.resolve([]),
       checkPlanFeatureForSession(session, "ai_report_assistant"),
       getCurrentPlan(session.organization.id),
     ]);
 
   const aiUsageSummary = await getAIUsageSummaryForSession(session, planKey);
-  const versionHistory = await getReportHistory(session, report.id);
+  const versionHistory = (await getReportHistory(session, report.id)).data ?? [];
 
   const aiEnabled = aiAccess.allowed;
   const aiUpgradeMessage = getFeatureUpgradeMessage("ai_report_assistant");
@@ -341,7 +346,7 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
         </div>
 
         <DetailSection title="Version history" description="Previous versions in this report series.">
-          <ReportVersionHistory versions={versionHistory.data ?? []} />
+          <ReportVersionHistory versions={versionHistory} />
         </DetailSection>
 
         <ReportClientInsights

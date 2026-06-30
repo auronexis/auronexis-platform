@@ -104,19 +104,29 @@ export async function buildHealthSection(
   try {
     return await loadHealthTrend(session.organization.id, clientId);
   } catch {
-    const metrics = await gatherClientHealthMetrics(session, clientId, clientStatus);
-    const result = calculateHealth({
-      client: { id: clientId, name: "", status: clientStatus, updated_at: new Date().toISOString() },
-      metrics,
-    });
+    try {
+      const metrics = await gatherClientHealthMetrics(session, clientId, clientStatus);
+      const result = calculateHealth({
+        client: { id: clientId, name: "", status: clientStatus, updated_at: new Date().toISOString() },
+        metrics,
+      });
 
-    return {
-      current: result.score,
-      previous: null,
-      delta: 0,
-      status: result.status,
-      points: [],
-    };
+      return {
+        current: result.score,
+        previous: null,
+        delta: 0,
+        status: result.status,
+        points: [],
+      };
+    } catch {
+      return {
+        current: null,
+        previous: null,
+        delta: null,
+        status: null,
+        points: [],
+      };
+    }
   }
 }
 

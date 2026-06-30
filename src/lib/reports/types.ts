@@ -52,6 +52,27 @@ export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
 export const REPORT_SELECT_COLUMNS =
   "id, organization_id, client_id, title, reporting_period_start, reporting_period_end, status, executive_summary, summary, key_wins, key_risks, next_actions, assigned_user_id, sent_at, published_at, version, root_report_id, health_score, sla_score, created_at, updated_at";
 
+/** Pre–Reports Engine V2 columns for environments where v2 migration has not run yet. */
+export const REPORT_SELECT_COLUMNS_V1 =
+  "id, organization_id, client_id, title, reporting_period_start, reporting_period_end, status, executive_summary, key_wins, key_risks, next_actions, assigned_user_id, sent_at, created_at, updated_at";
+
+export function isMissingReportColumnError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return lower.includes("does not exist") || (lower.includes("could not find") && lower.includes("column"));
+}
+
+export function normalizeReportRow(row: Record<string, unknown>): ReportWithRelations {
+  return {
+    ...(row as ReportWithRelations),
+    summary: (row.summary as string | null | undefined) ?? null,
+    published_at: (row.published_at as string | null | undefined) ?? null,
+    version: (row.version as number | undefined) ?? 1,
+    root_report_id: (row.root_report_id as string | null | undefined) ?? null,
+    health_score: (row.health_score as number | null | undefined) ?? null,
+    sla_score: (row.sla_score as number | null | undefined) ?? null,
+  };
+}
+
 export const REPORT_LIST_SELECT = `
   ${REPORT_SELECT_COLUMNS},
   clients ( name, contact_email ),

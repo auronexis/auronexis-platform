@@ -29,7 +29,11 @@ export default async function SlaSettingsPage() {
     );
   }
 
-  const policies = await listSlaPolicies(session);
+  const policiesResult = await listSlaPolicies(session).catch((error) => {
+    console.warn("[settings/sla] listSlaPolicies failed:", error);
+    return [] as Awaited<ReturnType<typeof listSlaPolicies>>;
+  });
+  const policies = policiesResult;
   const canManage = canManageSlaPolicies(session);
 
   return (

@@ -1,4 +1,4 @@
--- Health Engine V2 — client health snapshots
+-- Health Engine V2 — client health snapshots (idempotent)
 
 CREATE TABLE IF NOT EXISTS public.health_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,11 +23,15 @@ CREATE INDEX IF NOT EXISTS idx_health_snapshots_client_calculated
 
 ALTER TABLE public.health_snapshots ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS health_snapshots_select_own_org ON public.health_snapshots;
+
 CREATE POLICY health_snapshots_select_own_org
   ON public.health_snapshots
   FOR SELECT
   TO authenticated
   USING (organization_id = public.current_organization_id());
+
+DROP POLICY IF EXISTS health_snapshots_insert_own_org ON public.health_snapshots;
 
 CREATE POLICY health_snapshots_insert_own_org
   ON public.health_snapshots

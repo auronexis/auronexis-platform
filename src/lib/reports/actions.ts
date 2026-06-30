@@ -322,7 +322,10 @@ export async function markReportReadyAction(reportId: string): Promise<void> {
 /** Publish a report to the client portal — delegates to Reports Engine V2. */
 export async function publishReportAction(reportId: string): Promise<void> {
   const { publishReportV2Action } = await import("@/lib/reports-v2/actions");
-  await publishReportV2Action(reportId);
+  const result = await publishReportV2Action(reportId);
+  if (result?.error) {
+    throw new Error(result.error);
+  }
 }
 
 /** Record email delivery timestamp while keeping published status. */

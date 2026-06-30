@@ -9,7 +9,7 @@ export const ACTIVITY_SELECT = `
   actor:users!activity_events_actor_user_id_fkey ( full_name )
 `;
 
-const ACTIVITY_SELECT_LEGACY = `
+export const ACTIVITY_SELECT_LEGACY = `
   id, organization_id, actor_user_id, entity_type, entity_id, action, title, description, metadata, created_at,
   actor:users!activity_events_actor_user_id_fkey ( full_name )
 `;

@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
-import { PORTAL_CLIENT_SELECT } from "@/lib/client-portal/types";
+import { PORTAL_CLIENT_SELECT, PORTAL_CLIENT_SELECT_MINIMAL } from "@/lib/client-portal/types";
 import type { ClientPortalSessionContext } from "@/lib/client-portal/types";
 import { createClient } from "@/lib/supabase/server";
 import type { Client, ClientPortalUser, Organization } from "@/types/database";
@@ -46,7 +46,20 @@ export const getClientPortalSession = cache(async (): Promise<ClientPortalSessio
         .maybeSingle(),
     ]);
 
-  const client = clientData as Pick<
+  let clientRow = clientData;
+  let resolvedClientError = clientError;
+
+  if (clientError && clientError.message.toLowerCase().includes("column")) {
+    const fallback = await supabase
+      .from("clients")
+      .select(PORTAL_CLIENT_SELECT_MINIMAL)
+      .eq("id", portalUser.client_id)
+      .maybeSingle();
+    clientRow = fallback.data;
+    resolvedClientError = fallback.error;
+  }
+
+  const client = clientRow as Pick<
     Client,
     | "id"
     | "name"
@@ -60,7 +73,7 @@ export const getClientPortalSession = cache(async (): Promise<ClientPortalSessio
   > | null;
   const organization = organizationData as Pick<Organization, "id" | "name"> | null;
 
-  if (clientError || !client || orgError || !organization) {
+  if (resolvedClientError || !client || orgError || !organization) {
     return null;
   }
 
@@ -68,7 +81,12 @@ export const getClientPortalSession = cache(async (): Promise<ClientPortalSessio
     authUserId: authUser.id,
     email: authUser.email ?? portalUser.email,
     portalUser,
-    client,
+    client: {
+      ...client,
+      owner_id: client.owner_id ?? null,
+      sla_policy_id: client.sla_policy_id ?? null,
+      health_score: client.health_score ?? null,
+    },
     organization,
   };
 });

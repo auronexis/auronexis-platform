@@ -9,12 +9,54 @@ import type {
 } from "@/lib/reports/types";
 import {
   REPORT_LIST_SELECT,
+  REPORT_SELECT_COLUMNS_V1,
+  isMissingReportColumnError,
+  normalizeReportRow,
 } from "@/lib/reports/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 type ListReportsOptions = {
   includeArchived?: boolean;
 };
+
+const REPORT_LIST_SELECT_V1 = `
+  ${REPORT_SELECT_COLUMNS_V1},
+  clients ( name, contact_email ),
+  users ( full_name )
+`;
+
+async function selectReportById(
+  session: SessionContext,
+  reportId: string,
+): Promise<{ row: ReportWithRelations | null; error: string | null }> {
+  const supabase = await createClient();
+
+  let { data, error } = await supabase
+    .from("reports")
+    .select(REPORT_LIST_SELECT)
+    .eq("id", reportId)
+    .eq("organization_id", session.organization.id)
+    .maybeSingle();
+
+  if (error && isMissingReportColumnError(error.message)) {
+    ({ data, error } = await supabase
+      .from("reports")
+      .select(REPORT_LIST_SELECT_V1)
+      .eq("id", reportId)
+      .eq("organization_id", session.organization.id)
+      .maybeSingle());
+  }
+
+  if (error) {
+    console.warn("[reports] getReportById failed:", error.message);
+    return { row: null, error: error.message };
+  }
+
+  return {
+    row: data ? normalizeReportRow(data as Record<string, unknown>) : null,
+    error: null,
+  };
+}
 
 /** List reports for the current organization with client and assignee names. */
 export async function listReports(
@@ -33,13 +75,28 @@ export async function listReports(
     query = query.neq("status", "archived");
   }
 
-  const { data, error } = await query;
+  let { data, error } = await query;
 
-  if (error) {
-    throw new Error(error.message);
+  if (error && isMissingReportColumnError(error.message)) {
+    let legacyQuery = supabase
+      .from("reports")
+      .select(REPORT_LIST_SELECT_V1)
+      .eq("organization_id", session.organization.id)
+      .order("updated_at", { ascending: false });
+
+    if (!options.includeArchived) {
+      legacyQuery = legacyQuery.neq("status", "archived");
+    }
+
+    ({ data, error } = await legacyQuery);
   }
 
-  return (data ?? []) as ReportWithRelations[];
+  if (error) {
+    console.warn("[reports] listReports failed:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => normalizeReportRow(row as Record<string, unknown>));
 }
 
 /** Load a single report by id within the current organization. */
@@ -47,20 +104,8 @@ export async function getReportById(
   session: SessionContext,
   reportId: string,
 ): Promise<ReportWithRelations | null> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("reports")
-    .select(REPORT_LIST_SELECT)
-    .eq("id", reportId)
-    .eq("organization_id", session.organization.id)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data as ReportWithRelations | null) ?? null;
+  const { row } = await selectReportById(session, reportId);
+  return row;
 }
 
 /** Summary risk/incident counts for a linked client. */
@@ -101,7 +146,13 @@ export async function getClientReportMetrics(
   ]);
 
   if (openRisks.error || criticalRisks.error || openIncidents.error || criticalIncidents.error) {
-    throw new Error("Unable to load client report metrics.");
+    console.warn("[reports] getClientReportMetrics failed");
+    return {
+      openRisksCount: 0,
+      criticalRisksCount: 0,
+      openIncidentsCount: 0,
+      criticalIncidentsCount: 0,
+    };
   }
 
   return {
@@ -129,7 +180,8 @@ export async function getRelatedOpenRisks(
     .order("due_date", { ascending: true, nullsFirst: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.warn("[reports] getRelatedOpenRisks failed:", error.message);
+    return [];
   }
 
   return (data ?? []) as RelatedOpenRisk[];
@@ -152,7 +204,8 @@ export async function getRelatedOpenIncidents(
     .order("due_at", { ascending: true, nullsFirst: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.warn("[reports] getRelatedOpenRisks failed:", error.message);
+    return [];
   }
 
   return (data ?? []) as RelatedOpenIncident[];

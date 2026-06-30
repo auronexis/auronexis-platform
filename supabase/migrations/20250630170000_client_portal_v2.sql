@@ -1,9 +1,10 @@
--- Client Portal V2 — read access for health, activity, SLA; last login tracking
+-- Client Portal V2 — read access for health, activity, SLA; last login tracking (idempotent)
 
 ALTER TABLE public.client_portal_users
   ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
 
--- Portal users may read health snapshots for their client
+DROP POLICY IF EXISTS health_snapshots_select_portal_client ON public.health_snapshots;
+
 CREATE POLICY health_snapshots_select_portal_client
   ON public.health_snapshots
   FOR SELECT
@@ -14,7 +15,8 @@ CREATE POLICY health_snapshots_select_portal_client
     AND public.current_portal_client_id() IS NOT NULL
   );
 
--- Portal users may read safe client-facing activity events
+DROP POLICY IF EXISTS activity_events_select_portal_client ON public.activity_events;
+
 CREATE POLICY activity_events_select_portal_client
   ON public.activity_events
   FOR SELECT
@@ -44,7 +46,8 @@ CREATE POLICY activity_events_select_portal_client
     )
   );
 
--- Portal users may read SLA policies assigned to or default for their client
+DROP POLICY IF EXISTS sla_policies_select_portal_client ON public.sla_policies;
+
 CREATE POLICY sla_policies_select_portal_client
   ON public.sla_policies
   FOR SELECT
@@ -63,7 +66,8 @@ CREATE POLICY sla_policies_select_portal_client
     )
   );
 
--- Portal users may read their client's account owner name only
+DROP POLICY IF EXISTS users_select_portal_client_owner ON public.users;
+
 CREATE POLICY users_select_portal_client_owner
   ON public.users
   FOR SELECT
@@ -79,7 +83,8 @@ CREATE POLICY users_select_portal_client_owner
     )
   );
 
--- Portal users may update their own last_login_at
+DROP POLICY IF EXISTS client_portal_users_update_self_login ON public.client_portal_users;
+
 CREATE POLICY client_portal_users_update_self_login
   ON public.client_portal_users
   FOR UPDATE

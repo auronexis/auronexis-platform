@@ -107,11 +107,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const canEdit = sessionHasPermission(session, "clients.write");
 
   const [client, overview, portalUsers, slaPolicies, orgUsers, recentReportsResult] = await Promise.all([
-    getClientById(session, id),
+    getClientById(session, id).catch(() => null),
     getClientOverview(session, id),
-    canManagePortal ? listPortalUsersForClient(session, id) : Promise.resolve([]),
-    listSlaPolicies(session),
-    canEdit ? listOrgUsers(session) : Promise.resolve([]),
+    canManagePortal
+      ? listPortalUsersForClient(session, id).catch(() => [] as Awaited<ReturnType<typeof listPortalUsersForClient>>)
+      : Promise.resolve([]),
+    listSlaPolicies(session).catch(() => [] as Awaited<ReturnType<typeof listSlaPolicies>>),
+    canEdit ? listOrgUsers(session).catch(() => [] as Awaited<ReturnType<typeof listOrgUsers>>) : Promise.resolve([]),
     listReportsV2(session, { clientId: id, limit: 5 }),
   ]);
 

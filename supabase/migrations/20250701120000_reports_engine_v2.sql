@@ -1,4 +1,4 @@
--- Reports Engine V2 — versioning, metrics, and status lifecycle
+-- Reports Engine V2 — versioning, metrics, and status lifecycle (idempotent)
 
 ALTER TABLE public.reports
   ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ,
@@ -14,7 +14,8 @@ WHERE root_report_id IS NULL;
 
 UPDATE public.reports
 SET published_at = COALESCE(published_at, updated_at)
-WHERE status IN ('published', 'sent');
+WHERE status IN ('published', 'sent')
+  AND published_at IS NULL;
 
 UPDATE public.reports
 SET status = 'generated'
@@ -34,6 +35,9 @@ ALTER TABLE public.reports
 ALTER TABLE public.reports
   ALTER COLUMN status SET DEFAULT 'draft';
 
+CREATE INDEX IF NOT EXISTS idx_reports_org_status
+  ON public.reports (organization_id, status);
+
 CREATE INDEX IF NOT EXISTS idx_reports_org_published_at
   ON public.reports (organization_id, published_at DESC NULLS LAST);
 
@@ -43,7 +47,6 @@ CREATE INDEX IF NOT EXISTS idx_reports_org_client
 CREATE INDEX IF NOT EXISTS idx_reports_root_version
   ON public.reports (root_report_id, version DESC);
 
--- Portal: published reports only (newest version enforced in app layer)
 DROP POLICY IF EXISTS reports_select_portal_client ON public.reports;
 
 CREATE POLICY reports_select_portal_client
@@ -56,22 +59,13 @@ CREATE POLICY reports_select_portal_client
     AND public.current_portal_client_id() IS NOT NULL
   );
 
--- Org-scoped delete for owner/admin (additive)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public'
-      AND tablename = 'reports'
-      AND policyname = 'reports_delete_org'
-  ) THEN
-    CREATE POLICY reports_delete_org
-      ON public.reports
-      FOR DELETE
-      TO authenticated
-      USING (
-        organization_id = public.current_organization_id()
-        AND public.current_user_role() IN ('owner', 'admin')
-      );
-  END IF;
-END $$;
+DROP POLICY IF EXISTS reports_delete_org ON public.reports;
+
+CREATE POLICY reports_delete_org
+  ON public.reports
+  FOR DELETE
+  TO authenticated
+  USING (
+    organization_id = public.current_organization_id()
+    AND public.current_user_role() IN ('owner', 'admin')
+  );

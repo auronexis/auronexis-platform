@@ -1,4 +1,4 @@
-import { ACTIVITY_SELECT } from "@/lib/activity/queries";
+import { ACTIVITY_SELECT, ACTIVITY_SELECT_LEGACY } from "@/lib/activity/queries";
 import type { ActivityEventView } from "@/lib/activity/types";
 import { buildClientProfitabilityRows } from "@/lib/profitability/queries";
 import type { ClientProfitabilityRow } from "@/lib/profitability/types";
@@ -8,7 +8,7 @@ import {
   getRelatedOpenRisks,
 } from "@/lib/reports/queries";
 import type { RelatedOpenIncident, RelatedOpenRisk, ReportWithRelations } from "@/lib/reports/types";
-import { REPORT_LIST_SELECT } from "@/lib/reports/types";
+import { REPORT_LIST_SELECT, REPORT_SELECT_COLUMNS_V1, isMissingReportColumnError, normalizeReportRow } from "@/lib/reports/types";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 
@@ -31,6 +31,34 @@ export type ClientOverviewData = {
 const OPEN_ITEMS_LIMIT = 5;
 const ACTIVITY_LIMIT = 10;
 
+const EMPTY_CLIENT_OVERVIEW: ClientOverviewData = {
+  kpis: {
+    profitability: null,
+    openRisksCount: 0,
+    openIncidentsCount: 0,
+  },
+  latestReport: null,
+  openRisks: [],
+  openRisksTotal: 0,
+  openIncidents: [],
+  openIncidentsTotal: 0,
+  recentActivity: [],
+};
+
+function normalizeActivityEvent(row: Record<string, unknown>): ActivityEventView {
+  const eventType =
+    typeof row.event_type === "string" && row.event_type.length > 0
+      ? row.event_type
+      : typeof row.action === "string"
+        ? row.action
+        : "unknown";
+
+  return {
+    ...(row as ActivityEventView),
+    event_type: eventType,
+  };
+}
+
 /** Load client-related activity events without duplicating activity query logic. */
 async function listClientActivityEvents(
   session: SessionContext,
@@ -51,7 +79,8 @@ async function listClientActivityEvents(
   ]);
 
   if (risksResult.error || incidentsResult.error || reportsResult.error) {
-    throw new Error("Unable to load client activity.");
+    console.warn("[client-overview] unable to load entity ids for activity");
+    return [];
   }
 
   const riskIds = (risksResult.data ?? []).map((row) => (row as { id: string }).id);
@@ -75,7 +104,7 @@ async function listClientActivityEvents(
     filters.push(`and(entity_type.eq.report,entity_id.in.(${reportIds.join(",")}))`);
   }
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("activity_events")
     .select(ACTIVITY_SELECT)
     .eq("organization_id", organizationId)
@@ -83,11 +112,22 @@ async function listClientActivityEvents(
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  if (error) {
-    throw new Error(error.message);
+  if (error && error.message.toLowerCase().includes("event_type")) {
+    ({ data, error } = await supabase
+      .from("activity_events")
+      .select(ACTIVITY_SELECT_LEGACY)
+      .eq("organization_id", organizationId)
+      .or(filters.join(","))
+      .order("created_at", { ascending: false })
+      .limit(limit));
   }
 
-  return (data ?? []) as ActivityEventView[];
+  if (error) {
+    console.warn("[client-overview] listClientActivityEvents failed:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => normalizeActivityEvent(row as Record<string, unknown>));
 }
 
 /** Latest report for a client, if any. */
@@ -97,7 +137,7 @@ async function getLatestReportForClient(
 ): Promise<ReportWithRelations | null> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("reports")
     .select(REPORT_LIST_SELECT)
     .eq("organization_id", session.organization.id)
@@ -106,11 +146,23 @@ async function getLatestReportForClient(
     .limit(1)
     .maybeSingle();
 
-  if (error) {
-    throw new Error(error.message);
+  if (error && isMissingReportColumnError(error.message)) {
+    ({ data, error } = await supabase
+      .from("reports")
+      .select(`${REPORT_SELECT_COLUMNS_V1}, clients ( name, contact_email ), users ( full_name )`)
+      .eq("organization_id", session.organization.id)
+      .eq("client_id", clientId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle());
   }
 
-  return (data as ReportWithRelations | null) ?? null;
+  if (error) {
+    console.warn("[client-overview] getLatestReportForClient failed:", error.message);
+    return null;
+  }
+
+  return data ? normalizeReportRow(data as Record<string, unknown>) : null;
 }
 
 /** Profitability KPIs for a single client — reuses portfolio calculation. */
@@ -127,33 +179,38 @@ export async function getClientOverview(
   session: SessionContext,
   clientId: string,
 ): Promise<ClientOverviewData> {
-  const [
-    profitability,
-    metrics,
-    allOpenRisks,
-    allOpenIncidents,
-    latestReport,
-    recentActivity,
-  ] = await Promise.all([
-    getClientProfitabilityRow(session, clientId),
-    getClientReportMetrics(session, clientId),
-    getRelatedOpenRisks(session, clientId),
-    getRelatedOpenIncidents(session, clientId),
-    getLatestReportForClient(session, clientId),
-    listClientActivityEvents(session, clientId),
-  ]);
-
-  return {
-    kpis: {
+  try {
+    const [
       profitability,
-      openRisksCount: metrics.openRisksCount,
-      openIncidentsCount: metrics.openIncidentsCount,
-    },
-    latestReport,
-    openRisks: allOpenRisks.slice(0, OPEN_ITEMS_LIMIT),
-    openRisksTotal: allOpenRisks.length,
-    openIncidents: allOpenIncidents.slice(0, OPEN_ITEMS_LIMIT),
-    openIncidentsTotal: allOpenIncidents.length,
-    recentActivity,
-  };
+      metrics,
+      allOpenRisks,
+      allOpenIncidents,
+      latestReport,
+      recentActivity,
+    ] = await Promise.all([
+      getClientProfitabilityRow(session, clientId),
+      getClientReportMetrics(session, clientId),
+      getRelatedOpenRisks(session, clientId),
+      getRelatedOpenIncidents(session, clientId),
+      getLatestReportForClient(session, clientId),
+      listClientActivityEvents(session, clientId),
+    ]);
+
+    return {
+      kpis: {
+        profitability,
+        openRisksCount: metrics.openRisksCount,
+        openIncidentsCount: metrics.openIncidentsCount,
+      },
+      latestReport,
+      openRisks: allOpenRisks.slice(0, OPEN_ITEMS_LIMIT),
+      openRisksTotal: allOpenRisks.length,
+      openIncidents: allOpenIncidents.slice(0, OPEN_ITEMS_LIMIT),
+      openIncidentsTotal: allOpenIncidents.length,
+      recentActivity,
+    };
+  } catch (error) {
+    console.warn("[client-overview] getClientOverview failed:", error);
+    return EMPTY_CLIENT_OVERVIEW;
+  }
 }

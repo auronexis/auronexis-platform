@@ -72,7 +72,7 @@ export default async function TeamSettingsPage() {
         <SeatUsageCard usage={seatUsage} showLinks={false} />
         {canManagePortal ? (
           <div className="rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-950 dark:text-slate-100">Client portal access</h2>
+            <h2 className="text-sm font-semibold text-foreground">Client portal access</h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
               Create and disable client portal users from each client profile. Portal login:{" "}
               <span className="font-medium text-blue-600 dark:text-blue-300">/client-portal/login</span>

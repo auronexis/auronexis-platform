@@ -41,15 +41,15 @@ export async function generateReportV2Action(reportId: string): Promise<ReportV2
   return { success: "Report generated." };
 }
 
-export async function publishReportV2Action(reportId: string): Promise<void> {
+export async function publishReportV2Action(reportId: string): Promise<ReportV2ActionState> {
   const session = await requireSession();
   if (!canPublishReport(session)) {
-    throw new Error("You cannot publish reports.");
+    return { error: "You cannot publish reports." };
   }
 
   const result = await publishReport(session, reportId);
   if (result.error || !result.data) {
-    throw new Error(result.error ?? "Unable to publish report.");
+    return { error: result.error ?? "Unable to publish report." };
   }
 
   revalidatePath("/reports");
@@ -57,18 +57,21 @@ export async function publishReportV2Action(reportId: string): Promise<void> {
   revalidatePath("/dashboard");
   revalidatePath("/activity");
   revalidatePath("/", "layout");
+  if (result.data.client_id) {
+    revalidatePath(`/clients/${result.data.client_id}`);
+  }
   redirect(`/reports/${reportId}`);
 }
 
-export async function archiveReportV2Action(reportId: string): Promise<void> {
+export async function archiveReportV2Action(reportId: string): Promise<ReportV2ActionState> {
   const session = await requireSession();
   if (!canManageReportLifecycle(session)) {
-    throw new Error("You cannot archive reports.");
+    return { error: "You cannot archive reports." };
   }
 
   const result = await archiveReport(session, reportId);
   if (result.error) {
-    throw new Error(result.error);
+    return { error: result.error };
   }
 
   revalidatePath("/reports");
