@@ -35,9 +35,6 @@ const BASE_COLUMNS =
 export const CLIENT_SELECT_COLUMNS = BASE_COLUMNS;
 export const CLIENT_SELECT_COLUMNS_WITH_REVENUE = `${BASE_COLUMNS}, monthly_revenue`;
 
-export const CLIENT_LIST_SELECT = `${CLIENT_SELECT_COLUMNS}, owner:users!clients_owner_id_fkey(id, full_name)`;
-export const CLIENT_LIST_SELECT_WITH_REVENUE = `${CLIENT_SELECT_COLUMNS_WITH_REVENUE}, owner:users!clients_owner_id_fkey(id, full_name)`;
-
 export function formatClientRevenue(value: number | null | undefined): string {
   if (value == null) {
     return "—";

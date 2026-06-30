@@ -4,48 +4,23 @@ type BrandSplashProps = {
   fullScreen?: boolean;
   className?: string;
   variant?: "light" | "dark";
+  message?: string;
 };
-
-function LoadingIndicator() {
-  const dots = [
-    { className: "bg-primary", delay: "0ms" },
-    { className: "bg-info", delay: "150ms" },
-    { className: "bg-secondary", delay: "300ms" },
-  ] as const;
-
-  return (
-    <div className="mt-8 flex w-full flex-col items-center gap-4" aria-hidden>
-      <div className="flex items-center justify-center gap-1.5">
-        {dots.map((dot) => (
-          <span
-            key={dot.delay}
-            className={cn(
-              "h-1.5 w-1.5 rounded-full motion-safe:animate-pulse motion-reduce:animate-none",
-              dot.className,
-            )}
-            style={{ animationDelay: dot.delay }}
-          />
-        ))}
-      </div>
-      <div className="h-0.5 w-full overflow-hidden rounded-full bg-border-subtle">
-        <div className="skeleton-shimmer h-full w-2/5 rounded-full bg-gradient-to-r from-primary/40 via-info/50 to-secondary/40" />
-      </div>
-    </div>
-  );
-}
 
 /** In-app loading state — text wordmark only (no logo PNG). */
 export function BrandSplash({
   fullScreen = false,
   className,
-  variant = "light",
+  variant = "dark",
+  message = "Loading workspace...",
 }: BrandSplashProps) {
   const isDark = variant === "dark";
 
   return (
     <div
       className={cn(
-        "flex items-center justify-center bg-background px-4",
+        "flex items-center justify-center px-4",
+        isDark ? "bg-slate-950" : "bg-slate-100",
         fullScreen && "min-h-screen",
         !fullScreen && "min-h-[50vh] py-16",
         className,
@@ -53,28 +28,19 @@ export function BrandSplash({
       role="status"
       aria-live="polite"
       aria-busy="true"
-      aria-label="Loading workspace"
+      aria-label={message}
     >
-      <div
-        className={cn(
-          "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
-        )}
-      >
-        <div className="text-center">
-          <div
-            className={cn(
-              "text-3xl font-bold tracking-tight",
-              isDark ? "text-white" : "text-slate-950",
-            )}
-          >
-            Auroranexis
-          </div>
-          <p className={cn("mt-3 text-sm", isDark ? "text-slate-300" : "text-slate-600")}>
-            Loading workspace...
-          </p>
+      {isDark ? (
+        <div className="rounded-2xl border border-white/10 bg-white/5 px-10 py-8 text-center shadow-2xl backdrop-blur">
+          <div className="text-3xl font-bold tracking-tight text-white">Auroranexis</div>
+          <p className="mt-3 text-sm text-slate-300">{message}</p>
         </div>
-        <LoadingIndicator />
-      </div>
+      ) : (
+        <div className="rounded-2xl border border-slate-200 bg-white px-10 py-8 text-center shadow-2xl">
+          <div className="text-3xl font-bold tracking-tight text-slate-950">Auroranexis</div>
+          <p className="mt-3 text-sm text-slate-600">{message}</p>
+        </div>
+      )}
     </div>
   );
 }

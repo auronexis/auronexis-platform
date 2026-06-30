@@ -34,12 +34,14 @@ function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
       />
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
-        <img
-          src={PANEL_LOGO_SRC}
-          alt="Auroranexis logo"
-          className="h-auto w-[190px] max-w-[190px] object-contain object-left"
-        />
-        <p className="mt-3 text-sm leading-relaxed text-white/70">{BRAND_TAGLINE}</p>
+        <div className="mb-8 flex items-center gap-3">
+          <img
+            src={PANEL_LOGO_SRC}
+            alt="Auroranexis"
+            className="h-8 w-auto object-contain"
+          />
+        </div>
+        <p className="text-sm leading-relaxed text-white/70">{BRAND_TAGLINE}</p>
       </div>
     </aside>
   );
@@ -69,7 +71,12 @@ export function LoginBrandingShell({
     <div className="flex min-h-screen bg-surface-1">
       <LoginDecorativePanel backgroundUrl={loginBackground} />
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-white p-6 shadow-sm dark:bg-white">
+        <div
+          className={cn(
+            "w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-slate-950 shadow-2xl",
+            "[color-scheme:light]",
+          )}
+        >
           <div className="mb-8 text-center">
             <div className="text-3xl font-bold tracking-tight text-slate-950">Auroranexis</div>
             <p className="mt-3 text-base leading-relaxed text-slate-700">
@@ -83,22 +90,28 @@ export function LoginBrandingShell({
           <h1 className="text-lg font-semibold text-slate-950">Sign in</h1>
           {children}
           {branding.supportEmail || branding.supportUrl ? (
-            <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted">
+            <div className="mt-6 border-t border-slate-200 pt-4 text-center text-xs text-slate-600">
               {branding.supportEmail ? (
-                <a href={`mailto:${branding.supportEmail}`} className="hover:underline">
+                <a
+                  href={`mailto:${branding.supportEmail}`}
+                  className="text-blue-600 hover:text-blue-700 hover:underline"
+                >
                   {branding.supportEmail}
                 </a>
               ) : null}
               {branding.supportEmail && branding.supportUrl ? " · " : null}
               {branding.supportUrl ? (
-                <a href={branding.supportUrl} className="hover:underline">
+                <a
+                  href={branding.supportUrl}
+                  className="text-blue-600 hover:text-blue-700 hover:underline"
+                >
                   Support
                 </a>
               ) : null}
             </div>
           ) : null}
         </div>
-        {footer ? <div className={cn("mt-6 w-full max-w-md")}>{footer}</div> : null}
+        {footer ? <div className={cn("mt-6 w-full max-w-md text-slate-600")}>{footer}</div> : null}
       </div>
     </div>
   );
