@@ -3,9 +3,8 @@ import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
 import { cn } from "@/lib/utils/cn";
 
-/** Fixed login logo paths — never theme- or branding-dependent. */
-const LOGIN_CARD_LOGO_SRC = "/branding/logo-horizontal-on-light.png";
-const LOGIN_PANEL_LOGO_SRC = "/branding/logo-horizontal-transparent.png";
+/** Fixed login logo path — transparent wordmark for dark login surfaces. */
+const LOGIN_LOGO_SRC = "/branding/logo-horizontal-transparent.png";
 
 const BRAND_TAGLINE = (
   <>
@@ -37,7 +36,7 @@ function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
         <img
-          src={LOGIN_PANEL_LOGO_SRC}
+          src={LOGIN_LOGO_SRC}
           alt="Auroranexis logo"
           className="h-auto w-[190px] max-w-[190px] object-contain object-left"
         />
@@ -74,7 +73,7 @@ export function LoginBrandingShell({
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-white p-6 shadow-sm dark:bg-white">
           <div className="mb-6 text-center">
             <img
-              src={LOGIN_CARD_LOGO_SRC}
+              src={LOGIN_LOGO_SRC}
               alt="Auroranexis logo"
               className="mx-auto mb-5 h-auto w-[150px] max-w-[150px] overflow-visible object-contain"
             />
