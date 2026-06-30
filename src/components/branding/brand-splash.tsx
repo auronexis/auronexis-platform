@@ -1,7 +1,6 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { cn } from "@/lib/utils/cn";
 
 type BrandSplashProps = {
   fullScreen?: boolean;
@@ -9,7 +8,7 @@ type BrandSplashProps = {
   message?: string;
 };
 
-/** Dark loading / sign-out splash — text only, hardcoded light text on dark background. */
+/** Dark loading / sign-out splash — text only, inline styles so colors cannot be overridden. */
 export function BrandSplash({
   fullScreen = false,
   className,
@@ -17,19 +16,52 @@ export function BrandSplash({
 }: BrandSplashProps) {
   return (
     <div
-      className={cn(
-        "flex items-center justify-center bg-slate-950 px-4",
-        fullScreen ? "min-h-screen" : "min-h-[50vh] py-16",
-        className,
-      )}
+      className={className}
+      style={{
+        minHeight: fullScreen ? "100vh" : "50vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#020617",
+        padding: "16px",
+      }}
       role="status"
       aria-live="polite"
       aria-busy="true"
       aria-label={message}
     >
-      <div className="rounded-2xl border border-white/10 bg-white/5 px-10 py-8 text-center shadow-2xl backdrop-blur">
-        <div className="text-3xl font-bold tracking-tight !text-white">Auroranexis</div>
-        <p className="mt-3 text-sm !text-slate-300">{message}</p>
+      <div
+        style={{
+          borderRadius: "16px",
+          border: "1px solid rgba(255,255,255,0.10)",
+          background: "rgba(255,255,255,0.05)",
+          padding: "32px 40px",
+          textAlign: "center",
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "30px",
+            lineHeight: "36px",
+            fontWeight: 700,
+            letterSpacing: "-0.025em",
+            color: "#ffffff",
+          }}
+        >
+          Auroranexis
+        </div>
+        <p
+          style={{
+            marginTop: "12px",
+            fontSize: "14px",
+            lineHeight: "20px",
+            color: "#cbd5e1",
+          }}
+        >
+          {message}
+        </p>
       </div>
     </div>
   );
