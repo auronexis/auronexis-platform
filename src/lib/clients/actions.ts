@@ -7,6 +7,7 @@ import { recordActivityEvent } from "@/lib/activity/record";
 import { fireWorkflowEngine } from "@/lib/automation/engine-v2/dispatch-hook";
 import { requireSession } from "@/lib/auth/session";
 import { assertPermissionSafe } from "@/lib/authorization/guards";
+import { computeAndRecordClientHealth } from "@/lib/health/record";
 import { assertCanCreateClient } from "@/lib/plans/guards";
 import { canViewRevenue } from "@/lib/rbac/permissions";
 import { createClient } from "@/lib/supabase/server";
@@ -200,6 +201,19 @@ export async function createClientAction(
     },
   });
 
+  void computeAndRecordClientHealth(
+    session,
+    {
+      id: created.id,
+      name: parsed.data.name,
+      status: parsed.data.status,
+      updated_at: new Date().toISOString(),
+    },
+    { actorUserId: session.user.id },
+  ).catch((error) => {
+    console.warn("[health] failed to record client health after create:", error);
+  });
+
   revalidatePath("/clients");
   revalidatePath("/activity");
   redirect(`/clients/${created.id}`);
@@ -230,7 +244,7 @@ export async function updateClientAction(
   const supabase = await createClient();
   const { data: existingClient } = await supabase
     .from("clients")
-    .select("status")
+    .select("name, status, updated_at")
     .eq("id", clientId)
     .eq("organization_id", session.organization.id)
     .maybeSingle();
@@ -280,6 +294,19 @@ export async function updateClientAction(
     });
   }
 
+  void computeAndRecordClientHealth(
+    session,
+    {
+      id: clientId,
+      name: parsed.data.name,
+      status: parsed.data.status,
+      updated_at: new Date().toISOString(),
+    },
+    { actorUserId: session.user.id },
+  ).catch((error) => {
+    console.warn("[health] failed to record client health after update:", error);
+  });
+
   revalidatePath("/clients");
   revalidatePath(`/clients/${clientId}`);
   revalidatePath("/activity");
@@ -304,12 +331,13 @@ export async function archiveClientAction(
   const supabase = await createClient();
   const { data: existing } = await supabase
     .from("clients")
-    .select("name")
+    .select("name, status, updated_at")
     .eq("id", clientId)
     .eq("organization_id", session.organization.id)
     .maybeSingle();
 
   const clientName = (existing as { name: string } | null)?.name ?? "Client";
+  const clientRecord = existing as { name: string; status: string; updated_at: string } | null;
   const archivePayload: ClientUpdate = { status: "archived" };
 
   const { error } = await supabase
@@ -342,6 +370,21 @@ export async function archiveClientAction(
     actorUserId: session.user.id,
     payload: { title: clientName, status: "archived" },
   });
+
+  if (clientRecord) {
+    void computeAndRecordClientHealth(
+      session,
+      {
+        id: clientId,
+        name: clientRecord.name,
+        status: "archived",
+        updated_at: new Date().toISOString(),
+      },
+      { actorUserId: session.user.id },
+    ).catch((error) => {
+      console.warn("[health] failed to record client health after archive:", error);
+    });
+  }
 
   revalidatePath("/clients");
   revalidatePath(`/clients/${clientId}`);

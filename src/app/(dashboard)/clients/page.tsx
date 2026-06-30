@@ -9,6 +9,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { AccessDenied } from "@/components/authorization/access-denied";
 import { sessionHasPermission } from "@/lib/authorization/guards";
 import { listClientsSafe } from "@/lib/clients/queries";
+import { enrichClientHealthSummaries } from "@/lib/health/queries";
 import { requireSession } from "@/lib/auth/session";
 import { CLIENT_STATUSES } from "@/lib/clients/types";
 import type { ClientStatus } from "@/types/database";
@@ -43,6 +44,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
     : undefined;
   const search = params.q?.trim() || undefined;
   const { clients, error: loadError } = await listClientsSafe(session, { status, search });
+  const healthSummaries = loadError ? new Map() : await enrichClientHealthSummaries(session, clients);
   const canCreate = sessionHasPermission(session, "clients.write");
   const canManage = sessionHasPermission(session, "clients.write");
 
@@ -71,7 +73,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
         </FormAlert>
       ) : null}
 
-      <ClientList clients={clients} canManage={canManage} />
+      <ClientList clients={clients} canManage={canManage} healthSummaries={healthSummaries} />
     </>
   );
 }

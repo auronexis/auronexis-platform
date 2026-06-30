@@ -24,7 +24,8 @@ export type ActivityEventType =
   | "sla.deleted"
   | "report.created"
   | "report.updated"
-  | "settings.updated";
+  | "settings.updated"
+  | "health.changed";
 
 export type ActivityFilter =
   | "all"
@@ -60,6 +61,7 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "report.created": "Report created",
   "report.updated": "Report updated",
   "settings.updated": "Settings updated",
+  "health.changed": "Health changed",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

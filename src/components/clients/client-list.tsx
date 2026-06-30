@@ -1,4 +1,4 @@
-import { ClientHealthScore } from "@/components/clients/client-health-score";
+import { ClientHealthBadge } from "@/components/health/client-health-badge";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { ClickableRow } from "@/components/ui/clickable-row";
@@ -12,14 +12,16 @@ import {
   AuroraTableHeaderCell,
 } from "@/components/ui/table";
 import type { ClientWithRelations } from "@/lib/clients/types";
+import type { ClientHealthSummary } from "@/lib/health/types";
 import { formatClientDate } from "@/lib/clients/types";
 
 type ClientListProps = {
   clients: ClientWithRelations[];
   canManage: boolean;
+  healthSummaries?: Map<string, ClientHealthSummary>;
 };
 
-export function ClientList({ clients, canManage }: ClientListProps) {
+export function ClientList({ clients, canManage, healthSummaries }: ClientListProps) {
   if (clients.length === 0) {
     return (
       <AuroraTableEmpty
@@ -56,7 +58,7 @@ export function ClientList({ clients, canManage }: ClientListProps) {
                 <ClientStatusBadge status={client.status} />
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap">
-                <ClientHealthScore score={client.health_score} />
+                <ClientHealthBadge summary={healthSummaries?.get(client.id)} />
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap text-muted">
                 {client.owner?.full_name ?? "—"}

@@ -53,6 +53,8 @@ export type ReportEmailDeliveryStatus = "pending" | "sent" | "failed";
 
 export type InviteRole = "admin" | "staff" | "viewer";
 
+export type HealthSnapshotStatus = "excellent" | "healthy" | "watch" | "critical";
+
 export type ActivityEntityType =
   | "client"
   | "risk"
@@ -1133,6 +1135,57 @@ export type Database = {
           },
           {
             foreignKeyName: "client_financials_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      health_snapshots: {
+        Row: {
+          id: string;
+          organization_id: string;
+          client_id: string;
+          score: number;
+          status: HealthSnapshotStatus;
+          delta: number;
+          reason: string | null;
+          breakdown: Json;
+          calculated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          client_id: string;
+          score: number;
+          status: HealthSnapshotStatus;
+          delta?: number;
+          reason?: string | null;
+          breakdown?: Json;
+          calculated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          client_id?: string;
+          score?: number;
+          status?: HealthSnapshotStatus;
+          delta?: number;
+          reason?: string | null;
+          breakdown?: Json;
+          calculated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "health_snapshots_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "health_snapshots_client_id_fkey";
             columns: ["client_id"];
             isOneToOne: false;
             referencedRelation: "clients";

@@ -5,6 +5,8 @@ import { ActivityTimeline } from "@/components/activity/activity-timeline";
 import { ClientSuccessSection } from "@/components/clients/success/client-success-section";
 import { PredictiveIntelligenceSection } from "@/components/predictive/predictive-client-section";
 import { ClientKnowledgeSection } from "@/components/knowledge/client-knowledge-section";
+import { ClientHealthCard } from "@/components/health/client-health-card";
+import { ClientHealthHistory } from "@/components/health/client-health-history";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { ClientHealthScore } from "@/components/clients/client-health-score";
 import { ClientForm } from "@/components/clients/client-form";
@@ -48,6 +50,7 @@ import { listPortalUsersForClient } from "@/lib/client-portal/queries";
 import { getClientOverview } from "@/lib/client-overview/queries";
 import { updateClientAction } from "@/lib/clients/actions";
 import { getClientById, listOrgUsers } from "@/lib/clients";
+import { getClientHealthDetail } from "@/lib/health/record";
 import { formatClientDate } from "@/lib/clients/types";
 import { formatIncidentDate } from "@/lib/incidents/types";
 import { formatMargin, formatCurrency } from "@/lib/profitability/types";
@@ -110,6 +113,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   if (!client) {
     notFound();
   }
+
+  const healthDetail = await getClientHealthDetail(session, client).catch(() => ({
+    latest: null,
+    history: [],
+  }));
 
   const slaAssignment = await getClientSlaAssignment(
     session.organization.id,
@@ -209,6 +217,20 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <ClientHealthScore score={client.health_score} />
             </DetailMetadataItem>
           </dl>
+        </DetailSection>
+
+        <DetailSection
+          title="Health"
+          description="Operational health score, trend, and contributing signals."
+        >
+          <ClientHealthCard snapshot={healthDetail.latest} />
+        </DetailSection>
+
+        <DetailSection
+          title="Health history"
+          description="Latest health snapshots for this client."
+        >
+          <ClientHealthHistory snapshots={healthDetail.history} />
         </DetailSection>
 
         <ClientSuccessSection clientId={client.id} />
