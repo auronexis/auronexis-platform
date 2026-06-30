@@ -3,8 +3,7 @@ import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
 import { cn } from "@/lib/utils/cn";
 
-/** Fixed login logo path — transparent wordmark for dark login surfaces. */
-const LOGIN_LOGO_SRC = "/branding/logo-horizontal-transparent.png";
+const PANEL_LOGO_SRC = "/branding/logo-horizontal-transparent.png";
 
 const BRAND_TAGLINE = (
   <>
@@ -36,7 +35,7 @@ function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
       <div className="absolute inset-0 bg-secondary/75" />
       <div className="relative flex h-full flex-col justify-end p-10 text-white">
         <img
-          src={LOGIN_LOGO_SRC}
+          src={PANEL_LOGO_SRC}
           alt="Auroranexis logo"
           className="h-auto w-[190px] max-w-[190px] object-contain object-left"
         />
@@ -72,12 +71,14 @@ export function LoginBrandingShell({
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-white p-6 shadow-sm dark:bg-white">
           <div className="mb-6 text-center">
-            <img
-              src={LOGIN_LOGO_SRC}
-              alt="Auroranexis logo"
-              className="mx-auto mb-5 h-auto w-[150px] max-w-[150px] overflow-visible object-contain"
-            />
-            <p className="text-sm leading-relaxed text-slate-600">{BRAND_TAGLINE}</p>
+            <div className="text-2xl font-bold tracking-tight text-slate-950">Auroranexis</div>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+              Monitor clients.
+              <br />
+              Detect risks.
+              <br />
+              Prove value.
+            </p>
           </div>
           <h1 className="text-lg font-semibold text-slate-950">Sign in</h1>
           {children}

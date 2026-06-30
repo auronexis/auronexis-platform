@@ -34,12 +34,14 @@ function LoadingIndicator() {
   );
 }
 
-/** In-app loading state — light card uses on-light logo; dark/dashboard uses transparent logo. */
+/** In-app loading state — text wordmark only (no logo PNG). */
 export function BrandSplash({
   fullScreen = false,
   className,
   variant = "light",
 }: BrandSplashProps) {
+  const isDark = variant === "dark";
+
   return (
     <div
       className={cn(
@@ -58,22 +60,17 @@ export function BrandSplash({
           "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
         )}
       >
-        {variant === "dark" ? (
-          <img
-            src="/branding/logo-horizontal-transparent.png"
-            alt="Auroranexis logo"
-            className="mx-auto h-auto w-[150px] max-w-[150px] object-contain opacity-90"
-          />
-        ) : (
-          <div className="mx-auto flex w-[150px] max-w-[150px] justify-center overflow-hidden">
-            <img
-              src="/branding/logo-horizontal-on-light.png"
-              alt="Auroranexis logo"
-              className="block h-auto max-h-[70px] w-full object-contain"
-            />
-          </div>
-        )}
-        <p className="mt-2 text-sm text-slate-600">Loading workspace...</p>
+        <div
+          className={cn(
+            "text-2xl font-bold tracking-tight",
+            isDark ? "text-white" : "text-slate-950",
+          )}
+        >
+          Auroranexis
+        </div>
+        <p className={cn("mt-2 text-sm", isDark ? "text-slate-300" : "text-slate-600")}>
+          Loading workspace...
+        </p>
         <LoadingIndicator />
       </div>
     </div>
