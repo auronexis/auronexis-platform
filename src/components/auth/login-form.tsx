@@ -21,7 +21,7 @@ export function LoginForm() {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
 
   return (
-    <form action={formAction} className="mt-4 space-y-4 text-slate-950 [color-scheme:light]">
+    <form action={formAction} className="space-y-4 text-slate-950 [color-scheme:light]">
       <div className="space-y-2">
         <label htmlFor="email" className={labelClassName}>
           Email
