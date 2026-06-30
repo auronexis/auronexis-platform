@@ -22,6 +22,16 @@ export function LoginForm() {
 
   return (
     <form action={formAction} className="space-y-4 text-slate-950 [color-scheme:light]">
+      <div className="mb-8 text-center">
+        <div className="text-3xl font-bold tracking-tight text-slate-950">Auroranexis</div>
+        <p className="mt-3 text-base leading-relaxed text-slate-700">
+          Monitor clients.
+          <br />
+          Detect risks.
+          <br />
+          Prove value.
+        </p>
+      </div>
       <div className="space-y-2">
         <label htmlFor="email" className={labelClassName}>
           Email
