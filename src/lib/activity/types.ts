@@ -25,7 +25,9 @@ export type ActivityEventType =
   | "report.created"
   | "report.updated"
   | "settings.updated"
-  | "health.changed";
+  | "health.changed"
+  | "portal.login"
+  | "portal.viewed";
 
 export type ActivityFilter =
   | "all"
@@ -62,6 +64,8 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "report.updated": "Report updated",
   "settings.updated": "Settings updated",
   "health.changed": "Health changed",
+  "portal.login": "Portal login",
+  "portal.viewed": "Portal viewed",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

@@ -3,7 +3,6 @@ import {
   PortalActionLink,
   PortalEmptyState,
   PortalPageHeader,
-  PortalSentBadge,
   PortalTableShell,
   portalTableCellClass,
   portalTableHeadClass,
@@ -64,7 +63,9 @@ export default async function ClientPortalReportsPage() {
                     )}
                   </td>
                   <td className={portalTableCellClass}>
-                    <PortalSentBadge />
+                    <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium capitalize text-primary">
+                      {report.status}
+                    </span>
                   </td>
                   <td className={`whitespace-nowrap ${portalTableCellClass} text-muted`}>
                     {formatReportDate(report.sent_at)}
@@ -78,10 +79,10 @@ export default async function ClientPortalReportsPage() {
                         href={`/client-portal/reports/${report.id}`}
                         variant="secondary"
                       >
-                        View Report
+                        View
                       </PortalActionLink>
                       <PortalActionLink href={`/client-portal/reports/${report.id}/export`}>
-                        Download PDF
+                        Download
                       </PortalActionLink>
                     </div>
                   </td>

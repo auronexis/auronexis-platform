@@ -22,7 +22,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   if (!session) {
     const portalSession = await getClientPortalSession();
     if (portalSession) {
-      redirect("/client-portal/dashboard");
+      redirect("/client-portal/overview");
     }
     redirect("/login");
   }

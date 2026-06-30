@@ -46,7 +46,18 @@ export const getClientPortalSession = cache(async (): Promise<ClientPortalSessio
         .maybeSingle(),
     ]);
 
-  const client = clientData as Pick<Client, "id" | "name" | "status" | "organization_id"> | null;
+  const client = clientData as Pick<
+    Client,
+    | "id"
+    | "name"
+    | "status"
+    | "organization_id"
+    | "contact_name"
+    | "contact_email"
+    | "owner_id"
+    | "sla_policy_id"
+    | "health_score"
+  > | null;
   const organization = organizationData as Pick<Organization, "id" | "name"> | null;
 
   if (clientError || !client || orgError || !organization) {

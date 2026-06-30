@@ -345,6 +345,7 @@ export type Database = {
           email: string;
           full_name: string;
           is_active: boolean;
+          last_login_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -355,6 +356,7 @@ export type Database = {
           email: string;
           full_name: string;
           is_active?: boolean;
+          last_login_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -365,6 +367,7 @@ export type Database = {
           email?: string;
           full_name?: string;
           is_active?: boolean;
+          last_login_at?: string | null;
           created_at?: string;
         };
         Relationships: [

@@ -7,19 +7,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import {
-
-  AlertTriangle,
-
+  Activity,
   FileText,
-
+  History,
   LayoutDashboard,
-
+  LifeBuoy,
   LogOut,
-
-  Rocket,
-
-  ShieldAlert,
-
+  Timer,
+  Users,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -61,9 +56,6 @@ type PortalShellProps = {
   branding: ResolvedOrganizationBranding;
 
   navItems: PortalNavItem[];
-
-  showSlaFields: boolean;
-
 };
 
 
@@ -81,8 +73,6 @@ export function PortalShell({
   branding,
 
   navItems,
-
-  showSlaFields: _showSlaFields,
 
 }: PortalShellProps) {
 
@@ -268,17 +258,13 @@ export function PortalShell({
 
 
 export const PORTAL_NAV_ITEMS = {
-
-  dashboard: { label: "Dashboard", href: "/client-portal/dashboard", icon: LayoutDashboard },
-
-  onboarding: { label: "Onboarding", href: "/client-portal/onboarding", icon: Rocket },
-
+  overview: { label: "Overview", href: "/client-portal/overview", icon: LayoutDashboard },
+  health: { label: "Health", href: "/client-portal/health", icon: Activity },
   reports: { label: "Reports", href: "/client-portal/reports", icon: FileText },
-
-  risks: { label: "Risks", href: "/client-portal/risks", icon: AlertTriangle },
-
-  incidents: { label: "Incidents", href: "/client-portal/incidents", icon: ShieldAlert },
-
+  sla: { label: "SLA", href: "/client-portal/sla", icon: Timer },
+  timeline: { label: "Timeline", href: "/client-portal/timeline", icon: History },
+  contacts: { label: "Contacts", href: "/client-portal/contacts", icon: Users },
+  support: { label: "Support", href: "/client-portal/support", icon: LifeBuoy },
 } as const;
 
 

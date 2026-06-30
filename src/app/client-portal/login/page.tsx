@@ -16,7 +16,7 @@ export default async function ClientPortalLoginPage() {
   const session = await getClientPortalSession();
 
   if (session) {
-    redirect("/client-portal/dashboard");
+    redirect("/client-portal/overview");
   }
 
   const host = (await headers()).get("host") ?? "";

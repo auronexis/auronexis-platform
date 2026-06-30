@@ -62,7 +62,7 @@ export async function signInPortal(
 
   const { data: portalUser, error: portalError } = await supabase
     .from("client_portal_users")
-    .select("id")
+    .select("id, client_id, organization_id, email, full_name")
     .eq("auth_user_id", data.user.id)
     .eq("is_active", true)
     .maybeSingle();
@@ -72,8 +72,25 @@ export async function signInPortal(
     return { error: "This account does not have client portal access." };
   }
 
+  await supabase
+    .from("client_portal_users")
+    .update({ last_login_at: new Date().toISOString() } as never)
+    .eq("id", (portalUser as { id: string }).id);
+
+  const { recordPortalActivity } = await import("@/lib/client-portal/activity");
+  const { getClientPortalSession } = await import("@/lib/client-portal/session");
+  const portalSession = await getClientPortalSession();
+
+  if (portalSession) {
+    void recordPortalActivity(portalSession, {
+      eventType: "portal.login",
+      title: "Portal login",
+      description: portalSession.portalUser.email,
+    }).catch(() => undefined);
+  }
+
   revalidatePath("/", "layout");
-  redirect("/client-portal/dashboard");
+  redirect("/client-portal/overview");
 }
 
 /** Sign out from the client portal. */

@@ -53,7 +53,7 @@ export default async function ClientPortalIncidentsPage() {
 
   if (!plan.features.incidents) {
 
-    redirect("/client-portal/dashboard");
+    redirect("/client-portal/overview");
 
   }
 

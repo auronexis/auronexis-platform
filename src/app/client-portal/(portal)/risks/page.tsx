@@ -26,7 +26,7 @@ export default async function ClientPortalRisksPage() {
   const plan = await getOrganizationPlanContext(session.organization.id);
 
   if (!plan.features.risks) {
-    redirect("/client-portal/dashboard");
+    redirect("/client-portal/overview");
   }
 
   const baseRisks = (await listPortalRisks(session)).map((risk) => ({
