@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CreditCard, LogOut, Settings, UserRound } from "lucide-react";
 import { AvatarFallback } from "@/components/branding/avatar-fallback";
+import { SignOutPendingSplash } from "@/components/branding/brand-splash";
 import { Icon } from "@/components/ui/icon";
 import { signOut } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils/cn";
@@ -160,6 +161,7 @@ export function UserMenu({ userName, userRole, showSettings }: UserMenuProps) {
             action={signOut}
             onSubmit={() => setOpen(false)}
           >
+            <SignOutPendingSplash />
             <button
               type="submit"
               role="menuitem"

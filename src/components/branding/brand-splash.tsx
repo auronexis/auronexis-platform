@@ -1,81 +1,51 @@
+"use client";
+
+import { useFormStatus } from "react-dom";
 import { cn } from "@/lib/utils/cn";
 
 type BrandSplashProps = {
   fullScreen?: boolean;
   className?: string;
-  variant?: "light" | "dark";
+  message?: string;
 };
 
-function LoadingIndicator() {
-  const dots = [
-    { className: "bg-primary", delay: "0ms" },
-    { className: "bg-info", delay: "150ms" },
-    { className: "bg-secondary", delay: "300ms" },
-  ] as const;
-
-  return (
-    <div className="mt-8 flex w-full flex-col items-center gap-4" aria-hidden>
-      <div className="flex items-center justify-center gap-1.5">
-        {dots.map((dot) => (
-          <span
-            key={dot.delay}
-            className={cn(
-              "h-1.5 w-1.5 rounded-full motion-safe:animate-pulse motion-reduce:animate-none",
-              dot.className,
-            )}
-            style={{ animationDelay: dot.delay }}
-          />
-        ))}
-      </div>
-      <div className="h-0.5 w-full overflow-hidden rounded-full bg-border-subtle">
-        <div className="skeleton-shimmer h-full w-2/5 rounded-full bg-gradient-to-r from-primary/40 via-info/50 to-secondary/40" />
-      </div>
-    </div>
-  );
-}
-
-/** In-app loading state — light card uses on-light logo; dark/dashboard uses transparent logo. */
+/** Dark loading / sign-out splash — text only, hardcoded light text on dark background. */
 export function BrandSplash({
   fullScreen = false,
   className,
-  variant = "light",
+  message = "Loading workspace...",
 }: BrandSplashProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-center bg-background px-4",
-        fullScreen && "min-h-screen",
-        !fullScreen && "min-h-[50vh] py-16",
+        "flex items-center justify-center bg-slate-950 px-4",
+        fullScreen ? "min-h-screen" : "min-h-[50vh] py-16",
         className,
       )}
       role="status"
       aria-live="polite"
       aria-busy="true"
-      aria-label="Loading workspace"
+      aria-label={message}
     >
-      <div
-        className={cn(
-          "flex w-full max-w-[480px] flex-col items-center rounded-2xl border border-border-subtle bg-surface-2/60 px-8 py-10 text-center shadow-sm sm:px-12 sm:py-12",
-        )}
-      >
-        {variant === "dark" ? (
-          <img
-            src="/branding/logo-horizontal-transparent.png"
-            alt="Auroranexis logo"
-            className="mx-auto h-auto w-[150px] max-w-[150px] object-contain opacity-90"
-          />
-        ) : (
-          <div className="mx-auto flex w-[150px] max-w-[150px] justify-center overflow-hidden">
-            <img
-              src="/branding/logo-horizontal-on-light.png"
-              alt="Auroranexis logo"
-              className="block h-auto max-h-[70px] w-full object-contain"
-            />
-          </div>
-        )}
-        <p className="mt-2 text-sm text-slate-600">Loading workspace...</p>
-        <LoadingIndicator />
+      <div className="rounded-2xl border border-white/10 bg-white/5 px-10 py-8 text-center shadow-2xl backdrop-blur">
+        <div className="text-3xl font-bold tracking-tight !text-white">Auroranexis</div>
+        <p className="mt-3 text-sm !text-slate-300">{message}</p>
       </div>
+    </div>
+  );
+}
+
+/** Full-screen splash while sign-out server action is pending. */
+export function SignOutPendingSplash() {
+  const { pending } = useFormStatus();
+
+  if (!pending) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[9999]">
+      <BrandSplash fullScreen message="Signing out..." />
     </div>
   );
 }

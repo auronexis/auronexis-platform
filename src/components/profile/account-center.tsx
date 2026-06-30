@@ -25,6 +25,7 @@ import { useUserPreferences } from "@/components/profile/user-preferences-provid
 import { useClientPreference } from "@/lib/profile/use-client-preference";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { SignOutPendingSplash } from "@/components/branding/brand-splash";
 import { signOut } from "@/lib/auth/actions";
 import { updateAccountProfileAction, type ProfileActionState } from "@/lib/profile/actions";
 import {
@@ -596,6 +597,7 @@ export function AccountCenter({ session, permissions }: AccountCenterProps) {
               <p className="text-sm font-semibold text-foreground">Danger zone</p>
               <p className="mt-1 text-xs text-muted">End your current session on this device.</p>
               <form action={signOut} className="mt-4">
+                <SignOutPendingSplash />
                 <button
                   type="submit"
                   className={cn(

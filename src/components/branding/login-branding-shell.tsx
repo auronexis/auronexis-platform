@@ -71,13 +71,15 @@ export function LoginBrandingShell({
       <LoginDecorativePanel backgroundUrl={loginBackground} />
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-white p-6 shadow-sm dark:bg-white">
-          <div className="mb-6 text-center">
-            <img
-              src={LOGIN_LOGO_SRC}
-              alt="Auroranexis logo"
-              className="mx-auto mb-5 h-auto w-[150px] max-w-[150px] overflow-visible object-contain"
-            />
-            <p className="text-sm leading-relaxed text-slate-600">{BRAND_TAGLINE}</p>
+          <div className="mb-8 text-center">
+            <div className="text-3xl font-bold tracking-tight text-slate-950">Auroranexis</div>
+            <p className="mt-3 text-base leading-relaxed text-slate-700">
+              Monitor clients.
+              <br />
+              Detect risks.
+              <br />
+              Prove value.
+            </p>
           </div>
           <h1 className="text-lg font-semibold text-slate-950">Sign in</h1>
           {children}
