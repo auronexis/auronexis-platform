@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { AccessDenied } from "@/components/authorization/access-denied";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import { ClientForm } from "@/components/clients/client-form";
 import { SeatLimitWarning } from "@/components/seats/seat-limit-warning";
 import { PageHeader } from "@/components/layout/page-header";
@@ -8,19 +9,25 @@ import { createClientAction } from "@/lib/clients/actions";
 import { listOrgUsers } from "@/lib/clients/queries";
 import { requireSession } from "@/lib/auth/session";
 import { getClientCreateCheckForSession } from "@/lib/plans/guards";
-import { canAccessModule, canViewRevenue } from "@/lib/rbac/permissions";
-import { requireModuleAccess } from "@/lib/rbac/route-guards";
+import { canViewRevenue } from "@/lib/rbac/permissions";
 
 export const metadata: Metadata = {
   title: "Add client",
 };
 
 export default async function NewClientPage() {
-  await requireModuleAccess("clients");
   const session = await requireSession();
 
-  if (!canAccessModule(session.role, "clients", "create")) {
-    redirect("/clients");
+  if (!sessionHasPermission(session, "clients.write")) {
+    return (
+      <>
+        <PageHeader
+          title="Add client"
+          description="Create a new agency customer record."
+        />
+        <AccessDenied />
+      </>
+    );
   }
 
   const clientLimitCheck = await getClientCreateCheckForSession(session);

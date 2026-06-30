@@ -1,23 +1,31 @@
 import type { InviteRole, TeamMemberView } from "@/lib/team/types";
 import {
   canChangeRoles,
-  canInviteUsers,
   hasMinimumRole,
   ROLE_HIERARCHY,
 } from "@/lib/rbac/permissions";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { UserRole } from "@/types/database";
 
-export function canViewTeam(_session: SessionContext): boolean {
-  return true;
+export function canViewTeam(session: SessionContext): boolean {
+  return sessionHasPermission(session, "users.read");
 }
 
 export function canInviteTeamMembers(session: SessionContext): boolean {
-  return canInviteUsers(session.role);
+  return sessionHasPermission(session, "users.write");
 }
 
 export function canManageOrganizationSettings(session: SessionContext): boolean {
-  return session.role === "owner" || session.role === "admin";
+  return sessionHasPermission(session, "settings.write");
+}
+
+export function canManageSlaPolicies(session: SessionContext): boolean {
+  return sessionHasPermission(session, "sla.write");
+}
+
+export function canViewSlaPolicies(session: SessionContext): boolean {
+  return sessionHasPermission(session, "sla.read");
 }
 
 export function getInvitableRoles(session: SessionContext): InviteRole[] {

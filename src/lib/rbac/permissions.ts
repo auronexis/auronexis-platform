@@ -1,4 +1,9 @@
 import type { UserRole } from "@/types/database";
+import {
+  hasPermission,
+  resolveAuthorizationRole,
+  type Permission,
+} from "@/lib/authorization/permissions";
 
 /** All supported roles — docs/07_RBAC_BLUEPRINT_V1.md */
 export const USER_ROLES = ["owner", "admin", "staff", "viewer"] as const satisfies readonly UserRole[];
@@ -131,6 +136,40 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
   },
 };
 
+/** Maps module actions to Sprint 6 granular permissions when defined. */
+const MODULE_ACTION_TO_PERMISSION: Partial<
+  Record<AppModule, Partial<Record<PermissionAction, Permission>>>
+> = {
+  clients: {
+    read: "clients.read",
+    create: "clients.write",
+    update: "clients.write",
+    delete: "clients.write",
+  },
+  settings: {
+    read: "settings.read",
+    update: "settings.write",
+    manage: "settings.write",
+  },
+  team: {
+    read: "users.read",
+    create: "users.write",
+    update: "users.write",
+    delete: "users.write",
+    manage: "users.write",
+  },
+  reports: {
+    read: "reports.read",
+    create: "reports.write",
+    update: "reports.write",
+    delete: "reports.write",
+    export: "reports.read",
+  },
+  activity: {
+    read: "activity.read",
+  },
+};
+
 /** Returns true when `role` meets or exceeds `minimumRole` in the hierarchy. */
 export function hasMinimumRole(role: UserRole, minimumRole: UserRole): boolean {
   return ROLE_HIERARCHY[role] >= ROLE_HIERARCHY[minimumRole];
@@ -142,6 +181,11 @@ export function canAccessModule(
   module: AppModule,
   action: PermissionAction,
 ): boolean {
+  const mappedPermission = MODULE_ACTION_TO_PERMISSION[module]?.[action];
+  if (mappedPermission) {
+    return hasPermission(resolveAuthorizationRole(role), mappedPermission);
+  }
+
   return MODULE_PERMISSIONS[role][module][action];
 }
 
@@ -155,9 +199,9 @@ export function canViewRevenue(role: UserRole): boolean {
   return role === "owner" || role === "admin";
 }
 
-/** Settings access — Owner full, Admin limited, Staff/Viewer none. */
+/** Settings access — delegated to authorization permissions. */
 export function canAccessSettings(role: UserRole): boolean {
-  return canAccessModule(role, "settings", "read");
+  return hasPermission(resolveAuthorizationRole(role), "settings.read");
 }
 
 /** Organization management — Owner only. */
@@ -165,9 +209,9 @@ export function canManageOrganization(role: UserRole): boolean {
   return role === "owner";
 }
 
-/** User management — Owner full; Admin can invite/deactivate. */
+/** User management — delegated to authorization permissions. */
 export function canInviteUsers(role: UserRole): boolean {
-  return role === "owner" || role === "admin";
+  return hasPermission(resolveAuthorizationRole(role), "users.write");
 }
 
 export function canChangeRoles(role: UserRole): boolean {

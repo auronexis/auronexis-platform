@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AccessDenied } from "@/components/authorization/access-denied";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import { SeatUsageCard } from "@/components/seats/seat-usage-card";
 import { InviteTeamForm } from "@/components/team/invite-team-form";
 import { PendingInvitations } from "@/components/team/pending-invitations";
@@ -8,7 +10,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import { requireSession } from "@/lib/auth/session";
 import { canManagePortalUsers } from "@/lib/client-portal/guards";
 import { canAccessSettings } from "@/lib/rbac/permissions";
-import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import {
   canInviteTeamMembers,
   getInvitableRoles,
@@ -21,8 +22,21 @@ export const metadata: Metadata = {
 };
 
 export default async function TeamSettingsPage() {
-  await requireModuleAccess("team");
   const session = await requireSession();
+
+  if (!sessionHasPermission(session, "users.read")) {
+    return (
+      <>
+        <PageHeader
+          module="settings"
+          title="Workspace Members"
+          description="Manage members, roles, and invitations for your organization."
+        />
+        <AccessDenied />
+      </>
+    );
+  }
+
   const [members, invitations, seatUsage, inviteSeatCheck] = await Promise.all([
     listTeamMembers(session),
     canInviteTeamMembers(session) ? listPendingInvitations(session) : Promise.resolve([]),

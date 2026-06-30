@@ -6,10 +6,10 @@ import { ClientList } from "@/components/clients/client-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
+import { AccessDenied } from "@/components/authorization/access-denied";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import { listClientsSafe } from "@/lib/clients/queries";
 import { requireSession } from "@/lib/auth/session";
-import { canAccessModule } from "@/lib/rbac/permissions";
-import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { CLIENT_STATUSES } from "@/lib/clients/types";
 import type { ClientStatus } from "@/types/database";
 
@@ -22,18 +22,29 @@ type ClientsPageProps = {
 };
 
 export default async function ClientsPage({ searchParams }: ClientsPageProps) {
-  await requireModuleAccess("clients");
   const session = await requireSession();
+
+  if (!sessionHasPermission(session, "clients.read")) {
+    return (
+      <>
+        <PageHeader
+          module="clients"
+          title="Clients"
+          description="Manage agency customers and monitor operational health across your portfolio."
+        />
+        <AccessDenied />
+      </>
+    );
+  }
+
   const params = await searchParams;
   const status = CLIENT_STATUSES.includes(params.status as ClientStatus)
     ? (params.status as ClientStatus)
     : undefined;
   const search = params.q?.trim() || undefined;
   const { clients, error: loadError } = await listClientsSafe(session, { status, search });
-  const canCreate = canAccessModule(session.role, "clients", "create");
-  const canManage =
-    canAccessModule(session.role, "clients", "update") ||
-    canAccessModule(session.role, "clients", "delete");
+  const canCreate = sessionHasPermission(session, "clients.write");
+  const canManage = sessionHasPermission(session, "clients.write");
 
   return (
     <>

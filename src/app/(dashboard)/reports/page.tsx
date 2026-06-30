@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AccessDenied } from "@/components/authorization/access-denied";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import { ReportList } from "@/components/reports/report-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { ArchiveFilterTabs } from "@/components/ui/archive-filter-tabs";
@@ -8,7 +10,6 @@ import { LinkButton } from "@/components/ui/link-button";
 import { canCreateReport } from "@/lib/reports/guards";
 import { listReports } from "@/lib/reports/queries";
 import { requireSession } from "@/lib/auth/session";
-import { requireModuleAccess } from "@/lib/rbac/route-guards";
 
 export const metadata: Metadata = {
   title: "Reports",
@@ -19,8 +20,21 @@ type ReportsPageProps = {
 };
 
 export default async function ReportsPage({ searchParams }: ReportsPageProps) {
-  await requireModuleAccess("reports");
   const session = await requireSession();
+
+  if (!sessionHasPermission(session, "reports.read")) {
+    return (
+      <>
+        <PageHeader
+          module="reports"
+          title="Reports"
+          description="Demonstrate delivered value and operational outcomes to clients."
+        />
+        <AccessDenied />
+      </>
+    );
+  }
+
   const params = await searchParams;
   const includeArchived = params.archived === "1";
   const reports = await listReports(session, { includeArchived });

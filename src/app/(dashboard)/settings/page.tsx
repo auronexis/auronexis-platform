@@ -14,10 +14,11 @@ import {
   Timer,
   Users,
 } from "lucide-react";
+import { AccessDenied } from "@/components/authorization/access-denied";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import { SettingsNavCard } from "@/components/settings/settings-nav-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { requireSession } from "@/lib/auth/session";
-import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export const metadata: Metadata = {
@@ -109,8 +110,21 @@ const ADMIN_SETTINGS_LINKS = [
 ] as const;
 
 export default async function SettingsPage() {
-  await requireModuleAccess("settings");
   const session = await requireSession();
+
+  if (!sessionHasPermission(session, "settings.read")) {
+    return (
+      <>
+        <PageHeader
+          module="settings"
+          title="Workspace Settings"
+          description="Organization profile, workspace members, billing, and platform configuration."
+        />
+        <AccessDenied />
+      </>
+    );
+  }
+
   const showDiagnostics = canManageOrganizationSettings(session);
   const links = showDiagnostics ? [...SETTINGS_LINKS, ...ADMIN_SETTINGS_LINKS] : SETTINGS_LINKS;
 

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { requireSession } from "@/lib/auth/session";
+import { ACTION_DENIED_MESSAGE, assertPermissionSafe, sessionHasPermission } from "@/lib/authorization/guards";
 import { getAppUrl } from "@/lib/env";
 import {
   canAssignRole,
@@ -21,7 +22,6 @@ import {
 } from "@/lib/team/queries";
 import { buildInviteUrl } from "@/lib/team/types";
 import { assertCanInviteTeamMember, canAcceptTeamInvite } from "@/lib/seats/guards";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, InviteRole, UserRole } from "@/types/database";
@@ -58,10 +58,15 @@ const organizationSchema = z.object({
   name: z.string().trim().min(2, "Organization name is required."),
 });
 
-function assertInvitableRole(session: Awaited<ReturnType<typeof requireSession>>, role: InviteRole): void {
+function assertInvitableRole(
+  session: Awaited<ReturnType<typeof requireSession>>,
+  role: InviteRole,
+): { error: string } | null {
   if (!getInvitableRoles(session).includes(role)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
+
+  return null;
 }
 
 /** Invite a team member — Owner/Admin only. */
@@ -72,7 +77,7 @@ export async function inviteTeamMemberAction(
   const session = await requireSession();
 
   if (!canInviteTeamMembers(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   const parsed = inviteSchema.safeParse({
@@ -84,7 +89,10 @@ export async function inviteTeamMemberAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid invitation data." };
   }
 
-  assertInvitableRole(session, parsed.data.role);
+  const roleDenied = assertInvitableRole(session, parsed.data.role);
+  if (roleDenied) {
+    return roleDenied;
+  }
 
   const seatCheck = await assertCanInviteTeamMember(
     session.organization.id,
@@ -140,6 +148,11 @@ export async function updateTeamMemberRoleAction(
   formData: FormData,
 ): Promise<TeamActionState> {
   const session = await requireSession();
+  const denied = assertPermissionSafe(session.role, "users.write");
+  if (denied) {
+    return denied;
+  }
+
   const parsed = roleSchema.safeParse({
     userId: formData.get("userId"),
     role: formData.get("role"),
@@ -156,11 +169,11 @@ export async function updateTeamMemberRoleAction(
   }
 
   if (!canManageTeamMember(session, target)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   if (!canAssignRole(session, parsed.data.role)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   if (target.role === "owner" && parsed.data.role !== "owner") {
@@ -203,6 +216,11 @@ export async function setTeamMemberStatusAction(
   isDisabled: boolean,
 ): Promise<TeamActionState> {
   const session = await requireSession();
+
+  if (!sessionHasPermission(session, "users.write")) {
+    return { error: ACTION_DENIED_MESSAGE };
+  }
+
   const target = await getTeamMemberById(session, userId);
 
   if (!target) {
@@ -210,7 +228,7 @@ export async function setTeamMemberStatusAction(
   }
 
   if (!canManageTeamMember(session, target)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   if (target.role === "owner" && isDisabled) {
@@ -352,7 +370,7 @@ export async function updateOrganizationAction(
   const session = await requireSession();
 
   if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   const parsed = organizationSchema.safeParse({

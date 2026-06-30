@@ -6,8 +6,8 @@ import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { fireWorkflowEngine } from "@/lib/automation/engine-v2/dispatch-hook";
 import { requireSession } from "@/lib/auth/session";
+import { assertPermissionSafe } from "@/lib/authorization/guards";
 import { assertCanCreateClient } from "@/lib/plans/guards";
-import { requirePermission } from "@/lib/rbac/guards";
 import { canViewRevenue } from "@/lib/rbac/permissions";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
@@ -132,7 +132,10 @@ export async function createClientAction(
   formData: FormData,
 ): Promise<ClientActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "clients", "create");
+  const denied = assertPermissionSafe(session.role, "clients.write");
+  if (denied) {
+    return denied;
+  }
 
   const clientLimitCheck = await assertCanCreateClient(
     session.organization.id,
@@ -208,7 +211,10 @@ export async function updateClientAction(
   formData: FormData,
 ): Promise<ClientActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "clients", "update");
+  const denied = assertPermissionSafe(session.role, "clients.write");
+  if (denied) {
+    return denied;
+  }
 
   const parsed = parseClientForm(formData);
 
@@ -288,7 +294,10 @@ export async function archiveClientAction(
   options: ArchiveClientOptions = {},
 ): Promise<void> {
   const session = await requireSession();
-  requirePermission(session.role, "clients", "delete");
+  const denied = assertPermissionSafe(session.role, "clients.write");
+  if (denied) {
+    throw new Error(denied.error);
+  }
 
   const supabase = await createClient();
   const { data: existing } = await supabase
@@ -343,7 +352,10 @@ export async function archiveClientAction(
 /** Permanently delete a client — Owner/Admin only. */
 export async function deleteClientAction(clientId: string): Promise<void> {
   const session = await requireSession();
-  requirePermission(session.role, "clients", "delete");
+  const denied = assertPermissionSafe(session.role, "clients.write");
+  if (denied) {
+    throw new Error(denied.error);
+  }
 
   const supabase = await createClient();
   const { data: existing } = await supabase

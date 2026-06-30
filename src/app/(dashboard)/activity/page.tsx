@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { AccessDenied } from "@/components/authorization/access-denied";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import { ActivityFeed } from "@/components/activity/activity-feed";
 import { ActivityFilterTabs } from "@/components/activity/activity-filter-tabs";
 import { PageHeader } from "@/components/layout/page-header";
@@ -9,7 +11,6 @@ import { PageSurface } from "@/components/ui/page-surface";
 import { listActivityEvents } from "@/lib/activity/queries";
 import type { ActivityFilter } from "@/lib/activity/types";
 import { requireSession } from "@/lib/auth/session";
-import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { linkText } from "@/lib/ui/tokens";
 
 export const metadata: Metadata = {
@@ -31,8 +32,17 @@ type ActivityPageProps = {
 };
 
 export default async function ActivityPage({ searchParams }: ActivityPageProps) {
-  await requireModuleAccess("activity");
   const session = await requireSession();
+
+  if (!sessionHasPermission(session, "activity.read")) {
+    return (
+      <>
+        <PageHeader module="activity" title="Activity" description="Recent workspace events." />
+        <AccessDenied />
+      </>
+    );
+  }
+
   const params = await searchParams;
   const filterParam = params.filter;
   const filter: ActivityFilter = VALID_FILTERS.includes(filterParam as ActivityFilter)

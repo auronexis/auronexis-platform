@@ -40,6 +40,8 @@ import {
   AuroraTableHead,
   AuroraTableHeaderCell,
 } from "@/components/ui/table";
+import { AccessDenied } from "@/components/authorization/access-denied";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
 import { canManagePortalUsers } from "@/lib/client-portal/guards";
 import { listPortalUsersForClient } from "@/lib/client-portal/queries";
@@ -51,10 +53,9 @@ import { formatIncidentDate } from "@/lib/incidents/types";
 import { formatMargin, formatCurrency } from "@/lib/profitability/types";
 import { formatReportDate, formatReportPeriod } from "@/lib/reports/types";
 import { formatRiskDate } from "@/lib/risks/types";
-import { canAccessModule, canViewRevenue } from "@/lib/rbac/permissions";
-import { requireModuleAccess } from "@/lib/rbac/route-guards";
+import { canViewRevenue } from "@/lib/rbac/permissions";
 import { listSlaPolicies, getClientSlaAssignment } from "@/lib/sla/queries";
-import { canManageOrganizationSettings } from "@/lib/team/guards";
+import { canManageSlaPolicies } from "@/lib/team/guards";
 import { linkText } from "@/lib/ui/tokens";
 import type { IncidentSeverity, IncidentStatus, RiskSeverity, RiskStatus } from "@/types/database";
 
@@ -77,12 +78,26 @@ function RestrictedValue() {
 }
 
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
-  await requireModuleAccess("clients");
   const session = await requireSession();
+
+  if (!sessionHasPermission(session, "clients.read")) {
+    return (
+      <DetailPageLayout>
+        <DetailPageHeader
+          module="clients"
+          title="Client"
+          backHref="/clients"
+          backLabel="Back to clients"
+        />
+        <AccessDenied />
+      </DetailPageLayout>
+    );
+  }
+
   const { id } = await params;
   const canManagePortal = canManagePortalUsers(session);
-  const canManageSla = canManageOrganizationSettings(session);
-  const canEdit = canAccessModule(session.role, "clients", "update");
+  const canManageSla = canManageSlaPolicies(session);
+  const canEdit = sessionHasPermission(session, "clients.write");
 
   const [client, overview, portalUsers, slaPolicies, orgUsers] = await Promise.all([
     getClientById(session, id),
@@ -102,9 +117,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   );
 
   const showRevenue = canViewRevenue(session.role);
-  const canManage =
-    canAccessModule(session.role, "clients", "update") ||
-    canAccessModule(session.role, "clients", "delete");
+  const canManage = sessionHasPermission(session, "clients.write");
   const boundUpdateAction = updateClientAction.bind(null, client.id);
   const profitability = overview.kpis.profitability;
   const ownerName =

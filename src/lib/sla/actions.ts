@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { requireSession } from "@/lib/auth/session";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { assertCanUseFeature } from "@/lib/plans/guards";
-import { canManageOrganizationSettings } from "@/lib/team/guards";
+import { canManageSlaPolicies } from "@/lib/team/guards";
 import { getSlaPolicyById } from "@/lib/sla/queries";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -82,8 +82,8 @@ export async function createSlaPolicyAction(
 ): Promise<SlaPolicyActionState> {
   const session = await requireSession();
 
-  if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+  if (!canManageSlaPolicies(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   await assertCanUseFeature(session.organization.id, "sla_tracking");
@@ -141,8 +141,8 @@ export async function updateSlaPolicyAction(
 ): Promise<SlaPolicyActionState> {
   const session = await requireSession();
 
-  if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+  if (!canManageSlaPolicies(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   await assertCanUseFeature(session.organization.id, "sla_tracking");
@@ -199,8 +199,8 @@ export async function updateSlaPolicyAction(
 export async function deleteSlaPolicyAction(policyId: string): Promise<SlaPolicyActionState> {
   const session = await requireSession();
 
-  if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+  if (!canManageSlaPolicies(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   await assertCanUseFeature(session.organization.id, "sla_tracking");
@@ -242,8 +242,8 @@ export async function deleteSlaPolicyAction(policyId: string): Promise<SlaPolicy
 export async function setDefaultSlaPolicyAction(policyId: string): Promise<SlaPolicyActionState> {
   const session = await requireSession();
 
-  if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+  if (!canManageSlaPolicies(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   await assertCanUseFeature(session.organization.id, "sla_tracking");
@@ -293,8 +293,8 @@ export async function assignClientSlaPolicyAction(
 ): Promise<SlaPolicyActionState> {
   const session = await requireSession();
 
-  if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+  if (!canManageSlaPolicies(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   await assertCanUseFeature(session.organization.id, "sla_tracking");

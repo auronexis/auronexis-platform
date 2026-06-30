@@ -7,6 +7,7 @@ import { recordActivityEvent } from "@/lib/activity/record";
 import { dispatchAutomation } from "@/lib/automation";
 import { fireWorkflowEngine } from "@/lib/automation/engine-v2/dispatch-hook";
 import { requireSession } from "@/lib/auth/session";
+import { assertPermissionSafe } from "@/lib/authorization/guards";
 import {
   canEditReport,
   canManageReportLifecycle,
@@ -14,7 +15,7 @@ import {
 } from "@/lib/reports/guards";
 import { getReportById } from "@/lib/reports/queries";
 import { EDITABLE_REPORT_STATUSES, STAFF_REPORT_STATUSES } from "@/lib/reports/types";
-import { AuthorizationError, requirePermission } from "@/lib/rbac/guards";
+import { AuthorizationError } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, ReportStatus } from "@/types/database";
 
@@ -123,7 +124,10 @@ export async function createReportAction(
   formData: FormData,
 ): Promise<ReportActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "reports", "create");
+  const denied = assertPermissionSafe(session.role, "reports.write");
+  if (denied) {
+    return denied;
+  }
 
   const parsed = parseReportForm(formData);
 
@@ -209,7 +213,10 @@ export async function updateReportAction(
   formData: FormData,
 ): Promise<ReportActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "reports", "update");
+  const denied = assertPermissionSafe(session.role, "reports.write");
+  if (denied) {
+    return denied;
+  }
 
   const existing = await getReportById(session, reportId);
 
