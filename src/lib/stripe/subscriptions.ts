@@ -12,6 +12,7 @@ type CreateCheckoutSessionInput = {
   organizationName: string;
   email: string;
   planKey: PlanKey;
+  userId?: string;
 };
 
 type CreatePortalSessionInput = {
@@ -75,29 +76,50 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput): 
   const stripe = getStripeClient();
   const customerId = await getOrCreateStripeCustomer(input);
   const appUrl = getAppUrl();
+  const priceId = getPlanPriceId(input.planKey);
+
+  const metadata: Record<string, string> = {
+    organization_id: input.organizationId,
+    plan: input.planKey,
+    plan_key: input.planKey,
+    price_id: priceId,
+  };
+
+  if (input.userId) {
+    metadata.user_id = input.userId;
+  }
+
+  const successUrl = `${appUrl}/settings/billing?success=1&session_id={CHECKOUT_SESSION_ID}`;
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
+    client_reference_id: input.organizationId,
     line_items: [
       {
-        price: getPlanPriceId(input.planKey),
+        price: priceId,
         quantity: 1,
       },
     ],
-    success_url: `${appUrl}/settings/billing?success=1`,
+    success_url: successUrl,
     cancel_url: `${appUrl}/settings/billing?cancelled=1`,
     allow_promotion_codes: true,
-    metadata: {
-      organization_id: input.organizationId,
-      plan_key: input.planKey,
-    },
+    metadata,
     subscription_data: {
       metadata: {
         organization_id: input.organizationId,
+        plan: input.planKey,
         plan_key: input.planKey,
+        price_id: priceId,
       },
     },
+  });
+
+  console.info("[stripe] checkout session created", {
+    checkoutSessionId: session.id,
+    organizationId: input.organizationId,
+    plan: input.planKey,
+    priceId,
   });
 
   if (!session.url) {

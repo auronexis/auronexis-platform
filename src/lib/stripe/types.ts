@@ -1,3 +1,4 @@
+import type { PlanKey } from "@/lib/billing/plans";
 import type Stripe from "stripe";
 
 export type SubscriptionStatus =
@@ -69,26 +70,50 @@ export function mapStripeSubscription(
   subscription: Stripe.Subscription,
 ): StripeSubscriptionSyncInput {
   const primaryItem = subscription.items.data[0];
+  const price = primaryItem?.price;
+  const stripePriceId =
+    typeof price === "string" ? price : price?.id ?? primaryItem?.plan?.id ?? null;
   const customerId =
     typeof subscription.customer === "string"
       ? subscription.customer
       : subscription.customer?.id ?? null;
 
+  const periodStartSeconds =
+    (primaryItem as { current_period_start?: number } | undefined)?.current_period_start ??
+    (subscription as Stripe.Subscription & { current_period_start?: number }).current_period_start ??
+    null;
+  const periodEndSeconds =
+    (primaryItem as { current_period_end?: number } | undefined)?.current_period_end ??
+    (subscription as Stripe.Subscription & { current_period_end?: number }).current_period_end ??
+    null;
+
   return {
     organizationId,
     stripeCustomerId: customerId,
     stripeSubscriptionId: subscription.id,
-    stripePriceId: primaryItem?.price.id ?? null,
+    stripePriceId,
     status: subscription.status,
-    currentPeriodStart: primaryItem?.current_period_start
-      ? new Date(primaryItem.current_period_start * 1000)
-      : null,
-    currentPeriodEnd: primaryItem?.current_period_end
-      ? new Date(primaryItem.current_period_end * 1000)
-      : null,
+    currentPeriodStart: periodStartSeconds ? new Date(periodStartSeconds * 1000) : null,
+    currentPeriodEnd: periodEndSeconds ? new Date(periodEndSeconds * 1000) : null,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
   };
+}
+
+export function resolvePlanKeyFromMetadata(
+  metadata: Stripe.Metadata | null | undefined,
+): PlanKey | null {
+  const raw = metadata?.plan ?? metadata?.plan_key;
+
+  if (!raw || raw.trim().length === 0) {
+    return null;
+  }
+
+  if (raw === "starter" || raw === "professional" || raw === "business" || raw === "enterprise") {
+    return raw;
+  }
+
+  return null;
 }
 
 export function resolveOrganizationIdFromMetadata(

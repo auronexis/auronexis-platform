@@ -104,6 +104,8 @@ export async function createCheckoutSessionAction(
 
       planKey: parsed.data,
 
+      userId: session.user.id,
+
       discountCode,
 
     });

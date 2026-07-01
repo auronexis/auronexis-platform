@@ -9,6 +9,7 @@ export async function createCheckoutSessionWithDiscount(input: {
   organizationName: string;
   email: string;
   planKey: PlanKey;
+  userId?: string;
   discountCode?: string | null;
 }): Promise<string> {
   if (input.discountCode) {
@@ -23,6 +24,7 @@ export async function createCheckoutSessionWithDiscount(input: {
     organizationName: input.organizationName,
     email: input.email,
     planKey: input.planKey,
+    userId: input.userId,
   });
 }
 

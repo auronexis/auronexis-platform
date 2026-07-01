@@ -29,6 +29,7 @@ type BillingSettingsPanelProps = {
   canManage: boolean;
   stripeStatus: StripeBillingUiStatus;
   success?: boolean;
+  successMessage?: string | null;
   cancelled?: boolean;
 };
 
@@ -98,6 +99,7 @@ export function BillingSettingsPanel({
   canManage,
   stripeStatus,
   success,
+  successMessage,
   cancelled,
 }: BillingSettingsPanelProps) {
   const { overview } = dashboard;
@@ -137,7 +139,7 @@ export function BillingSettingsPanel({
     <div className="space-y-8">
       {success ? (
         <FormAlert variant="success">
-          Subscription checkout completed. Your billing status will update shortly.
+          {successMessage ?? "Payment received. Your plan may update shortly."}
         </FormAlert>
       ) : null}
       {cancelled ? (

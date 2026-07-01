@@ -1,14 +1,12 @@
 import { recordActivityEvent } from "@/lib/activity/record";
 import { recordBillingEvent, syncCustomerInvoiceFromStripe } from "@/lib/billing/invoices";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
-import {
-  getOrganizationIdByStripeCustomerId,
-} from "@/lib/stripe/customers";
+import { applyCheckoutSessionToOrganization } from "@/lib/stripe/checkout-sync";
+import { getOrganizationIdByStripeCustomerId } from "@/lib/stripe/customers";
 import { getStripeClient } from "@/lib/stripe/client";
 import {
   markOrganizationSubscriptionCancelled,
   syncOrganizationPlan,
-  syncSubscriptionById,
   upsertOrganizationSubscription,
 } from "@/lib/stripe/subscriptions";
 import {
@@ -81,13 +79,9 @@ async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session,
   stripeEventId: string,
 ): Promise<void> {
-  const organizationId = await resolveOrganizationId(
-    resolveOrganizationIdFromMetadata(session.metadata),
-    typeof session.customer === "string" ? session.customer : session.customer?.id ?? null,
-  );
+  const organizationId = await applyCheckoutSessionToOrganization(session);
 
   if (!organizationId) {
-    console.error("[stripe] checkout.session.completed missing organization_id");
     return;
   }
 
@@ -96,16 +90,10 @@ async function handleCheckoutSessionCompleted(
       ? session.subscription
       : session.subscription?.id ?? null;
 
-  if (!subscriptionId) {
-    console.error("[stripe] checkout.session.completed missing subscription id");
-    return;
-  }
-
-  await syncSubscriptionById(organizationId, subscriptionId);
-
   const stripe = getStripeClient();
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  await syncOrganizationPlan(organizationId, subscription.status);
+  const subscription = subscriptionId
+    ? await stripe.subscriptions.retrieve(subscriptionId)
+    : null;
 
   await recordBillingActivity({
     organizationId,
@@ -114,7 +102,7 @@ async function handleCheckoutSessionCompleted(
     description: "A paid subscription was activated via Stripe Checkout.",
     metadata: {
       stripeSubscriptionId: subscriptionId,
-      status: subscription.status,
+      status: subscription?.status ?? session.payment_status,
     },
   });
 
@@ -122,7 +110,11 @@ async function handleCheckoutSessionCompleted(
     organizationId,
     eventType: "checkout_completed",
     stripeEventId,
-    payload: { subscriptionId, status: subscription.status, checkoutSessionId: session.id },
+    payload: {
+      subscriptionId,
+      status: subscription?.status ?? session.payment_status,
+      checkoutSessionId: session.id,
+    },
   });
 
   await notifyOwnersAndAdmins(organizationId, {

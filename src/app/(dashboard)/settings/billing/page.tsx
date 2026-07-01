@@ -4,6 +4,7 @@ import { BillingSettingsPanel } from "@/components/settings/billing-settings-pan
 import { PageHeader } from "@/components/layout/page-header";
 import { getBillingDashboardData } from "@/lib/billing/queries";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
+import { syncCheckoutSessionForOrganization } from "@/lib/stripe/checkout-sync";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getOrganizationPlanUsageSummary } from "@/lib/plans/queries";
@@ -18,6 +19,7 @@ type BillingSettingsPageProps = {
   searchParams: Promise<{
     success?: string;
     cancelled?: string;
+    session_id?: string;
   }>;
 };
 
@@ -25,6 +27,21 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
   await requireModuleAccess("settings");
   const session = await requireSession();
   const canManage = canManageOrganizationSettings(session);
+  const params = await searchParams;
+  const stripeStatus = getStripeBillingUiStatus();
+
+  let checkoutSuccessMessage: string | null = null;
+
+  if (params.success === "1" && canManage) {
+    const syncResult = await syncCheckoutSessionForOrganization(
+      session.organization.id,
+      params.session_id ?? null,
+    );
+    checkoutSuccessMessage = syncResult.message;
+  } else if (params.success === "1") {
+    checkoutSuccessMessage = "Payment received. Your plan may update shortly.";
+  }
+
   const [dashboard, seatUsage] = await Promise.all([
     getBillingDashboardData(session),
     getOrganizationSeatUsageFromSession(session),
@@ -34,8 +51,6 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
     seatUsage.used,
     seatUsage.limit,
   );
-  const stripeStatus = getStripeBillingUiStatus();
-  const params = await searchParams;
 
   return (
     <>
@@ -60,6 +75,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
         canManage={canManage}
         stripeStatus={stripeStatus}
         success={params.success === "1"}
+        successMessage={checkoutSuccessMessage}
         cancelled={params.cancelled === "1"}
       />
     </>

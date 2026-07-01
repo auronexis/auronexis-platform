@@ -1,3 +1,7 @@
+export {
+  applyCheckoutSessionToOrganization,
+  syncCheckoutSessionForOrganization,
+} from "./checkout-sync";
 export { getStripeClient } from "./client";
 export { getOrCreateStripeCustomer, getOrganizationIdByStripeCustomerId } from "./customers";
 export {
