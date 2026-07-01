@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { ArchiveIncidentButton } from "@/components/incidents/archive-incident-button";
 import { IncidentForm } from "@/components/incidents/incident-form";
 import { ResolveIncidentForm } from "@/components/incidents/resolve-incident-form";
-import { IncidentStatusBadge } from "@/components/incidents/incident-status-badge";
-import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
+import { IncidentBadge } from "@/components/incidents/incident-badge";
+import { IncidentActivityFeed } from "@/components/incidents/incident-activity-feed";
+import { IncidentTimeline } from "@/components/incidents/incident-timeline";
 import { SlaDetailSection } from "@/components/sla/sla-detail-section";
 import {
   DetailActionSection,
@@ -22,6 +23,7 @@ import { updateIncidentAction } from "@/lib/incidents/actions";
 import { canEditIncident, canManageIncidentLifecycle } from "@/lib/incidents/guards";
 import {
   getIncidentById,
+  listIncidentActivity,
   listLinkableRisks,
 } from "@/lib/incidents/queries";
 import {
@@ -69,12 +71,15 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
     notFound();
   }
 
-  const sla = await getIncidentSlaInfo(session, {
-    client_id: incident.client_id,
-    created_at: incident.created_at,
-    status: incident.status,
-    resolved_at: incident.resolved_at,
-  });
+  const [sla, activity] = await Promise.all([
+    getIncidentSlaInfo(session, {
+      client_id: incident.client_id,
+      created_at: incident.created_at,
+      status: incident.status,
+      resolved_at: incident.resolved_at,
+    }),
+    listIncidentActivity(session, incident.id),
+  ]);
   const editable = canEditIncident(session, incident);
   const canManageLifecycle = canManageIncidentLifecycle(session);
   const canArchive = canManageLifecycle && incident.status !== "archived";
@@ -103,10 +108,10 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
   const metadataRail = (
     <DetailMetadataRail title="Incident overview">
       <DetailMetadataItem label="Severity">
-        <RiskSeverityBadge severity={incident.severity} />
+        <IncidentBadge kind="severity" value={incident.severity} />
       </DetailMetadataItem>
       <DetailMetadataItem label="Status">
-        <IncidentStatusBadge status={incident.status} />
+        <IncidentBadge kind="status" value={incident.status} />
       </DetailMetadataItem>
       <DetailMetadataItem label="Client">
         {incident.clients?.name ? (
@@ -149,8 +154,8 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
         backLabel="Back to incidents"
         meta={
           <>
-            <RiskSeverityBadge severity={incident.severity} />
-            <IncidentStatusBadge status={incident.status} />
+            <IncidentBadge kind="severity" value={incident.severity} />
+            <IncidentBadge kind="status" value={incident.status} />
             <DetailMetaSeparator />
             <DetailMetaText>Updated {formatIncidentDate(incident.updated_at)}</DetailMetaText>
           </>
@@ -192,6 +197,20 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
         ) : null}
 
         <SlaDetailSection sla={sla} />
+
+        <DetailSection
+          title="Incident timeline"
+          description="Chronological audit trail for this incident."
+        >
+          <IncidentTimeline events={activity} />
+        </DetailSection>
+
+        <DetailSection
+          title="Activity feed"
+          description="Recent incident events across your workspace."
+        >
+          <IncidentActivityFeed events={activity} />
+        </DetailSection>
 
         {editable ? (
           <DetailSection

@@ -16,7 +16,11 @@ export {
   getIncidentById,
   listLinkableRisks,
   getIncidentDashboardMetrics,
+  getIncidentSummary,
+  listIncidentActivity,
 } from "./queries";
+export { recordIncidentActivity } from "./activity";
+export type { IncidentSummary, IncidentActivityView } from "./types";
 export {
   createIncidentAction,
   updateIncidentAction,

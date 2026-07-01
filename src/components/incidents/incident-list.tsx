@@ -1,5 +1,4 @@
-import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
-import { IncidentStatusBadge } from "@/components/incidents/incident-status-badge";
+import { IncidentBadge } from "@/components/incidents/incident-badge";
 import { SlaStatusBadge } from "@/components/sla/sla-status-badge";
 import { ClickableRow } from "@/components/ui/clickable-row";
 import { RowInteractiveLink } from "@/components/ui/interactive-surface";
@@ -71,10 +70,10 @@ export function IncidentList({ incidents }: IncidentListProps) {
                 )}
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap">
-                <RiskSeverityBadge severity={incident.severity} />
+                <IncidentBadge kind="severity" value={incident.severity} />
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap">
-                <IncidentStatusBadge status={incident.status} />
+                <IncidentBadge kind="status" value={incident.status} />
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap text-muted">
                 {incident.users?.full_name ?? "—"}

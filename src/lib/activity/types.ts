@@ -39,7 +39,12 @@ export type ActivityEventType =
   | "risk.resolved"
   | "risk.dismissed"
   | "risk.deleted"
-  | "risk.detected";
+  | "risk.detected"
+  | "incident.created"
+  | "incident.assigned"
+  | "incident.status_changed"
+  | "incident.resolved"
+  | "incident.closed";
 
 export type ActivityFilter =
   | "all"
@@ -90,6 +95,11 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "risk.dismissed": "Risk dismissed",
   "risk.deleted": "Risk deleted",
   "risk.detected": "Risk detected",
+  "incident.created": "Incident created",
+  "incident.assigned": "Incident assigned",
+  "incident.status_changed": "Incident status changed",
+  "incident.resolved": "Incident resolved",
+  "incident.closed": "Incident closed",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

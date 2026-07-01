@@ -39,6 +39,13 @@ export type IncidentSeverity = "low" | "medium" | "high" | "critical";
 
 export type IncidentStatus = "open" | "investigating" | "resolved" | "archived";
 
+export type IncidentActivityEventType =
+  | "incident.created"
+  | "incident.assigned"
+  | "incident.status_changed"
+  | "incident.resolved"
+  | "incident.closed";
+
 export type ReportStatus = "draft" | "generated" | "published" | "archived";
 
 export type NotificationType =
@@ -636,6 +643,64 @@ export type Database = {
           {
             foreignKeyName: "incidents_assigned_user_id_fkey";
             columns: ["assigned_user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      incident_activity: {
+        Row: {
+          id: string;
+          organization_id: string;
+          incident_id: string;
+          actor_user_id: string | null;
+          event_type: IncidentActivityEventType;
+          title: string;
+          description: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          incident_id: string;
+          actor_user_id?: string | null;
+          event_type: IncidentActivityEventType;
+          title: string;
+          description?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          incident_id?: string;
+          actor_user_id?: string | null;
+          event_type?: IncidentActivityEventType;
+          title?: string;
+          description?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "incident_activity_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_activity_incident_id_fkey";
+            columns: ["incident_id"];
+            isOneToOne: false;
+            referencedRelation: "incidents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_activity_actor_user_id_fkey";
+            columns: ["actor_user_id"];
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];

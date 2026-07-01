@@ -19,6 +19,28 @@ export type RiskOption = {
   client_id: string;
 };
 
+export type IncidentSummary = {
+  openCount: number;
+  criticalCount: number;
+  investigatingCount: number;
+  resolvedCount: number;
+  mttrHours: number | null;
+  resolvedPercent: number;
+};
+
+export type IncidentActivityView = {
+  id: string;
+  organization_id: string;
+  incident_id: string;
+  actor_user_id: string | null;
+  event_type: string;
+  title: string;
+  description: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  actor: { full_name: string } | null;
+};
+
 export const INCIDENT_SEVERITIES: IncidentSeverity[] = ["low", "medium", "high", "critical"];
 
 export const INCIDENT_STATUSES: IncidentStatus[] = [

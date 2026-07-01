@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { recordActivityEvent } from "@/lib/activity/record";
+import { recordIncidentActivity } from "@/lib/incidents/activity";
 import { dispatchAutomation } from "@/lib/automation";
 import { recordSlaResolvedIfNeeded } from "@/lib/sla/evaluations";
 import { requireSession } from "@/lib/auth/session";
@@ -208,14 +208,18 @@ export async function createIncidentAction(
     return { error: "Unable to create incident." };
   }
 
-  await recordActivityEvent({
+  await recordIncidentActivity({
     organizationId: session.organization.id,
     actorUserId: session.user.id,
-    entityType: "incident",
-    entityId: created.id,
-    action: "created",
+    incidentId: created.id,
+    eventType: "incident.created",
     title: `Incident created: ${parsed.data.title}`,
-    metadata: { incidentId: created.id, title: parsed.data.title },
+    metadata: {
+      title: parsed.data.title,
+      severity: parsed.data.severity,
+      status: parsed.data.status,
+      assignedUserId,
+    },
   });
 
   await dispatchAutomation({
@@ -339,22 +343,57 @@ export async function updateIncidentAction(
     return { error: "Unable to update incident." };
   }
 
-  const action =
-    parsed.data.status === "resolved" && existing.status !== "resolved"
-      ? "resolved"
-      : parsed.data.status === "archived" && existing.status !== "archived"
-        ? "archived"
-        : "updated";
+  if (assignedUserId !== existing.assigned_user_id) {
+    await recordIncidentActivity({
+      organizationId: session.organization.id,
+      actorUserId: session.user.id,
+      incidentId,
+      eventType: "incident.assigned",
+      title: `Incident assigned: ${parsed.data.title}`,
+      metadata: {
+        previousAssigneeId: existing.assigned_user_id,
+        assignedUserId,
+      },
+    });
+  }
 
-  await recordActivityEvent({
-    organizationId: session.organization.id,
-    actorUserId: session.user.id,
-    entityType: "incident",
-    entityId: incidentId,
-    action,
-    title: `Incident ${action}: ${parsed.data.title}`,
-    metadata: { incidentId, title: parsed.data.title, status: parsed.data.status },
-  });
+  if (parsed.data.status !== existing.status) {
+    const statusEventType =
+      parsed.data.status === "resolved"
+        ? "incident.resolved"
+        : parsed.data.status === "archived"
+          ? "incident.closed"
+          : "incident.status_changed";
+
+    await recordIncidentActivity({
+      organizationId: session.organization.id,
+      actorUserId: session.user.id,
+      incidentId,
+      eventType: statusEventType,
+      title: `Incident status changed to ${parsed.data.status}`,
+      metadata: {
+        previousStatus: existing.status,
+        status: parsed.data.status,
+        title: parsed.data.title,
+      },
+    });
+  } else if (
+    parsed.data.title !== existing.title ||
+    parsed.data.severity !== existing.severity
+  ) {
+    await recordIncidentActivity({
+      organizationId: session.organization.id,
+      actorUserId: session.user.id,
+      incidentId,
+      eventType: "incident.status_changed",
+      title: `Incident updated: ${parsed.data.title}`,
+      metadata: {
+        title: parsed.data.title,
+        severity: parsed.data.severity,
+        status: parsed.data.status,
+      },
+    });
+  }
 
   await dispatchAutomation({
     trigger: "incident_updated",
@@ -418,14 +457,13 @@ export async function resolveIncidentAction(
     return { error: "Unable to resolve incident." };
   }
 
-  await recordActivityEvent({
+  await recordIncidentActivity({
     organizationId: session.organization.id,
     actorUserId: session.user.id,
-    entityType: "incident",
-    entityId: incidentId,
-    action: "resolved",
+    incidentId,
+    eventType: "incident.resolved",
     title: `Incident resolved: ${existing.title}`,
-    metadata: { incidentId, title: existing.title },
+    metadata: { title: existing.title },
   });
 
   await recordSlaResolvedIfNeeded({
@@ -488,14 +526,13 @@ export async function archiveIncidentAction(incidentId: string): Promise<void> {
     throw new Error("Unable to archive incident.");
   }
 
-  await recordActivityEvent({
+  await recordIncidentActivity({
     organizationId: session.organization.id,
     actorUserId: session.user.id,
-    entityType: "incident",
-    entityId: incidentId,
-    action: "archived",
-    title: `Incident archived: ${existing.title}`,
-    metadata: { incidentId, title: existing.title },
+    incidentId,
+    eventType: "incident.closed",
+    title: `Incident closed: ${existing.title}`,
+    metadata: { title: existing.title },
   });
 
   await dispatchAutomation({
