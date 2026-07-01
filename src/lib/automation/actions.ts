@@ -13,7 +13,7 @@ import {
   createNotificationForOwnersAdminsAndAssignee,
   createNotificationForOwnersAndAdmins,
 } from "@/lib/notifications/create";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ClientStatus } from "@/types/database";
 
@@ -151,7 +151,7 @@ async function countCriticalOpenItems(
       .eq("organization_id", organizationId)
       .eq("client_id", clientId)
       .eq("severity", "critical")
-      .in("status", OPEN_RISK_STATUSES),
+      .in("status", LEGACY_OPEN_RISK_STATUSES),
     admin
       .from("incidents")
       .select("id", { count: "exact", head: true })

@@ -15,6 +15,7 @@ import {
   deriveSlaScore,
 } from "@/lib/reports-v2/summary";
 import { createClient } from "@/lib/supabase/server";
+import { getClientRiskMetricsForReport } from "@/lib/risks/queries";
 
 type GenerateReportInput = {
   session: SessionContext;
@@ -152,10 +153,11 @@ export async function buildKPISection(
 ): Promise<Pick<ReportMetrics, "openRisks" | "openIncidents" | "activityCount" | "activityTrendPercent">> {
   const since = periodStart;
   const previousSince = new Date(new Date(periodStart).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const [counts, currentActivity, previousActivity] = await Promise.all([
+  const [counts, currentActivity, previousActivity, clientRiskMetrics] = await Promise.all([
     countOpenItems(session.organization.id, clientId),
     countActivity(session.organization.id, clientId, since),
     countActivity(session.organization.id, clientId, previousSince),
+    getClientRiskMetricsForReport(session, clientId),
   ]);
 
   let activityTrendPercent: number | null = null;
@@ -164,7 +166,7 @@ export async function buildKPISection(
   }
 
   return {
-    openRisks: counts.openRisks,
+    openRisks: clientRiskMetrics.openCount || counts.openRisks,
     openIncidents: counts.openIncidents,
     activityCount: currentActivity,
     activityTrendPercent,

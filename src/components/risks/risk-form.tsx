@@ -14,11 +14,13 @@ import {
   RISK_SEVERITIES,
   RISK_SEVERITY_LABELS,
   RISK_STATUS_LABELS,
+  type RiskSeverity,
+  type RiskStatus,
   type RiskWithRelations,
 } from "@/lib/risks/types";
 import { formGrid } from "@/lib/ui/form-tokens";
 import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
-import type { AppUser, Client, RiskSeverity, RiskStatus } from "@/types/database";
+import type { AppUser, Client } from "@/types/database";
 
 type RiskFormProps = {
   action: (
@@ -77,9 +79,9 @@ export function RiskForm({
   const descriptionValue = useAIFields
     ? operationalAI!.fieldValues.description
     : risk?.description ?? "";
-  const resolutionValue = useAIFields
+  const recommendationValue = useAIFields
     ? operationalAI!.fieldValues.resolution_notes
-    : risk?.resolution_notes ?? "";
+    : risk?.recommendation ?? "";
 
   return (
     <form action={formAction}>
@@ -129,10 +131,10 @@ export function RiskForm({
               onChange={(event) => syncWorkspaceMeta({ status: event.target.value })}
             />
             <Input
-              name="dueDate"
-              type="date"
+              name="dueAt"
+              type="datetime-local"
               label="Due date"
-              defaultValue={risk?.due_date ?? ""}
+              defaultValue={risk?.due_at ? risk.due_at.slice(0, 16) : ""}
               onChange={(event) =>
                 syncWorkspaceMeta({ dueDate: event.target.value || null })
               }
@@ -158,7 +160,7 @@ export function RiskForm({
           )}
         </FormSection>
 
-        <FormSection title="Details" description="Impact assessment and resolution notes.">
+        <FormSection title="Details" description="Impact assessment and recommended actions.">
           {useAIFields && operationalAI ? (
             <>
               <OperationalAIContentField
@@ -171,12 +173,12 @@ export function RiskForm({
               />
               <OperationalAIContentField
                 field="resolution_notes"
-                name="resolutionNotes"
-                label="Resolution notes"
+                name="recommendation"
+                label="Recommendation"
                 rows={3}
-                value={resolutionValue}
+                value={recommendationValue}
                 onChange={(value) => operationalAI.setFieldValue("resolution_notes", value)}
-                placeholder="Document mitigation steps or resolution details."
+                placeholder="Recommended mitigation steps."
               />
             </>
           ) : (
@@ -189,12 +191,20 @@ export function RiskForm({
                 placeholder="Describe the operational threat and context."
               />
               <Textarea
-                id="resolutionNotes"
-                name="resolutionNotes"
-                label="Resolution notes"
+                id="impact"
+                name="impact"
+                label="Impact"
+                rows={2}
+                defaultValue={risk?.impact ?? ""}
+                placeholder="Business impact if this risk materializes."
+              />
+              <Textarea
+                id="recommendation"
+                name="recommendation"
+                label="Recommendation"
                 rows={3}
-                defaultValue={risk?.resolution_notes ?? ""}
-                placeholder="Document mitigation steps or resolution details."
+                defaultValue={risk?.recommendation ?? ""}
+                placeholder="Recommended mitigation steps."
               />
             </>
           )}

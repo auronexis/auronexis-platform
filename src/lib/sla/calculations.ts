@@ -1,6 +1,6 @@
-import type { IncidentStatus, RiskStatus } from "@/types/database";
+import type { ClientRiskStatus, IncidentStatus, RiskStatus } from "@/types/database";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES, OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import type { SlaPolicy } from "@/types/database";
 import type { EntitySlaInfo, SlaPolicySource } from "@/lib/sla/types";
 
@@ -117,13 +117,17 @@ function resolvePolicyHours(
 
 function isOpenEntityStatus(
   entityType: SlaEntityType,
-  status: IncidentStatus | RiskStatus,
+  status: IncidentStatus | ClientRiskStatus | RiskStatus,
 ): boolean {
   if (entityType === "incident") {
     return OPEN_INCIDENT_STATUSES.includes(status as IncidentStatus);
   }
 
-  return OPEN_RISK_STATUSES.includes(status as RiskStatus);
+  if (LEGACY_OPEN_RISK_STATUSES.includes(status as RiskStatus)) {
+    return true;
+  }
+
+  return OPEN_RISK_STATUSES.includes(status as ClientRiskStatus);
 }
 
 function resolvePolicySource(
@@ -145,7 +149,7 @@ function resolvePolicySource(
 export function resolveEntitySlaInfo(input: {
   entityType: SlaEntityType;
   createdAt: string;
-  status: IncidentStatus | RiskStatus;
+  status: IncidentStatus | ClientRiskStatus | RiskStatus;
   policy: SlaPolicy | null | undefined;
   assignedPolicyId?: string | null;
   resolvedAt?: string | null;

@@ -14,6 +14,7 @@ import { listPortalRisks } from "@/lib/client-portal/queries";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
 import { getOrganizationPlanContext } from "@/lib/plans/queries";
 import { attachRiskSlaInfo } from "@/lib/sla/queries";
+import { normalizeRiskStatusForDisplay } from "@/lib/risks/types";
 import type { EntitySlaInfo } from "@/lib/sla/types";
 import type { RiskSeverity, RiskStatus } from "@/types/database";
 
@@ -74,7 +75,7 @@ export default async function ClientPortalRisksPage() {
                     <RiskSeverityBadge severity={risk.severity as RiskSeverity} />
                   </td>
                   <td className={`whitespace-nowrap ${portalTableCellClass}`}>
-                    <RiskStatusBadge status={risk.status as RiskStatus} />
+                    <RiskStatusBadge status={normalizeRiskStatusForDisplay(risk.status)} />
                   </td>
                   {showSla ? (
                     <td className={`whitespace-nowrap ${portalTableCellClass}`}>

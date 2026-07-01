@@ -7,7 +7,6 @@ import { listClients } from "@/lib/clients/queries";
 import { createRiskAction } from "@/lib/risks/actions";
 import { canCreateRisk } from "@/lib/risks/guards";
 import { listOrgUsers } from "@/lib/risks/queries";
-import { STAFF_RISK_STATUSES } from "@/lib/risks/types";
 import { OperationalEditableWithAI } from "@/components/operational/ai/operational-editable-with-ai";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
 import {
@@ -23,9 +22,14 @@ export const metadata: Metadata = {
   title: "Add risk",
 };
 
-export default async function NewRiskPage() {
+type NewRiskPageProps = {
+  searchParams: Promise<{ clientId?: string }>;
+};
+
+export default async function NewRiskPage({ searchParams }: NewRiskPageProps) {
   await requireModuleAccess("risks");
   const session = await requireSession();
+  const params = await searchParams;
 
   if (!canCreateRisk(session)) {
     redirect("/risks");
@@ -37,7 +41,10 @@ export default async function NewRiskPage() {
       ? await listOrgUsers(session)
       : [];
   const showOwnerSelect = session.role === "owner" || session.role === "admin";
-  const defaultClientId = clients[0]?.id ?? "";
+  const defaultClientId =
+    params.clientId && clients.some((c) => c.id === params.clientId)
+      ? params.clientId
+      : (clients[0]?.id ?? "");
   const [aiAccess, planKey] = await Promise.all([
     checkPlanFeatureForSession(session, "ai_risk_assistant"),
     getCurrentPlan(session.organization.id),
@@ -95,7 +102,7 @@ export default async function NewRiskPage() {
             clientId: defaultClientId,
             title: "",
             severity: "medium",
-            status: STAFF_RISK_STATUSES[0] ?? "open",
+            status: "open",
             assigneeUserId: session.user.id,
             dueDate: null,
             linkedRiskId: null,
@@ -110,7 +117,7 @@ export default async function NewRiskPage() {
             clients={clients}
             orgUsers={orgUsers}
             showOwnerSelect={showOwnerSelect}
-            allowedStatuses={STAFF_RISK_STATUSES}
+            allowedStatuses={["open"]}
             defaultOwnerUserId={session.user.id}
             submitLabel="Create risk"
             pendingLabel="Creating…"

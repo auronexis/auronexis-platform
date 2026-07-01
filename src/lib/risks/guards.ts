@@ -1,26 +1,30 @@
-import { canAccessModule } from "@/lib/rbac/permissions";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import type { SessionContext } from "@/lib/tenancy/context";
-import type { Risk } from "@/types/database";
+import type { ClientRiskView } from "@/lib/risks/types";
 
-/** Owner/Admin may resolve or archive risks. */
-export function canManageRiskLifecycle(session: SessionContext): boolean {
-  return canAccessModule(session.role, "risks", "delete");
+export function canCreateRisk(session: SessionContext): boolean {
+  return sessionHasPermission(session, "risks.write");
 }
 
-/** Whether the current user may edit a specific risk. */
-export function canEditRisk(session: SessionContext, risk: Pick<Risk, "owner_user_id">): boolean {
-  if (!canAccessModule(session.role, "risks", "update")) {
+export function canEditRisk(
+  session: SessionContext,
+  risk: Pick<ClientRiskView, "owner_user_id">,
+): boolean {
+  if (!sessionHasPermission(session, "risks.write")) {
     return false;
   }
 
-  if (session.role === "staff") {
+  if (session.role === "staff" && risk.owner_user_id) {
     return risk.owner_user_id === session.user.id;
   }
 
-  return session.role === "owner" || session.role === "admin";
+  return true;
 }
 
-/** Whether the current user may create risks. */
-export function canCreateRisk(session: SessionContext): boolean {
-  return canAccessModule(session.role, "risks", "create");
+export function canManageRiskLifecycle(session: SessionContext): boolean {
+  return sessionHasPermission(session, "risks.write");
+}
+
+export function canDeleteRisk(session: SessionContext): boolean {
+  return sessionHasPermission(session, "risks.write") && ["owner", "admin"].includes(session.role);
 }

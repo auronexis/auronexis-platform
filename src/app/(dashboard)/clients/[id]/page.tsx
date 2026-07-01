@@ -31,6 +31,8 @@ import { GenerateReportButton } from "@/components/reports/generate-report-butto
 import { ReportCard } from "@/components/reports/report-card";
 import { ReportPublishDialog } from "@/components/reports/report-publish-dialog";
 import { ReportVersionHistory } from "@/components/reports/report-version-history";
+import { RiskCard } from "@/components/risks/risk-card";
+import { RiskEmptyState } from "@/components/risks/risk-empty-state";
 import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
 import { RiskStatusBadge } from "@/components/risks/risk-status-badge";
 import { CreatePortalUserForm } from "@/components/client-portal/create-portal-user-form";
@@ -58,13 +60,15 @@ import { formatClientDate } from "@/lib/clients/types";
 import { formatIncidentDate } from "@/lib/incidents/types";
 import { formatMargin, formatCurrency } from "@/lib/profitability/types";
 import { canCreateReport, canManageReportLifecycle, canPublishReport } from "@/lib/reports/guards";
+import { canCreateRisk } from "@/lib/risks/guards";
 import { getReportHistory, listReportsV2 } from "@/lib/reports-v2";
-import { formatRiskDate } from "@/lib/risks/types";
+import { listClientRisks, OPEN_RISK_STATUSES } from "@/lib/risks";
+import { formatRiskDate, normalizeRiskStatusForDisplay } from "@/lib/risks/types";
 import { canViewRevenue } from "@/lib/rbac/permissions";
 import { listSlaPolicies, getClientSlaAssignment } from "@/lib/sla/queries";
 import { canManageSlaPolicies } from "@/lib/team/guards";
 import { linkText } from "@/lib/ui/tokens";
-import type { IncidentSeverity, IncidentStatus, RiskSeverity, RiskStatus } from "@/types/database";
+import type { IncidentSeverity, IncidentStatus, RiskSeverity } from "@/types/database";
 
 type ClientDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -106,7 +110,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const canManageSla = canManageSlaPolicies(session);
   const canEdit = sessionHasPermission(session, "clients.write");
 
-  const [client, overview, portalUsers, slaPolicies, orgUsers, recentReportsResult] = await Promise.all([
+  const [client, overview, portalUsers, slaPolicies, orgUsers, recentReportsResult, clientRisks] =
+    await Promise.all([
     getClientById(session, id).catch(() => null),
     getClientOverview(session, id),
     canManagePortal
@@ -115,6 +120,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     listSlaPolicies(session).catch(() => [] as Awaited<ReturnType<typeof listSlaPolicies>>),
     canEdit ? listOrgUsers(session).catch(() => [] as Awaited<ReturnType<typeof listOrgUsers>>) : Promise.resolve([]),
     listReportsV2(session, { clientId: id, limit: 5 }),
+    listClientRisks(session, id, { status: [...OPEN_RISK_STATUSES], limit: 5 }),
   ]);
 
   if (!client) {
@@ -138,6 +144,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     : { data: [], error: null };
   const reportVersions = reportHistoryResult.data ?? [];
   const canCreateReports = canCreateReport(session);
+  const canCreateClientRisk = canCreateRisk(session);
   const canGenerateReports = canManageReportLifecycle(session);
   const canPublishReports = canPublishReport(session);
 
@@ -301,6 +308,34 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </DetailSection>
 
         <DetailSection
+          title="Client risks"
+          description="Open risks detected or tracked for this client."
+          action={
+            <DetailViewAllLink href={`/risks?tab=open`}>View all risks</DetailViewAllLink>
+          }
+        >
+          {clientRisks.length === 0 ? (
+            <RiskEmptyState
+              title="No open client risks"
+              description="Risks will appear when detected automatically or added manually."
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {clientRisks.map((risk) => (
+                <RiskCard key={risk.id} risk={risk} />
+              ))}
+            </div>
+          )}
+          {canCreateClientRisk ? (
+            <div className="mt-4">
+              <Link href={`/risks/new?clientId=${client.id}`} className={linkText}>
+                Create risk for this client
+              </Link>
+            </div>
+          ) : null}
+        </DetailSection>
+
+        <DetailSection
           title="Open risks"
           action={
             overview.openRisksTotal > 5 ? (
@@ -335,7 +370,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                         <RiskSeverityBadge severity={risk.severity as RiskSeverity} />
                       </AuroraTableCell>
                       <AuroraTableCell>
-                        <RiskStatusBadge status={risk.status as RiskStatus} />
+                        <RiskStatusBadge status={normalizeRiskStatusForDisplay(risk.status)} />
                       </AuroraTableCell>
                       <AuroraTableCell className="text-muted">
                         {risk.due_date ? formatRiskDate(risk.due_date) : "—"}

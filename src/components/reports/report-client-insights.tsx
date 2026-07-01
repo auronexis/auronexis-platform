@@ -8,8 +8,9 @@ import type {
   RelatedOpenRisk,
 } from "@/lib/reports/types";
 import { formatReportDate } from "@/lib/reports/types";
+import { normalizeRiskStatusForDisplay } from "@/lib/risks/types";
 import { linkText } from "@/lib/ui/tokens";
-import type { IncidentSeverity, IncidentStatus, RiskSeverity, RiskStatus } from "@/types/database";
+import type { IncidentSeverity, IncidentStatus, RiskSeverity } from "@/types/database";
 
 type ReportClientInsightsProps = {
   metrics: ClientReportMetrics;
@@ -61,7 +62,7 @@ export function ReportClientInsights({
                   {risk.title}
                 </Link>
                 <RiskSeverityBadge severity={risk.severity as RiskSeverity} />
-                <RiskStatusBadge status={risk.status as RiskStatus} />
+                <RiskStatusBadge status={normalizeRiskStatusForDisplay(risk.status)} />
                 {risk.due_date ? (
                   <span className="text-sm text-muted">
                     Due {formatReportDate(risk.due_date)}

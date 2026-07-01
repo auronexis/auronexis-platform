@@ -145,6 +145,16 @@ export async function computeAndRecordClientHealth(
       };
     }
 
+    void import("@/lib/risks/detector")
+      .then(({ detectClientRisks, resolveHealthEngineRisks }) => {
+        if (result.status === "healthy" || result.status === "excellent") {
+          void resolveHealthEngineRisks(session, client.id);
+        } else {
+          void detectClientRisks(session, client.id);
+        }
+      })
+      .catch(() => undefined);
+
     return snapshot;
   } catch (error) {
     console.warn("[health] failed to compute client health:", error);

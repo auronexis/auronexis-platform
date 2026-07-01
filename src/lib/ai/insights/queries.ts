@@ -7,7 +7,7 @@ import { getDashboardData } from "@/lib/dashboard/queries";
 import { buildClientProfitabilityRows } from "@/lib/profitability/queries";
 import type { ClientProfitabilityRow } from "@/lib/profitability/types";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 
@@ -172,7 +172,8 @@ async function countOpenByClient(
   criticalOnly = false,
 ): Promise<number> {
   const supabase = await createClient();
-  const openStatuses = table === "incidents" ? OPEN_INCIDENT_STATUSES : OPEN_RISK_STATUSES;
+  const openStatuses =
+    table === "incidents" ? OPEN_INCIDENT_STATUSES : LEGACY_OPEN_RISK_STATUSES;
 
   let query = supabase
     .from(table)

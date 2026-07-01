@@ -31,7 +31,15 @@ export type ActivityEventType =
   | "settings.updated"
   | "health.changed"
   | "portal.login"
-  | "portal.viewed";
+  | "portal.viewed"
+  | "risk.created"
+  | "risk.updated"
+  | "risk.acknowledged"
+  | "risk.mitigated"
+  | "risk.resolved"
+  | "risk.dismissed"
+  | "risk.deleted"
+  | "risk.detected";
 
 export type ActivityFilter =
   | "all"
@@ -74,6 +82,14 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "health.changed": "Health changed",
   "portal.login": "Portal login",
   "portal.viewed": "Portal viewed",
+  "risk.created": "Risk created",
+  "risk.updated": "Risk updated",
+  "risk.acknowledged": "Risk acknowledged",
+  "risk.mitigated": "Risk mitigated",
+  "risk.resolved": "Risk resolved",
+  "risk.dismissed": "Risk dismissed",
+  "risk.deleted": "Risk deleted",
+  "risk.detected": "Risk detected",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

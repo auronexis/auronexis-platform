@@ -17,6 +17,7 @@ import { CustomerSuccessDashboardCard } from "@/components/clients/success/clien
 import { ClientHealthOverview } from "@/components/dashboard/client-health-overview";
 import { DashboardHealthEngine } from "@/components/health/dashboard-health-engine";
 import { DashboardReportsOverview } from "@/components/reports/dashboard-reports-overview";
+import { DashboardRisksOverview } from "@/components/risks/dashboard-risks-overview";
 import { CommandCenterHero } from "@/components/dashboard/command-center-hero";
 import { DashboardActivityTimeline } from "@/components/dashboard/dashboard-activity-timeline";
 import { DashboardBusinessUpgradeCard } from "@/components/dashboard/dashboard-business-upgrade-card";
@@ -279,6 +280,16 @@ export default async function DashboardPage() {
               className="min-h-[320px]"
             >
               <DashboardHealthEngine metrics={data.healthMetrics} />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-7 xl:col-span-4">
+            <DashboardPanel
+              title="Risks overview"
+              description="Open client risks tracked by the risks engine."
+              className="min-h-[320px]"
+            >
+              <DashboardRisksOverview summary={data.riskSummary} />
             </DashboardPanel>
           </div>
 

@@ -1,5 +1,5 @@
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { resolveEntitySlaInfo } from "@/lib/sla/calculations";
 import {
   evaluateSlaTransitionsForEntity,
@@ -14,7 +14,7 @@ import type {
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
-import type { IncidentStatus, RiskStatus, SlaPolicy } from "@/types/database";
+import type { ClientRiskStatus, IncidentStatus, RiskStatus, SlaPolicy } from "@/types/database";
 
 const SLA_POLICY_SELECT =
   "id, organization_id, name, incident_hours, risk_hours, is_default, created_at, updated_at";
@@ -379,7 +379,7 @@ async function loadOpenSlaEntities(organizationId: string): Promise<{
         "id, client_id, title, status, created_at, owner_user_id, clients ( name, sla_policy_id )",
       )
       .eq("organization_id", organizationId)
-      .in("status", OPEN_RISK_STATUSES),
+      .in("status", LEGACY_OPEN_RISK_STATUSES),
   ]);
 
   if (incidentsResult.error || risksResult.error) {
@@ -573,7 +573,7 @@ export async function getRiskSlaInfo(
   risk: {
     client_id: string;
     created_at: string;
-    status: RiskStatus;
+    status: ClientRiskStatus | RiskStatus;
     resolved_at?: string | null;
   },
 ): Promise<EntitySlaInfo> {

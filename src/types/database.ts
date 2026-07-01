@@ -18,6 +18,23 @@ export type RiskSeverity = "low" | "medium" | "high" | "critical";
 
 export type RiskStatus = "open" | "in_progress" | "resolved" | "archived";
 
+export type ClientRiskSeverity = "low" | "medium" | "high" | "critical";
+
+export type ClientRiskStatus =
+  | "open"
+  | "acknowledged"
+  | "mitigated"
+  | "resolved"
+  | "dismissed";
+
+export type ClientRiskSource =
+  | "manual"
+  | "health_engine"
+  | "sla"
+  | "report"
+  | "activity"
+  | "portal";
+
 export type IncidentSeverity = "low" | "medium" | "high" | "critical";
 
 export type IncidentStatus = "open" | "investigating" | "resolved" | "archived";
@@ -450,6 +467,91 @@ export type Database = {
           },
           {
             foreignKeyName: "risks_owner_user_id_fkey";
+            columns: ["owner_user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      client_risks: {
+        Row: {
+          id: string;
+          organization_id: string;
+          client_id: string;
+          title: string;
+          description: string | null;
+          severity: ClientRiskSeverity;
+          status: ClientRiskStatus;
+          source: ClientRiskSource;
+          category: string | null;
+          impact: string | null;
+          recommendation: string | null;
+          owner_user_id: string | null;
+          due_at: string | null;
+          detected_at: string;
+          resolved_at: string | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          client_id: string;
+          title: string;
+          description?: string | null;
+          severity?: ClientRiskSeverity;
+          status?: ClientRiskStatus;
+          source?: ClientRiskSource;
+          category?: string | null;
+          impact?: string | null;
+          recommendation?: string | null;
+          owner_user_id?: string | null;
+          due_at?: string | null;
+          detected_at?: string;
+          resolved_at?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          client_id?: string;
+          title?: string;
+          description?: string | null;
+          severity?: ClientRiskSeverity;
+          status?: ClientRiskStatus;
+          source?: ClientRiskSource;
+          category?: string | null;
+          impact?: string | null;
+          recommendation?: string | null;
+          owner_user_id?: string | null;
+          due_at?: string | null;
+          detected_at?: string;
+          resolved_at?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "client_risks_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_risks_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_risks_owner_user_id_fkey";
             columns: ["owner_user_id"];
             isOneToOne: false;
             referencedRelation: "users";
@@ -3912,6 +4014,7 @@ export type AppUser = Database["public"]["Tables"]["users"]["Row"];
 export type Client = Database["public"]["Tables"]["clients"]["Row"];
 export type ClientPortalUser = Database["public"]["Tables"]["client_portal_users"]["Row"];
 export type Risk = Database["public"]["Tables"]["risks"]["Row"];
+export type ClientRisk = Database["public"]["Tables"]["client_risks"]["Row"];
 export type Incident = Database["public"]["Tables"]["incidents"]["Row"];
 export type Report = Database["public"]["Tables"]["reports"]["Row"];
 export type ReportSchedule = Database["public"]["Tables"]["report_schedules"]["Row"];

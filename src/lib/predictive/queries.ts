@@ -4,7 +4,7 @@ import { buildClientProfitabilityRows } from "@/lib/profitability/queries";
 import type { ClientProfitabilityRow } from "@/lib/profitability/types";
 import { canUseFeature } from "@/lib/plans/guards";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { HistoricalWindowKey, HistoricalWindowMetrics } from "@/lib/predictive/types";
@@ -165,7 +165,7 @@ async function countOpenItems(
       .select("id", { count: "exact", head: true })
       .eq("organization_id", session.organization.id)
       .eq("client_id", clientId)
-      .in("status", OPEN_RISK_STATUSES),
+      .in("status", LEGACY_OPEN_RISK_STATUSES),
   ]);
 
   return {

@@ -24,7 +24,9 @@ export type Permission =
   | "sla.write"
   | "reports.read"
   | "reports.write"
-  | "activity.read";
+  | "activity.read"
+  | "risks.read"
+  | "risks.write";
 
 const ALL_PERMISSIONS: readonly Permission[] = [
   "clients.read",
@@ -38,6 +40,8 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   "reports.read",
   "reports.write",
   "activity.read",
+  "risks.read",
+  "risks.write",
 ] as const;
 
 /**
@@ -63,6 +67,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "reports.read",
     "reports.write",
     "activity.read",
+    "risks.read",
+    "risks.write",
     "settings.read",
   ],
   analyst: [
@@ -71,9 +77,11 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "reports.read",
     "reports.write",
     "activity.read",
+    "risks.read",
+    "risks.write",
   ],
-  member: ["clients.read", "sla.read", "reports.read", "activity.read"],
-  readonly: ["clients.read", "sla.read", "reports.read", "activity.read"],
+  member: ["clients.read", "sla.read", "reports.read", "activity.read", "risks.read"],
+  readonly: ["clients.read", "sla.read", "reports.read", "activity.read", "risks.read"],
 };
 
 const PERMISSION_SET_BY_ROLE: Record<Role, ReadonlySet<Permission>> = {

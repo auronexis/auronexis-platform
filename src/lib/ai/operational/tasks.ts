@@ -3,7 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { OperationalTasksResult, OperationalTaskItem } from "@/lib/ai/operational/types";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 /** Build dashboard operational task highlights from verified DB data. */
@@ -24,7 +24,7 @@ export async function buildOperationalTasks(
     .from("risks")
     .select("id, title, severity, resolution_notes, due_date, status")
     .eq("organization_id", orgId)
-    .in("status", OPEN_RISK_STATUSES);
+    .in("status", LEGACY_OPEN_RISK_STATUSES);
 
   const openIncidents = incidents ?? [];
   const openRisks = risks ?? [];

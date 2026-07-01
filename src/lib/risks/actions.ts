@@ -4,19 +4,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
-import { dispatchAutomation } from "@/lib/automation";
-import { recordSlaResolvedIfNeeded } from "@/lib/sla/evaluations";
+import { assertPermissionSafe, sessionHasPermission } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature, requireFeature } from "@/lib/plans/guards";
-import { AuthorizationError, requirePermission } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
-import { canEditRisk, canManageRiskLifecycle } from "@/lib/risks/guards";
 import { getRiskById } from "@/lib/risks/queries";
-import { STAFF_RISK_STATUSES } from "@/lib/risks/types";
-import type { Database, RiskStatus } from "@/types/database";
+import type { Database } from "@/types/database";
+import type { ActivityEventType } from "@/lib/activity/types";
 
-type RiskInsert = Database["public"]["Tables"]["risks"]["Insert"];
-type RiskUpdate = Database["public"]["Tables"]["risks"]["Update"];
+type ClientRiskInsert = Database["public"]["Tables"]["client_risks"]["Insert"];
+type ClientRiskUpdate = Database["public"]["Tables"]["client_risks"]["Update"];
 
 export type RiskActionState = {
   error?: string;
@@ -35,13 +31,18 @@ const riskFieldsSchema = z.object({
   clientId: z.string().uuid("Select a client."),
   description: optionalText,
   severity: z.enum(["low", "medium", "high", "critical"] as const),
-  status: z.enum(["open", "in_progress", "resolved", "archived"] as const),
-  ownerUserId: z.string().uuid("Select an owner.").optional(),
-  dueDate: z
+  status: z.enum(["open", "acknowledged", "mitigated", "resolved", "dismissed"] as const).optional(),
+  source: z
+    .enum(["manual", "health_engine", "sla", "report", "activity", "portal"] as const)
+    .optional(),
+  category: optionalText,
+  impact: optionalText,
+  recommendation: optionalText,
+  ownerUserId: z.string().uuid().optional().nullable(),
+  dueAt: z
     .string()
     .optional()
     .transform((value) => (!value || value.trim().length === 0 ? null : value)),
-  resolutionNotes: optionalText,
 });
 
 function parseRiskForm(formData: FormData) {
@@ -51,16 +52,16 @@ function parseRiskForm(formData: FormData) {
     description: formData.get("description"),
     severity: formData.get("severity") ?? "medium",
     status: formData.get("status") ?? "open",
+    source: formData.get("source") ?? "manual",
+    category: formData.get("category"),
+    impact: formData.get("impact"),
+    recommendation: formData.get("recommendation"),
     ownerUserId: formData.get("ownerUserId") || undefined,
-    dueDate: formData.get("dueDate"),
-    resolutionNotes: formData.get("resolutionNotes"),
+    dueAt: formData.get("dueAt"),
   });
 }
 
-async function verifyClientInOrg(
-  organizationId: string,
-  clientId: string,
-): Promise<boolean> {
+async function verifyClientInOrg(organizationId: string, clientId: string): Promise<boolean> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("clients")
@@ -68,14 +69,10 @@ async function verifyClientInOrg(
     .eq("id", clientId)
     .eq("organization_id", organizationId)
     .maybeSingle();
-
   return Boolean(data);
 }
 
-async function verifyUserInOrg(
-  organizationId: string,
-  userId: string,
-): Promise<boolean> {
+async function verifyUserInOrg(organizationId: string, userId: string): Promise<boolean> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("users")
@@ -84,45 +81,49 @@ async function verifyUserInOrg(
     .eq("organization_id", organizationId)
     .eq("is_disabled", false)
     .maybeSingle();
-
-  return Boolean(data as { id: string } | null);
+  return Boolean(data);
 }
 
-function assertStaffStatusAllowed(status: RiskStatus): void {
-  if (!STAFF_RISK_STATUSES.includes(status)) {
-    throw new AuthorizationError("You cannot set this risk status.");
+async function recordRiskActivity(
+  organizationId: string,
+  actorUserId: string,
+  riskId: string,
+  eventType: ActivityEventType,
+  title: string,
+  metadata: Record<string, unknown> = {},
+): Promise<void> {
+  try {
+    await recordActivityEvent({
+      organizationId,
+      actorUserId,
+      entityType: "risk",
+      entityId: riskId,
+      eventType,
+      action: eventType.split(".")[1] ?? "updated",
+      title,
+      metadata,
+    });
+  } catch (error) {
+    console.warn("[risks] activity recording failed:", error);
   }
 }
 
-/** Create a risk — Owner/Admin or Staff (self-assigned). */
 export async function createRiskAction(
   _prevState: RiskActionState,
   formData: FormData,
 ): Promise<RiskActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "risks", "create");
-
-  const planCheck = await requireFeature(session.organization.id, "risks");
-  if (!planCheck.allowed) {
-    return { error: planCheck.message };
+  const denied = assertPermissionSafe(session.role, "risks.write");
+  if (denied) {
+    return denied;
   }
 
   const parsed = parseRiskForm(formData);
-
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid risk data." };
   }
 
-  const ownerUserId =
-    session.role === "staff" ? session.user.id : parsed.data.ownerUserId;
-
-  if (!ownerUserId) {
-    return { error: "Select an owner." };
-  }
-
-  if (session.role === "staff") {
-    assertStaffStatusAllowed(parsed.data.status);
-  }
+  const ownerUserId = parsed.data.ownerUserId ?? session.user.id;
 
   if (!(await verifyClientInOrg(session.organization.id, parsed.data.clientId))) {
     return { error: "Selected client is not valid." };
@@ -133,326 +134,221 @@ export async function createRiskAction(
   }
 
   const supabase = await createClient();
-  const insertPayload: RiskInsert = {
+  const payload: ClientRiskInsert = {
     organization_id: session.organization.id,
     client_id: parsed.data.clientId,
     title: parsed.data.title,
     description: parsed.data.description ?? null,
     severity: parsed.data.severity,
-    status: parsed.data.status,
+    status: "open",
+    source: parsed.data.source ?? "manual",
+    category: parsed.data.category ?? null,
+    impact: parsed.data.impact ?? null,
+    recommendation: parsed.data.recommendation ?? null,
     owner_user_id: ownerUserId,
-    due_date: parsed.data.dueDate,
-    resolution_notes: parsed.data.resolutionNotes ?? null,
+    due_at: parsed.data.dueAt,
   };
 
   const { data, error } = await supabase
-    .from("risks")
-    .insert(insertPayload as never)
+    .from("client_risks")
+    .insert(payload as never)
     .select("id")
     .single();
 
-  const created = data as { id: string } | null;
-
-  if (error || !created) {
-    return { error: "Unable to create risk." };
+  if (error) {
+    return { error: error.message };
   }
 
-  await recordActivityEvent({
-    organizationId: session.organization.id,
-    actorUserId: session.user.id,
-    entityType: "risk",
-    entityId: created.id,
-    action: "created",
-    title: `Risk created: ${parsed.data.title}`,
-    metadata: { riskId: created.id, title: parsed.data.title },
-  });
-
-  await dispatchAutomation({
-    trigger: "risk_created",
-    organizationId: session.organization.id,
-    entityType: "risk",
-    entityId: created.id,
-    clientId: parsed.data.clientId,
-    actorUserId: session.user.id,
-    payload: {
-      title: parsed.data.title,
-      severity: parsed.data.severity,
-      status: parsed.data.status,
-      clientId: parsed.data.clientId,
-      assignedUserId: ownerUserId,
-    },
-  });
+  const riskId = String((data as { id: string }).id);
+  await recordRiskActivity(
+    session.organization.id,
+    session.user.id,
+    riskId,
+    "risk.created",
+    `Risk created: ${parsed.data.title}`,
+  );
 
   revalidatePath("/risks");
+  revalidatePath(`/clients/${parsed.data.clientId}`);
   revalidatePath("/dashboard");
-  revalidatePath("/activity");
-  redirect(`/risks/${created.id}`);
+  redirect(`/risks/${riskId}`);
 }
 
-/** Update a risk — Owner/Admin or assigned Staff. */
 export async function updateRiskAction(
   riskId: string,
   _prevState: RiskActionState,
   formData: FormData,
 ): Promise<RiskActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "risks", "update");
-
-  const planCheck = await requireFeature(session.organization.id, "risks");
-  if (!planCheck.allowed) {
-    return { error: planCheck.message };
+  const denied = assertPermissionSafe(session.role, "risks.write");
+  if (denied) {
+    return denied;
   }
 
   const existing = await getRiskById(session, riskId);
-
   if (!existing) {
     return { error: "Risk not found." };
   }
 
-  if (!canEditRisk(session, existing)) {
-    throw new AuthorizationError();
-  }
-
   const parsed = parseRiskForm(formData);
-
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid risk data." };
   }
+
+  const ownerUserId = parsed.data.ownerUserId ?? existing.owner_user_id ?? session.user.id;
 
   if (!(await verifyClientInOrg(session.organization.id, parsed.data.clientId))) {
     return { error: "Selected client is not valid." };
   }
 
-  let ownerUserId = existing.owner_user_id;
-
-  if (session.role === "staff") {
-    assertStaffStatusAllowed(parsed.data.status);
-
-    if (parsed.data.ownerUserId && parsed.data.ownerUserId !== session.user.id) {
-      throw new AuthorizationError();
-    }
-  } else {
-    ownerUserId = parsed.data.ownerUserId ?? existing.owner_user_id;
-
-    if (!(await verifyUserInOrg(session.organization.id, ownerUserId))) {
-      return { error: "Selected owner is not valid." };
-    }
-
-    if (
-      (parsed.data.status === "resolved" || parsed.data.status === "archived") &&
-      !canManageRiskLifecycle(session)
-    ) {
-      throw new AuthorizationError();
-    }
+  if (!(await verifyUserInOrg(session.organization.id, ownerUserId))) {
+    return { error: "Selected owner is not valid." };
   }
 
-  const updatePayload: RiskUpdate = {
+  const supabase = await createClient();
+  const update: ClientRiskUpdate = {
     client_id: parsed.data.clientId,
     title: parsed.data.title,
     description: parsed.data.description ?? null,
     severity: parsed.data.severity,
-    status: parsed.data.status,
+    category: parsed.data.category ?? null,
+    impact: parsed.data.impact ?? null,
+    recommendation: parsed.data.recommendation ?? null,
     owner_user_id: ownerUserId,
-    due_date: parsed.data.dueDate,
-    resolution_notes: parsed.data.resolutionNotes ?? null,
+    due_at: parsed.data.dueAt,
   };
 
-  if (parsed.data.status === "resolved" && existing.status !== "resolved") {
-    updatePayload.resolved_at = new Date().toISOString();
+  if (parsed.data.status) {
+    update.status = parsed.data.status;
   }
 
-  if (parsed.data.status !== "resolved" && existing.status === "resolved") {
-    updatePayload.resolved_at = null;
-  }
-
-  const supabase = await createClient();
   const { error } = await supabase
-    .from("risks")
-    .update(updatePayload as never)
+    .from("client_risks")
+    .update(update as never)
     .eq("id", riskId)
     .eq("organization_id", session.organization.id);
 
   if (error) {
-    return { error: "Unable to update risk." };
+    return { error: error.message };
   }
 
-  const action =
-    parsed.data.status === "resolved" && existing.status !== "resolved"
-      ? "resolved"
-      : parsed.data.status === "archived" && existing.status !== "archived"
-        ? "archived"
-        : "updated";
-
-  await recordActivityEvent({
-    organizationId: session.organization.id,
-    actorUserId: session.user.id,
-    entityType: "risk",
-    entityId: riskId,
-    action,
-    title: `Risk ${action}: ${parsed.data.title}`,
-    metadata: { riskId, title: parsed.data.title, status: parsed.data.status },
-  });
-
-  await dispatchAutomation({
-    trigger: "risk_updated",
-    organizationId: session.organization.id,
-    entityType: "risk",
-    entityId: riskId,
-    clientId: parsed.data.clientId,
-    actorUserId: session.user.id,
-    payload: {
-      title: parsed.data.title,
-      severity: parsed.data.severity,
-      status: parsed.data.status,
-      clientId: parsed.data.clientId,
-    },
-  });
+  await recordRiskActivity(
+    session.organization.id,
+    session.user.id,
+    riskId,
+    "risk.updated",
+    `Risk updated: ${parsed.data.title}`,
+  );
 
   revalidatePath("/risks");
   revalidatePath(`/risks/${riskId}`);
+  revalidatePath(`/clients/${parsed.data.clientId}`);
   revalidatePath("/dashboard");
-  revalidatePath("/activity");
   return { success: "Risk updated." };
 }
 
-/** Resolve a risk — Owner/Admin only. */
-export async function resolveRiskAction(
+async function transitionRisk(
   riskId: string,
-  _prevState: RiskActionState,
-  formData: FormData,
+  status: ClientRiskUpdate["status"],
+  eventType: ActivityEventType,
+  actionLabel: string,
 ): Promise<RiskActionState> {
   const session = await requireSession();
-
-  if (!canManageRiskLifecycle(session)) {
-    throw new AuthorizationError();
+  const denied = assertPermissionSafe(session.role, "risks.write");
+  if (denied) {
+    return denied;
   }
 
-  await assertCanUseFeature(session.organization.id, "risks");
-
   const existing = await getRiskById(session, riskId);
-
   if (!existing) {
     return { error: "Risk not found." };
   }
 
-  const resolutionNotes = optionalText.safeParse(formData.get("resolutionNotes"));
-  const notes = resolutionNotes.success ? resolutionNotes.data ?? null : null;
-
   const supabase = await createClient();
-  const updatePayload: RiskUpdate = {
-    status: "resolved",
-    resolved_at: new Date().toISOString(),
-    resolution_notes: notes,
-  };
+  const resolvedAt =
+    status === "resolved" || status === "dismissed" ? new Date().toISOString() : null;
 
   const { error } = await supabase
-    .from("risks")
-    .update(updatePayload as never)
+    .from("client_risks")
+    .update({ status, resolved_at: resolvedAt } as never)
     .eq("id", riskId)
     .eq("organization_id", session.organization.id);
 
   if (error) {
-    return { error: "Unable to resolve risk." };
+    return { error: error.message };
   }
 
-  await recordActivityEvent({
-    organizationId: session.organization.id,
-    actorUserId: session.user.id,
-    entityType: "risk",
-    entityId: riskId,
-    action: "resolved",
-    title: `Risk resolved: ${existing.title}`,
-    metadata: { riskId, title: existing.title },
-  });
-
-  await recordSlaResolvedIfNeeded({
-    organizationId: session.organization.id,
-    entityType: "risk",
-    entityId: riskId,
-    clientId: existing.client_id,
-    title: existing.title,
-    actorUserId: session.user.id,
-  });
-
-  await dispatchAutomation({
-    trigger: "risk_updated",
-    organizationId: session.organization.id,
-    entityType: "risk",
-    entityId: riskId,
-    clientId: existing.client_id,
-    actorUserId: session.user.id,
-    payload: {
-      title: existing.title,
-      severity: existing.severity,
-      status: "resolved",
-      clientId: existing.client_id,
-    },
-  });
+  await recordRiskActivity(
+    session.organization.id,
+    session.user.id,
+    riskId,
+    eventType,
+    `Risk ${actionLabel}: ${existing.title}`,
+  );
 
   revalidatePath("/risks");
   revalidatePath(`/risks/${riskId}`);
+  revalidatePath(`/clients/${existing.client_id}`);
   revalidatePath("/dashboard");
-  revalidatePath("/activity");
-  redirect(`/risks/${riskId}`);
+  return { success: `Risk ${actionLabel}.` };
 }
 
-/** Archive a risk — Owner/Admin only. */
-export async function archiveRiskAction(riskId: string): Promise<void> {
-  const session = await requireSession();
+export async function acknowledgeRiskAction(riskId: string): Promise<RiskActionState> {
+  return transitionRisk(riskId, "acknowledged", "risk.acknowledged", "acknowledged");
+}
 
-  if (!canManageRiskLifecycle(session)) {
-    throw new AuthorizationError();
+export async function mitigateRiskAction(riskId: string): Promise<RiskActionState> {
+  return transitionRisk(riskId, "mitigated", "risk.mitigated", "mitigated");
+}
+
+export async function resolveRiskAction(riskId: string): Promise<RiskActionState> {
+  return transitionRisk(riskId, "resolved", "risk.resolved", "resolved");
+}
+
+export async function dismissRiskAction(riskId: string): Promise<RiskActionState> {
+  return transitionRisk(riskId, "dismissed", "risk.dismissed", "dismissed");
+}
+
+/** @deprecated Use dismissRiskAction */
+export async function archiveRiskAction(riskId: string): Promise<void> {
+  const result = await dismissRiskAction(riskId);
+  if (result.error) {
+    throw new Error(result.error);
+  }
+  redirect("/risks");
+}
+
+export async function deleteRiskAction(riskId: string): Promise<RiskActionState> {
+  const session = await requireSession();
+  if (!sessionHasPermission(session, "risks.write") || !["owner", "admin"].includes(session.role)) {
+    return { error: "You cannot delete risks." };
   }
 
-  await assertCanUseFeature(session.organization.id, "risks");
-
   const existing = await getRiskById(session, riskId);
-
   if (!existing) {
-    throw new Error("Risk not found.");
+    return { error: "Risk not found." };
   }
 
   const supabase = await createClient();
-  const updatePayload: RiskUpdate = { status: "archived" };
-
   const { error } = await supabase
-    .from("risks")
-    .update(updatePayload as never)
+    .from("client_risks")
+    .delete()
     .eq("id", riskId)
     .eq("organization_id", session.organization.id);
 
   if (error) {
-    throw new Error("Unable to archive risk.");
+    return { error: error.message };
   }
 
-  await recordActivityEvent({
-    organizationId: session.organization.id,
-    actorUserId: session.user.id,
-    entityType: "risk",
-    entityId: riskId,
-    action: "archived",
-    title: `Risk archived: ${existing.title}`,
-    metadata: { riskId, title: existing.title },
-  });
-
-  await dispatchAutomation({
-    trigger: "risk_updated",
-    organizationId: session.organization.id,
-    entityType: "risk",
-    entityId: riskId,
-    clientId: existing.client_id,
-    actorUserId: session.user.id,
-    payload: {
-      title: existing.title,
-      severity: existing.severity,
-      status: "archived",
-      clientId: existing.client_id,
-    },
-  });
+  await recordRiskActivity(
+    session.organization.id,
+    session.user.id,
+    riskId,
+    "risk.deleted",
+    `Risk deleted: ${existing.title}`,
+  );
 
   revalidatePath("/risks");
-  revalidatePath(`/risks/${riskId}`);
   revalidatePath("/dashboard");
-  revalidatePath("/activity");
   redirect("/risks");
 }

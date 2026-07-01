@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import {
   calculateClientHealth,
   calculateMargin,
@@ -59,7 +59,7 @@ async function loadCriticalRiskClientIds(organizationId: string): Promise<Set<st
     .select("client_id")
     .eq("organization_id", organizationId)
     .eq("severity", "critical")
-    .in("status", OPEN_RISK_STATUSES);
+    .in("status", LEGACY_OPEN_RISK_STATUSES);
 
   if (error) {
     throw new Error(error.message);

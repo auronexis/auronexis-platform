@@ -3,7 +3,8 @@ import { IncidentStatusBadge } from "@/components/incidents/incident-status-badg
 import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
 import { RiskStatusBadge } from "@/components/risks/risk-status-badge";
 import type { CriticalAlertItem } from "@/lib/dashboard/types";
-import type { IncidentStatus, RiskStatus } from "@/types/database";
+import { normalizeRiskStatusForDisplay } from "@/lib/risks/types";
+import type { IncidentStatus } from "@/types/database";
 
 type DashboardCriticalAlertsProps = {
   alerts: CriticalAlertItem[];
@@ -50,7 +51,7 @@ export function DashboardCriticalAlerts({ alerts }: DashboardCriticalAlertsProps
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <RiskSeverityBadge severity="critical" />
             {alert.type === "risk" ? (
-              <RiskStatusBadge status={alert.status as RiskStatus} />
+              <RiskStatusBadge status={normalizeRiskStatusForDisplay(alert.status)} />
             ) : (
               <IncidentStatusBadge status={alert.status as IncidentStatus} />
             )}

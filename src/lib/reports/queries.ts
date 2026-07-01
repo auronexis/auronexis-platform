@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import type {
   ClientReportMetrics,
   RelatedOpenIncident,
@@ -122,14 +122,14 @@ export async function getClientReportMetrics(
       .select("id", { count: "exact", head: true })
       .eq("organization_id", organizationId)
       .eq("client_id", clientId)
-      .in("status", OPEN_RISK_STATUSES),
+      .in("status", LEGACY_OPEN_RISK_STATUSES),
     supabase
       .from("risks")
       .select("id", { count: "exact", head: true })
       .eq("organization_id", organizationId)
       .eq("client_id", clientId)
       .eq("severity", "critical")
-      .in("status", OPEN_RISK_STATUSES),
+      .in("status", LEGACY_OPEN_RISK_STATUSES),
     supabase
       .from("incidents")
       .select("id", { count: "exact", head: true })
@@ -175,7 +175,7 @@ export async function getRelatedOpenRisks(
     .select("id, title, severity, status, due_date")
     .eq("organization_id", session.organization.id)
     .eq("client_id", clientId)
-    .in("status", OPEN_RISK_STATUSES)
+    .in("status", LEGACY_OPEN_RISK_STATUSES)
     .order("severity", { ascending: false })
     .order("due_date", { ascending: true, nullsFirst: false });
 

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buildAutomationSuggestions } from "@/lib/automation/builder/suggestions";
 import type { AutomationSuggestion } from "@/lib/automation/builder/types";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 /** Build data-driven automation suggestions from verified workspace metrics. */
@@ -21,7 +21,7 @@ export async function getAutomationSuggestions(
         .select("id", { count: "exact", head: true })
         .eq("organization_id", orgId)
         .eq("severity", "critical")
-        .in("status", OPEN_RISK_STATUSES),
+        .in("status", LEGACY_OPEN_RISK_STATUSES),
       supabase
         .from("incidents")
         .select("id", { count: "exact", head: true })

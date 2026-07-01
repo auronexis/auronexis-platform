@@ -18,7 +18,7 @@ import { canViewRevenue } from "@/lib/rbac/permissions";
 
 import type { CriticalRiskAlert } from "@/lib/risks/types";
 
-import { getRiskDashboardMetrics } from "@/lib/risks/queries";
+import { getRiskDashboardMetrics, getRiskSummary } from "@/lib/risks/queries";
 
 import { getEscalationDashboardMetrics } from "@/lib/escalation/queries";
 
@@ -176,7 +176,7 @@ export async function getDashboardMetrics(
 
         clientName: risk.clients?.name ?? null,
 
-        dueLabel: formatDueLabel(risk.due_date),
+        dueLabel: formatDueLabel(risk.due_at),
 
         href: `/risks/${risk.id}`,
 
@@ -296,7 +296,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
 
 
-  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics] =
+  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult] =
 
     await Promise.all([
 
@@ -318,6 +318,8 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
       getReportsOverviewMetrics(session),
 
+      getRiskSummary(session),
+
     ]);
 
 
@@ -334,6 +336,16 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
       averageHealthScore: null,
       averageSlaScore: null,
       latestReport: null,
+    },
+    riskSummary: riskSummaryResult.data ?? {
+      openCount: 0,
+      criticalCount: 0,
+      highCount: 0,
+      dueSoonCount: 0,
+      acknowledgedCount: 0,
+      mitigatedCount: 0,
+      resolvedCount: 0,
+      dismissedCount: 0,
     },
     canViewFinancial,
     draftReportsCount,
