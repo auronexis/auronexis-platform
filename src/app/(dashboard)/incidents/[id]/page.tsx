@@ -27,6 +27,8 @@ import {
   listLinkableRisks,
 } from "@/lib/incidents/queries";
 import {
+  getIncidentLinkedRiskId,
+  getIncidentLinkedRiskTitle,
   formatIncidentDate,
   formatIncidentDateTime,
   INCIDENT_STATUSES,
@@ -124,9 +126,9 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
       </DetailMetadataItem>
       <DetailMetadataItem label="Assigned to">{incident.users?.full_name ?? "—"}</DetailMetadataItem>
       <DetailMetadataItem label="Linked risk">
-        {incident.risk_id && incident.risks?.title ? (
-          <Link href={`/risks/${incident.risk_id}`} className={linkText}>
-            {incident.risks.title}
+        {getIncidentLinkedRiskId(incident) && getIncidentLinkedRiskTitle(incident) ? (
+          <Link href={`/risks/${getIncidentLinkedRiskId(incident)}`} className={linkText}>
+            {getIncidentLinkedRiskTitle(incident)}
           </Link>
         ) : (
           "—"

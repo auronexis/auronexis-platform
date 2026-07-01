@@ -22,6 +22,7 @@ export function AcceptRiskButton({ riskId, action }: AcceptRiskButtonProps) {
       onClick={() => {
         startTransition(async () => {
           await action(riskId);
+          window.location.reload();
         });
       }}
     >

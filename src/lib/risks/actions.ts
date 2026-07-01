@@ -7,6 +7,7 @@ import { recordRiskActivity } from "@/lib/risks/activity";
 import { assertPermissionSafe, sessionHasPermission } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { canEditRisk } from "@/lib/risks/guards";
 import { getRiskById } from "@/lib/risks/queries";
 import {
   calculateRiskScore,
@@ -106,6 +107,23 @@ function revalidateRiskPaths(clientId: string, riskId?: string) {
   }
 }
 
+function assertEditableRisk(
+  session: Awaited<ReturnType<typeof requireSession>>,
+  risk: Awaited<ReturnType<typeof getRiskById>>,
+):
+  | { kind: "error"; state: RiskActionState }
+  | { kind: "ok"; risk: NonNullable<Awaited<ReturnType<typeof getRiskById>>> } {
+  if (!risk) {
+    return { kind: "error", state: { error: "Risk not found." } };
+  }
+
+  if (!canEditRisk(session, risk)) {
+    return { kind: "error", state: { error: "You cannot edit this risk." } };
+  }
+
+  return { kind: "ok", risk };
+}
+
 export async function createRiskAction(
   _prevState: RiskActionState,
   formData: FormData,
@@ -189,10 +207,11 @@ export async function updateRiskAction(
     return denied;
   }
 
-  const existing = await getRiskById(session, riskId);
-  if (!existing) {
-    return { error: "Risk not found." };
+  const editable = assertEditableRisk(session, await getRiskById(session, riskId));
+  if (editable.kind === "error") {
+    return editable.state;
   }
+  const existing = editable.risk;
 
   const parsed = parseRiskForm(formData);
   if (!parsed.success) {
@@ -297,10 +316,11 @@ export async function updateRiskScoreAction(
     return denied;
   }
 
-  const existing = await getRiskById(session, riskId);
-  if (!existing) {
-    return { error: "Risk not found." };
+  const editable = assertEditableRisk(session, await getRiskById(session, riskId));
+  if (editable.kind === "error") {
+    return editable.state;
   }
+  const existing = editable.risk;
 
   const nextLikelihood = clampScoreDimension(likelihood);
   const nextImpact = clampScoreDimension(impactScore);
@@ -350,10 +370,11 @@ export async function assignRiskOwnerAction(
     return denied;
   }
 
-  const existing = await getRiskById(session, riskId);
-  if (!existing) {
-    return { error: "Risk not found." };
+  const editable = assertEditableRisk(session, await getRiskById(session, riskId));
+  if (editable.kind === "error") {
+    return editable.state;
   }
+  const existing = editable.risk;
 
   if (!(await verifyUserInOrg(session.organization.id, ownerUserId))) {
     return { error: "Selected owner is not valid." };
@@ -390,10 +411,11 @@ export async function acceptRiskAction(riskId: string): Promise<RiskActionState>
     return denied;
   }
 
-  const existing = await getRiskById(session, riskId);
-  if (!existing) {
-    return { error: "Risk not found." };
+  const editable = assertEditableRisk(session, await getRiskById(session, riskId));
+  if (editable.kind === "error") {
+    return editable.state;
   }
+  const existing = editable.risk;
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -430,10 +452,11 @@ async function transitionRisk(
     return denied;
   }
 
-  const existing = await getRiskById(session, riskId);
-  if (!existing) {
-    return { error: "Risk not found." };
+  const editable = assertEditableRisk(session, await getRiskById(session, riskId));
+  if (editable.kind === "error") {
+    return editable.state;
   }
+  const existing = editable.risk;
 
   const supabase = await createClient();
   const resolvedAt =

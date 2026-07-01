@@ -18,12 +18,19 @@ const inputClassName = cn(
   "disabled:cursor-not-allowed disabled:opacity-50",
 );
 
-export function LoginForm() {
+type LoginFormProps = {
+  redirectTo?: string;
+  initialError?: string;
+};
+
+export function LoginForm({ redirectTo, initialError }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
   const [logoFailed, setLogoFailed] = useState(false);
+  const errorMessage = state.error ?? initialError;
 
   return (
     <form action={formAction} className="space-y-4 text-slate-950 [color-scheme:light]">
+      {redirectTo ? <input type="hidden" name="redirect" value={redirectTo} /> : null}
       <div className="mb-8 text-center">
         {logoFailed ? (
           <div className="text-2xl font-bold tracking-tight text-slate-950">Auroranexis</div>
@@ -71,7 +78,7 @@ export function LoginForm() {
           className={inputClassName}
         />
       </div>
-      {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
+      {errorMessage ? <FormAlert variant="error">{errorMessage}</FormAlert> : null}
       <TurnstileField className="pt-1" />
       <button
         type="submit"

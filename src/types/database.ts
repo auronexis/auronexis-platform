@@ -601,6 +601,7 @@ export type Database = {
           organization_id: string;
           client_id: string;
           risk_id: string | null;
+          client_risk_id: string | null;
           title: string;
           description: string | null;
           severity: IncidentSeverity;
@@ -618,6 +619,7 @@ export type Database = {
           organization_id: string;
           client_id: string;
           risk_id?: string | null;
+          client_risk_id?: string | null;
           title: string;
           description?: string | null;
           severity?: IncidentSeverity;
@@ -635,6 +637,7 @@ export type Database = {
           organization_id?: string;
           client_id?: string;
           risk_id?: string | null;
+          client_risk_id?: string | null;
           title?: string;
           description?: string | null;
           severity?: IncidentSeverity;

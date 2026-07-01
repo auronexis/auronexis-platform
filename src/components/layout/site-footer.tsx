@@ -104,6 +104,8 @@ function FooterLinkColumn({
 export function SiteFooter({ variant = "default", className, poweredByLabel }: SiteFooterProps) {
 
   const build = getBuildInfo();
+  const showBuildEnvironment =
+    Boolean(build.environment) && build.environment !== "production";
 
   const year = new Date().getFullYear();
 
@@ -202,8 +204,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
             <p>
 
               Version v{APP_VERSION}
-
-              {build.environment ? ` · ${build.environment}` : ""}
+              {showBuildEnvironment ? ` · ${build.environment}` : ""}
 
             </p>
 
@@ -324,8 +325,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
           <p>
 
             Version v{APP_VERSION}
-
-            {build.environment ? ` · ${build.environment}` : ""}
+            {showBuildEnvironment ? ` · ${build.environment}` : ""}
 
             {build.deploymentUrl ? ` · ${build.deploymentUrl}` : ""}
 

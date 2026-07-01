@@ -6,6 +6,7 @@ import {
   INCIDENT_SELECT_COLUMNS,
   OPEN_INCIDENT_STATUSES,
 } from "@/lib/incidents/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 
 type ListIncidentsOptions = {
   includeArchived?: boolean;
@@ -13,37 +14,52 @@ type ListIncidentsOptions = {
   severity?: IncidentWithRelations["severity"];
 };
 
+const EMPTY_INCIDENT_SUMMARY: IncidentSummary = {
+  openCount: 0,
+  criticalCount: 0,
+  investigatingCount: 0,
+  resolvedCount: 0,
+  mttrHours: null,
+  resolvedPercent: 0,
+};
+
 /** List incidents for the current organization with related names. */
 export async function listIncidents(
   session: SessionContext,
   options: ListIncidentsOptions = {},
 ): Promise<IncidentWithRelations[]> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  let query = supabase
-    .from("incidents")
-    .select(INCIDENT_LIST_SELECT)
-    .eq("organization_id", session.organization.id)
-    .order("updated_at", { ascending: false });
+    let query = supabase
+      .from("incidents")
+      .select(INCIDENT_LIST_SELECT)
+      .eq("organization_id", session.organization.id)
+      .order("updated_at", { ascending: false });
 
-  if (options.status) {
-    const statuses = Array.isArray(options.status) ? options.status : [options.status];
-    query = query.in("status", statuses);
-  } else if (!options.includeArchived) {
-    query = query.neq("status", "archived");
+    if (options.status) {
+      const statuses = Array.isArray(options.status) ? options.status : [options.status];
+      query = query.in("status", statuses);
+    } else if (!options.includeArchived) {
+      query = query.neq("status", "archived");
+    }
+
+    if (options.severity) {
+      query = query.eq("severity", options.severity);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.warn("[incidents] listIncidents failed:", error.message);
+      return [];
+    }
+
+    return (data ?? []) as IncidentWithRelations[];
+  } catch (error) {
+    console.warn("[incidents] listIncidents failed:", error);
+    return [];
   }
-
-  if (options.severity) {
-    query = query.eq("severity", options.severity);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data ?? []) as IncidentWithRelations[];
 }
 
 /** Load a single incident by id within the current organization. */
@@ -51,38 +67,50 @@ export async function getIncidentById(
   session: SessionContext,
   incidentId: string,
 ): Promise<IncidentWithRelations | null> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("incidents")
-    .select(INCIDENT_LIST_SELECT)
-    .eq("id", incidentId)
-    .eq("organization_id", session.organization.id)
-    .maybeSingle();
+    const { data, error } = await supabase
+      .from("incidents")
+      .select(INCIDENT_LIST_SELECT)
+      .eq("id", incidentId)
+      .eq("organization_id", session.organization.id)
+      .maybeSingle();
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      console.warn("[incidents] getIncidentById failed:", error.message);
+      return null;
+    }
+
+    return (data as IncidentWithRelations | null) ?? null;
+  } catch (error) {
+    console.warn("[incidents] getIncidentById failed:", error);
+    return null;
   }
-
-  return (data as IncidentWithRelations | null) ?? null;
 }
 
-/** Active risks available for optional incident linking. */
+/** Active V2 risks available for optional incident linking. */
 export async function listLinkableRisks(session: SessionContext): Promise<RiskOption[]> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("risks")
-    .select("id, title, client_id")
-    .eq("organization_id", session.organization.id)
-    .neq("status", "archived")
-    .order("title", { ascending: true });
+    const { data, error } = await supabase
+      .from("client_risks")
+      .select("id, title, client_id")
+      .eq("organization_id", session.organization.id)
+      .in("status", OPEN_RISK_STATUSES)
+      .order("title", { ascending: true });
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      console.warn("[incidents] listLinkableRisks failed:", error.message);
+      return [];
+    }
+
+    return (data ?? []) as RiskOption[];
+  } catch (error) {
+    console.warn("[incidents] listLinkableRisks failed:", error);
+    return [];
   }
-
-  return (data ?? []) as RiskOption[];
 }
 
 /** Dashboard metrics for open and critical incidents. */
@@ -90,36 +118,43 @@ export async function getIncidentDashboardMetrics(session: SessionContext): Prom
   openIncidentCount: number;
   criticalIncidents: CriticalIncidentAlert[];
 }> {
-  const supabase = await createClient();
-  const organizationId = session.organization.id;
+  try {
+    const supabase = await createClient();
+    const organizationId = session.organization.id;
 
-  const { count, error: countError } = await supabase
-    .from("incidents")
-    .select(INCIDENT_SELECT_COLUMNS, { count: "exact", head: true })
-    .eq("organization_id", organizationId)
-    .in("status", OPEN_INCIDENT_STATUSES);
+    const { count, error: countError } = await supabase
+      .from("incidents")
+      .select(INCIDENT_SELECT_COLUMNS, { count: "exact", head: true })
+      .eq("organization_id", organizationId)
+      .in("status", OPEN_INCIDENT_STATUSES);
 
-  if (countError) {
-    throw new Error(countError.message);
+    if (countError) {
+      console.warn("[incidents] getIncidentDashboardMetrics count failed:", countError.message);
+      return { openIncidentCount: 0, criticalIncidents: [] };
+    }
+
+    const { data, error } = await supabase
+      .from("incidents")
+      .select("id, title, severity, status, due_at, clients ( name )")
+      .eq("organization_id", organizationId)
+      .eq("severity", "critical")
+      .in("status", OPEN_INCIDENT_STATUSES)
+      .order("due_at", { ascending: true, nullsFirst: false })
+      .limit(5);
+
+    if (error) {
+      console.warn("[incidents] getIncidentDashboardMetrics list failed:", error.message);
+      return { openIncidentCount: count ?? 0, criticalIncidents: [] };
+    }
+
+    return {
+      openIncidentCount: count ?? 0,
+      criticalIncidents: (data ?? []) as CriticalIncidentAlert[],
+    };
+  } catch (error) {
+    console.warn("[incidents] getIncidentDashboardMetrics failed:", error);
+    return { openIncidentCount: 0, criticalIncidents: [] };
   }
-
-  const { data, error } = await supabase
-    .from("incidents")
-    .select("id, title, severity, status, due_at, clients ( name )")
-    .eq("organization_id", organizationId)
-    .eq("severity", "critical")
-    .in("status", OPEN_INCIDENT_STATUSES)
-    .order("due_at", { ascending: true, nullsFirst: false })
-    .limit(5);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return {
-    openIncidentCount: count ?? 0,
-    criticalIncidents: (data ?? []) as CriticalIncidentAlert[],
-  };
 }
 
 const INCIDENT_ACTIVITY_SELECT = `
@@ -159,74 +194,80 @@ export async function listIncidentActivity(
 
 /** Dashboard KPIs for the incident command center. */
 export async function getIncidentSummary(session: SessionContext): Promise<IncidentSummary> {
-  const supabase = await createClient();
-  const organizationId = session.organization.id;
+  try {
+    const supabase = await createClient();
+    const organizationId = session.organization.id;
 
-  const { data, error } = await supabase
-    .from("incidents")
-    .select("status, severity, created_at, resolved_at")
-    .eq("organization_id", organizationId)
-    .neq("status", "archived");
+    const { data, error } = await supabase
+      .from("incidents")
+      .select("status, severity, created_at, resolved_at")
+      .eq("organization_id", organizationId)
+      .neq("status", "archived");
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      console.warn("[incidents] getIncidentSummary failed:", error.message);
+      return EMPTY_INCIDENT_SUMMARY;
+    }
+
+    const rows = (data ?? []) as Array<{
+      status: IncidentWithRelations["status"];
+      severity: IncidentWithRelations["severity"];
+      created_at: string;
+      resolved_at: string | null;
+    }>;
+
+    let openCount = 0;
+    let investigatingCount = 0;
+    let resolvedCount = 0;
+    let criticalCount = 0;
+    const resolutionDurationsMs: number[] = [];
+
+    for (const row of rows) {
+      if (row.status === "open") {
+        openCount += 1;
+      } else if (row.status === "investigating") {
+        investigatingCount += 1;
+      } else if (row.status === "resolved") {
+        resolvedCount += 1;
+      }
+
+      if (
+        (row.status === "open" || row.status === "investigating") &&
+        row.severity === "critical"
+      ) {
+        criticalCount += 1;
+      }
+
+      if (row.resolved_at) {
+        resolutionDurationsMs.push(
+          new Date(row.resolved_at).getTime() - new Date(row.created_at).getTime(),
+        );
+      }
+    }
+
+    const activeTotal = openCount + investigatingCount + resolvedCount;
+    const resolvedPercent =
+      activeTotal > 0 ? Math.round((resolvedCount / activeTotal) * 100) : 0;
+
+    const mttrHours =
+      resolutionDurationsMs.length > 0
+        ? Math.round(
+            resolutionDurationsMs.reduce((sum, value) => sum + value, 0) /
+              resolutionDurationsMs.length /
+              (1000 * 60 * 60),
+          )
+        : null;
+
+    return {
+      openCount: openCount + investigatingCount,
+      criticalCount,
+      investigatingCount,
+      resolvedCount,
+      mttrHours,
+      resolvedPercent,
+    };
+  } catch (error) {
+    console.warn("[incidents] getIncidentSummary failed:", error);
+    return EMPTY_INCIDENT_SUMMARY;
   }
-
-  const rows = (data ?? []) as Array<{
-    status: IncidentWithRelations["status"];
-    severity: IncidentWithRelations["severity"];
-    created_at: string;
-    resolved_at: string | null;
-  }>;
-
-  let openCount = 0;
-  let investigatingCount = 0;
-  let resolvedCount = 0;
-  let criticalCount = 0;
-  const resolutionDurationsMs: number[] = [];
-
-  for (const row of rows) {
-    if (row.status === "open") {
-      openCount += 1;
-    } else if (row.status === "investigating") {
-      investigatingCount += 1;
-    } else if (row.status === "resolved") {
-      resolvedCount += 1;
-    }
-
-    if (
-      (row.status === "open" || row.status === "investigating") &&
-      row.severity === "critical"
-    ) {
-      criticalCount += 1;
-    }
-
-    if (row.resolved_at) {
-      resolutionDurationsMs.push(
-        new Date(row.resolved_at).getTime() - new Date(row.created_at).getTime(),
-      );
-    }
-  }
-
-  const activeTotal = openCount + investigatingCount + resolvedCount;
-  const resolvedPercent =
-    activeTotal > 0 ? Math.round((resolvedCount / activeTotal) * 100) : 0;
-
-  const mttrHours =
-    resolutionDurationsMs.length > 0
-      ? Math.round(
-          resolutionDurationsMs.reduce((sum, value) => sum + value, 0) /
-            resolutionDurationsMs.length /
-            (1000 * 60 * 60),
-        )
-      : null;
-
-  return {
-    openCount: openCount + investigatingCount,
-    criticalCount,
-    investigatingCount,
-    resolvedCount,
-    mttrHours,
-    resolvedPercent,
-  };
 }

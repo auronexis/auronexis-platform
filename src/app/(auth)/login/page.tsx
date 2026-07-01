@@ -12,15 +12,24 @@ export const metadata: Metadata = {
   title: "Sign in",
 };
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ error?: string; redirect?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getSession();
 
   if (session) {
     redirect("/dashboard");
   }
 
+  const params = await searchParams;
   const host = (await headers()).get("host") ?? "";
   const branding = await resolveAuthBranding(host);
+  const callbackError =
+    params.error === "auth_callback_failed"
+      ? "Sign-in could not be completed. Please try again."
+      : undefined;
 
   return (
     <>
@@ -30,7 +39,7 @@ export default async function LoginPage() {
           branding={branding}
           footer={<LegalLinksInline className="mt-8 px-4" />}
         >
-          <LoginForm />
+          <LoginForm redirectTo={params.redirect} initialError={callbackError} />
         </LoginBrandingShell>
       </div>
     </>

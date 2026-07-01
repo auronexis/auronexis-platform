@@ -54,7 +54,7 @@ export default async function RiskDetailPage({ params }: RiskDetailPageProps) {
   }
 
   const editable = canEditRisk(session, risk);
-  const canManage = canManageRiskLifecycle(session);
+  const canManage = canManageRiskLifecycle(session, risk);
   const boundUpdateAction = updateRiskAction.bind(null, risk.id);
   const [clients, orgUsers, activity] = await Promise.all([
     editable ? listClients(session) : Promise.resolve([]),

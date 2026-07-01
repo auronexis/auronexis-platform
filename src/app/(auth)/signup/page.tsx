@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { SignUpForm } from "@/components/auth/signup-form";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
+import { getSession } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Create account",
 };
 
-export default function SignUpPage() {
+export default async function SignUpPage() {
+  const session = await getSession();
+
+  if (session) {
+    redirect("/dashboard");
+  }
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy-950 px-4">
       <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">

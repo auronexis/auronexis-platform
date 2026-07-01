@@ -4,6 +4,7 @@ export type IncidentWithRelations = Incident & {
   clients: { name: string } | null;
   users: { full_name: string } | null;
   risks: { title: string } | null;
+  client_risks: { title: string } | null;
 };
 
 export type CriticalIncidentAlert = Pick<
@@ -70,14 +71,25 @@ export const STAFF_INCIDENT_STATUSES: IncidentStatus[] = ["open", "investigating
 export const OPEN_INCIDENT_STATUSES: IncidentStatus[] = ["open", "investigating"];
 
 export const INCIDENT_SELECT_COLUMNS =
-  "id, organization_id, client_id, risk_id, title, description, severity, status, assigned_user_id, occurred_at, due_at, resolution_notes, resolved_at, created_at, updated_at";
+  "id, organization_id, client_id, risk_id, client_risk_id, title, description, severity, status, assigned_user_id, occurred_at, due_at, resolution_notes, resolved_at, created_at, updated_at";
 
 export const INCIDENT_LIST_SELECT = `
   ${INCIDENT_SELECT_COLUMNS},
   clients ( name ),
   users ( full_name ),
-  risks ( title )
+  risks ( title ),
+  client_risks ( title )
 `;
+
+export function getIncidentLinkedRiskId(
+  incident: Pick<IncidentWithRelations, "client_risk_id" | "risk_id">,
+): string | null {
+  return incident.client_risk_id ?? incident.risk_id;
+}
+
+export function getIncidentLinkedRiskTitle(incident: IncidentWithRelations): string | null {
+  return incident.client_risks?.title ?? incident.risks?.title ?? null;
+}
 
 export function formatIncidentDate(value: string | null | undefined): string {
   if (!value) {

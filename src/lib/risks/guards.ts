@@ -21,8 +21,19 @@ export function canEditRisk(
   return true;
 }
 
-export function canManageRiskLifecycle(session: SessionContext): boolean {
-  return sessionHasPermission(session, "risks.write");
+export function canManageRiskLifecycle(
+  session: SessionContext,
+  risk?: Pick<ClientRiskView, "owner_user_id">,
+): boolean {
+  if (!sessionHasPermission(session, "risks.write")) {
+    return false;
+  }
+
+  if (risk && session.role === "staff" && risk.owner_user_id) {
+    return risk.owner_user_id === session.user.id;
+  }
+
+  return true;
 }
 
 export function canDeleteRisk(session: SessionContext): boolean {

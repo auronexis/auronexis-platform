@@ -14,6 +14,8 @@ import {
   INCIDENT_SEVERITIES,
   INCIDENT_SEVERITY_LABELS,
   INCIDENT_STATUS_LABELS,
+  getIncidentLinkedRiskId,
+  getIncidentLinkedRiskTitle,
   toDateTimeLocalValue,
   type IncidentWithRelations,
   type RiskOption,
@@ -67,6 +69,18 @@ export function IncidentForm({
     () => risks.filter((risk) => risk.client_id === clientId),
     [clientId, risks],
   );
+  const linkedRiskId = incident ? getIncidentLinkedRiskId(incident) : null;
+  const linkedRiskTitle = incident ? getIncidentLinkedRiskTitle(incident) : null;
+  const riskOptions = useMemo(() => {
+    const options = filteredRisks.map((risk) => ({ value: risk.id, label: risk.title }));
+    if (
+      linkedRiskId &&
+      !options.some((option) => option.value === linkedRiskId)
+    ) {
+      options.unshift({ value: linkedRiskId, label: linkedRiskTitle ?? "Linked risk" });
+    }
+    return options;
+  }, [filteredRisks, linkedRiskId, linkedRiskTitle]);
 
   useFormActionFeedback(state, isPending, { successMessage: "Incident updated" });
 
@@ -126,10 +140,10 @@ export function IncidentForm({
               name="riskId"
               label="Linked risk"
               description="Optional — connect to an existing open risk."
-              defaultValue={incident?.risk_id ?? ""}
+              defaultValue={linkedRiskId ?? ""}
               options={[
                 { value: "", label: "No linked risk" },
-                ...filteredRisks.map((risk) => ({ value: risk.id, label: risk.title })),
+                ...riskOptions,
               ]}
               onChange={(event) =>
                 syncWorkspaceMeta({ linkedRiskId: event.target.value || null })

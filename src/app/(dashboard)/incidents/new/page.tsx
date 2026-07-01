@@ -7,7 +7,7 @@ import { listClients } from "@/lib/clients/queries";
 import { createIncidentAction } from "@/lib/incidents/actions";
 import { canCreateIncident } from "@/lib/incidents/guards";
 import { listLinkableRisks } from "@/lib/incidents/queries";
-import { STAFF_INCIDENT_STATUSES } from "@/lib/incidents/types";
+import { STAFF_INCIDENT_STATUSES, INCIDENT_STATUSES } from "@/lib/incidents/types";
 import { listOrgUsers } from "@/lib/risks/queries";
 import { OperationalEditableWithAI } from "@/components/operational/ai/operational-editable-with-ai";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
@@ -116,7 +116,11 @@ export default async function NewIncidentPage() {
             risks={risks}
             orgUsers={orgUsers}
             showAssigneeSelect={showAssigneeSelect}
-            allowedStatuses={STAFF_INCIDENT_STATUSES}
+            allowedStatuses={
+              session.role === "staff"
+                ? STAFF_INCIDENT_STATUSES
+                : INCIDENT_STATUSES.filter((status) => status !== "archived")
+            }
             defaultAssignedUserId={session.user.id}
             submitLabel="Create incident"
             pendingLabel="Creating…"

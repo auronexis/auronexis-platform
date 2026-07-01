@@ -7,6 +7,7 @@ import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-th
 import { isTurnstileConfigured, verifyTurnstileFromForm } from "@/lib/security/turnstile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { slugifyOrganizationName } from "@/lib/tenancy/context";
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -58,7 +59,11 @@ export async function signIn(
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  const redirectField = formData.get("redirect");
+  const redirectTo = resolveSafeRedirectPath(
+    typeof redirectField === "string" ? redirectField : null,
+  );
+  redirect(redirectTo);
 }
 /**
  * Register a new agency account.
@@ -107,7 +112,7 @@ export async function signUp(
   });
 
   if (authError || !authData.user) {
-    return { error: authError?.message ?? "Unable to create account." };
+    return { error: "Unable to create account. Try a different email or sign in." };
   }
 
   const { data: organization, error: orgError } = await admin

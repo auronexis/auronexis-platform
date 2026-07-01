@@ -17,7 +17,6 @@ import {
 } from "@/lib/billing/actions";
 import type { BillingDashboardData, StripeBillingUiStatus } from "@/lib/billing/types";
 import { formatBillingDateTime } from "@/lib/billing/types";
-import { PLAN_SOURCE_LABELS } from "@/lib/plans/plan-source-labels";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
 import type { OrganizationSeatUsage } from "@/lib/seats/types";
 import type { BillingContactCardContent } from "@/lib/billing/billing-contact";
@@ -183,7 +182,6 @@ export function BillingSettingsPanel({
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
         <BillingCard title="Current plan">
           <p className="text-lg font-semibold text-foreground">{overview.planLabel}</p>
-          <p className="text-sm text-muted">Source: {PLAN_SOURCE_LABELS[planUsage.plan.planSource]}</p>
           {!overview.isActive ? (
             <p>
               {stripeStatus.checkoutAvailable

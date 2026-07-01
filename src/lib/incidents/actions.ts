@@ -14,6 +14,7 @@ import {
 } from "@/lib/incidents/guards";
 import { getIncidentById } from "@/lib/incidents/queries";
 import { STAFF_INCIDENT_STATUSES } from "@/lib/incidents/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { AuthorizationError, requirePermission } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, IncidentStatus } from "@/types/database";
@@ -111,16 +112,56 @@ async function verifyRiskInOrg(
   }
 
   const supabase = await createClient();
-  const { data } = await supabase
+
+  const { data: clientRisk } = await supabase
+    .from("client_risks")
+    .select("id, client_id")
+    .eq("id", riskId)
+    .eq("organization_id", organizationId)
+    .in("status", OPEN_RISK_STATUSES)
+    .maybeSingle();
+
+  if (clientRisk) {
+    const risk = clientRisk as { id: string; client_id: string };
+    return risk.client_id === clientId;
+  }
+
+  const { data: legacyRisk } = await supabase
     .from("risks")
     .select("id, client_id")
     .eq("id", riskId)
     .eq("organization_id", organizationId)
+    .neq("status", "archived")
     .maybeSingle();
 
-  const risk = data as { id: string; client_id: string } | null;
+  const legacy = legacyRisk as { id: string; client_id: string } | null;
+  return Boolean(legacy && legacy.client_id === clientId);
+}
 
-  return Boolean(risk && risk.client_id === clientId);
+async function resolveIncidentRiskLink(
+  organizationId: string,
+  clientId: string,
+  riskId: string | null,
+): Promise<Pick<IncidentInsert, "risk_id" | "client_risk_id">> {
+  if (!riskId) {
+    return { risk_id: null, client_risk_id: null };
+  }
+
+  const supabase = await createClient();
+  const { data: clientRisk } = await supabase
+    .from("client_risks")
+    .select("id")
+    .eq("id", riskId)
+    .eq("organization_id", organizationId)
+    .eq("client_id", clientId)
+    .in("status", OPEN_RISK_STATUSES)
+    .maybeSingle();
+
+  if (clientRisk) {
+    return { risk_id: null, client_risk_id: riskId };
+  }
+
+  return { risk_id: riskId, client_risk_id: null };
 }
 
 function assertStaffStatusAllowed(status: IncidentStatus): void {
@@ -181,11 +222,17 @@ export async function createIncidentAction(
     return { error: "Selected risk is not valid for this client." };
   }
 
+  const riskLink = await resolveIncidentRiskLink(
+    session.organization.id,
+    parsed.data.clientId,
+    parsed.data.riskId,
+  );
+
   const supabase = await createClient();
   const insertPayload: IncidentInsert = {
     organization_id: session.organization.id,
     client_id: parsed.data.clientId,
-    risk_id: parsed.data.riskId,
+    ...riskLink,
     title: parsed.data.title,
     description: parsed.data.description ?? null,
     severity: parsed.data.severity,
@@ -311,9 +358,15 @@ export async function updateIncidentAction(
     return { error: "Selected risk is not valid for this client." };
   }
 
+  const riskLink = await resolveIncidentRiskLink(
+    session.organization.id,
+    parsed.data.clientId,
+    parsed.data.riskId,
+  );
+
   const updatePayload: IncidentUpdate = {
     client_id: parsed.data.clientId,
-    risk_id: parsed.data.riskId,
+    ...riskLink,
     title: parsed.data.title,
     description: parsed.data.description ?? null,
     severity: parsed.data.severity,
