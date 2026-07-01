@@ -13,7 +13,7 @@ import {
   Signal,
 } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
-import { BrandLogo } from "@/components/branding/brand-logo";
+import { AdaptiveBrandLogo } from "@/components/branding/brand-logo";
 import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
 import { HELP_LINKS } from "@/lib/company/contact";
 import { cn } from "@/lib/utils/cn";
@@ -112,7 +112,7 @@ export function HelpMenu() {
           )}
         >
           <div className="border-b border-border px-3 py-3">
-            <BrandLogo
+            <AdaptiveBrandLogo
               branding={platformBranding}
               layout="horizontal"
               className="h-10 w-auto"

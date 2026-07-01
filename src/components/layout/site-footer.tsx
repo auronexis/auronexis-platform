@@ -16,7 +16,7 @@ import {
 
 } from "@/lib/company/contact";
 
-import { BrandLogo } from "@/components/branding/brand-logo";
+import { AdaptiveBrandLogo, BrandLogo } from "@/components/branding/brand-logo";
 import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
 import { getBuildInfo } from "@/lib/diagnostics/platform-health";
 
@@ -237,11 +237,10 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
       <div className="mx-auto max-w-7xl px-6 py-8">
 
-        <BrandLogo
+        <AdaptiveBrandLogo
           branding={platformBranding}
           layout="horizontal"
-          variant="light"
-          className="mb-4 h-7 w-auto max-w-[200px] object-contain opacity-100"
+          className="mb-4 h-7 w-auto max-w-[200px] object-contain"
         />
 
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs">

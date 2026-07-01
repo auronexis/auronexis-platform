@@ -14,7 +14,7 @@ export function MarketingHeaderLogo({ className }: MarketingHeaderLogoProps) {
       <img
         src="/branding/logo-horizontal-transparent.png"
         alt="Auroranexis logo"
-        className="block h-full w-full object-contain object-left"
+        className="block h-full w-full object-contain object-left opacity-100"
       />
     </div>
   );

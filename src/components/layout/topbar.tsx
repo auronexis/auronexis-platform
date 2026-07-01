@@ -11,7 +11,7 @@ import {
 import { HelpMenu } from "@/components/layout/help-menu";
 import { useMobileNav } from "@/components/layout/mobile-nav-context";
 import { UserMenu } from "@/components/layout/user-menu";
-import { BrandLogo } from "@/components/branding/brand-logo";
+import { AdaptiveBrandLogo } from "@/components/branding/brand-logo";
 import { Icon } from "@/components/ui/icon";
 import { getPageTitle } from "@/lib/layout/page-titles";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
@@ -51,7 +51,7 @@ export function Topbar({
           <Icon icon={Menu} size="sm" />
         </button>
 
-        <BrandLogo
+        <AdaptiveBrandLogo
           branding={branding}
           layout="horizontal"
           className="h-8 w-auto shrink-0 lg:hidden"

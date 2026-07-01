@@ -50,10 +50,13 @@ function resolveLogoSrc(
     if (!onDarkSurface && branding.logoDarkUrl) {
       return branding.logoDarkUrl;
     }
-    if (branding.logoHorizontalUrl) {
+    if (branding.logoHorizontalUrl && onDarkSurface) {
       return branding.logoHorizontalUrl;
     }
-    if (branding.logoUrl) {
+    if (branding.logoUrl && onDarkSurface) {
+      return branding.logoUrl;
+    }
+    if (branding.logoUrl && !onDarkSurface) {
       return branding.logoUrl;
     }
     return platformFallback(variant);
@@ -89,10 +92,37 @@ export function BrandLogo({
       src={src}
       alt={`${branding.companyName} logo`}
       className={cn(
-        "shrink-0 object-contain object-left",
+        "shrink-0 object-contain object-left opacity-100",
         layout === "horizontal" ? horizontalSizeClasses[size] : markSizeClasses[size],
         className,
       )}
     />
+  );
+}
+
+/** Theme-adaptive logo for `bg-surface` and similar light/dark surfaces. */
+export function AdaptiveBrandLogo({
+  branding,
+  size = "md",
+  className,
+  layout = "mark",
+}: Omit<BrandLogoProps, "variant">) {
+  return (
+    <>
+      <BrandLogo
+        branding={branding}
+        size={size}
+        layout={layout}
+        variant="dark"
+        className={cn(className, "dark:hidden")}
+      />
+      <BrandLogo
+        branding={branding}
+        size={size}
+        layout={layout}
+        variant="light"
+        className={cn(className, "hidden dark:block")}
+      />
+    </>
   );
 }

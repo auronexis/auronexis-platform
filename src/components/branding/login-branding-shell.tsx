@@ -38,7 +38,7 @@ function LoginDecorativePanel({ backgroundUrl }: { backgroundUrl: string }) {
         <img
           src={LOGIN_LOGO_SRC}
           alt="Auroranexis logo"
-          className="h-auto w-[190px] max-w-[190px] object-contain object-left"
+          className="h-auto w-[190px] max-w-[190px] object-contain object-left opacity-100"
         />
         <p className="mt-3 text-sm leading-relaxed text-white/70">{BRAND_TAGLINE}</p>
       </div>

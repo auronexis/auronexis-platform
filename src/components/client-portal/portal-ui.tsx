@@ -76,7 +76,7 @@ export function PortalFooter({ branding }: { branding: ResolvedOrganizationBrand
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <BrandLogo branding={branding} size="sm" />
+          <BrandLogo branding={branding} size="sm" variant="light" />
           <div>
             <p className="text-sm font-semibold">{branding.companyName}</p>
             <p className="text-xs text-muted">© {year} {branding.companyName}</p>

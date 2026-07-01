@@ -404,7 +404,7 @@ function PreviewSurface({
     return (
       <div className="overflow-hidden rounded-xl border border-border bg-background">
         <div className="px-4 py-8 text-center text-white" style={{ backgroundColor: draft.secondaryColor }}>
-          <BrandLogo branding={branding} size="md" />
+          <BrandLogo branding={branding} size="md" variant="light" />
           <p className="mt-3 text-lg font-semibold">{draft.loginTitle}</p>
           <p className="text-sm opacity-80">{draft.loginSubtitle ?? "Welcome back"}</p>
         </div>
@@ -417,7 +417,7 @@ function PreviewSurface({
     return (
       <div className="overflow-hidden rounded-xl border border-border">
         <div className="px-4 py-3 text-white" style={{ backgroundColor: draft.secondaryColor }}>
-          <BrandLogo branding={branding} size="sm" />
+          <BrandLogo branding={branding} size="sm" variant="light" />
           <p className="mt-2 text-sm font-semibold">{draft.portalTitle}</p>
         </div>
         <div className="bg-[var(--brand-background,var(--color-surface-2))] p-4 text-sm text-muted">{draft.portalWelcomeMessage}</div>
@@ -429,7 +429,7 @@ function PreviewSurface({
     return (
       <div className="overflow-hidden rounded-xl border border-border bg-surface-1">
         <div className="px-4 py-3 text-white" style={{ backgroundColor: draft.secondaryColor }}>
-          <BrandLogo branding={branding} size="sm" />
+          <BrandLogo branding={branding} size="sm" variant="light" />
           <p className="text-xs font-bold">{draft.companyName}</p>
         </div>
         <div className="p-4 text-sm text-muted">
@@ -445,7 +445,7 @@ function PreviewSurface({
   return (
     <div className="overflow-hidden rounded-xl border border-border">
       <div className="px-4 py-4 text-white" style={{ backgroundColor: draft.secondaryColor }}>
-        <BrandLogo branding={branding} size="sm" />
+        <BrandLogo branding={branding} size="sm" variant="light" />
         <p className="mt-2 text-sm font-semibold">{draft.companyName}</p>
         <p className="text-xs opacity-70">Operations Command Center</p>
       </div>
