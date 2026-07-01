@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BillingSettingsPanel } from "@/components/settings/billing-settings-panel";
 import { PageHeader } from "@/components/layout/page-header";
+import {
+  ENTERPRISE_CONTACT_CARD,
+  SUPPORT_CONTACT_CARD,
+} from "@/lib/billing/billing-contact";
 import { getBillingDashboardData } from "@/lib/billing/queries";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
-import { ENTERPRISE_CONTACT_MESSAGE } from "@/lib/billing/enterprise-contact";
 import { syncCheckoutSessionForOrganization } from "@/lib/stripe/checkout-sync";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
@@ -24,6 +27,18 @@ type BillingSettingsPageProps = {
     contact?: string;
   }>;
 };
+
+function resolveBillingContactCard(contact?: string) {
+  if (contact === "enterprise") {
+    return ENTERPRISE_CONTACT_CARD;
+  }
+
+  if (contact === "support") {
+    return SUPPORT_CONTACT_CARD;
+  }
+
+  return null;
+}
 
 export default async function BillingSettingsPage({ searchParams }: BillingSettingsPageProps) {
   await requireModuleAccess("settings");
@@ -79,9 +94,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
         success={params.success === "1"}
         successMessage={checkoutSuccessMessage}
         cancelled={params.cancelled === "1"}
-        enterpriseContactMessage={
-          params.contact === "enterprise" ? ENTERPRISE_CONTACT_MESSAGE : null
-        }
+        billingContactCard={resolveBillingContactCard(params.contact)}
       />
     </>
   );

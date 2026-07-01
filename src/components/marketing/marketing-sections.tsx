@@ -1,4 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import {
+  resolveMarketingCtaActions,
+  resolveMarketingHeroActions,
+} from "@/lib/marketing/auth-context";
+import { useMarketingAuth } from "@/components/marketing/marketing-auth-provider";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
@@ -56,6 +63,14 @@ export function MarketingHero({
   secondaryLabel,
   withBanner = false,
 }: MarketingHeroProps) {
+  const auth = useMarketingAuth();
+  const actions = resolveMarketingHeroActions(auth, {
+    primaryHref,
+    primaryLabel,
+    secondaryHref,
+    secondaryLabel,
+  });
+
   return (
     <section className="relative overflow-hidden border-b border-white/10">
       {withBanner ? (
@@ -87,23 +102,23 @@ export function MarketingHero({
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-primary-foreground/85">{description}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
-            href={primaryHref}
+            href={actions.primaryHref}
             className={cn(
               "rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm",
               focusRing,
             )}
           >
-            {primaryLabel}
+            {actions.primaryLabel}
           </Link>
-          {secondaryHref && secondaryLabel ? (
+          {actions.secondaryHref && actions.secondaryLabel ? (
             <Link
-              href={secondaryHref}
+              href={actions.secondaryHref}
               className={cn(
                 "rounded-lg border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm",
                 focusRing,
               )}
             >
-              {secondaryLabel}
+              {actions.secondaryLabel}
             </Link>
           ) : null}
         </div>
@@ -168,6 +183,9 @@ export function MarketingCta({
   href: string;
   label: string;
 }) {
+  const auth = useMarketingAuth();
+  const action = resolveMarketingCtaActions(auth, { href, label });
+
   return (
     <section className="border-t border-white/10 bg-white/[0.02]">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-16 sm:flex-row sm:items-center">
@@ -178,13 +196,13 @@ export function MarketingCta({
           </p>
         </div>
         <Link
-          href={href}
+          href={action.href}
           className={cn(
             "shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground",
             focusRing,
           )}
         >
-          {label}
+          {action.label}
         </Link>
       </div>
     </section>

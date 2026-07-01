@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { AuthAwareMarketingLink } from "@/components/marketing/auth-aware-marketing-link";
 import { NewsletterSignupForm } from "@/components/marketing/newsletter-signup-form";
 import { MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
 import { PUBLIC_PRICING_PLANS } from "@/lib/marketing/content";
@@ -53,13 +53,17 @@ export default function PublicPricingPage() {
         </div>
         <p className="mt-8 text-sm text-muted">
           Existing customers can compare plans and upgrade in{" "}
-          <Link href="/settings/plans" className="font-medium text-primary hover:underline">
+          <AuthAwareMarketingLink href="/settings/plans" className="font-medium text-primary hover:underline">
             workspace billing
-          </Link>
+          </AuthAwareMarketingLink>
           . Questions?{" "}
-          <Link href={MARKETING_ROUTES.contact} className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+          <AuthAwareMarketingLink
+            href={MARKETING_ROUTES.contact}
+            contactIntent="enterprise"
+            className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}
+          >
             Contact sales
-          </Link>
+          </AuthAwareMarketingLink>
           .
         </p>
       </MarketingSection>

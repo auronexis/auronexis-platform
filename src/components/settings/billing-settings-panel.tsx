@@ -20,6 +20,7 @@ import { formatBillingDateTime } from "@/lib/billing/types";
 import { PLAN_SOURCE_LABELS } from "@/lib/plans/plan-source-labels";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
 import type { OrganizationSeatUsage } from "@/lib/seats/types";
+import type { BillingContactCardContent } from "@/lib/billing/billing-contact";
 import { cn } from "@/lib/utils/cn";
 
 type BillingSettingsPanelProps = {
@@ -31,7 +32,7 @@ type BillingSettingsPanelProps = {
   success?: boolean;
   successMessage?: string | null;
   cancelled?: boolean;
-  enterpriseContactMessage?: string | null;
+  billingContactCard?: BillingContactCardContent | null;
 };
 
 function BillingCard({
@@ -93,6 +94,20 @@ function resolvePaymentTone(overview: BillingDashboardData["overview"]): "green"
   return "slate";
 }
 
+function BillingContactCard({ card }: { card: BillingContactCardContent }) {
+  return (
+    <PageSurface>
+      <PageSurfaceHeading title={card.title} />
+      <p className="mt-4 text-sm text-muted">{card.text}</p>
+      <FormFooter className="border-t-0 pt-4">
+        <LinkButton href={`mailto:${card.email}`} variant="primary">
+          Email {card.email}
+        </LinkButton>
+      </FormFooter>
+    </PageSurface>
+  );
+}
+
 export function BillingSettingsPanel({
   dashboard,
   seatUsage,
@@ -102,7 +117,7 @@ export function BillingSettingsPanel({
   success,
   successMessage,
   cancelled,
-  enterpriseContactMessage,
+  billingContactCard,
 }: BillingSettingsPanelProps) {
   const { overview } = dashboard;
   const [actionError, setActionError] = useState<string | null>(null);
@@ -149,11 +164,7 @@ export function BillingSettingsPanel({
           Checkout was cancelled. No changes were made to your subscription.
         </FormAlert>
       ) : null}
-      {enterpriseContactMessage ? (
-        <div className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground">
-          {enterpriseContactMessage}
-        </div>
-      ) : null}
+      {billingContactCard ? <BillingContactCard card={billingContactCard} /> : null}
       {usingStarterFallback ? (
         <FormAlert variant="warning">
           No active subscription is linked to your workspace yet. Choose a plan to get started.
