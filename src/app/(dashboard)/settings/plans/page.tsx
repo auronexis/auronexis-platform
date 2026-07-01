@@ -4,6 +4,7 @@ import { PricingHero } from "@/components/pricing/pricing-hero";
 import { getAvailablePlans } from "@/lib/billing/plans";
 import { getBillingOverview } from "@/lib/billing/queries";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
+import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getClientLimitUsageForSession } from "@/lib/plans/queries";
@@ -26,6 +27,7 @@ export default async function WorkspacePlansPage() {
   ]);
   const canManage = canManageOrganizationSettings(session);
   const stripeStatus = getStripeBillingUiStatus();
+  const enterpriseContactHref = resolveEnterpriseContactHref(session.role);
 
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-1 py-2">
@@ -40,6 +42,7 @@ export default async function WorkspacePlansPage() {
           usedClients: clientUsage.used,
         }}
         stripeStatus={stripeStatus}
+        enterpriseContactHref={enterpriseContactHref}
       />
     </div>
   );

@@ -29,9 +29,10 @@ type PricingGridProps = {
   plans: SubscriptionPlanDefinition[];
   selection: PricingSelectionContext;
   stripeStatus: StripeBillingUiStatus;
+  enterpriseContactHref: string;
 };
 
-export function PricingGrid({ plans, selection, stripeStatus }: PricingGridProps) {
+export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactHref }: PricingGridProps) {
   const [pendingPlanKey, setPendingPlanKey] = useState<PlanKey | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -95,6 +96,7 @@ export function PricingGrid({ plans, selection, stripeStatus }: PricingGridProps
               disabledReasons={disabledReasons}
               isDisabled={isPricingButtonDisabled(plan.key, disabledReasons)}
               stripeStatus={stripeStatus}
+              enterpriseContactHref={enterpriseContactHref}
               onSelect={() => selectPlan(plan.key)}
             />
           );

@@ -4,6 +4,7 @@ import { BillingSettingsPanel } from "@/components/settings/billing-settings-pan
 import { PageHeader } from "@/components/layout/page-header";
 import { getBillingDashboardData } from "@/lib/billing/queries";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
+import { ENTERPRISE_CONTACT_MESSAGE } from "@/lib/billing/enterprise-contact";
 import { syncCheckoutSessionForOrganization } from "@/lib/stripe/checkout-sync";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
@@ -20,6 +21,7 @@ type BillingSettingsPageProps = {
     success?: string;
     cancelled?: string;
     session_id?: string;
+    contact?: string;
   }>;
 };
 
@@ -77,6 +79,9 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
         success={params.success === "1"}
         successMessage={checkoutSuccessMessage}
         cancelled={params.cancelled === "1"}
+        enterpriseContactMessage={
+          params.contact === "enterprise" ? ENTERPRISE_CONTACT_MESSAGE : null
+        }
       />
     </>
   );

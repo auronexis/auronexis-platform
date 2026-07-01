@@ -31,6 +31,7 @@ type BillingSettingsPanelProps = {
   success?: boolean;
   successMessage?: string | null;
   cancelled?: boolean;
+  enterpriseContactMessage?: string | null;
 };
 
 function BillingCard({
@@ -101,6 +102,7 @@ export function BillingSettingsPanel({
   success,
   successMessage,
   cancelled,
+  enterpriseContactMessage,
 }: BillingSettingsPanelProps) {
   const { overview } = dashboard;
   const [actionError, setActionError] = useState<string | null>(null);
@@ -146,6 +148,11 @@ export function BillingSettingsPanel({
         <FormAlert variant="warning">
           Checkout was cancelled. No changes were made to your subscription.
         </FormAlert>
+      ) : null}
+      {enterpriseContactMessage ? (
+        <div className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground">
+          {enterpriseContactMessage}
+        </div>
       ) : null}
       {usingStarterFallback ? (
         <FormAlert variant="warning">

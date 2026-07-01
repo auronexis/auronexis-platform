@@ -7,7 +7,6 @@ import {
   type PlanActionLabel,
   type SubscriptionPlanDefinition,
 } from "@/lib/billing/plans";
-import { MARKETING_ROUTES } from "@/lib/company/contact";
 import { getPlanCheckoutHint } from "@/lib/diagnostics/pricing-reasons";
 import { getPricingHighlights } from "@/lib/plans/features";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
@@ -24,6 +23,7 @@ type PricingCardProps = {
   disabledReasons?: string[];
   isDisabled?: boolean;
   stripeStatus: StripeBillingUiStatus;
+  enterpriseContactHref: string;
   onSelect: () => void;
 };
 
@@ -37,6 +37,7 @@ export function PricingCard({
   disabledReasons = [],
   isDisabled = false,
   stripeStatus,
+  enterpriseContactHref,
   onSelect,
 }: PricingCardProps) {
   const isRecommended = Boolean(plan.recommended);
@@ -120,7 +121,7 @@ export function PricingCard({
             <p className="mb-3 text-sm text-muted">{checkoutHint}</p>
           ) : null}
           {isEnterprise ? (
-            <LinkButton href={MARKETING_ROUTES.contact} className="w-full" variant="secondary">
+            <LinkButton href={enterpriseContactHref} className="w-full" variant="secondary">
               Contact Sales
             </LinkButton>
           ) : (
@@ -147,7 +148,7 @@ export function PricingCard({
 
       {isEnterprise && !canManage ? (
         <p className="mt-4 text-center text-sm text-muted">
-          <Link href={MARKETING_ROUTES.contact} className="font-medium text-primary hover:underline">
+          <Link href={enterpriseContactHref} className="font-medium text-primary hover:underline">
             Contact Sales
           </Link>
         </p>
