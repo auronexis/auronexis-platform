@@ -3,17 +3,19 @@
 import { useState, useTransition } from "react";
 import { PricingCard } from "@/components/pricing/pricing-card";
 import { createCheckoutSessionAction } from "@/lib/billing/actions";
+import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import {
   resolvePlanActionLabel,
   type PlanKey,
   type SubscriptionPlanDefinition,
 } from "@/lib/billing/plans";
-import type { StripeEnvDiagnostics } from "@/lib/diagnostics/types";
 import {
   getPricingButtonDisabledReasons,
+  getPricingUnavailableMessage,
   isPricingButtonDisabled,
 } from "@/lib/diagnostics/pricing-reasons";
 import { getPricingPlanBlockReason } from "@/lib/plans/features";
+import { FormAlert } from "@/components/ui/form-alert";
 
 export type PricingSelectionContext = {
   currentPlanKey: PlanKey | null;
@@ -26,14 +28,20 @@ export type PricingSelectionContext = {
 type PricingGridProps = {
   plans: SubscriptionPlanDefinition[];
   selection: PricingSelectionContext;
-  stripeEnv: StripeEnvDiagnostics;
+  stripeStatus: StripeBillingUiStatus;
 };
-export function PricingGrid({ plans, selection, stripeEnv }: PricingGridProps) {
+
+export function PricingGrid({ plans, selection, stripeStatus }: PricingGridProps) {
   const [pendingPlanKey, setPendingPlanKey] = useState<PlanKey | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const unavailableMessage = getPricingUnavailableMessage(stripeStatus);
 
   const selectPlan = (planKey: PlanKey) => {
+    if (planKey === "enterprise") {
+      return;
+    }
+
     setError(null);
     setPendingPlanKey(planKey);
     startTransition(async () => {
@@ -47,7 +55,11 @@ export function PricingGrid({ plans, selection, stripeEnv }: PricingGridProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-4 lg:grid-cols-2">
+      {unavailableMessage ? (
+        <FormAlert variant="warning">{unavailableMessage}</FormAlert>
+      ) : null}
+
+      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
         {plans.map((plan) => {
           const action = resolvePlanActionLabel(
             plan.key,
@@ -68,7 +80,7 @@ export function PricingGrid({ plans, selection, stripeEnv }: PricingGridProps) {
             isLoading: isPending && pendingPlanKey === plan.key,
             isCurrent,
             seatBlockMessage: seatBlock.blocked ? seatBlock.message : null,
-            stripeEnv,
+            stripeStatus,
           });
 
           return (
@@ -81,13 +93,15 @@ export function PricingGrid({ plans, selection, stripeEnv }: PricingGridProps) {
               canManage={selection.canManage}
               seatBlockMessage={seatBlock.blocked ? seatBlock.message : null}
               disabledReasons={disabledReasons}
-              isDisabled={isPricingButtonDisabled(disabledReasons)}
+              isDisabled={isPricingButtonDisabled(plan.key, disabledReasons)}
+              stripeStatus={stripeStatus}
               onSelect={() => selectPlan(plan.key)}
             />
-          );        })}
+          );
+        })}
       </div>
 
-      {error ? <p className="text-center text-sm text-red-600">{error}</p> : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
     </div>
   );
 }

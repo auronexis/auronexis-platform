@@ -1,16 +1,5 @@
 import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import type { StripeEnvDiagnostics } from "@/lib/diagnostics/types";
-
-const PLAN_PRICE_ENV_MAP: Record<PlanKey, keyof StripeEnvDiagnostics> = {
-  starter: "starterPriceId",
-  professional: "professionalPriceId",
-  business: "businessPriceId",
-  enterprise: "enterprisePriceId",
-};
-
-function isStripeCheckoutReady(stripeEnv: StripeEnvDiagnostics): boolean {
-  return stripeEnv.secretKey.present && stripeEnv.publishableKey.present;
-}
+import type { StripeBillingUiStatus } from "@/lib/billing/types";
 
 export function getPricingButtonDisabledReasons(input: {
   planKey: PlanKey;
@@ -20,12 +9,16 @@ export function getPricingButtonDisabledReasons(input: {
   isLoading: boolean;
   isCurrent: boolean;
   seatBlockMessage: string | null;
-  stripeEnv: StripeEnvDiagnostics;
+  stripeStatus: StripeBillingUiStatus;
 }): string[] {
   const reasons: string[] = [];
 
+  if (input.planKey === "enterprise") {
+    return reasons;
+  }
+
   if (!input.canManage) {
-    reasons.push("Permission denied — organization owner or admin required.");
+    reasons.push("Organization owners and admins can change plans.");
   }
 
   if (input.isCurrent) {
@@ -40,28 +33,55 @@ export function getPricingButtonDisabledReasons(input: {
     reasons.push(input.seatBlockMessage);
   }
 
-  const priceEnvKey = PLAN_PRICE_ENV_MAP[input.planKey];
-  const priceEnv = input.stripeEnv[priceEnvKey];
-
-  if (!priceEnv.present) {
-    reasons.push(`Missing ${priceEnv.name} for the ${getPlanByKey(input.planKey).name} plan.`);
-  }
-
-  if (!input.stripeEnv.secretKey.present) {
-    reasons.push("STRIPE_SECRET_KEY is not configured.");
-  }
-
-  if (!input.stripeEnv.publishableKey.present) {
-    reasons.push("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not configured.");
-  }
-
-  if (!isStripeCheckoutReady(input.stripeEnv) && !input.isCurrent && input.canManage && reasons.length === 0) {
-    reasons.push("Stripe checkout environment is not fully configured.");
+  if (!input.stripeStatus.planCheckoutReady[input.planKey]) {
+    if (!input.stripeStatus.checkoutAvailable) {
+      reasons.push("Billing is currently unavailable.");
+    } else {
+      reasons.push("Checkout temporarily unavailable.");
+    }
   }
 
   return reasons;
 }
 
-export function isPricingButtonDisabled(reasons: string[]): boolean {
+export function isPricingButtonDisabled(
+  planKey: PlanKey,
+  reasons: string[],
+): boolean {
+  if (planKey === "enterprise") {
+    return false;
+  }
+
   return reasons.length > 0;
+}
+
+export function getPricingUnavailableMessage(stripeStatus: StripeBillingUiStatus): string | null {
+  if (stripeStatus.checkoutAvailable) {
+    return null;
+  }
+
+  return "Billing is currently unavailable. Contact sales if you need help choosing a plan.";
+}
+
+export function getPlanCheckoutHint(
+  planKey: PlanKey,
+  stripeStatus: StripeBillingUiStatus,
+): string | null {
+  if (planKey === "enterprise") {
+    return null;
+  }
+
+  if (stripeStatus.planCheckoutReady[planKey]) {
+    return null;
+  }
+
+  if (!stripeStatus.checkoutAvailable) {
+    return "Billing is currently unavailable.";
+  }
+
+  return "Checkout temporarily unavailable.";
+}
+
+export function getPlanDisplayName(planKey: PlanKey): string {
+  return getPlanByKey(planKey).name;
 }

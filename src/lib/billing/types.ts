@@ -260,3 +260,10 @@ export function formatInvoiceDueLabel(invoice: CustomerInvoiceView): string {
   }
   return invoice.statusLabel;
 }
+
+/** Customer-safe Stripe billing flags — no environment variable names. */
+export type StripeBillingUiStatus = {
+  checkoutAvailable: boolean;
+  portalAvailable: boolean;
+  planCheckoutReady: Record<PlanKey, boolean>;
+};

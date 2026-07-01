@@ -15,7 +15,7 @@ import {
   createPortalSessionAction,
   validateDiscountCodeAction,
 } from "@/lib/billing/actions";
-import type { BillingDashboardData } from "@/lib/billing/types";
+import type { BillingDashboardData, StripeBillingUiStatus } from "@/lib/billing/types";
 import { formatBillingDateTime } from "@/lib/billing/types";
 import { PLAN_SOURCE_LABELS } from "@/lib/plans/plan-source-labels";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
@@ -27,6 +27,7 @@ type BillingSettingsPanelProps = {
   seatUsage: OrganizationSeatUsage;
   planUsage: OrganizationPlanUsageSummary;
   canManage: boolean;
+  stripeStatus: StripeBillingUiStatus;
   success?: boolean;
   cancelled?: boolean;
 };
@@ -95,6 +96,7 @@ export function BillingSettingsPanel({
   seatUsage,
   planUsage,
   canManage,
+  stripeStatus,
   success,
   cancelled,
 }: BillingSettingsPanelProps) {
@@ -104,13 +106,11 @@ export function BillingSettingsPanel({
   const [isPortalPending, startPortalTransition] = useTransition();
   const [isDiscountPending, startDiscountTransition] = useTransition();
 
-  const showManage = canManage && Boolean(overview.subscription?.stripe_customer_id);
+  const showManage =
+    canManage && stripeStatus.portalAvailable && Boolean(overview.subscription?.stripe_customer_id);
   const usingStarterFallback =
     planUsage.plan.planSource === "starter_fallback" ||
     planUsage.plan.planSource === "unmapped_price_id";
-  const showDiagnosticsHint =
-    canManage &&
-    (!overview.subscription || !overview.isActive || planUsage.plan.planSource === "unmapped_price_id");
 
   const runPortal = () => {
     setActionError(null);
@@ -147,13 +147,7 @@ export function BillingSettingsPanel({
       ) : null}
       {usingStarterFallback ? (
         <FormAlert variant="warning">
-          No active Stripe subscription found with a mapped plan. Your workspace is using Starter fallback.
-        </FormAlert>
-      ) : null}
-      {planUsage.plan.devOverrideActive ? (
-        <FormAlert variant="warning">
-          Development override active — resolved plan is {planUsage.plan.planLabel} (
-          {PLAN_SOURCE_LABELS.dev_override}).
+          No active subscription is linked to your workspace yet. Choose a plan to get started.
         </FormAlert>
       ) : null}
       {dashboard.forecastStatus !== "healthy" ? (
@@ -170,7 +164,13 @@ export function BillingSettingsPanel({
         <BillingCard title="Current plan">
           <p className="text-lg font-semibold text-foreground">{overview.planLabel}</p>
           <p className="text-sm text-muted">Source: {PLAN_SOURCE_LABELS[planUsage.plan.planSource]}</p>
-          {!overview.isActive ? <p>Select a plan on the pricing page to subscribe.</p> : null}
+          {!overview.isActive ? (
+            <p>
+              {stripeStatus.checkoutAvailable
+                ? "Select a plan on the pricing page to subscribe."
+                : "Billing is currently unavailable. Contact sales for assistance."}
+            </p>
+          ) : null}
         </BillingCard>
         <BillingCard title="Subscription status">
           <div className="flex items-center justify-between gap-3">
@@ -268,29 +268,24 @@ export function BillingSettingsPanel({
         </PageSurface>
       ) : null}
 
-      {showDiagnosticsHint ? (
-        <FormAlert variant="warning">
-          Billing or plan mapping may be incomplete.{" "}
-          <Link href="/settings/diagnostics" className="font-medium text-primary hover:underline">
-            Open Diagnostics
-          </Link>{" "}
-          to inspect subscription rows, Stripe env vars, and plan resolution.
-        </FormAlert>
-      ) : null}
-
       {canManage ? (
         <PageSurface>
           <PageSurfaceHeading title="Billing actions" description="Upgrade, downgrade, cancel, or manage payment methods." />
           {actionError ? <FormAlert variant="error">{actionError}</FormAlert> : null}
+          {!stripeStatus.portalAvailable ? (
+            <p className="text-sm text-muted">Billing is currently unavailable.</p>
+          ) : null}
+          {stripeStatus.portalAvailable && !showManage ? (
+            <p className="text-sm text-muted">
+              Manage billing will be available after you complete checkout.
+            </p>
+          ) : null}
           <FormFooter className="border-t-0 pt-0">
             <Link href="/settings/plans">
               <Button type="button">Upgrade plan</Button>
             </Link>
             <LinkButton href="/settings/usage" variant="secondary" size="md">
               Usage dashboard
-            </LinkButton>
-            <LinkButton href="/settings/diagnostics" variant="secondary" size="md">
-              Open Diagnostics
             </LinkButton>
             {showManage ? (
               <>

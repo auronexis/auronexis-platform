@@ -15,6 +15,11 @@ const PLAN_PRICE_ENV_KEYS: Record<PlanKey, string> = {
 
 /** Resolve Stripe price ID for a plan — server-only. */
 export function getPlanPriceId(planKey: PlanKey): string {
+  if (planKey === "enterprise") {
+    console.warn("[stripe] Checkout requested for Enterprise plan — use sales contact flow.");
+    throw new Error("Contact sales for Enterprise plans.");
+  }
+
   const envKey = PLAN_PRICE_ENV_KEYS[planKey];
   const planPriceId = process.env[envKey];
 
@@ -22,9 +27,8 @@ export function getPlanPriceId(planKey: PlanKey): string {
     return planPriceId.trim();
   }
 
-  throw new Error(
-    `Missing Stripe price ID for the ${planKey} plan. Set ${envKey} in your environment.`,
-  );
+  console.warn(`[stripe] Missing price ID for ${planKey} plan (${envKey}).`);
+  throw new Error("Checkout temporarily unavailable.");
 }
 
 /** Look up plan definition from a Stripe price ID — server-only. */

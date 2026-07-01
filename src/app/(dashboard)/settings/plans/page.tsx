@@ -3,7 +3,7 @@ import { PricingGrid } from "@/components/pricing/pricing-grid";
 import { PricingHero } from "@/components/pricing/pricing-hero";
 import { getAvailablePlans } from "@/lib/billing/plans";
 import { getBillingOverview } from "@/lib/billing/queries";
-import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
+import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getClientLimitUsageForSession } from "@/lib/plans/queries";
@@ -25,7 +25,7 @@ export default async function WorkspacePlansPage() {
     getClientLimitUsageForSession(session),
   ]);
   const canManage = canManageOrganizationSettings(session);
-  const stripeEnv = getStripeEnvDiagnostics();
+  const stripeStatus = getStripeBillingUiStatus();
 
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-1 py-2">
@@ -39,7 +39,7 @@ export default async function WorkspacePlansPage() {
           usedSeats: seatUsage.used,
           usedClients: clientUsage.used,
         }}
-        stripeEnv={stripeEnv}
+        stripeStatus={stripeStatus}
       />
     </div>
   );

@@ -1,11 +1,16 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import {
   formatPlanPrice,
   getPlanActionButtonLabel,
   type PlanActionLabel,
   type SubscriptionPlanDefinition,
 } from "@/lib/billing/plans";
+import { MARKETING_ROUTES } from "@/lib/company/contact";
+import { getPlanCheckoutHint } from "@/lib/diagnostics/pricing-reasons";
 import { getPricingHighlights } from "@/lib/plans/features";
+import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
@@ -18,6 +23,7 @@ type PricingCardProps = {
   seatBlockMessage?: string | null;
   disabledReasons?: string[];
   isDisabled?: boolean;
+  stripeStatus: StripeBillingUiStatus;
   onSelect: () => void;
 };
 
@@ -30,19 +36,21 @@ export function PricingCard({
   seatBlockMessage,
   disabledReasons = [],
   isDisabled = false,
+  stripeStatus,
   onSelect,
 }: PricingCardProps) {
   const isRecommended = Boolean(plan.recommended);
+  const isEnterprise = plan.key === "enterprise";
   const pricingHighlights = getPricingHighlights(plan.key);
   const buttonDisabled = isDisabled || isLoading;
+  const checkoutHint = getPlanCheckoutHint(plan.key, stripeStatus);
+
   return (
     <article
       className={cn(
         "group relative flex h-full flex-col rounded-2xl border border-border bg-surface p-8 shadow-sm",
         focusRing,
-        isRecommended
-          ? "border-primary/30 shadow-md ring-1 ring-primary/15"
-          : "",
+        isRecommended ? "border-primary/30 shadow-md ring-1 ring-primary/15" : "",
         isCurrent && "border-success/40 ring-1 ring-success/15",
       )}
     >
@@ -87,10 +95,9 @@ export function PricingCard({
         ))}
       </ul>
 
-      {plan.key === "enterprise" ? (
+      {isEnterprise ? (
         <p className="mb-4 text-sm text-muted">
-          Need custom onboarding?{" "}
-          <span className="font-medium text-foreground">Contact Sales</span>
+          Custom onboarding, priority support, and advanced reporting.
         </p>
       ) : null}
 
@@ -106,16 +113,29 @@ export function PricingCard({
               ))}
             </ul>
           ) : null}
-          <Button            type="button"
-            className="w-full"
-            variant={isCurrent ? "secondary" : isRecommended ? "primary" : "secondary"}
-            disabled={buttonDisabled}
-            loading={isLoading}
-            loadingText="Redirecting…"
-            onClick={onSelect}
-          >
-            {getPlanActionButtonLabel(action)}
-          </Button>
+          {!stripeStatus.planCheckoutReady[plan.key] &&
+          checkoutHint &&
+          !isEnterprise &&
+          disabledReasons.length === 0 ? (
+            <p className="mb-3 text-sm text-muted">{checkoutHint}</p>
+          ) : null}
+          {isEnterprise ? (
+            <LinkButton href={MARKETING_ROUTES.contact} className="w-full" variant="secondary">
+              Contact Sales
+            </LinkButton>
+          ) : (
+            <Button
+              type="button"
+              className="w-full"
+              variant={isCurrent ? "secondary" : isRecommended ? "primary" : "secondary"}
+              disabled={buttonDisabled}
+              loading={isLoading}
+              loadingText="Redirecting…"
+              onClick={onSelect}
+            >
+              {getPlanActionButtonLabel(action)}
+            </Button>
+          )}
         </>
       ) : (
         <p className="text-center text-sm text-muted">
@@ -124,6 +144,14 @@ export function PricingCard({
             : "Organization owners and admins can change plans."}
         </p>
       )}
+
+      {isEnterprise && !canManage ? (
+        <p className="mt-4 text-center text-sm text-muted">
+          <Link href={MARKETING_ROUTES.contact} className="font-medium text-primary hover:underline">
+            Contact Sales
+          </Link>
+        </p>
+      ) : null}
     </article>
   );
 }

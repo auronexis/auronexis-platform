@@ -12,11 +12,15 @@ import { createCheckoutSessionWithDiscount } from "@/lib/billing/checkout";
 
 import { openCustomerPortal } from "@/lib/billing/customer-portal";
 
+import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
+
 import { validateDiscountCode } from "@/lib/billing/discounts";
 
 import { calculateProrationPreview } from "@/lib/billing/proration";
 
 import { getBillingOverview } from "@/lib/billing/queries";
+
+import { assertPlanCheckoutReady } from "@/lib/billing/stripe-config";
 
 import type { PlanKey } from "@/lib/billing/plans";
 
@@ -74,6 +78,12 @@ export async function createCheckoutSessionAction(
 
   }
 
+  if (parsed.data === "enterprise") {
+
+    return { error: "Contact sales for Enterprise plans." };
+
+  }
+
 
 
   let checkoutUrl: string;
@@ -81,6 +91,8 @@ export async function createCheckoutSessionAction(
 
 
   try {
+
+    assertPlanCheckoutReady(parsed.data);
 
     checkoutUrl = await createCheckoutSessionWithDiscount({
 
@@ -98,9 +110,9 @@ export async function createCheckoutSessionAction(
 
   } catch (error) {
 
-    const message = error instanceof Error ? error.message : "Unable to start checkout.";
-
-    return { error: message };
+    return {
+      error: sanitizeBillingCustomerError(error, "Unable to start checkout."),
+    };
 
   }
 
@@ -142,9 +154,9 @@ export async function createPortalSessionAction(): Promise<BillingActionState> {
 
   } catch (error) {
 
-    const message = error instanceof Error ? error.message : "Unable to open billing portal.";
-
-    return { error: message };
+    return {
+      error: sanitizeBillingCustomerError(error, "Unable to open billing portal."),
+    };
 
   }
 

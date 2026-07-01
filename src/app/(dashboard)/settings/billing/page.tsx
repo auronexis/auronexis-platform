@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BillingSettingsPanel } from "@/components/settings/billing-settings-panel";
 import { PageHeader } from "@/components/layout/page-header";
 import { getBillingDashboardData } from "@/lib/billing/queries";
+import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getOrganizationPlanUsageSummary } from "@/lib/plans/queries";
@@ -33,6 +34,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
     seatUsage.used,
     seatUsage.limit,
   );
+  const stripeStatus = getStripeBillingUiStatus();
   const params = await searchParams;
 
   return (
@@ -56,6 +58,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
         seatUsage={seatUsage}
         planUsage={planUsage}
         canManage={canManage}
+        stripeStatus={stripeStatus}
         success={params.success === "1"}
         cancelled={params.cancelled === "1"}
       />
