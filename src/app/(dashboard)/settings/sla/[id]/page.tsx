@@ -7,6 +7,12 @@ import { SlaPolicyForm } from "@/components/settings/sla-policy-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { updateSlaPolicyAction } from "@/lib/sla/actions";
 import { getSlaPolicyById } from "@/lib/sla/queries";
+import { listSlaBreachHistory } from "@/lib/sla/summary";
+import { SLATimeline } from "@/components/sla/sla-activity-timeline";
+import { SLAHistory } from "@/components/sla/sla-history";
+import { SLAMetrics } from "@/components/sla/sla-metrics";
+import { getSLAMetrics } from "@/lib/sla/metrics";
+import { createClient } from "@/lib/supabase/server";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
@@ -37,6 +43,19 @@ export default async function SlaPolicyDetailPage({ params }: SlaPolicyDetailPag
 
   const canManage = canManageOrganizationSettings(session);
   const boundUpdateAction = updateSlaPolicyAction.bind(null, policy.id);
+  const [slaMetrics, breachHistory] = await Promise.all([
+    getSLAMetrics(session).catch(() => null),
+    listSlaBreachHistory(session, { policyId: policy.id, limit: 8 }),
+  ]);
+
+  const supabase = await createClient();
+  const { data: activityData } = await supabase
+    .from("sla_activity")
+    .select("id, organization_id, event_type, actor_user_id, incident_id, message, metadata, created_at")
+    .eq("organization_id", session.organization.id)
+    .contains("metadata", { policyId: policy.id })
+    .order("created_at", { ascending: false })
+    .limit(10);
 
   return (
     <>
@@ -65,6 +84,29 @@ export default async function SlaPolicyDetailPage({ params }: SlaPolicyDetailPag
         </span>
         <span>·</span>
         <span>Risks: {policy.risk_hours ? `${policy.risk_hours}h` : "—"}</span>
+      </div>
+
+      {slaMetrics ? (
+        <div className="mb-8">
+          <SLAMetrics metrics={slaMetrics} />
+        </div>
+      ) : null}
+
+      <div className="mb-8 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
+          <h2 className="text-sm font-semibold text-foreground">SLA timeline</h2>
+          <p className="mt-1 text-sm text-muted">Recent SLA activity for this policy.</p>
+          <div className="mt-4">
+            <SLATimeline events={(activityData ?? []) as never} />
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
+          <h2 className="text-sm font-semibold text-foreground">Breach history</h2>
+          <p className="mt-1 text-sm text-muted">Incidents that breached SLA targets under this policy.</p>
+          <div className="mt-4">
+            <SLAHistory events={breachHistory} />
+          </div>
+        </div>
       </div>
 
       {canManage ? (

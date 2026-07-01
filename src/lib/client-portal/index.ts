@@ -8,6 +8,7 @@ export {
   getPortalOverviewData,
   getPortalReportById,
   getPortalSlaAssignment,
+  getPortalSlaSummary,
   listPortalHealthSnapshots,
   listPortalIncidents,
   listPortalReports,

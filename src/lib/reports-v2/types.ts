@@ -44,6 +44,10 @@ export type SLASnapshot = {
   violations: number;
   onTrack: boolean;
   policyName: string | null;
+  avgResponseMinutes?: number | null;
+  avgResolutionMinutes?: number | null;
+  monthlyTrend?: Array<{ month: string; compliancePercent: number }>;
+  topBreachedClients?: Array<{ clientId: string; breachCount: number }>;
 };
 
 export type ExecutiveSummary = {

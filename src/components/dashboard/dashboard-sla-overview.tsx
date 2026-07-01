@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { SlaStatusBadge } from "@/components/sla/sla-status-badge";
+import { SLAMetrics } from "@/components/sla/sla-metrics";
+import { SLAComplianceChart } from "@/components/sla/sla-compliance-chart";
 import { formatSlaDueDate } from "@/lib/sla/calculations";
 import type { SlaDashboardMetrics } from "@/lib/sla/types";
 import { linkText } from "@/lib/ui/tokens";
@@ -79,6 +81,17 @@ function SlaAlertList({
 export function DashboardSlaOverview({ metrics }: DashboardSlaOverviewProps) {
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted">SLA command center KPIs</p>
+        <Link href="/settings/sla" className={linkText}>
+          Manage SLA policies
+        </Link>
+      </div>
+
+      <SLAMetrics metrics={metrics} />
+
+      <SLAComplianceChart points={metrics.monthlyTrend} />
+
       <div className="grid gap-3 sm:grid-cols-3">
         <SlaCountCard label="On track" count={metrics.onTrackCount} tone="green" />
         <SlaCountCard label="Warning" count={metrics.warningCount} tone="amber" />

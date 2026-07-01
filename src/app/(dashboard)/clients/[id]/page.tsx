@@ -36,6 +36,7 @@ import { RiskEmptyState } from "@/components/risks/risk-empty-state";
 import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
 import { CreatePortalUserForm } from "@/components/client-portal/create-portal-user-form";
 import { PortalUserList } from "@/components/client-portal/portal-user-list";
+import { ClientSlaSummaryCard } from "@/components/clients/client-sla-summary-card";
 import { ClientSlaPolicySection } from "@/components/settings/client-sla-policy-section";
 import { ClickableRow } from "@/components/ui/clickable-row";
 import {
@@ -64,6 +65,7 @@ import { getReportHistory, listReportsV2 } from "@/lib/reports-v2";
 import { listClientRisks, getClientRiskScoreSummary, OPEN_RISK_STATUSES } from "@/lib/risks";
 import { canViewRevenue } from "@/lib/rbac/permissions";
 import { listSlaPolicies, getClientSlaAssignment } from "@/lib/sla/queries";
+import { getClientSLA } from "@/lib/sla/summary";
 import { canManageSlaPolicies } from "@/lib/team/guards";
 import { linkText } from "@/lib/ui/tokens";
 import type { IncidentSeverity, IncidentStatus } from "@/types/database";
@@ -135,6 +137,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     session.organization.id,
     client.sla_policy_id,
   );
+  const clientSlaSummary = await getClientSLA(session, id);
 
   const recentReports = recentReportsResult.data ?? [];
   const primaryReport = recentReports[0] ?? overview.latestReport ?? null;
@@ -405,6 +408,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             </AuroraDataTable>
           )}
         </DetailSection>
+
+        <ClientSlaSummaryCard summary={clientSlaSummary} />
 
         <DetailSection
           title="SLA policy"

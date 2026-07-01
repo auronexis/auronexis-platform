@@ -20,7 +20,13 @@ export type ActivityEventType =
   | "team.user_disabled"
   | "team.user_reactivated"
   | "sla.created"
+  | "sla.started"
   | "sla.updated"
+  | "sla.responded"
+  | "sla.breached"
+  | "sla.resolved"
+  | "sla.completed"
+  | "sla.policy_assigned"
   | "sla.deleted"
   | "report.created"
   | "report.updated"
@@ -79,7 +85,13 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "team.user_disabled": "User disabled",
   "team.user_reactivated": "User reactivated",
   "sla.created": "SLA created",
+  "sla.started": "SLA started",
   "sla.updated": "SLA updated",
+  "sla.responded": "SLA responded",
+  "sla.breached": "SLA breached",
+  "sla.resolved": "SLA resolved",
+  "sla.completed": "SLA completed",
+  "sla.policy_assigned": "SLA policy assigned",
   "sla.deleted": "SLA deleted",
   "report.created": "Report created",
   "report.updated": "Report updated",

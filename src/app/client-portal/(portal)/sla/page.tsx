@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PortalPageHeader } from "@/components/client-portal/portal-ui";
 import { PortalSlaCard } from "@/components/client-portal/portal-sla-card";
-import { getPortalSlaAssignment } from "@/lib/client-portal/queries";
+import { getPortalSlaSummary } from "@/lib/client-portal/queries";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function ClientPortalSlaPage() {
   const session = await requireClientPortalSession();
-  const assignment = await getPortalSlaAssignment(session);
+  const summary = await getPortalSlaSummary(session);
 
   return (
     <>
@@ -18,7 +18,7 @@ export default async function ClientPortalSlaPage() {
         title="SLA"
         description="Response-time commitments applied to your account."
       />
-      <PortalSlaCard assignment={assignment} />
+      <PortalSlaCard summary={summary} />
     </>
   );
 }

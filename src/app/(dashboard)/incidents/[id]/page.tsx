@@ -8,6 +8,7 @@ import { IncidentBadge } from "@/components/incidents/incident-badge";
 import { IncidentActivityFeed } from "@/components/incidents/incident-activity-feed";
 import { IncidentTimeline } from "@/components/incidents/incident-timeline";
 import { SlaDetailSection } from "@/components/sla/sla-detail-section";
+import { SLATimerList } from "@/components/sla/sla-timer";
 import {
   DetailActionSection,
   DetailMetaSeparator,
@@ -35,7 +36,7 @@ import {
   STAFF_INCIDENT_STATUSES,
 } from "@/lib/incidents/types";
 import { listOrgUsers } from "@/lib/risks/queries";
-import { getIncidentSlaInfo } from "@/lib/sla/queries";
+import { getIncidentSlaInfo, getSLAForIncident } from "@/lib/sla/queries";
 import { OperationalEditableWithAI } from "@/components/operational/ai/operational-editable-with-ai";
 import { RelatedKnowledgeSection } from "@/components/knowledge/related-knowledge-section";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
@@ -73,12 +74,17 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
     notFound();
   }
 
-  const [sla, activity] = await Promise.all([
+  const [sla, incidentSla, activity] = await Promise.all([
     getIncidentSlaInfo(session, {
       client_id: incident.client_id,
       created_at: incident.created_at,
       status: incident.status,
       resolved_at: incident.resolved_at,
+    }),
+    getSLAForIncident(session, {
+      id: incident.id,
+      client_id: incident.client_id,
+      severity: incident.severity,
     }),
     listIncidentActivity(session, incident.id),
   ]);
@@ -199,6 +205,12 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
         ) : null}
 
         <SlaDetailSection sla={sla} />
+
+        {incidentSla.timers.length > 0 ? (
+          <DetailSection title="SLA timers" description="Response and resolution targets for this incident.">
+            <SLATimerList timers={incidentSla.timers} />
+          </DetailSection>
+        ) : null}
 
         <DetailSection
           title="Incident timeline"

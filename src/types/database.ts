@@ -1336,6 +1336,14 @@ export type Database = {
           incident_hours: number | null;
           risk_hours: number | null;
           is_default: boolean;
+          critical_response_minutes: number;
+          critical_resolution_minutes: number;
+          high_response_minutes: number;
+          high_resolution_minutes: number;
+          medium_response_minutes: number;
+          medium_resolution_minutes: number;
+          low_response_minutes: number;
+          low_resolution_minutes: number;
           created_at: string;
           updated_at: string;
         };
@@ -1346,6 +1354,14 @@ export type Database = {
           incident_hours?: number | null;
           risk_hours?: number | null;
           is_default?: boolean;
+          critical_response_minutes?: number;
+          critical_resolution_minutes?: number;
+          high_response_minutes?: number;
+          high_resolution_minutes?: number;
+          medium_response_minutes?: number;
+          medium_resolution_minutes?: number;
+          low_response_minutes?: number;
+          low_resolution_minutes?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -1356,6 +1372,14 @@ export type Database = {
           incident_hours?: number | null;
           risk_hours?: number | null;
           is_default?: boolean;
+          critical_response_minutes?: number;
+          critical_resolution_minutes?: number;
+          high_response_minutes?: number;
+          high_resolution_minutes?: number;
+          medium_response_minutes?: number;
+          medium_resolution_minutes?: number;
+          low_response_minutes?: number;
+          low_resolution_minutes?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -1368,6 +1392,90 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      sla_events: {
+        Row: {
+          id: string;
+          organization_id: string;
+          incident_id: string | null;
+          client_id: string | null;
+          policy_id: string | null;
+          status: string;
+          breached: boolean;
+          started_at: string | null;
+          response_due_at: string | null;
+          resolution_due_at: string | null;
+          responded_at: string | null;
+          resolved_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          incident_id?: string | null;
+          client_id?: string | null;
+          policy_id?: string | null;
+          status?: string;
+          breached?: boolean;
+          started_at?: string | null;
+          response_due_at?: string | null;
+          resolution_due_at?: string | null;
+          responded_at?: string | null;
+          resolved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          incident_id?: string | null;
+          client_id?: string | null;
+          policy_id?: string | null;
+          status?: string;
+          breached?: boolean;
+          started_at?: string | null;
+          response_due_at?: string | null;
+          resolution_due_at?: string | null;
+          responded_at?: string | null;
+          resolved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      sla_activity: {
+        Row: {
+          id: string;
+          organization_id: string;
+          event_type: string;
+          actor_user_id: string | null;
+          incident_id: string | null;
+          message: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          event_type: string;
+          actor_user_id?: string | null;
+          incident_id?: string | null;
+          message?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          event_type?: string;
+          actor_user_id?: string | null;
+          incident_id?: string | null;
+          message?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
       };
       client_financials: {
         Row: {

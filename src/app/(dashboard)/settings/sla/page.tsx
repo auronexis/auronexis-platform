@@ -3,9 +3,12 @@ import Link from "next/link";
 import { AccessDenied } from "@/components/authorization/access-denied";
 import { sessionHasPermission } from "@/lib/authorization/guards";
 import { SlaPolicyList } from "@/components/settings/sla-policy-list";
+import { SLAMetrics } from "@/components/sla/sla-metrics";
+import { SLAComplianceChart } from "@/components/sla/sla-compliance-chart";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { listSlaPolicies } from "@/lib/sla/queries";
+import { getSLAMetrics } from "@/lib/sla/metrics";
 import { canManageSlaPolicies } from "@/lib/team/guards";
 import { requireSession } from "@/lib/auth/session";
 
@@ -35,6 +38,15 @@ export default async function SlaSettingsPage() {
   });
   const policies = policiesResult;
   const canManage = canManageSlaPolicies(session);
+  const slaMetrics = await getSLAMetrics(session).catch(() => ({
+    breachedCount: 0,
+    compliancePercent: 100,
+    avgResponseMinutes: null,
+    avgResolutionMinutes: null,
+    criticalBreaches: 0,
+    openTimers: 0,
+    monthlyTrend: [],
+  }));
 
   return (
     <>
@@ -55,6 +67,11 @@ export default async function SlaSettingsPage() {
           </div>
         }
       />
+
+      <div className="mb-8 space-y-6">
+        <SLAMetrics metrics={slaMetrics} />
+        <SLAComplianceChart points={slaMetrics.monthlyTrend} />
+      </div>
 
       <SlaPolicyList policies={policies} canManage={canManage} />
     </>

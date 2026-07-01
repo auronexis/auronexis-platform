@@ -1,27 +1,12 @@
-import type { ClientSlaAssignment } from "@/lib/sla/types";
-import { formatSlaHours } from "@/lib/sla/calculations";
+import type { PortalSlaSummary } from "@/lib/sla/types";
 import { PortalCard, PortalEmptyState } from "@/components/client-portal/portal-ui";
 
 type PortalSlaCardProps = {
-  assignment: ClientSlaAssignment;
+  summary: PortalSlaSummary;
 };
 
-function assignmentLabel(assignment: ClientSlaAssignment): string {
-  if (assignment.source === "assigned") {
-    return "Dedicated SLA policy assigned to your account";
-  }
-
-  if (assignment.source === "inherited") {
-    return "Organization default SLA policy applies to your account";
-  }
-
-  return "No SLA policy assigned yet.";
-}
-
-export function PortalSlaCard({ assignment }: PortalSlaCardProps) {
-  const policy = assignment.effectivePolicy;
-
-  if (!policy) {
+export function PortalSlaCard({ summary }: PortalSlaCardProps) {
+  if (!summary.policyName) {
     return (
       <PortalEmptyState
         title="No SLA policy assigned yet."
@@ -32,27 +17,27 @@ export function PortalSlaCard({ assignment }: PortalSlaCardProps) {
 
   return (
     <PortalCard>
-      <p className="text-sm font-semibold text-foreground">{assignmentLabel(assignment)}</p>
+      <p className="text-sm font-semibold text-foreground">Service level commitments for your account</p>
       <dl className="mt-5 grid gap-5 sm:grid-cols-2">
         <div>
           <dt className="text-xs font-semibold uppercase tracking-wider text-muted">Policy name</dt>
-          <dd className="mt-1 text-sm text-foreground">{policy.name}</dd>
+          <dd className="mt-1 text-sm text-foreground">{summary.policyName}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase tracking-wider text-muted">Coverage</dt>
-          <dd className="mt-1 text-sm text-foreground">Incidents and operational risks</dd>
+          <dt className="text-xs font-semibold uppercase tracking-wider text-muted">Compliance</dt>
+          <dd className="mt-1 text-sm text-foreground">{summary.compliancePercent}%</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Incident response target
-          </dt>
-          <dd className="mt-1 text-sm text-foreground">{formatSlaHours(policy.incident_hours)}</dd>
+          <dt className="text-xs font-semibold uppercase tracking-wider text-muted">Response target</dt>
+          <dd className="mt-1 text-sm text-foreground">{summary.responseTarget}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Risk response target
-          </dt>
-          <dd className="mt-1 text-sm text-foreground">{formatSlaHours(policy.risk_hours)}</dd>
+          <dt className="text-xs font-semibold uppercase tracking-wider text-muted">Resolution target</dt>
+          <dd className="mt-1 text-sm text-foreground">{summary.resolutionTarget}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wider text-muted">Breaches</dt>
+          <dd className="mt-1 text-sm text-foreground">{summary.breachCount}</dd>
         </div>
       </dl>
       <p className="mt-5 text-sm text-muted">

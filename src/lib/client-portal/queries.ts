@@ -26,14 +26,16 @@ import {
   PORTAL_TIMELINE_EVENT_TYPES,
   PORTAL_USER_SELECT,
 } from "@/lib/client-portal/types";
-import type { ClientSlaAssignment } from "@/lib/sla/types";
+import type { ClientSlaAssignment, PortalSlaSummary } from "@/lib/sla/types";
+import { resolveSeverityTargets, formatSeverityTarget } from "@/lib/sla/policies";
+import { getComplianceRate } from "@/lib/sla/metrics";
 import { listPortalPublishedReportsV2 } from "@/lib/reports-v2/queries";
 import { PORTAL_VISIBLE_REPORT_STATUSES } from "@/lib/reports/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { ClientPortalUser, SlaPolicy } from "@/types/database";
 
 const SLA_POLICY_PORTAL_SELECT =
-  "id, organization_id, name, incident_hours, risk_hours, is_default, created_at, updated_at";
+  "id, organization_id, name, incident_hours, risk_hours, is_default, critical_response_minutes, critical_resolution_minutes, high_response_minutes, high_resolution_minutes, medium_response_minutes, medium_resolution_minutes, low_response_minutes, low_resolution_minutes, created_at, updated_at";
 
 /** Portal users linked to a client — agency Owner/Admin only (RLS). */
 export async function listPortalUsersForClient(
@@ -430,6 +432,52 @@ export async function getPortalSlaAssignment(
     effectivePolicy: null,
     source: "none",
   };
+}
+
+/** Portal-safe SLA metrics without internal timers. */
+export async function getPortalSlaSummary(
+  session: ClientPortalSessionContext,
+): Promise<PortalSlaSummary> {
+  try {
+    const assignment = await getPortalSlaAssignment(session);
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("sla_events")
+      .select("breached, responded_at, resolved_at, started_at, response_due_at, resolution_due_at, status, created_at")
+      .eq("organization_id", session.organization.id)
+      .eq("client_id", session.client.id);
+
+    const rows = (data ?? []) as Array<{
+      breached: boolean;
+      responded_at: string | null;
+      resolved_at: string | null;
+      started_at: string | null;
+      response_due_at: string | null;
+      resolution_due_at: string | null;
+      status: string;
+      created_at: string;
+    }>;
+
+    const policy = assignment.effectivePolicy;
+    const mediumTargets = resolveSeverityTargets(policy, "medium");
+
+    return {
+      policyName: policy?.name ?? null,
+      compliancePercent: getComplianceRate(rows),
+      responseTarget: formatSeverityTarget(mediumTargets.responseMinutes),
+      resolutionTarget: formatSeverityTarget(mediumTargets.resolutionMinutes),
+      breachCount: rows.filter((row) => row.breached).length,
+    };
+  } catch (error) {
+    console.warn("[portal] getPortalSlaSummary failed:", error);
+    return {
+      policyName: null,
+      compliancePercent: 100,
+      responseTarget: "—",
+      resolutionTarget: "—",
+      breachCount: 0,
+    };
+  }
 }
 
 /** Client-facing activity timeline for the portal user. */

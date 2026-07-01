@@ -50,6 +50,18 @@ const EMPTY_SLA_METRICS: SlaDashboardMetrics = {
 
   breachedItems: [],
 
+  compliancePercent: 100,
+
+  avgResponseMinutes: null,
+
+  avgResolutionMinutes: null,
+
+  criticalBreaches: 0,
+
+  openTimers: 0,
+
+  monthlyTrend: [],
+
 };
 
 

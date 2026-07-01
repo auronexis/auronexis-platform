@@ -8,16 +8,20 @@ import {
 import type {
   ClientSlaAssignment,
   EntitySlaInfo,
+  IncidentSlaView,
   SlaBreachAlertItem,
   SlaDashboardMetrics,
+  SlaEventView,
 } from "@/lib/sla/types";
+import { getSLAMetrics } from "@/lib/sla/metrics";
+import { buildSlaTimers } from "@/lib/sla/timers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
-import type { ClientRiskStatus, IncidentStatus, RiskStatus, SlaPolicy } from "@/types/database";
+import type { ClientRiskStatus, IncidentSeverity, IncidentStatus, RiskStatus, SlaPolicy } from "@/types/database";
 
 const SLA_POLICY_SELECT =
-  "id, organization_id, name, incident_hours, risk_hours, is_default, created_at, updated_at";
+  "id, organization_id, name, incident_hours, risk_hours, is_default, critical_response_minutes, critical_resolution_minutes, high_response_minutes, high_resolution_minutes, medium_response_minutes, medium_resolution_minutes, low_response_minutes, low_resolution_minutes, created_at, updated_at";
 
 type ClientPolicyRow = {
   id: string;
@@ -535,13 +539,20 @@ export async function getSlaDashboardMetrics(session: SessionContext): Promise<S
 
   const breachedItems = alerts.filter((item) => item.status === "breached");
   const upcomingBreaches = alerts.filter((item) => item.status !== "breached").slice(0, 5);
+  const v2Metrics = await getSLAMetrics(session).catch(() => null);
 
   return {
-    breachedCount,
+    breachedCount: v2Metrics?.breachedCount ?? breachedCount,
     warningCount,
     onTrackCount,
     upcomingBreaches,
     breachedItems: breachedItems.slice(0, 5),
+    compliancePercent: v2Metrics?.compliancePercent ?? 100,
+    avgResponseMinutes: v2Metrics?.avgResponseMinutes ?? null,
+    avgResolutionMinutes: v2Metrics?.avgResolutionMinutes ?? null,
+    criticalBreaches: v2Metrics?.criticalBreaches ?? breachedCount,
+    openTimers: v2Metrics?.openTimers ?? onTrackCount + warningCount,
+    monthlyTrend: v2Metrics?.monthlyTrend ?? [],
   };
 }
 
@@ -588,4 +599,86 @@ export async function getRiskSlaInfo(
     assignedPolicyId: context?.assignedPolicyId ?? null,
     resolvedAt: risk.resolved_at ?? null,
   });
+}
+
+export const getSLAPolicies = listSlaPolicies;
+
+const SLA_EVENT_SELECT = `
+  id,
+  organization_id,
+  incident_id,
+  client_id,
+  policy_id,
+  status,
+  breached,
+  started_at,
+  response_due_at,
+  resolution_due_at,
+  responded_at,
+  resolved_at,
+  created_at,
+  updated_at
+`;
+
+export async function getSlaEventByIncidentId(
+  organizationId: string,
+  incidentId: string,
+): Promise<SlaEventView | null> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("sla_events")
+      .select(SLA_EVENT_SELECT)
+      .eq("organization_id", organizationId)
+      .eq("incident_id", incidentId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("[sla] getSlaEventByIncidentId failed:", error.message);
+      return null;
+    }
+
+    return (data as SlaEventView | null) ?? null;
+  } catch (error) {
+    console.warn("[sla] getSlaEventByIncidentId failed:", error);
+    return null;
+  }
+}
+
+/** V2 SLA event + timers for an incident detail view. */
+export async function getSLAForIncident(
+  session: SessionContext,
+  incident: {
+    id: string;
+    client_id: string;
+    severity: IncidentSeverity;
+  },
+): Promise<IncidentSlaView> {
+  try {
+    const event = await getSlaEventByIncidentId(session.organization.id, incident.id);
+    if (!event) {
+      const contextMap = await getClientSlaContextMap(session.organization.id, [incident.client_id]);
+      const context = contextMap.get(incident.client_id);
+      return {
+        event: null,
+        timers: [],
+        policyName: context?.policy?.name ?? null,
+      };
+    }
+
+    let policyName: string | null = null;
+    if (event.policy_id) {
+      const policy = await getSlaPolicyById(session, event.policy_id);
+      policyName = policy?.name ?? null;
+    }
+
+    return {
+      event,
+      timers: buildSlaTimers(event),
+      policyName,
+    };
+  } catch (error) {
+    console.warn("[sla] getSLAForIncident failed:", error);
+    return { event: null, timers: [], policyName: null };
+  }
 }

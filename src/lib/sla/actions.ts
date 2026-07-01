@@ -8,9 +8,16 @@ import { requireSession } from "@/lib/auth/session";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { assertCanUseFeature } from "@/lib/plans/guards";
 import { canManageSlaPolicies } from "@/lib/team/guards";
-import { getSlaPolicyById } from "@/lib/sla/queries";
+import { recordSLAActivity } from "@/lib/sla/activity";
+import {
+  getDefaultSlaPolicy,
+  getSlaEventByIncidentId,
+  getSlaPolicyById,
+} from "@/lib/sla/queries";
+import { calculateSLA, deriveEventBreached } from "@/lib/sla/timers";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/types/database";
+import type { Database, IncidentSeverity } from "@/types/database";
 
 type SlaPolicyInsert = Database["public"]["Tables"]["sla_policies"]["Insert"];
 type SlaPolicyUpdate = Database["public"]["Tables"]["sla_policies"]["Update"];
@@ -341,4 +348,208 @@ export async function assignClientSlaPolicyAction(
   revalidatePath("/dashboard");
 
   return { success: "Client SLA policy saved." };
+}
+
+type AssignSlaToIncidentInput = {
+  organizationId: string;
+  incidentId: string;
+  clientId: string;
+  severity: IncidentSeverity;
+  actorUserId: string | null;
+  startedAt: string;
+};
+
+/** Create SLA event for a new incident — idempotent, never throws. */
+export async function assignSLAToIncident(input: AssignSlaToIncidentInput): Promise<void> {
+  try {
+    const existing = await getSlaEventByIncidentId(input.organizationId, input.incidentId);
+    if (existing) {
+      return;
+    }
+
+    const admin = createAdminClient();
+    const { data: clientRow } = await admin
+      .from("clients")
+      .select("sla_policy_id")
+      .eq("organization_id", input.organizationId)
+      .eq("id", input.clientId)
+      .maybeSingle();
+
+    const clientPolicyId = (clientRow as { sla_policy_id: string | null } | null)?.sla_policy_id ?? null;
+    const defaultPolicy = await getDefaultSlaPolicy(input.organizationId);
+    let policy = defaultPolicy;
+
+    if (clientPolicyId) {
+      const { data: assignedPolicy } = await admin
+        .from("sla_policies")
+        .select("*")
+        .eq("organization_id", input.organizationId)
+        .eq("id", clientPolicyId)
+        .maybeSingle();
+      policy = (assignedPolicy as typeof defaultPolicy) ?? defaultPolicy;
+    }
+
+    const calculated = calculateSLA({
+      policy,
+      severity: input.severity,
+      startedAt: input.startedAt,
+    });
+
+    const { data, error } = await admin
+      .from("sla_events")
+      .insert({
+        organization_id: input.organizationId,
+        incident_id: input.incidentId,
+        client_id: input.clientId,
+        policy_id: policy?.id ?? null,
+        status: "active",
+        breached: false,
+        started_at: calculated.startedAt.toISOString(),
+        response_due_at: calculated.responseDueAt.toISOString(),
+        resolution_due_at: calculated.resolutionDueAt.toISOString(),
+      } as never)
+      .select("id")
+      .single();
+
+    if (error) {
+      console.warn("[sla] assignSLAToIncident insert failed:", error.message);
+      return;
+    }
+
+    const eventId = (data as { id: string }).id;
+    await recordSLAActivity({
+      organizationId: input.organizationId,
+      eventType: "sla.created",
+      actorUserId: input.actorUserId,
+      incidentId: input.incidentId,
+      message: "SLA event created for incident",
+      metadata: { eventId, policyId: policy?.id, severity: input.severity },
+    });
+    await recordSLAActivity({
+      organizationId: input.organizationId,
+      eventType: "sla.started",
+      actorUserId: input.actorUserId,
+      incidentId: input.incidentId,
+      message: "SLA timer started",
+      metadata: { eventId },
+    });
+
+    if (policy) {
+      await recordSLAActivity({
+        organizationId: input.organizationId,
+        eventType: "sla.policy_assigned",
+        actorUserId: input.actorUserId,
+        incidentId: input.incidentId,
+        message: `SLA policy assigned: ${policy.name}`,
+        metadata: { eventId, policyId: policy.id, policyName: policy.name },
+      });
+    }
+  } catch (error) {
+    console.warn("[sla] assignSLAToIncident failed:", error);
+  }
+}
+
+/** Mark first response on an incident SLA event. */
+export async function markSlaRespondedForIncident(input: {
+  organizationId: string;
+  incidentId: string;
+  actorUserId: string | null;
+  respondedAt?: string;
+}): Promise<void> {
+  try {
+    const event = await getSlaEventByIncidentId(input.organizationId, input.incidentId);
+    if (!event || event.responded_at) {
+      return;
+    }
+
+    const respondedAt = input.respondedAt ?? new Date().toISOString();
+    const breached = deriveEventBreached({
+      ...event,
+      responded_at: respondedAt,
+    });
+
+    const admin = createAdminClient();
+    await admin
+      .from("sla_events")
+      .update({
+        responded_at: respondedAt,
+        status: "responded",
+        breached,
+      } as never)
+      .eq("id", event.id)
+      .eq("organization_id", input.organizationId);
+
+    await recordSLAActivity({
+      organizationId: input.organizationId,
+      eventType: breached ? "sla.breached" : "sla.responded",
+      actorUserId: input.actorUserId,
+      incidentId: input.incidentId,
+      message: breached ? "SLA response target breached" : "SLA response recorded",
+      metadata: { eventId: event.id, respondedAt },
+    });
+  } catch (error) {
+    console.warn("[sla] markSlaRespondedForIncident failed:", error);
+  }
+}
+
+/** Finalize SLA when an incident is resolved. */
+export async function completeSlaForIncident(input: {
+  organizationId: string;
+  incidentId: string;
+  actorUserId: string | null;
+  resolvedAt?: string;
+}): Promise<void> {
+  try {
+    const event = await getSlaEventByIncidentId(input.organizationId, input.incidentId);
+    if (!event || event.resolved_at) {
+      return;
+    }
+
+    const resolvedAt = input.resolvedAt ?? new Date().toISOString();
+    const breached = deriveEventBreached({
+      ...event,
+      resolved_at: resolvedAt,
+    });
+
+    const admin = createAdminClient();
+    await admin
+      .from("sla_events")
+      .update({
+        resolved_at: resolvedAt,
+        status: "completed",
+        breached,
+      } as never)
+      .eq("id", event.id)
+      .eq("organization_id", input.organizationId);
+
+    await recordSLAActivity({
+      organizationId: input.organizationId,
+      eventType: "sla.resolved",
+      actorUserId: input.actorUserId,
+      incidentId: input.incidentId,
+      message: "SLA resolution recorded",
+      metadata: { eventId: event.id, resolvedAt, breached },
+    });
+    await recordSLAActivity({
+      organizationId: input.organizationId,
+      eventType: "sla.completed",
+      actorUserId: input.actorUserId,
+      incidentId: input.incidentId,
+      message: breached ? "SLA completed with breach" : "SLA completed within targets",
+      metadata: { eventId: event.id, breached },
+    });
+
+    if (breached) {
+      await recordSLAActivity({
+        organizationId: input.organizationId,
+        eventType: "sla.breached",
+        actorUserId: input.actorUserId,
+        incidentId: input.incidentId,
+        message: "SLA resolution target breached",
+        metadata: { eventId: event.id },
+      });
+    }
+  } catch (error) {
+    console.warn("[sla] completeSlaForIncident failed:", error);
+  }
 }

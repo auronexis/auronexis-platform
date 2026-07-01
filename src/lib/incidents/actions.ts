@@ -6,6 +6,11 @@ import { z } from "zod";
 import { recordIncidentActivity } from "@/lib/incidents/activity";
 import { dispatchAutomation } from "@/lib/automation";
 import { recordSlaResolvedIfNeeded } from "@/lib/sla/evaluations";
+import {
+  assignSLAToIncident,
+  completeSlaForIncident,
+  markSlaRespondedForIncident,
+} from "@/lib/sla/actions";
 import { requireSession } from "@/lib/auth/session";
 import { assertCanUseFeature, requireFeature } from "@/lib/plans/guards";
 import {
@@ -269,6 +274,23 @@ export async function createIncidentAction(
     },
   });
 
+  await assignSLAToIncident({
+    organizationId: session.organization.id,
+    incidentId: created.id,
+    clientId: parsed.data.clientId,
+    severity: parsed.data.severity,
+    actorUserId: session.user.id,
+    startedAt: insertPayload.occurred_at ?? new Date().toISOString(),
+  });
+
+  if (parsed.data.status === "investigating") {
+    await markSlaRespondedForIncident({
+      organizationId: session.organization.id,
+      incidentId: created.id,
+      actorUserId: session.user.id,
+    });
+  }
+
   await dispatchAutomation({
     trigger: "incident_created",
     organizationId: session.organization.id,
@@ -448,6 +470,34 @@ export async function updateIncidentAction(
     });
   }
 
+  if (
+    parsed.data.status === "investigating" &&
+    existing.status !== "investigating"
+  ) {
+    await markSlaRespondedForIncident({
+      organizationId: session.organization.id,
+      incidentId,
+      actorUserId: session.user.id,
+    });
+  }
+
+  if (parsed.data.status === "resolved" && existing.status !== "resolved") {
+    await completeSlaForIncident({
+      organizationId: session.organization.id,
+      incidentId,
+      actorUserId: session.user.id,
+      resolvedAt: updatePayload.resolved_at ?? new Date().toISOString(),
+    });
+    await recordSlaResolvedIfNeeded({
+      organizationId: session.organization.id,
+      entityType: "incident",
+      entityId: incidentId,
+      clientId: existing.client_id,
+      title: parsed.data.title,
+      actorUserId: session.user.id,
+    });
+  }
+
   await dispatchAutomation({
     trigger: "incident_updated",
     organizationId: session.organization.id,
@@ -526,6 +576,13 @@ export async function resolveIncidentAction(
     clientId: existing.client_id,
     title: existing.title,
     actorUserId: session.user.id,
+  });
+
+  await completeSlaForIncident({
+    organizationId: session.organization.id,
+    incidentId,
+    actorUserId: session.user.id,
+    resolvedAt: updatePayload.resolved_at ?? new Date().toISOString(),
   });
 
   await dispatchAutomation({

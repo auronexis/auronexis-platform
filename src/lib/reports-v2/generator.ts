@@ -16,6 +16,8 @@ import {
 } from "@/lib/reports-v2/summary";
 import { createClient } from "@/lib/supabase/server";
 import { getClientRiskMetricsForReport } from "@/lib/risks/queries";
+import { getClientSLA, getTopBreachedClients } from "@/lib/sla/summary";
+import { getSLAMetrics } from "@/lib/sla/metrics";
 
 type GenerateReportInput = {
   session: SessionContext;
@@ -135,15 +137,34 @@ export async function buildSLASummary(
   session: SessionContext,
   clientId: string,
 ): Promise<SLASnapshot> {
-  const counts = await countOpenItems(session.organization.id, clientId);
-  const score = deriveSlaScore(counts.slaViolations);
+  try {
+    const [clientSla, orgMetrics, topBreachedClients] = await Promise.all([
+      getClientSLA(session, clientId),
+      getSLAMetrics(session),
+      getTopBreachedClients(session, 5),
+    ]);
 
-  return {
-    score,
-    violations: counts.slaViolations,
-    onTrack: counts.slaViolations === 0,
-    policyName: null,
-  };
+    return {
+      score: clientSla.compliancePercent,
+      violations: clientSla.breachCount,
+      onTrack: clientSla.breachCount === 0,
+      policyName: clientSla.policyName,
+      avgResponseMinutes: clientSla.avgResponseMinutes,
+      avgResolutionMinutes: clientSla.avgResolutionMinutes,
+      monthlyTrend: orgMetrics.monthlyTrend,
+      topBreachedClients,
+    };
+  } catch {
+    const counts = await countOpenItems(session.organization.id, clientId);
+    const score = deriveSlaScore(counts.slaViolations);
+
+    return {
+      score,
+      violations: counts.slaViolations,
+      onTrack: counts.slaViolations === 0,
+      policyName: null,
+    };
+  }
 }
 
 export async function buildKPISection(
