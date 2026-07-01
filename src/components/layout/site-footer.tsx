@@ -240,7 +240,8 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
         <BrandLogo
           branding={platformBranding}
           layout="horizontal"
-          className="mb-4 h-9 w-auto"
+          variant="light"
+          className="mb-4 h-7 w-auto max-w-[200px] object-contain opacity-100"
         />
 
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs">

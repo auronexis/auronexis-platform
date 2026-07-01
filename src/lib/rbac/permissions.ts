@@ -168,6 +168,13 @@ const MODULE_ACTION_TO_PERMISSION: Partial<
   activity: {
     read: "activity.read",
   },
+  risks: {
+    read: "risks.read",
+    create: "risks.write",
+    update: "risks.write",
+    delete: "risks.write",
+    export: "risks.read",
+  },
 };
 
 /** Returns true when `role` meets or exceeds `minimumRole` in the hierarchy. */
