@@ -1,5 +1,5 @@
 import type { RiskStatus } from "@/lib/risks/types";
-import { RISK_STATUS_LABELS } from "@/lib/risks/types";
+import { getRiskStatusLabel } from "@/lib/risks/types";
 import { cn } from "@/lib/utils/cn";
 
 const statusStyles: Record<RiskStatus, string> = {
@@ -24,7 +24,7 @@ export function RiskStatusBadge({ status, className }: RiskStatusBadgeProps) {
         className,
       )}
     >
-      {RISK_STATUS_LABELS[status]}
+      {getRiskStatusLabel(status)}
     </span>
   );
 }

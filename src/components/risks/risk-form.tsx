@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { RiskActionState } from "@/lib/risks/actions";
 import {
+  RISK_CATEGORIES,
   RISK_SEVERITIES,
   RISK_SEVERITY_LABELS,
   RISK_STATUS_LABELS,
@@ -120,6 +121,14 @@ export function RiskForm({
               onChange={(event) => syncWorkspaceMeta({ severity: event.target.value })}
             />
             <Select
+              id="category"
+              name="category"
+              label="Category"
+              defaultValue={risk?.category ?? ""}
+              placeholder="Select category"
+              options={RISK_CATEGORIES.map((category) => ({ value: category, label: category }))}
+            />
+            <Select
               id="status"
               name="status"
               label="Status"
@@ -129,6 +138,22 @@ export function RiskForm({
                 label: RISK_STATUS_LABELS[status],
               }))}
               onChange={(event) => syncWorkspaceMeta({ status: event.target.value })}
+            />
+            <Input
+              name="likelihood"
+              type="number"
+              min={1}
+              max={5}
+              label="Likelihood (1–5)"
+              defaultValue={String(risk?.likelihood ?? 3)}
+            />
+            <Input
+              name="impactScore"
+              type="number"
+              min={1}
+              max={5}
+              label="Impact score (1–5)"
+              defaultValue={String(risk?.impact_score ?? 3)}
             />
             <Input
               name="dueAt"
@@ -205,6 +230,14 @@ export function RiskForm({
                 rows={3}
                 defaultValue={risk?.recommendation ?? ""}
                 placeholder="Recommended mitigation steps."
+              />
+              <Textarea
+                id="mitigationPlan"
+                name="mitigationPlan"
+                label="Mitigation plan"
+                rows={3}
+                defaultValue={risk?.mitigation_plan ?? ""}
+                placeholder="Document the mitigation approach and owners."
               />
             </>
           )}

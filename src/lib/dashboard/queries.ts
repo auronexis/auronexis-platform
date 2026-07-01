@@ -18,7 +18,7 @@ import { canViewRevenue } from "@/lib/rbac/permissions";
 
 import type { CriticalRiskAlert } from "@/lib/risks/types";
 
-import { getRiskDashboardMetrics, getRiskSummary } from "@/lib/risks/queries";
+import { getRiskDashboardMetrics, getRiskHeatmap, getRiskSummary } from "@/lib/risks/queries";
 
 import { getEscalationDashboardMetrics } from "@/lib/escalation/queries";
 
@@ -296,7 +296,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
 
 
-  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult] =
+  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult, riskHeatmap] =
 
     await Promise.all([
 
@@ -319,6 +319,8 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
       getReportsOverviewMetrics(session),
 
       getRiskSummary(session),
+
+      risksEnabled ? getRiskHeatmap(session) : Promise.resolve({ cells: [], maxCount: 0 }),
 
     ]);
 
@@ -346,7 +348,12 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
       mitigatedCount: 0,
       resolvedCount: 0,
       dismissedCount: 0,
+      highScoreCount: 0,
+      overdueCount: 0,
+      mitigationRate: 0,
+      averageRiskScore: null,
     },
+    riskHeatmap,
     canViewFinancial,
     draftReportsCount,
     upcomingSchedules,

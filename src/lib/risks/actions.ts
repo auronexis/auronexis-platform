@@ -3,13 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { recordActivityEvent } from "@/lib/activity/record";
+import { recordRiskActivity } from "@/lib/risks/activity";
 import { assertPermissionSafe, sessionHasPermission } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { getRiskById } from "@/lib/risks/queries";
+import {
+  calculateRiskScore,
+  clampScoreDimension,
+  severityFromRiskScore,
+} from "@/lib/risks/scoring";
 import type { Database } from "@/types/database";
-import type { ActivityEventType } from "@/lib/activity/types";
+import type { RiskActivityEventType } from "@/lib/risks/activity";
 
 type ClientRiskInsert = Database["public"]["Tables"]["client_risks"]["Insert"];
 type ClientRiskUpdate = Database["public"]["Tables"]["client_risks"]["Update"];
@@ -26,6 +31,8 @@ const optionalText = z
   .nullable()
   .optional();
 
+const scoreDimension = z.coerce.number().int().min(1).max(5);
+
 const riskFieldsSchema = z.object({
   title: z.string().trim().min(2, "Risk title is required."),
   clientId: z.string().uuid("Select a client."),
@@ -38,11 +45,14 @@ const riskFieldsSchema = z.object({
   category: optionalText,
   impact: optionalText,
   recommendation: optionalText,
+  mitigationPlan: optionalText,
   ownerUserId: z.string().uuid().optional().nullable(),
   dueAt: z
     .string()
     .optional()
     .transform((value) => (!value || value.trim().length === 0 ? null : value)),
+  likelihood: scoreDimension.optional(),
+  impactScore: scoreDimension.optional(),
 });
 
 function parseRiskForm(formData: FormData) {
@@ -56,8 +66,11 @@ function parseRiskForm(formData: FormData) {
     category: formData.get("category"),
     impact: formData.get("impact"),
     recommendation: formData.get("recommendation"),
+    mitigationPlan: formData.get("mitigationPlan"),
     ownerUserId: formData.get("ownerUserId") || undefined,
     dueAt: formData.get("dueAt"),
+    likelihood: formData.get("likelihood") || undefined,
+    impactScore: formData.get("impactScore") || undefined,
   });
 }
 
@@ -84,27 +97,12 @@ async function verifyUserInOrg(organizationId: string, userId: string): Promise<
   return Boolean(data);
 }
 
-async function recordRiskActivity(
-  organizationId: string,
-  actorUserId: string,
-  riskId: string,
-  eventType: ActivityEventType,
-  title: string,
-  metadata: Record<string, unknown> = {},
-): Promise<void> {
-  try {
-    await recordActivityEvent({
-      organizationId,
-      actorUserId,
-      entityType: "risk",
-      entityId: riskId,
-      eventType,
-      action: eventType.split(".")[1] ?? "updated",
-      title,
-      metadata,
-    });
-  } catch (error) {
-    console.warn("[risks] activity recording failed:", error);
+function revalidateRiskPaths(clientId: string, riskId?: string) {
+  revalidatePath("/risks");
+  revalidatePath("/dashboard");
+  revalidatePath(`/clients/${clientId}`);
+  if (riskId) {
+    revalidatePath(`/risks/${riskId}`);
   }
 }
 
@@ -124,6 +122,9 @@ export async function createRiskAction(
   }
 
   const ownerUserId = parsed.data.ownerUserId ?? session.user.id;
+  const likelihood = clampScoreDimension(parsed.data.likelihood ?? 3);
+  const impactScore = clampScoreDimension(parsed.data.impactScore ?? 3);
+  const riskScore = calculateRiskScore(likelihood, impactScore);
 
   if (!(await verifyClientInOrg(session.organization.id, parsed.data.clientId))) {
     return { error: "Selected client is not valid." };
@@ -139,14 +140,18 @@ export async function createRiskAction(
     client_id: parsed.data.clientId,
     title: parsed.data.title,
     description: parsed.data.description ?? null,
-    severity: parsed.data.severity,
+    severity: parsed.data.severity ?? severityFromRiskScore(riskScore),
     status: "open",
     source: parsed.data.source ?? "manual",
     category: parsed.data.category ?? null,
     impact: parsed.data.impact ?? null,
     recommendation: parsed.data.recommendation ?? null,
+    mitigation_plan: parsed.data.mitigationPlan ?? null,
     owner_user_id: ownerUserId,
     due_at: parsed.data.dueAt,
+    likelihood,
+    impact_score: impactScore,
+    risk_score: riskScore,
   };
 
   const { data, error } = await supabase
@@ -160,17 +165,16 @@ export async function createRiskAction(
   }
 
   const riskId = String((data as { id: string }).id);
-  await recordRiskActivity(
-    session.organization.id,
-    session.user.id,
+  await recordRiskActivity({
+    organizationId: session.organization.id,
     riskId,
-    "risk.created",
-    `Risk created: ${parsed.data.title}`,
-  );
+    actorUserId: session.user.id,
+    eventType: "risk.created",
+    message: `Risk created: ${parsed.data.title}`,
+    metadata: { riskScore, likelihood, impactScore },
+  });
 
-  revalidatePath("/risks");
-  revalidatePath(`/clients/${parsed.data.clientId}`);
-  revalidatePath("/dashboard");
+  revalidateRiskPaths(parsed.data.clientId, riskId);
   redirect(`/risks/${riskId}`);
 }
 
@@ -196,6 +200,9 @@ export async function updateRiskAction(
   }
 
   const ownerUserId = parsed.data.ownerUserId ?? existing.owner_user_id ?? session.user.id;
+  const likelihood = clampScoreDimension(parsed.data.likelihood ?? existing.likelihood ?? 3);
+  const impactScore = clampScoreDimension(parsed.data.impactScore ?? existing.impact_score ?? 3);
+  const riskScore = calculateRiskScore(likelihood, impactScore);
 
   if (!(await verifyClientInOrg(session.organization.id, parsed.data.clientId))) {
     return { error: "Selected client is not valid." };
@@ -210,12 +217,16 @@ export async function updateRiskAction(
     client_id: parsed.data.clientId,
     title: parsed.data.title,
     description: parsed.data.description ?? null,
-    severity: parsed.data.severity,
+    severity: parsed.data.severity ?? severityFromRiskScore(riskScore),
     category: parsed.data.category ?? null,
     impact: parsed.data.impact ?? null,
     recommendation: parsed.data.recommendation ?? null,
+    mitigation_plan: parsed.data.mitigationPlan ?? existing.mitigation_plan ?? null,
     owner_user_id: ownerUserId,
     due_at: parsed.data.dueAt,
+    likelihood,
+    impact_score: impactScore,
+    risk_score: riskScore,
   };
 
   if (parsed.data.status) {
@@ -232,25 +243,185 @@ export async function updateRiskAction(
     return { error: error.message };
   }
 
-  await recordRiskActivity(
-    session.organization.id,
-    session.user.id,
-    riskId,
-    "risk.updated",
-    `Risk updated: ${parsed.data.title}`,
-  );
+  const scoreChanged =
+    likelihood !== (existing.likelihood ?? 3) ||
+    impactScore !== (existing.impact_score ?? 3);
 
-  revalidatePath("/risks");
-  revalidatePath(`/risks/${riskId}`);
-  revalidatePath(`/clients/${parsed.data.clientId}`);
-  revalidatePath("/dashboard");
+  if (scoreChanged) {
+    await recordRiskActivity({
+      organizationId: session.organization.id,
+      riskId,
+      actorUserId: session.user.id,
+      eventType: "risk.score_changed",
+      message: `Risk score updated to ${riskScore} for ${parsed.data.title}`,
+      metadata: {
+        previousScore: existing.risk_score,
+        riskScore,
+        likelihood,
+        impactScore,
+      },
+    });
+  }
+
+  if (ownerUserId !== existing.owner_user_id) {
+    await recordRiskActivity({
+      organizationId: session.organization.id,
+      riskId,
+      actorUserId: session.user.id,
+      eventType: "risk.assigned",
+      message: `Risk owner updated for ${parsed.data.title}`,
+      metadata: { ownerUserId },
+    });
+  }
+
+  await recordRiskActivity({
+    organizationId: session.organization.id,
+    riskId,
+    actorUserId: session.user.id,
+    eventType: "risk.updated",
+    message: `Risk updated: ${parsed.data.title}`,
+  });
+
+  revalidateRiskPaths(parsed.data.clientId, riskId);
   return { success: "Risk updated." };
+}
+
+export async function updateRiskScoreAction(
+  riskId: string,
+  likelihood: number,
+  impactScore: number,
+): Promise<RiskActionState> {
+  const session = await requireSession();
+  const denied = assertPermissionSafe(session.role, "risks.write");
+  if (denied) {
+    return denied;
+  }
+
+  const existing = await getRiskById(session, riskId);
+  if (!existing) {
+    return { error: "Risk not found." };
+  }
+
+  const nextLikelihood = clampScoreDimension(likelihood);
+  const nextImpact = clampScoreDimension(impactScore);
+  const riskScore = calculateRiskScore(nextLikelihood, nextImpact);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("client_risks")
+    .update({
+      likelihood: nextLikelihood,
+      impact_score: nextImpact,
+      risk_score: riskScore,
+      severity: severityFromRiskScore(riskScore),
+    } as never)
+    .eq("id", riskId)
+    .eq("organization_id", session.organization.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  await recordRiskActivity({
+    organizationId: session.organization.id,
+    riskId,
+    actorUserId: session.user.id,
+    eventType: "risk.score_changed",
+    message: `Risk score set to ${riskScore} for ${existing.title}`,
+    metadata: {
+      previousScore: existing.risk_score,
+      riskScore,
+      likelihood: nextLikelihood,
+      impactScore: nextImpact,
+    },
+  });
+
+  revalidateRiskPaths(existing.client_id, riskId);
+  return { success: "Risk score updated." };
+}
+
+export async function assignRiskOwnerAction(
+  riskId: string,
+  ownerUserId: string,
+): Promise<RiskActionState> {
+  const session = await requireSession();
+  const denied = assertPermissionSafe(session.role, "risks.write");
+  if (denied) {
+    return denied;
+  }
+
+  const existing = await getRiskById(session, riskId);
+  if (!existing) {
+    return { error: "Risk not found." };
+  }
+
+  if (!(await verifyUserInOrg(session.organization.id, ownerUserId))) {
+    return { error: "Selected owner is not valid." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("client_risks")
+    .update({ owner_user_id: ownerUserId } as never)
+    .eq("id", riskId)
+    .eq("organization_id", session.organization.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  await recordRiskActivity({
+    organizationId: session.organization.id,
+    riskId,
+    actorUserId: session.user.id,
+    eventType: "risk.assigned",
+    message: `Risk assigned for ${existing.title}`,
+    metadata: { ownerUserId },
+  });
+
+  revalidateRiskPaths(existing.client_id, riskId);
+  return { success: "Risk owner updated." };
+}
+
+export async function acceptRiskAction(riskId: string): Promise<RiskActionState> {
+  const session = await requireSession();
+  const denied = assertPermissionSafe(session.role, "risks.write");
+  if (denied) {
+    return denied;
+  }
+
+  const existing = await getRiskById(session, riskId);
+  if (!existing) {
+    return { error: "Risk not found." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("client_risks")
+    .update({ accepted_at: new Date().toISOString() } as never)
+    .eq("id", riskId)
+    .eq("organization_id", session.organization.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  await recordRiskActivity({
+    organizationId: session.organization.id,
+    riskId,
+    actorUserId: session.user.id,
+    eventType: "risk.accepted",
+    message: `Risk accepted: ${existing.title}`,
+  });
+
+  revalidateRiskPaths(existing.client_id, riskId);
+  return { success: "Risk accepted." };
 }
 
 async function transitionRisk(
   riskId: string,
   status: ClientRiskUpdate["status"],
-  eventType: ActivityEventType,
+  eventType: RiskActivityEventType,
   actionLabel: string,
 ): Promise<RiskActionState> {
   const session = await requireSession();
@@ -278,27 +449,25 @@ async function transitionRisk(
     return { error: error.message };
   }
 
-  await recordRiskActivity(
-    session.organization.id,
-    session.user.id,
+  await recordRiskActivity({
+    organizationId: session.organization.id,
     riskId,
+    actorUserId: session.user.id,
     eventType,
-    `Risk ${actionLabel}: ${existing.title}`,
-  );
+    message: `Risk ${actionLabel}: ${existing.title}`,
+    metadata: { previousStatus: existing.status, status },
+  });
 
-  revalidatePath("/risks");
-  revalidatePath(`/risks/${riskId}`);
-  revalidatePath(`/clients/${existing.client_id}`);
-  revalidatePath("/dashboard");
+  revalidateRiskPaths(existing.client_id, riskId);
   return { success: `Risk ${actionLabel}.` };
 }
 
 export async function acknowledgeRiskAction(riskId: string): Promise<RiskActionState> {
-  return transitionRisk(riskId, "acknowledged", "risk.acknowledged", "acknowledged");
+  return transitionRisk(riskId, "acknowledged", "risk.status_changed", "acknowledged");
 }
 
 export async function mitigateRiskAction(riskId: string): Promise<RiskActionState> {
-  return transitionRisk(riskId, "mitigated", "risk.mitigated", "mitigated");
+  return transitionRisk(riskId, "mitigated", "risk.status_changed", "mitigated");
 }
 
 export async function resolveRiskAction(riskId: string): Promise<RiskActionState> {
@@ -340,15 +509,14 @@ export async function deleteRiskAction(riskId: string): Promise<RiskActionState>
     return { error: error.message };
   }
 
-  await recordRiskActivity(
-    session.organization.id,
-    session.user.id,
+  await recordRiskActivity({
+    organizationId: session.organization.id,
     riskId,
-    "risk.deleted",
-    `Risk deleted: ${existing.title}`,
-  );
+    actorUserId: session.user.id,
+    eventType: "risk.deleted",
+    message: `Risk deleted: ${existing.title}`,
+  });
 
-  revalidatePath("/risks");
-  revalidatePath("/dashboard");
+  revalidateRiskPaths(existing.client_id);
   redirect("/risks");
 }

@@ -34,6 +34,10 @@ export type ActivityEventType =
   | "portal.viewed"
   | "risk.created"
   | "risk.updated"
+  | "risk.assigned"
+  | "risk.score_changed"
+  | "risk.status_changed"
+  | "risk.accepted"
   | "risk.acknowledged"
   | "risk.mitigated"
   | "risk.resolved"
@@ -89,6 +93,10 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "portal.viewed": "Portal viewed",
   "risk.created": "Risk created",
   "risk.updated": "Risk updated",
+  "risk.assigned": "Risk assigned",
+  "risk.score_changed": "Risk score changed",
+  "risk.status_changed": "Risk status changed",
+  "risk.accepted": "Risk accepted",
   "risk.acknowledged": "Risk acknowledged",
   "risk.mitigated": "Risk mitigated",
   "risk.resolved": "Risk resolved",

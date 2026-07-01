@@ -2,7 +2,7 @@ import type { ActivityEventView } from "@/lib/activity/types";
 import type { EscalationDashboardMetrics } from "@/lib/escalation/types";
 import type { HealthDashboardMetrics } from "@/lib/health/types";
 import type { ReportsOverviewMetrics } from "@/lib/reports-v2/types";
-import type { RiskSummary } from "@/lib/risks/types";
+import type { RiskHeatmap, RiskSummary } from "@/lib/risks/types";
 import type { ClientHealthCounts, ProfitabilitySummary } from "@/lib/profitability/types";
 import type { ReportScheduleWithRelations } from "@/lib/report-schedules/types";
 import type { SlaDashboardMetrics } from "@/lib/sla/types";
@@ -48,6 +48,7 @@ export type DashboardData = {
   healthMetrics: HealthDashboardMetrics;
   reportsMetrics: ReportsOverviewMetrics;
   riskSummary: RiskSummary;
+  riskHeatmap: RiskHeatmap;
   businessMetrics: ProfitabilitySummary | null;
   canViewFinancial: boolean;
   draftReportsCount: number;

@@ -46,6 +46,20 @@ export type IncidentActivityEventType =
   | "incident.resolved"
   | "incident.closed";
 
+export type RiskActivityEventType =
+  | "risk.created"
+  | "risk.updated"
+  | "risk.assigned"
+  | "risk.score_changed"
+  | "risk.status_changed"
+  | "risk.accepted"
+  | "risk.resolved"
+  | "risk.dismissed"
+  | "risk.deleted"
+  | "risk.acknowledged"
+  | "risk.mitigated"
+  | "risk.detected";
+
 export type ReportStatus = "draft" | "generated" | "published" | "archived";
 
 export type NotificationType =
@@ -498,6 +512,11 @@ export type Database = {
           due_at: string | null;
           detected_at: string;
           resolved_at: string | null;
+          accepted_at: string | null;
+          mitigation_plan: string | null;
+          likelihood: number;
+          impact_score: number;
+          risk_score: number;
           metadata: Json;
           created_at: string;
           updated_at: string;
@@ -518,6 +537,11 @@ export type Database = {
           due_at?: string | null;
           detected_at?: string;
           resolved_at?: string | null;
+          accepted_at?: string | null;
+          mitigation_plan?: string | null;
+          likelihood?: number;
+          impact_score?: number;
+          risk_score?: number;
           metadata?: Json;
           created_at?: string;
           updated_at?: string;
@@ -538,6 +562,11 @@ export type Database = {
           due_at?: string | null;
           detected_at?: string;
           resolved_at?: string | null;
+          accepted_at?: string | null;
+          mitigation_plan?: string | null;
+          likelihood?: number;
+          impact_score?: number;
+          risk_score?: number;
           metadata?: Json;
           created_at?: string;
           updated_at?: string;
@@ -700,6 +729,61 @@ export type Database = {
           },
           {
             foreignKeyName: "incident_activity_actor_user_id_fkey";
+            columns: ["actor_user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      risk_activity: {
+        Row: {
+          id: string;
+          organization_id: string;
+          risk_id: string;
+          actor_user_id: string | null;
+          event_type: RiskActivityEventType;
+          message: string;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          risk_id: string;
+          actor_user_id?: string | null;
+          event_type: RiskActivityEventType;
+          message: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          risk_id?: string;
+          actor_user_id?: string | null;
+          event_type?: RiskActivityEventType;
+          message?: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "risk_activity_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "risk_activity_risk_id_fkey";
+            columns: ["risk_id"];
+            isOneToOne: false;
+            referencedRelation: "client_risks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "risk_activity_actor_user_id_fkey";
             columns: ["actor_user_id"];
             isOneToOne: false;
             referencedRelation: "users";

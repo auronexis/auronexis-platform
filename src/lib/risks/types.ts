@@ -36,6 +36,37 @@ export type RiskSummary = {
   mitigatedCount: number;
   resolvedCount: number;
   dismissedCount: number;
+  highScoreCount: number;
+  overdueCount: number;
+  mitigationRate: number;
+  averageRiskScore: number | null;
+};
+
+export type RiskHeatmapCell = {
+  likelihood: number;
+  impact: number;
+  count: number;
+};
+
+export type RiskHeatmap = {
+  cells: RiskHeatmapCell[];
+  maxCount: number;
+};
+
+export type RiskActivityView = {
+  id: string;
+  organization_id: string;
+  risk_id: string;
+  actor_user_id: string | null;
+  event_type: string;
+  message: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  actor: { full_name: string } | null;
+};
+
+export type RiskMetrics = RiskSummary & {
+  heatmap: RiskHeatmap;
 };
 
 export type RiskDetectionResult = {
@@ -98,6 +129,35 @@ export const RISK_STATUS_LABELS: Record<RiskStatus, string> = {
   dismissed: "Dismissed",
 };
 
+/** Extended display labels — V1 DB values unchanged; UI may show alternate labels. */
+export const EXTENDED_RISK_STATUS_LABELS: Record<string, string> = {
+  ...RISK_STATUS_LABELS,
+  identified: "Identified",
+  assessing: "Assessing",
+  mitigating: "Mitigating",
+  accepted: "Accepted",
+  archived: "Archived",
+};
+
+export const RISK_CATEGORIES = [
+  "Operational",
+  "Security",
+  "Financial",
+  "Compliance",
+  "Vendor",
+  "Infrastructure",
+  "AI",
+  "SLA",
+  "Reporting",
+  "Engagement",
+] as const;
+
+export type RiskCategory = (typeof RISK_CATEGORIES)[number];
+
+export function getRiskStatusLabel(status: string): string {
+  return EXTENDED_RISK_STATUS_LABELS[status] ?? status.replaceAll("_", " ");
+}
+
 /** Map legacy or V1 risk status strings for UI badges. */
 export function normalizeRiskStatusForDisplay(status: string): RiskStatus {
   if (status in RISK_STATUS_LABELS) {
@@ -121,7 +181,7 @@ export const RISK_SOURCE_LABELS: Record<RiskSource, string> = {
 };
 
 export const CLIENT_RISK_SELECT =
-  "id, organization_id, client_id, title, description, severity, status, source, category, impact, recommendation, owner_user_id, due_at, detected_at, resolved_at, metadata, created_at, updated_at";
+  "id, organization_id, client_id, title, description, severity, status, source, category, impact, recommendation, owner_user_id, due_at, detected_at, resolved_at, accepted_at, mitigation_plan, likelihood, impact_score, risk_score, metadata, created_at, updated_at";
 
 export const CLIENT_RISK_LIST_SELECT = `
   ${CLIENT_RISK_SELECT},

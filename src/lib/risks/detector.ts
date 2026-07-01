@@ -1,4 +1,5 @@
-import { recordActivityEvent } from "@/lib/activity/record";
+import { recordRiskActivity } from "@/lib/risks/activity";
+import { calculateRiskScore } from "@/lib/risks/scoring";
 import { getLatestHealthSnapshot } from "@/lib/health/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -70,6 +71,11 @@ async function upsertAutoRisk(
       return;
     }
 
+    const severityImpact =
+      rule.severity === "critical" ? 5 : rule.severity === "high" ? 4 : rule.severity === "medium" ? 3 : 2;
+    const likelihood = 3;
+    const riskScore = calculateRiskScore(likelihood, severityImpact);
+
     const { data, error } = await supabase
       .from("client_risks")
       .insert({
@@ -83,6 +89,9 @@ async function upsertAutoRisk(
         category: rule.category,
         recommendation: rule.recommendation,
         owner_user_id: session.user.id,
+        likelihood,
+        impact_score: severityImpact,
+        risk_score: riskScore,
       } as never)
       .select("id")
       .single();
@@ -93,14 +102,13 @@ async function upsertAutoRisk(
     }
 
     result.created += 1;
-    void recordActivityEvent({
+    const riskId = String((data as { id: string }).id);
+    void recordRiskActivity({
       organizationId: session.organization.id,
+      riskId,
       actorUserId: session.user.id,
-      entityType: "risk",
-      entityId: String((data as { id: string }).id),
       eventType: "risk.detected",
-      action: "detected",
-      title: `Risk detected: ${rule.title}`,
+      message: `Risk detected: ${rule.title}`,
       metadata: { clientId, source: rule.source, category: rule.category },
     }).catch(() => undefined);
     return;

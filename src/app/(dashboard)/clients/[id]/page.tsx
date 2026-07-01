@@ -34,7 +34,6 @@ import { ReportVersionHistory } from "@/components/reports/report-version-histor
 import { RiskCard } from "@/components/risks/risk-card";
 import { RiskEmptyState } from "@/components/risks/risk-empty-state";
 import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
-import { RiskStatusBadge } from "@/components/risks/risk-status-badge";
 import { CreatePortalUserForm } from "@/components/client-portal/create-portal-user-form";
 import { PortalUserList } from "@/components/client-portal/portal-user-list";
 import { ClientSlaPolicySection } from "@/components/settings/client-sla-policy-section";
@@ -62,13 +61,12 @@ import { formatMargin, formatCurrency } from "@/lib/profitability/types";
 import { canCreateReport, canManageReportLifecycle, canPublishReport } from "@/lib/reports/guards";
 import { canCreateRisk } from "@/lib/risks/guards";
 import { getReportHistory, listReportsV2 } from "@/lib/reports-v2";
-import { listClientRisks, OPEN_RISK_STATUSES } from "@/lib/risks";
-import { formatRiskDate, normalizeRiskStatusForDisplay } from "@/lib/risks/types";
+import { listClientRisks, getClientRiskScoreSummary, OPEN_RISK_STATUSES } from "@/lib/risks";
 import { canViewRevenue } from "@/lib/rbac/permissions";
 import { listSlaPolicies, getClientSlaAssignment } from "@/lib/sla/queries";
 import { canManageSlaPolicies } from "@/lib/team/guards";
 import { linkText } from "@/lib/ui/tokens";
-import type { IncidentSeverity, IncidentStatus, RiskSeverity } from "@/types/database";
+import type { IncidentSeverity, IncidentStatus } from "@/types/database";
 
 type ClientDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -110,7 +108,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const canManageSla = canManageSlaPolicies(session);
   const canEdit = sessionHasPermission(session, "clients.write");
 
-  const [client, overview, portalUsers, slaPolicies, orgUsers, recentReportsResult, clientRisks] =
+  const [client, overview, portalUsers, slaPolicies, orgUsers, recentReportsResult, clientRisks, riskScoreSummary] =
     await Promise.all([
     getClientById(session, id).catch(() => null),
     getClientOverview(session, id),
@@ -121,6 +119,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     canEdit ? listOrgUsers(session).catch(() => [] as Awaited<ReturnType<typeof listOrgUsers>>) : Promise.resolve([]),
     listReportsV2(session, { clientId: id, limit: 5 }),
     listClientRisks(session, id, { status: [...OPEN_RISK_STATUSES], limit: 5 }),
+    getClientRiskScoreSummary(session, id),
   ]);
 
   if (!client) {
@@ -169,7 +168,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       <DetailMetadataItem label="Computed health">
         <ClientHealthBadge health={profitability?.health ?? "watch"} />
       </DetailMetadataItem>
-      <DetailMetadataItem label="Open risks">{overview.kpis.openRisksCount}</DetailMetadataItem>
+      <DetailMetadataItem label="Open risks">{riskScoreSummary.openCount}</DetailMetadataItem>
       <DetailMetadataItem label="Open incidents">{overview.kpis.openIncidentsCount}</DetailMetadataItem>
       <DetailMetadataItem label="Created">{formatClientDate(client.created_at)}</DetailMetadataItem>
       <DetailMetadataItem label="Updated">{formatClientDate(client.updated_at)}</DetailMetadataItem>
@@ -216,8 +215,18 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           )}
         </DetailKpiStat>
         <DetailKpiStat label="Open risks">
+          <Link href="/risks?tab=open" className="text-2xl font-semibold tracking-tight text-foreground hover:text-primary">
+            {riskScoreSummary.openCount}
+          </Link>
+        </DetailKpiStat>
+        <DetailKpiStat label="Avg risk score">
           <span className="text-2xl font-semibold tracking-tight text-foreground">
-            {overview.kpis.openRisksCount}
+            {riskScoreSummary.averageRiskScore ?? "—"}
+          </span>
+        </DetailKpiStat>
+        <DetailKpiStat label="Highest score">
+          <span className="text-2xl font-semibold tracking-tight text-foreground">
+            {riskScoreSummary.highestScore ?? "—"}
           </span>
         </DetailKpiStat>
         <DetailKpiStat label="Open incidents">
@@ -314,6 +323,20 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             <DetailViewAllLink href={`/risks?tab=open`}>View all risks</DetailViewAllLink>
           }
         >
+          <div className="mb-4 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-lg border border-border/70 bg-surface/40 p-3">
+              <p className="text-xs text-muted">Open risks</p>
+              <p className="mt-1 text-lg font-semibold">{riskScoreSummary.openCount}</p>
+            </div>
+            <div className="rounded-lg border border-border/70 bg-surface/40 p-3">
+              <p className="text-xs text-muted">Average score</p>
+              <p className="mt-1 text-lg font-semibold">{riskScoreSummary.averageRiskScore ?? "—"}</p>
+            </div>
+            <div className="rounded-lg border border-border/70 bg-surface/40 p-3">
+              <p className="text-xs text-muted">Highest score</p>
+              <p className="mt-1 text-lg font-semibold">{riskScoreSummary.highestScore ?? "—"}</p>
+            </div>
+          </div>
           {clientRisks.length === 0 ? (
             <RiskEmptyState
               title="No open client risks"
@@ -333,54 +356,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               </Link>
             </div>
           ) : null}
-        </DetailSection>
-
-        <DetailSection
-          title="Open risks"
-          action={
-            overview.openRisksTotal > 5 ? (
-              <DetailViewAllLink href="/risks">View all risks</DetailViewAllLink>
-            ) : undefined
-          }
-        >
-          {overview.openRisks.length === 0 ? (
-            <DetailEmpty message="No open risks for this client." />
-          ) : (
-            <AuroraDataTable>
-              <AuroraTable>
-                <AuroraTableHead>
-                  <tr>
-                    <AuroraTableHeaderCell>Risk</AuroraTableHeaderCell>
-                    <AuroraTableHeaderCell>Severity</AuroraTableHeaderCell>
-                    <AuroraTableHeaderCell>Status</AuroraTableHeaderCell>
-                    <AuroraTableHeaderCell>Due date</AuroraTableHeaderCell>
-                  </tr>
-                </AuroraTableHead>
-                <AuroraTableBody>
-                  {overview.openRisks.map((risk) => (
-                    <ClickableRow
-                      key={risk.id}
-                      href={`/risks/${risk.id}`}
-                      ariaLabel={`Open risk ${risk.title}`}
-                    >
-                      <AuroraTableCell>
-                        <span className="font-semibold text-foreground">{risk.title}</span>
-                      </AuroraTableCell>
-                      <AuroraTableCell>
-                        <RiskSeverityBadge severity={risk.severity as RiskSeverity} />
-                      </AuroraTableCell>
-                      <AuroraTableCell>
-                        <RiskStatusBadge status={normalizeRiskStatusForDisplay(risk.status)} />
-                      </AuroraTableCell>
-                      <AuroraTableCell className="text-muted">
-                        {risk.due_date ? formatRiskDate(risk.due_date) : "—"}
-                      </AuroraTableCell>
-                    </ClickableRow>
-                  ))}
-                </AuroraTableBody>
-              </AuroraTable>
-            </AuroraDataTable>
-          )}
         </DetailSection>
 
         <DetailSection

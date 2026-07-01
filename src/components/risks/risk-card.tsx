@@ -1,8 +1,9 @@
 import Link from "next/link";
-import type { ClientRiskView } from "@/lib/risks/types";
-import { RISK_SOURCE_LABELS, formatRiskDate } from "@/lib/risks/types";
+import { RiskScoreBadge } from "@/components/risks/risk-score-badge";
 import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
 import { RiskStatusBadge } from "@/components/risks/risk-status-badge";
+import type { ClientRiskView } from "@/lib/risks/types";
+import { RISK_SOURCE_LABELS, formatRiskDate } from "@/lib/risks/types";
 import { linkText } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils/cn";
 
@@ -37,6 +38,7 @@ export function RiskCard({ risk, className }: RiskCardProps) {
         <p className="mt-3 line-clamp-2 text-sm text-muted">{risk.description}</p>
       ) : null}
       <div className="mt-4 flex flex-wrap items-center gap-2">
+        <RiskScoreBadge score={risk.risk_score} />
         <RiskStatusBadge status={risk.status} />
         <span className="text-xs text-muted">{RISK_SOURCE_LABELS[risk.source]}</span>
         {risk.due_at ? (

@@ -289,7 +289,7 @@ export default async function DashboardPage() {
               description="Open client risks tracked by the risks engine."
               className="min-h-[320px]"
             >
-              <DashboardRisksOverview summary={data.riskSummary} />
+              <DashboardRisksOverview summary={data.riskSummary} heatmap={data.riskHeatmap} />
             </DashboardPanel>
           </div>
 

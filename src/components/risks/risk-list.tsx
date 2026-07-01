@@ -1,6 +1,6 @@
+import { RiskScoreBadge } from "@/components/risks/risk-score-badge";
 import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
 import { RiskStatusBadge } from "@/components/risks/risk-status-badge";
-import { SlaStatusBadge } from "@/components/sla/sla-status-badge";
 import { ClickableRow } from "@/components/ui/clickable-row";
 import { RowInteractiveLink } from "@/components/ui/interactive-surface";
 import {
@@ -11,31 +11,15 @@ import {
   AuroraTableHead,
   AuroraTableHeaderCell,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/ui/empty-state";
+import type { ClientRiskView } from "@/lib/risks/types";
+import { formatRiskDate, RISK_SOURCE_LABELS } from "@/lib/risks/types";
 import { linkText } from "@/lib/ui/tokens";
-import type { RiskWithRelations } from "@/lib/risks/types";
-import { formatRiskDate } from "@/lib/risks/types";
-import { formatSlaDueDate } from "@/lib/sla/calculations";
-import type { EntitySlaInfo } from "@/lib/sla/types";
-import { AlertTriangle } from "lucide-react";
-
-type RiskListItem = RiskWithRelations & { sla: EntitySlaInfo };
 
 type RiskListProps = {
-  risks: RiskListItem[];
+  risks: ClientRiskView[];
 };
 
 export function RiskList({ risks }: RiskListProps) {
-  if (risks.length === 0) {
-    return (
-      <EmptyState
-        icon={AlertTriangle}
-        title="Everything looks clear"
-        description="No operational threats are being tracked. Add a risk when you identify something that needs attention."
-      />
-    );
-  }
-
   return (
     <AuroraDataTable>
       <AuroraTable>
@@ -43,12 +27,12 @@ export function RiskList({ risks }: RiskListProps) {
           <tr>
             <AuroraTableHeaderCell>Risk</AuroraTableHeaderCell>
             <AuroraTableHeaderCell>Client</AuroraTableHeaderCell>
+            <AuroraTableHeaderCell>Score</AuroraTableHeaderCell>
             <AuroraTableHeaderCell>Severity</AuroraTableHeaderCell>
             <AuroraTableHeaderCell>Status</AuroraTableHeaderCell>
+            <AuroraTableHeaderCell>Category</AuroraTableHeaderCell>
             <AuroraTableHeaderCell>Owner</AuroraTableHeaderCell>
-            <AuroraTableHeaderCell>SLA status</AuroraTableHeaderCell>
-            <AuroraTableHeaderCell>SLA due</AuroraTableHeaderCell>
-            <AuroraTableHeaderCell>Updated</AuroraTableHeaderCell>
+            <AuroraTableHeaderCell>Due</AuroraTableHeaderCell>
           </tr>
         </AuroraTableHead>
         <AuroraTableBody>
@@ -60,6 +44,7 @@ export function RiskList({ risks }: RiskListProps) {
             >
               <AuroraTableCell>
                 <span className="font-semibold text-foreground">{risk.title}</span>
+                <p className="mt-0.5 text-xs text-muted">{RISK_SOURCE_LABELS[risk.source]}</p>
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap text-muted">
                 {risk.clients?.name ? (
@@ -71,22 +56,22 @@ export function RiskList({ risks }: RiskListProps) {
                 )}
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap">
+                <RiskScoreBadge score={risk.risk_score} />
+              </AuroraTableCell>
+              <AuroraTableCell className="whitespace-nowrap">
                 <RiskSeverityBadge severity={risk.severity} />
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap">
                 <RiskStatusBadge status={risk.status} />
               </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap text-muted">
+                {risk.category ?? "—"}
+              </AuroraTableCell>
+              <AuroraTableCell className="whitespace-nowrap text-muted">
                 {risk.users?.full_name ?? "—"}
               </AuroraTableCell>
-              <AuroraTableCell className="whitespace-nowrap">
-                <SlaStatusBadge status={risk.sla.status} />
-              </AuroraTableCell>
               <AuroraTableCell className="whitespace-nowrap text-muted">
-                {formatSlaDueDate(risk.sla.slaDueAt)}
-              </AuroraTableCell>
-              <AuroraTableCell className="whitespace-nowrap text-muted">
-                {formatRiskDate(risk.updated_at)}
+                {risk.due_at ? formatRiskDate(risk.due_at) : "—"}
               </AuroraTableCell>
             </ClickableRow>
           ))}
