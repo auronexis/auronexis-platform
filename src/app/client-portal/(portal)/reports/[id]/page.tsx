@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PortalActionLink, PortalCard } from "@/components/client-portal/portal-ui";
+import { ExecutiveMetrics } from "@/components/executive-reports/executive-metrics";
+import { ExecutiveSummaryCard } from "@/components/executive-reports/executive-summary-card";
 import { getPortalReportById } from "@/lib/client-portal/queries";
+import { getPortalExecutiveReport } from "@/lib/executive-reports/queries";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
 import { formatReportDate, formatReportPeriod } from "@/lib/reports/types";
 
@@ -28,6 +31,12 @@ export default async function ClientPortalReportDetailPage({ params }: PortalRep
   if (!report) {
     notFound();
   }
+
+  const executiveSnapshot = await getPortalExecutiveReport(
+    session.organization.id,
+    session.client.id,
+    report.id,
+  );
 
   return (
     <>
@@ -114,6 +123,23 @@ export default async function ClientPortalReportDetailPage({ params }: PortalRep
           ))}
         </dl>
       </PortalCard>
+
+      {executiveSnapshot ? (
+        <PortalCard className="mt-6">
+          <h2 className="text-lg font-semibold text-foreground">Executive overview</h2>
+          <p className="mt-1 text-sm text-muted">Leadership summary for this published report.</p>
+          <div className="mt-6 space-y-6">
+            <ExecutiveSummaryCard summary={executiveSnapshot.executive_summary} />
+            <ExecutiveMetrics
+              riskSummary={executiveSnapshot.risk_summary}
+              incidentSummary={executiveSnapshot.incident_summary}
+              slaSummary={executiveSnapshot.sla_summary}
+              monitoringSummary={executiveSnapshot.monitoring_summary}
+              aiSummary={executiveSnapshot.ai_summary}
+            />
+          </div>
+        </PortalCard>
+      ) : null}
     </>
   );
 }

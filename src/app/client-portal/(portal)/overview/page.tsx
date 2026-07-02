@@ -10,8 +10,10 @@ import {
   PortalKpiMetric,
   PortalQuickAccessCard,
 } from "@/components/client-portal/portal-ui";
+import { PortalExecutiveOverview } from "@/components/executive-reports/portal-executive-overview";
 import { recordPortalActivity } from "@/lib/client-portal/activity";
 import { getPortalOverviewData } from "@/lib/client-portal/queries";
+import { getPortalExecutiveOverview } from "@/lib/executive-reports/queries";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
 import { getOrganizationBrandingForOrganization } from "@/lib/branding/queries";
 import { HEALTH_STATUS_LABELS } from "@/lib/health/types";
@@ -30,6 +32,10 @@ export default async function ClientPortalOverviewPage() {
     session.organization.name,
   );
   const data = await getPortalOverviewData(session, branding.supportEmail ?? null);
+  const executiveOverview = await getPortalExecutiveOverview(
+    session.organization.id,
+    session.client.id,
+  );
 
   void recordPortalActivity(session, {
     eventType: "portal.viewed",
@@ -123,6 +129,10 @@ export default async function ClientPortalOverviewPage() {
           </PortalKpiMetric>
         </PortalKpiCard>
       </div>
+
+      <section className="mt-10">
+        <PortalExecutiveOverview snapshot={executiveOverview} />
+      </section>
 
       <section className="mt-10 grid gap-6 lg:grid-cols-2">
         <PortalCard>

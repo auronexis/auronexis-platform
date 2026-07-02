@@ -16,6 +16,8 @@ import { ReportClientInsights } from "@/components/reports/report-client-insight
 import { ReportForm } from "@/components/reports/report-form";
 import { ReportEditableWithAI } from "@/components/reports/ai/report-editable-with-ai";
 import { RelatedKnowledgeSection } from "@/components/knowledge/related-knowledge-section";
+import { ExecutiveReportViewer } from "@/components/executive-reports/executive-report-viewer";
+import { ReportDetailTabs } from "@/components/executive-reports/report-detail-tabs";
 import { ReportStatusBadge } from "@/components/reports/report-status-badge";
 import {
   DetailActionSection,
@@ -64,11 +66,13 @@ import {
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
 import { requireSession } from "@/lib/auth/session";
 import { getReportHistory } from "@/lib/reports-v2/history";
+import { getExecutiveReport } from "@/lib/executive-reports/queries";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { linkText } from "@/lib/ui/tokens";
 
 type ReportDetailPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
 };
 
 export async function generateMetadata({ params }: ReportDetailPageProps): Promise<Metadata> {
@@ -81,10 +85,12 @@ export async function generateMetadata({ params }: ReportDetailPageProps): Promi
   };
 }
 
-export default async function ReportDetailPage({ params }: ReportDetailPageProps) {
+export default async function ReportDetailPage({ params, searchParams }: ReportDetailPageProps) {
   await requireModuleAccess("reports");
   const session = await requireSession();
   const { id } = await params;
+  const { tab } = await searchParams;
+  const activeTab = tab === "executive" ? "executive" : "standard";
   const report = await getReportById(session, id);
 
   if (!report) {
@@ -128,6 +134,9 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
 
   const aiUsageSummary = await getAIUsageSummaryForSession(session, planKey);
   const versionHistory = (await getReportHistory(session, report.id)).data ?? [];
+  const executiveSnapshot = await getExecutiveReport(session, report.id);
+  const canGenerateExecutive =
+    canManageLifecycle && report.status !== "archived";
 
   const aiEnabled = aiAccess.allowed;
   const aiUpgradeMessage = getFeatureUpgradeMessage("ai_report_assistant");
@@ -231,6 +240,16 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
       />
 
       <DetailPageLayout rail={metadataRail}>
+        <ReportDetailTabs reportId={report.id} activeTab={activeTab} />
+
+        {activeTab === "executive" ? (
+          <ExecutiveReportViewer
+            reportId={report.id}
+            snapshot={executiveSnapshot}
+            canGenerate={canGenerateExecutive}
+          />
+        ) : (
+          <>
         {editable ? (
           <ReportEditableWithAI
             aiEnabled={aiEnabled}
@@ -370,6 +389,8 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
           entityType="report"
           entityId={report.id}
         />
+          </>
+        )}
       </DetailPageLayout>
     </>
   );

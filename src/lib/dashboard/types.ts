@@ -9,6 +9,7 @@ import type { SlaDashboardMetrics } from "@/lib/sla/types";
 import type { MonitoringDashboardMetrics } from "@/lib/monitoring/types";
 import type { IncidentAIDashboardMetrics } from "@/lib/ai-incidents/types";
 import type { RiskAIDashboardMetrics } from "@/lib/ai-risks/types";
+import type { ExecutiveReportDashboardMetrics } from "@/lib/executive-reports/types";
 
 export type CriticalAlertItem =
   | {
@@ -62,5 +63,6 @@ export type DashboardData = {
   monitoringMetrics: MonitoringDashboardMetrics;
   incidentAIMetrics: IncidentAIDashboardMetrics;
   riskAIMetrics: RiskAIDashboardMetrics;
+  executiveReportMetrics: ExecutiveReportDashboardMetrics;
   features: DashboardFeatureAccess;
 };

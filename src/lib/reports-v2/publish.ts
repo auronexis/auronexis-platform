@@ -6,6 +6,7 @@ import type { SessionContext } from "@/lib/tenancy/context";
 import type { ReportV2View, SafeResult } from "@/lib/reports-v2/types";
 import { REPORT_V2_SELECT } from "@/lib/reports-v2/types";
 import { generateReport } from "@/lib/reports-v2/generator";
+import { generateExecutiveReport } from "@/lib/executive-reports/generator";
 import { getReportByIdV2 } from "@/lib/reports-v2/queries";
 
 async function loadReport(
@@ -77,6 +78,12 @@ export async function generateReportV2(
       },
     });
 
+    await generateExecutiveReport({
+      session,
+      reportId,
+      actorUserId: session.user.id,
+    }).catch(() => undefined);
+
     const refreshed = await loadReport(session, reportId);
     return { data: refreshed, error: null };
   } catch (error) {
@@ -141,6 +148,13 @@ export async function publishReport(
         clientName: report.clients?.name,
       },
     });
+
+    await generateExecutiveReport({
+      session,
+      reportId,
+      actorUserId: session.user.id,
+      published: true,
+    }).catch(() => undefined);
 
     const refreshed = await loadReport(session, reportId);
     return { data: refreshed, error: null };

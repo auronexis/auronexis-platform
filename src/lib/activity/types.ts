@@ -34,6 +34,9 @@ export type ActivityEventType =
   | "report.published"
   | "report.archived"
   | "report.versioned"
+  | "report.executive_generated"
+  | "report.executive_updated"
+  | "report.executive_published"
   | "settings.updated"
   | "health.changed"
   | "portal.login"
@@ -112,6 +115,9 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "report.published": "Report published",
   "report.archived": "Report archived",
   "report.versioned": "Report versioned",
+  "report.executive_generated": "Executive report generated",
+  "report.executive_updated": "Executive report updated",
+  "report.executive_published": "Executive report published",
   "settings.updated": "Settings updated",
   "health.changed": "Health changed",
   "portal.login": "Portal login",

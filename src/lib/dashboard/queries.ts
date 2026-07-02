@@ -32,6 +32,8 @@ import { getIncidentAIDashboardMetrics } from "@/lib/ai-incidents/summary";
 
 import { getRiskAIDashboardMetrics } from "@/lib/ai-risks/queries";
 
+import { getExecutiveReportDashboardMetrics } from "@/lib/executive-reports/queries";
+
 import type { EscalationDashboardMetrics } from "@/lib/escalation/types";
 
 import type { SlaDashboardMetrics } from "@/lib/sla/types";
@@ -96,6 +98,14 @@ const EMPTY_RISK_AI_METRICS = {
   highConfidenceAnalyses: 0,
   criticalRisksReviewed: 0,
   averageConfidence: null,
+};
+
+const EMPTY_EXECUTIVE_REPORT_METRICS = {
+  generatedThisMonth: 0,
+  published: 0,
+  averageConfidence: null,
+  averageHealth: null,
+  averageCompliance: null,
 };
 
 const EMPTY_MONITORING_METRICS = {
@@ -345,7 +355,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
 
 
-  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult, riskHeatmap, monitoringMetrics, incidentAIMetrics, riskAIMetrics] =
+  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult, riskHeatmap, monitoringMetrics, incidentAIMetrics, riskAIMetrics, executiveReportMetrics] =
 
     await Promise.all([
 
@@ -376,6 +386,8 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
       incidentAIEnabled ? getIncidentAIDashboardMetrics(session) : Promise.resolve(EMPTY_INCIDENT_AI_METRICS),
 
       riskAIEnabled ? getRiskAIDashboardMetrics(session) : Promise.resolve(EMPTY_RISK_AI_METRICS),
+
+      getExecutiveReportDashboardMetrics(session),
 
     ]);
 
@@ -416,6 +428,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
     monitoringMetrics: monitoringMetrics ?? EMPTY_MONITORING_METRICS,
     incidentAIMetrics: incidentAIMetrics ?? EMPTY_INCIDENT_AI_METRICS,
     riskAIMetrics: riskAIMetrics ?? EMPTY_RISK_AI_METRICS,
+    executiveReportMetrics: executiveReportMetrics ?? EMPTY_EXECUTIVE_REPORT_METRICS,
     features: {
       risks: risksEnabled,
       incidents: incidentsEnabled,

@@ -1703,6 +1703,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      executive_report_snapshots: {
+        Row: {
+          id: string;
+          organization_id: string;
+          report_id: string | null;
+          executive_summary: string | null;
+          risk_summary: string | null;
+          incident_summary: string | null;
+          sla_summary: string | null;
+          monitoring_summary: string | null;
+          ai_summary: string | null;
+          generated_at: string;
+          metadata: Json;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          report_id?: string | null;
+          executive_summary?: string | null;
+          risk_summary?: string | null;
+          incident_summary?: string | null;
+          sla_summary?: string | null;
+          monitoring_summary?: string | null;
+          ai_summary?: string | null;
+          generated_at?: string;
+          metadata?: Json;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          report_id?: string | null;
+          executive_summary?: string | null;
+          risk_summary?: string | null;
+          incident_summary?: string | null;
+          sla_summary?: string | null;
+          monitoring_summary?: string | null;
+          ai_summary?: string | null;
+          generated_at?: string;
+          metadata?: Json;
+        };
+        Relationships: [];
+      };
       client_financials: {
         Row: {
           id: string;

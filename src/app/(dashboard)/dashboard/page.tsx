@@ -30,6 +30,7 @@ import { DashboardSlaOverview } from "@/components/dashboard/dashboard-sla-overv
 import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-monitoring-overview";
 import { DashboardIncidentAIOverview } from "@/components/incidents/ai/dashboard-incident-ai-overview";
 import { DashboardRiskAIOverview } from "@/components/ai-risks/dashboard-risk-ai-overview";
+import { DashboardExecutiveReportsOverview } from "@/components/executive-reports/dashboard-executive-reports-overview";
 import {
   DashboardUpgradeMetricCard,
 } from "@/components/dashboard/dashboard-upgrade-cards";
@@ -660,6 +661,16 @@ export default async function DashboardPage() {
                 aiEnabled={riskAiAccess.allowed}
                 upgradeMessage={getFeatureUpgradeMessage("ai_risk_assistant")}
               />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-6 xl:col-span-6">
+            <DashboardPanel
+              title="Executive Reports"
+              description="Leadership deliverables, confidence, and compliance trends."
+              className="min-h-[320px]"
+            >
+              <DashboardExecutiveReportsOverview metrics={data.executiveReportMetrics} />
             </DashboardPanel>
           </div>
 
