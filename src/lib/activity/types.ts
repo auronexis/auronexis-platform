@@ -63,7 +63,11 @@ export type ActivityEventType =
   | "monitoring.health_checked"
   | "incident.ai_analysis_created"
   | "incident.ai_summary_generated"
-  | "incident.ai_recommendation_created";
+  | "incident.ai_recommendation_created"
+  | "risk.ai_analysis_created"
+  | "risk.ai_summary_generated"
+  | "risk.ai_mitigation_created"
+  | "risk.ai_recommendation_created";
 
 export type ActivityFilter =
   | "all"
@@ -138,6 +142,10 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "incident.ai_analysis_created": "AI incident analysis created",
   "incident.ai_summary_generated": "AI incident summary generated",
   "incident.ai_recommendation_created": "AI incident recommendations created",
+  "risk.ai_analysis_created": "AI risk analysis created",
+  "risk.ai_summary_generated": "AI risk summary generated",
+  "risk.ai_mitigation_created": "AI risk mitigation plan created",
+  "risk.ai_recommendation_created": "AI risk recommendations created",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

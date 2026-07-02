@@ -29,6 +29,7 @@ import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-ac
 import { DashboardSlaOverview } from "@/components/dashboard/dashboard-sla-overview";
 import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-monitoring-overview";
 import { DashboardIncidentAIOverview } from "@/components/incidents/ai/dashboard-incident-ai-overview";
+import { DashboardRiskAIOverview } from "@/components/ai-risks/dashboard-risk-ai-overview";
 import {
   DashboardUpgradeMetricCard,
 } from "@/components/dashboard/dashboard-upgrade-cards";
@@ -73,6 +74,7 @@ export default async function DashboardPage() {
   const successAccess = await checkPlanFeatureForSession(session, "ai_client_analysis");
   const operationalAiAccess = await checkPlanFeatureForSession(session, "ai_risk_assistant");
   const incidentAiAccess = await checkPlanFeatureForSession(session, "ai_incident_assistant");
+  const riskAiAccess = await checkPlanFeatureForSession(session, "ai_risk_assistant");
   const automationAccess = await checkPlanFeatureForSession(session, "ai_automation_builder");
   const predictiveAccess = await checkPlanFeatureForSession(session, "ai_predictive_intelligence");
   const knowledgeAccess = await checkPlanFeatureForSession(session, "ai_knowledge_search");
@@ -643,6 +645,20 @@ export default async function DashboardPage() {
                 metrics={data.incidentAIMetrics}
                 aiEnabled={incidentAiAccess.allowed}
                 upgradeMessage={getFeatureUpgradeMessage("ai_incident_assistant")}
+              />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-6 xl:col-span-6">
+            <DashboardPanel
+              title="AI Risk Insights"
+              description="Risk assistant analyses and mitigation confidence."
+              className="min-h-[320px]"
+            >
+              <DashboardRiskAIOverview
+                metrics={data.riskAIMetrics}
+                aiEnabled={riskAiAccess.allowed}
+                upgradeMessage={getFeatureUpgradeMessage("ai_risk_assistant")}
               />
             </DashboardPanel>
           </div>

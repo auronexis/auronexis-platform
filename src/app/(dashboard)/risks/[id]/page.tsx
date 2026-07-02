@@ -31,6 +31,13 @@ import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { linkText } from "@/lib/ui/tokens";
 import { AcceptRiskButton } from "@/components/risks/accept-risk-button";
+import { RiskAISection } from "@/components/ai-risks/risk-ai-section";
+import { getRiskAnalysis, listRiskAnalyses } from "@/lib/ai-risks/queries";
+import {
+  checkPlanFeatureForSession,
+  getFeatureUpgradeMessage,
+  getRequiredPlanLabel,
+} from "@/lib/plans";
 
 type RiskDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -56,13 +63,19 @@ export default async function RiskDetailPage({ params }: RiskDetailPageProps) {
   const editable = canEditRisk(session, risk);
   const canManage = canManageRiskLifecycle(session, risk);
   const boundUpdateAction = updateRiskAction.bind(null, risk.id);
-  const [clients, orgUsers, activity] = await Promise.all([
+  const [clients, orgUsers, activity, aiAccess, latestAIAnalysis, aiHistory] = await Promise.all([
     editable ? listClients(session) : Promise.resolve([]),
     editable && (session.role === "owner" || session.role === "admin")
       ? listOrgUsers(session)
       : Promise.resolve([]),
     getRiskActivity(session, risk.id),
+    checkPlanFeatureForSession(session, "ai_risk_assistant"),
+    getRiskAnalysis(session, risk.id),
+    listRiskAnalyses(session, risk.id, 8),
   ]);
+  const aiEnabled = aiAccess.allowed && editable;
+  const aiUpgradeMessage = getFeatureUpgradeMessage("ai_risk_assistant");
+  const aiRequiredPlanLabel = getRequiredPlanLabel("ai_risk_assistant");
 
   const metadataRail = (
     <DetailMetadataRail title="Risk overview">
@@ -178,6 +191,15 @@ export default async function RiskDetailPage({ params }: RiskDetailPageProps) {
         <DetailSection title="Risk timeline" description="Chronological audit trail for this risk.">
           <RiskTimeline events={activity} />
         </DetailSection>
+
+        <RiskAISection
+          riskId={risk.id}
+          latestAnalysis={latestAIAnalysis}
+          history={aiHistory}
+          aiEnabled={aiEnabled}
+          upgradeMessage={aiUpgradeMessage}
+          requiredPlanLabel={aiRequiredPlanLabel}
+        />
 
         <DetailSection title="Activity feed" description="Recent events for this risk.">
           <RiskActivityFeed events={activity} />

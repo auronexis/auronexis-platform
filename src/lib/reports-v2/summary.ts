@@ -75,6 +75,13 @@ export function buildExecutiveSummary(input: {
     suggestedImprovements: string | null;
     confidence: number | null;
   } | null;
+  riskAISnapshot?: {
+    summary: string | null;
+    topMitigationRecommendations: string[];
+    predictedSeverity: string | null;
+    predictedScore: number | null;
+    confidence: number | null;
+  } | null;
 }): ExecutiveSummary {
   const paragraph = buildSummaryParagraph(input);
   const highlights: string[] = [];
@@ -109,6 +116,22 @@ export function buildExecutiveSummary(input: {
     }
   }
 
+  if (input.riskAISnapshot?.summary) {
+    highlights.push("AI risk summary available");
+    if (input.riskAISnapshot.topMitigationRecommendations.length > 0) {
+      highlights.push(`${input.riskAISnapshot.topMitigationRecommendations.length} AI mitigation recommendations`);
+    }
+    if (input.riskAISnapshot.predictedSeverity) {
+      highlights.push(`AI predicted risk severity: ${input.riskAISnapshot.predictedSeverity}`);
+    }
+    if (input.riskAISnapshot.predictedScore != null) {
+      highlights.push(`AI predicted risk score: ${input.riskAISnapshot.predictedScore}`);
+    }
+    if (input.riskAISnapshot.confidence != null) {
+      highlights.push(`AI risk confidence: ${Math.round(input.riskAISnapshot.confidence * 100)}%`);
+    }
+  }
+
   highlights.push(`Open risks: ${input.metrics.openRisks}`);
   highlights.push(`Open incidents: ${input.metrics.openIncidents}`);
   highlights.push(`Activity events: ${input.metrics.activityCount}`);
@@ -130,6 +153,13 @@ export function buildReportSummary(input: {
     summary: string | null;
     rootCause: string | null;
     suggestedImprovements: string | null;
+    confidence: number | null;
+  } | null;
+  riskAISnapshot?: {
+    summary: string | null;
+    topMitigationRecommendations: string[];
+    predictedSeverity: string | null;
+    predictedScore: number | null;
     confidence: number | null;
   } | null;
 }): ReportSummary {

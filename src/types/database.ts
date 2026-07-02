@@ -1643,6 +1643,66 @@ export type Database = {
         };
         Relationships: [];
       };
+      risk_ai_analysis: {
+        Row: {
+          id: string;
+          organization_id: string;
+          risk_id: string;
+          provider: string;
+          model: string;
+          summary: string | null;
+          risk_reasoning: string | null;
+          mitigation_plan: string | null;
+          recommended_actions: Json;
+          predicted_severity: string | null;
+          predicted_score: number | null;
+          confidence: number | null;
+          tokens_used: number | null;
+          latency_ms: number | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          risk_id: string;
+          provider: string;
+          model: string;
+          summary?: string | null;
+          risk_reasoning?: string | null;
+          mitigation_plan?: string | null;
+          recommended_actions?: Json;
+          predicted_severity?: string | null;
+          predicted_score?: number | null;
+          confidence?: number | null;
+          tokens_used?: number | null;
+          latency_ms?: number | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          risk_id?: string;
+          provider?: string;
+          model?: string;
+          summary?: string | null;
+          risk_reasoning?: string | null;
+          mitigation_plan?: string | null;
+          recommended_actions?: Json;
+          predicted_severity?: string | null;
+          predicted_score?: number | null;
+          confidence?: number | null;
+          tokens_used?: number | null;
+          latency_ms?: number | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       client_financials: {
         Row: {
           id: string;
