@@ -3,8 +3,10 @@ import Link from "next/link";
 import { ApiSettingsWorkspace } from "@/components/settings/api-settings-workspace";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
+import { LinkButton } from "@/components/ui/link-button";
 import { requireSession } from "@/lib/auth/session";
 import { getApiDashboardSnapshot } from "@/lib/api/diagnostics";
+import { ENTERPRISE_BILLING_CONTACT_PATH } from "@/lib/billing/billing-contact";
 import {
   checkPlanFeatureForSession,
   getFeatureUpgradeMessage,
@@ -65,6 +67,14 @@ export default async function SettingsApiPage() {
             <p className="mt-2 text-sm text-muted">
               Required plan: {getRequiredPlanLabel("future_api_webhooks")}
             </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <LinkButton href={ENTERPRISE_BILLING_CONTACT_PATH} variant="primary">
+                Request Enterprise
+              </LinkButton>
+              <LinkButton href="/settings/enterprise" variant="secondary">
+                View Enterprise status
+              </LinkButton>
+            </div>
           </div>
         ) : snapshot ? (
           <ApiSettingsWorkspace snapshot={snapshot} />

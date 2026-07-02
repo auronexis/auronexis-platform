@@ -19,6 +19,8 @@ import type { BillingDashboardData, StripeBillingUiStatus } from "@/lib/billing/
 import { formatBillingDateTime } from "@/lib/billing/types";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
 import type { OrganizationSeatUsage } from "@/lib/seats/types";
+import { EnterpriseRequestCard } from "@/components/settings/enterprise-request-card";
+import type { EnterpriseStatus } from "@/lib/enterprise/types";
 import type { BillingContactCardContent } from "@/lib/billing/billing-contact";
 import { cn } from "@/lib/utils/cn";
 
@@ -32,6 +34,8 @@ type BillingSettingsPanelProps = {
   successMessage?: string | null;
   cancelled?: boolean;
   billingContactCard?: BillingContactCardContent | null;
+  enterpriseStatus?: EnterpriseStatus;
+  enterpriseAutoOpen?: boolean;
 };
 
 function BillingCard({
@@ -117,6 +121,8 @@ export function BillingSettingsPanel({
   successMessage,
   cancelled,
   billingContactCard,
+  enterpriseStatus,
+  enterpriseAutoOpen = false,
 }: BillingSettingsPanelProps) {
   const { overview } = dashboard;
   const [actionError, setActionError] = useState<string | null>(null);
@@ -164,6 +170,13 @@ export function BillingSettingsPanel({
         </FormAlert>
       ) : null}
       {billingContactCard ? <BillingContactCard card={billingContactCard} /> : null}
+      {enterpriseStatus ? (
+        <EnterpriseRequestCard
+          status={enterpriseStatus}
+          canManage={canManage}
+          autoOpen={enterpriseAutoOpen}
+        />
+      ) : null}
       {usingStarterFallback ? (
         <FormAlert variant="warning">
           No active subscription is linked to your workspace yet. Choose a plan to get started.

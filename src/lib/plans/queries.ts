@@ -1,9 +1,9 @@
 import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import { getPlanByPriceId, getPlanKeyByPriceId } from "@/lib/billing/plans.server";
-import {
-  getDefaultPlanKey,
+import { applyPlanOverride } from "@/lib/enterprise/limits";
+import { getPlanOverride } from "@/lib/enterprise/queries";
+import { getDefaultPlanKey,
   getEnabledModuleLabels,
-  getPlanFeatures,
 } from "@/lib/plans/features";
 import { getDevForcePlanOverride } from "@/lib/plans/dev-override";
 import type {
@@ -19,23 +19,29 @@ import type { SessionContext } from "@/lib/tenancy/context";
 
 const SUBSCRIPTION_SELECT = "stripe_price_id, status";
 
-/** Resolve the effective plan key for an organization — Starter when unsubscribed. */
+/** Resolve the effective plan key for an organization. */
 export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {
   const context = await getOrganizationPlanContext(organizationId);
   return context.planKey;
 }
 
-/** Full plan context for an organization. */
+/** Alias for effective plan resolution. */
+export const getEffectivePlan = getCurrentPlan;
+
+/** Full plan context for an organization — override > Stripe > starter fallback. */
 export async function getOrganizationPlanContext(
   organizationId: string,
 ): Promise<OrganizationPlanContext> {
   const admin = createAdminClient();
 
-  const { data, error } = await admin
-    .from("organization_subscriptions")
-    .select(SUBSCRIPTION_SELECT)
-    .eq("organization_id", organizationId)
-    .maybeSingle();
+  const [{ data, error }, planOverride] = await Promise.all([
+    admin
+      .from("organization_subscriptions")
+      .select(SUBSCRIPTION_SELECT)
+      .eq("organization_id", organizationId)
+      .maybeSingle(),
+    getPlanOverride(organizationId),
+  ]);
 
   if (error) {
     throw new Error(error.message);
@@ -48,7 +54,7 @@ export async function getOrganizationPlanContext(
     subscriptionPriceId && subscriptionStatus && isActiveSubscriptionStatus(subscriptionStatus),
   );
 
-  let planKey: PlanKey = getDefaultPlanKey();
+  let basePlanKey: PlanKey = getDefaultPlanKey();
   let planSource: PlanResolutionSource = "starter_fallback";
   let mappedPlanKeyFromPriceId: PlanKey | null = null;
 
@@ -57,7 +63,7 @@ export async function getOrganizationPlanContext(
     const plan = getPlanByPriceId(subscriptionPriceId);
 
     if (plan) {
-      planKey = plan.key;
+      basePlanKey = plan.key;
       planSource = "active_subscription";
     } else {
       planSource = "unmapped_price_id";
@@ -65,22 +71,29 @@ export async function getOrganizationPlanContext(
   }
 
   const devOverride = getDevForcePlanOverride();
+  let planOverrideActive = false;
 
   if (devOverride) {
-    planKey = devOverride;
+    basePlanKey = devOverride;
     planSource = "dev_override";
+  } else if (planOverride?.status === "active") {
+    basePlanKey = planOverride.plan;
+    planSource = "plan_override";
+    planOverrideActive = true;
   }
 
-  const plan = getPlanByKey(planKey);
+  const mergedFeatures = applyPlanOverride(basePlanKey, planOverride);
+  const plan = getPlanByKey(basePlanKey);
 
   return {
     organizationId,
-    planKey,
-    planLabel: plan.name,
+    planKey: basePlanKey,
+    planLabel: planOverrideActive ? `${plan.name} (Enterprise override)` : plan.name,
     isActiveSubscription,
-    features: getPlanFeatures(planKey),
+    features: mergedFeatures,
     planSource,
     devOverrideActive: devOverride !== null,
+    planOverrideActive,
     subscriptionPriceId,
     subscriptionStatus,
     mappedPlanKeyFromPriceId,

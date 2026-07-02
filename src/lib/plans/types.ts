@@ -72,7 +72,8 @@ export type PlanResolutionSource =
   | "active_subscription"
   | "starter_fallback"
   | "unmapped_price_id"
-  | "dev_override";
+  | "dev_override"
+  | "plan_override";
 
 export type OrganizationPlanContext = {
   organizationId: string;
@@ -82,6 +83,7 @@ export type OrganizationPlanContext = {
   features: PlanFeatures;
   planSource: PlanResolutionSource;
   devOverrideActive: boolean;
+  planOverrideActive: boolean;
   subscriptionPriceId: string | null;
   subscriptionStatus: string | null;
   mappedPlanKeyFromPriceId: PlanKey | null;

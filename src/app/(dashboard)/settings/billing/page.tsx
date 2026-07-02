@@ -3,7 +3,6 @@ import Link from "next/link";
 import { BillingSettingsPanel } from "@/components/settings/billing-settings-panel";
 import { PageHeader } from "@/components/layout/page-header";
 import {
-  ENTERPRISE_CONTACT_CARD,
   SUPPORT_CONTACT_CARD,
 } from "@/lib/billing/billing-contact";
 import { getBillingDashboardData } from "@/lib/billing/queries";
@@ -13,6 +12,7 @@ import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getOrganizationPlanUsageSummary } from "@/lib/plans/queries";
 import { getOrganizationSeatUsageFromSession } from "@/lib/seats/queries";
+import { getEnterpriseStatus } from "@/lib/enterprise/queries";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export const metadata: Metadata = {
@@ -29,10 +29,6 @@ type BillingSettingsPageProps = {
 };
 
 function resolveBillingContactCard(contact?: string) {
-  if (contact === "enterprise") {
-    return ENTERPRISE_CONTACT_CARD;
-  }
-
   if (contact === "support") {
     return SUPPORT_CONTACT_CARD;
   }
@@ -59,9 +55,10 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
     checkoutSuccessMessage = "Payment received. Your plan may update shortly.";
   }
 
-  const [dashboard, seatUsage] = await Promise.all([
+  const [dashboard, seatUsage, enterpriseStatus] = await Promise.all([
     getBillingDashboardData(session),
     getOrganizationSeatUsageFromSession(session),
+    getEnterpriseStatus(session.organization.id),
   ]);
   const planUsage = await getOrganizationPlanUsageSummary(
     session,
@@ -94,7 +91,9 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
         success={params.success === "1"}
         successMessage={checkoutSuccessMessage}
         cancelled={params.cancelled === "1"}
-        billingContactCard={resolveBillingContactCard(params.contact)}
+        billingContactCard={resolveBillingContactCard(params.contact === "support" ? "support" : undefined)}
+        enterpriseStatus={enterpriseStatus}
+        enterpriseAutoOpen={params.contact === "enterprise"}
       />
     </>
   );

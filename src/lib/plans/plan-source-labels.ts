@@ -5,4 +5,5 @@ export const PLAN_SOURCE_LABELS: Record<PlanResolutionSource, string> = {
   starter_fallback: "Starter fallback (no active mapped subscription)",
   unmapped_price_id: "Active subscription with unmapped Stripe price ID",
   dev_override: "Development override (DEV_FORCE_PLAN)",
+  plan_override: "Enterprise plan override (manual approval)",
 };

@@ -4,12 +4,9 @@ import {
   getFeatureUpgradeMessage,
   getMinimumPlanForFeature,
   getRequiredPlanLabel,
-  isFeatureEnabled,
-  planMeetsMinimum,
 } from "@/lib/plans/features";
 import {
   getClientLimitUsage,
-  getCurrentPlan,
   getOrganizationPlanContext,
   getOrganizationPlanContextForSession,
 } from "@/lib/plans/queries";
@@ -105,8 +102,9 @@ export async function canUseFeature(
   organizationId: string,
   feature: PlanFeatureKey,
 ): Promise<boolean> {
-  const planKey = await getCurrentPlan(organizationId);
-  return isFeatureEnabled(planKey, feature);
+  const context = await getOrganizationPlanContext(organizationId);
+  const value = context.features[feature];
+  return typeof value === "boolean" ? value : Boolean(value);
 }
 
 /** Check feature access with upgrade messaging. */
@@ -114,11 +112,22 @@ export async function checkPlanFeature(
   organizationId: string,
   feature: PlanFeatureKey,
 ): Promise<PlanFeatureCheckResult> {
-  const planKey = await getCurrentPlan(organizationId);
+  const context = await getOrganizationPlanContext(organizationId);
   const requiredPlan = getMinimumPlanForFeature(feature);
+  const value = context.features[feature];
+  const enabled = typeof value === "boolean" ? value : Boolean(value);
 
-  if (planMeetsMinimum(planKey, requiredPlan) && isFeatureEnabled(planKey, feature)) {
+  if (enabled) {
     return { allowed: true };
+  }
+
+  if (context.planOverrideActive && (feature === "future_api_webhooks" || feature === "priority_support")) {
+    return {
+      allowed: false,
+      message: "Contact your account manager to enable this Enterprise capability.",
+      requiredPlan,
+      requiredPlanLabel: getRequiredPlanLabel(feature),
+    };
   }
 
   return {

@@ -13,6 +13,7 @@ import {
   Stethoscope,
   Timer,
   Users,
+  Sparkles,
 } from "lucide-react";
 import { AccessDenied } from "@/components/authorization/access-denied";
 import { sessionHasPermission } from "@/lib/authorization/guards";
@@ -95,6 +96,12 @@ const SETTINGS_LINKS = [
 ] as const;
 
 const ADMIN_SETTINGS_LINKS = [
+  {
+    href: "/settings/enterprise",
+    title: "Enterprise",
+    description: "Request Enterprise access, review limits, and enabled capabilities.",
+    icon: Sparkles,
+  },
   {
     href: "/settings/api",
     title: "Public API",

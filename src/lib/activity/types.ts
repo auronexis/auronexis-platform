@@ -79,7 +79,11 @@ export type ActivityEventType =
   | "webhook.endpoint_created"
   | "webhook.endpoint_disabled"
   | "webhook.delivery_succeeded"
-  | "webhook.delivery_failed";
+  | "webhook.delivery_failed"
+  | "enterprise.request_created"
+  | "enterprise.request_approved"
+  | "enterprise.request_rejected"
+  | "enterprise.override_updated";
 
 export type ActivityFilter =
   | "all"
@@ -170,6 +174,10 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "webhook.endpoint_disabled": "Webhook endpoint disabled",
   "webhook.delivery_succeeded": "Webhook delivery succeeded",
   "webhook.delivery_failed": "Webhook delivery failed",
+  "enterprise.request_created": "Enterprise request submitted",
+  "enterprise.request_approved": "Enterprise request approved",
+  "enterprise.request_rejected": "Enterprise request rejected",
+  "enterprise.override_updated": "Enterprise plan override updated",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

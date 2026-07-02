@@ -2981,6 +2981,133 @@ export type Database = {
           },
         ];
       };
+      enterprise_requests: {
+        Row: {
+          id: string;
+          organization_id: string;
+          requested_by: string | null;
+          contact_email: string | null;
+          company_name: string | null;
+          requested_seats: number | null;
+          requested_clients: number | null;
+          requested_features: string[];
+          notes: string | null;
+          status: string;
+          handled_by: string | null;
+          handled_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          requested_by?: string | null;
+          contact_email?: string | null;
+          company_name?: string | null;
+          requested_seats?: number | null;
+          requested_clients?: number | null;
+          requested_features?: string[];
+          notes?: string | null;
+          status?: string;
+          handled_by?: string | null;
+          handled_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          requested_by?: string | null;
+          contact_email?: string | null;
+          company_name?: string | null;
+          requested_seats?: number | null;
+          requested_clients?: number | null;
+          requested_features?: string[];
+          notes?: string | null;
+          status?: string;
+          handled_by?: string | null;
+          handled_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_requests_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      organization_plan_overrides: {
+        Row: {
+          id: string;
+          organization_id: string;
+          plan: string;
+          status: string;
+          seats_limit: number | null;
+          clients_limit: number | null;
+          monitoring_limit: number | null;
+          api_enabled: boolean;
+          webhooks_enabled: boolean;
+          ai_enabled: boolean;
+          portal_branding_enabled: boolean;
+          custom_domain_enabled: boolean;
+          priority_support_enabled: boolean;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          plan: string;
+          status?: string;
+          seats_limit?: number | null;
+          clients_limit?: number | null;
+          monitoring_limit?: number | null;
+          api_enabled?: boolean;
+          webhooks_enabled?: boolean;
+          ai_enabled?: boolean;
+          portal_branding_enabled?: boolean;
+          custom_domain_enabled?: boolean;
+          priority_support_enabled?: boolean;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          plan?: string;
+          status?: string;
+          seats_limit?: number | null;
+          clients_limit?: number | null;
+          monitoring_limit?: number | null;
+          api_enabled?: boolean;
+          webhooks_enabled?: boolean;
+          ai_enabled?: boolean;
+          portal_branding_enabled?: boolean;
+          custom_domain_enabled?: boolean;
+          priority_support_enabled?: boolean;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_plan_overrides_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       white_label_settings: {
         Row: {
           id: string;
@@ -4702,6 +4829,8 @@ export type ApiWebhookEndpoint = Database["public"]["Tables"]["api_webhook_endpo
 export type ApiWebhookDelivery = Database["public"]["Tables"]["api_webhook_deliveries"]["Row"];
 export type WebhookEndpoint = Database["public"]["Tables"]["webhook_endpoints"]["Row"];
 export type WebhookDelivery = Database["public"]["Tables"]["webhook_deliveries"]["Row"];
+export type EnterpriseRequest = Database["public"]["Tables"]["enterprise_requests"]["Row"];
+export type OrganizationPlanOverride = Database["public"]["Tables"]["organization_plan_overrides"]["Row"];
 export type WhiteLabelSettings = Database["public"]["Tables"]["white_label_settings"]["Row"];
 export type BillingUsageEvent = Database["public"]["Tables"]["billing_usage_events"]["Row"];
 export type SubscriptionUsageSnapshot =
