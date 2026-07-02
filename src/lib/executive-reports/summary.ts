@@ -17,6 +17,16 @@ type ExecutiveSummaryInput = {
   riskAISnapshot?: RiskAIReportSnapshot | null;
   complianceScore?: number | null;
   timeline?: Array<{ title: string; created_at: string }>;
+  predictiveSnapshot?: {
+    trajectory: string;
+    predictedHealth: number | null;
+    predictedRisk: number | null;
+    predictedIncidents: number | null;
+    churnProbability: number;
+    confidence: number;
+    topConcerns: string[];
+    recommendedActions: string[];
+  } | null;
 };
 
 function formatDelta(delta: number | null): string {
@@ -160,6 +170,12 @@ function buildTopConcerns(input: ExecutiveSummaryInput): string[] {
   if (input.riskAISnapshot?.predictedSeverity === "critical") {
     concerns.push("AI flagged critical risk severity");
   }
+  if (input.predictiveSnapshot?.trajectory === "critical") {
+    concerns.push("Predictive trajectory critical");
+  }
+  if (input.predictiveSnapshot && input.predictiveSnapshot.churnProbability >= 55) {
+    concerns.push(`Elevated churn risk (${input.predictiveSnapshot.churnProbability}%)`);
+  }
 
   return concerns.slice(0, 5);
 }
@@ -204,6 +220,9 @@ function buildSuggestedPriorities(input: ExecutiveSummaryInput): string[] {
   if (input.incidentAISnapshot?.suggestedImprovements) {
     priorities.push(input.incidentAISnapshot.suggestedImprovements);
   }
+  if (input.predictiveSnapshot?.recommendedActions.length) {
+    priorities.push(...input.predictiveSnapshot.recommendedActions.slice(0, 2));
+  }
 
   if (priorities.length === 0) {
     priorities.push("Maintain current operational cadence and schedule next executive review.");
@@ -238,6 +257,35 @@ function buildTrendAnalysis(input: ExecutiveSummaryInput): string {
   }
 
   return parts.join(" ") || "Trend data is limited for this reporting period.";
+}
+
+/** Build predictive executive summary text — deterministic, no LLM required. */
+export function buildPredictiveExecutiveSummary(input: ExecutiveSummaryInput): string {
+  const predictive = input.predictiveSnapshot;
+  if (!predictive) {
+    return "Predictive intelligence is not available for this client in the current reporting period.";
+  }
+
+  const parts = [
+    `Predictive trajectory: ${predictive.trajectory}.`,
+    predictive.predictedHealth != null
+      ? `Forecast health score ${predictive.predictedHealth}.`
+      : null,
+    predictive.predictedRisk != null ? `Forecast risk score ${predictive.predictedRisk}.` : null,
+    predictive.predictedIncidents != null
+      ? `Predicted incidents ${predictive.predictedIncidents}.`
+      : null,
+    predictive.churnProbability >= 45
+      ? `Churn probability elevated at ${predictive.churnProbability}%.`
+      : `Churn probability ${predictive.churnProbability}%.`,
+    `Forecast confidence ${predictive.confidence}%.`,
+  ].filter(Boolean);
+
+  if (predictive.topConcerns.length > 0) {
+    parts.push(`Key concerns: ${predictive.topConcerns.slice(0, 3).join("; ")}.`);
+  }
+
+  return parts.join(" ");
 }
 
 function buildExecutiveRecommendations(input: ExecutiveSummaryInput): string[] {
@@ -280,6 +328,9 @@ export function buildExecutiveReportContent(input: ExecutiveSummaryInput): Execu
   const confidences = [
     input.incidentAISnapshot?.confidence,
     input.riskAISnapshot?.confidence,
+    input.predictiveSnapshot?.confidence != null
+      ? input.predictiveSnapshot.confidence / 100
+      : null,
   ].filter((value): value is number => value != null);
   const averageConfidence =
     confidences.length > 0
@@ -301,6 +352,15 @@ export function buildExecutiveReportContent(input: ExecutiveSummaryInput): Execu
     suggestedPriorities: buildSuggestedPriorities(input),
     trendAnalysis: buildTrendAnalysis(input),
     executiveRecommendations: buildExecutiveRecommendations(input),
+    predictiveTrajectory: input.predictiveSnapshot?.trajectory ?? null,
+    predictedHealth: input.predictiveSnapshot?.predictedHealth ?? null,
+    predictedRisk: input.predictiveSnapshot?.predictedRisk ?? null,
+    predictedIncidents: input.predictiveSnapshot?.predictedIncidents ?? null,
+    predictedChurn: input.predictiveSnapshot?.churnProbability ?? null,
+    predictiveConfidence: input.predictiveSnapshot?.confidence ?? null,
+    predictiveSummary: input.predictiveSnapshot
+      ? buildPredictiveExecutiveSummary(input)
+      : null,
     timeline: (input.timeline ?? []).map((item) => ({
       title: item.title,
       createdAt: item.created_at,
@@ -314,6 +374,7 @@ export function buildExecutiveReportContent(input: ExecutiveSummaryInput): Execu
     slaSummary: buildSLAExecutiveSummary(input),
     monitoringSummary: buildMonitoringExecutiveSummary(input),
     aiSummary: buildAISummary(input),
+    predictiveSummary: buildPredictiveExecutiveSummary(input),
     metadata,
   };
 }

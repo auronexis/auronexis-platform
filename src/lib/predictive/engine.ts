@@ -4,6 +4,7 @@ import type {
   ClientPredictiveSnapshot,
   OrganizationPredictiveSnapshot,
 } from "@/lib/predictive/queries";
+import { buildOrganizationPredictiveSnapshot } from "@/lib/predictive/queries";
 import { generateClientRecommendations, generateWorkspaceRecommendations } from "@/lib/predictive/recommendations";
 import {
   classifyChurnSegment,
@@ -31,6 +32,18 @@ import type {
   PredictiveTrendLabel,
 } from "@/lib/predictive/types";
 import { PREDICTIVE_ENGINE_VERSION as ENGINE_VERSION } from "@/lib/predictive/types";
+import {
+  buildClientTrajectory,
+  predictChurnRisk,
+  predictClientHealth,
+  predictClientRisk,
+  predictIncidents,
+} from "@/lib/predictive/models";
+import { extractClientSignals } from "@/lib/predictive/signals";
+import { persistPredictiveSnapshot } from "@/lib/predictive/record";
+import { recordPredictiveActivitySafe } from "@/lib/predictive/activity";
+import type { PredictiveSnapshotRecord } from "@/lib/predictive/types";
+import type { SessionContext } from "@/lib/tenancy/context";
 
 function buildExecutiveOverview(snapshot: OrganizationPredictiveSnapshot): string {
   const atRisk = snapshot.clients.filter((client) => computeChurnProbability(client) >= 55).length;
@@ -97,7 +110,7 @@ function buildSlaForecast(snapshot: OrganizationPredictiveSnapshot) {
       openItems:
         client.success.overview.kpis.openIncidentsCount + client.success.overview.kpis.openRisksCount,
       confidence: computeClientConfidence(client),
-      href: `/clients/${client.clientId}`,
+      href: `/predictive/${client.clientId}`,
     }))
     .filter((item) => item.breachProbability >= 25)
     .sort((a, b) => b.breachProbability - a.breachProbability)
@@ -125,7 +138,7 @@ function buildIncidentForecast(snapshot: OrganizationPredictiveSnapshot) {
       incidentProbability: computeIncidentProbability(client),
       predictedSeverity: predictIncidentSeverity(client),
       confidence: computeClientConfidence(client),
-      href: `/clients/${client.clientId}`,
+      href: `/predictive/${client.clientId}`,
     }))
     .filter((item) => item.incidentProbability >= 20)
     .sort((a, b) => b.incidentProbability - a.incidentProbability)
@@ -199,7 +212,7 @@ function buildClientRankings(snapshot: OrganizationPredictiveSnapshot) {
       priorityScore: computePriorityScore(client),
       churnProbability: computeChurnProbability(client),
       healthScore: computeClientHealthScoreFromSnapshot(client),
-      href: `/clients/${client.clientId}`,
+      href: `/predictive/${client.clientId}`,
     }))
     .sort((a, b) => b.priorityScore - a.priorityScore)
     .slice(0, 10);
@@ -225,7 +238,7 @@ function buildOpportunities(snapshot: OrganizationPredictiveSnapshot): Predictiv
       opportunities.push({
         title: `Expand ${client.clientName}`,
         description: "Strong health and low churn probability suggest expansion readiness.",
-        href: `/clients/${client.clientId}`,
+        href: `/predictive/${client.clientId}`,
       });
     }
   }
@@ -419,6 +432,11 @@ export function generateClientPredictiveAnalysis(
 export function buildPredictiveDashboardSummary(
   result: PredictiveIntelligenceResult,
 ): PredictiveDashboardSummary {
+  const declining = result.clientRankings.filter((entry) => entry.healthScore < 55).length;
+  const highChurn = result.customerForecast.likelyChurn.filter(
+    (entry) => entry.churnProbability >= 55,
+  ).length;
+
   return {
     customersAtRisk: result.customerForecast.likelyChurn.length,
     predictedSlaBreaches: result.slaForecast.upcomingBreaches.filter((item) => item.breachProbability >= 50)
@@ -428,5 +446,167 @@ export function buildPredictiveDashboardSummary(
     ).length,
     revenueTrend: result.revenueForecast.trend,
     averageConfidence: result.overallConfidence.score,
+    clientsDeclining: declining,
+    highChurnRisk: highChurn,
+    forecastAccuracy: null,
   };
+}
+
+type GenerateClientPredictionInput = {
+  snapshot: ClientPredictiveSnapshot;
+  organizationId: string;
+  actorUserId?: string | null;
+  persist?: boolean;
+};
+
+/** Generate and optionally persist a client prediction snapshot. */
+export async function generateClientPrediction(
+  input: GenerateClientPredictionInput,
+): Promise<PredictiveSnapshotRecord | null> {
+  const signals = extractClientSignals(input.snapshot);
+  const confidence = computeClientConfidence(input.snapshot).score;
+  const trajectory = buildClientTrajectory(input.snapshot);
+
+  const payload = {
+    organizationId: input.organizationId,
+    clientId: input.snapshot.clientId,
+    healthScore: signals.healthScore,
+    riskScore: signals.riskScore,
+    incidentCount: signals.incidentCount,
+    breachCount: signals.breachCount,
+    monitoringFailures: signals.monitoringFailures,
+    engagementScore: signals.engagementScore,
+    predictedHealth: predictClientHealth(input.snapshot),
+    predictedRisk: predictClientRisk(input.snapshot),
+    predictedIncidents: predictIncidents(input.snapshot),
+    confidence,
+    metadata: {
+      trajectory,
+      churnProbability: predictChurnRisk(input.snapshot),
+      engineVersion: ENGINE_VERSION,
+    },
+  };
+
+  if (!input.persist) {
+    return {
+      id: "ephemeral",
+      organizationId: input.organizationId,
+      clientId: input.snapshot.clientId,
+      snapshotDate: new Date().toISOString().slice(0, 10),
+      healthScore: payload.healthScore,
+      riskScore: payload.riskScore,
+      incidentCount: payload.incidentCount,
+      breachCount: payload.breachCount,
+      monitoringFailures: payload.monitoringFailures,
+      engagementScore: payload.engagementScore,
+      predictedHealth: payload.predictedHealth,
+      predictedRisk: payload.predictedRisk,
+      predictedIncidents: payload.predictedIncidents,
+      confidence: payload.confidence,
+      metadata: payload.metadata,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  const saved = await persistPredictiveSnapshot(payload);
+  if (saved) {
+    await recordPredictiveActivitySafe({
+      organizationId: input.organizationId,
+      actorUserId: input.actorUserId,
+      eventType: "predictive.snapshot_created",
+      message: `Predictive snapshot created — ${input.snapshot.clientName}`,
+      entityType: "client",
+      entityId: input.snapshot.clientId,
+      metadata: { trajectory, confidence },
+    });
+
+    if (trajectory === "declining" || trajectory === "critical") {
+      await recordPredictiveActivitySafe({
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        eventType: "predictive.health_declining",
+        message: `Health trajectory ${trajectory} — ${input.snapshot.clientName}`,
+        entityType: "client",
+        entityId: input.snapshot.clientId,
+        metadata: { predictedHealth: payload.predictedHealth },
+      });
+    }
+
+    if (payload.predictedRisk >= 55) {
+      await recordPredictiveActivitySafe({
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        eventType: "predictive.risk_increasing",
+        message: `Risk forecast elevated — ${input.snapshot.clientName}`,
+        entityType: "client",
+        entityId: input.snapshot.clientId,
+        metadata: { predictedRisk: payload.predictedRisk },
+      });
+    }
+
+    if ((payload.predictedIncidents ?? 0) >= 1) {
+      await recordPredictiveActivitySafe({
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        eventType: "predictive.incident_forecast",
+        message: `Incident forecast — ${input.snapshot.clientName}`,
+        entityType: "client",
+        entityId: input.snapshot.clientId,
+        metadata: { predictedIncidents: payload.predictedIncidents },
+      });
+    }
+
+    if (predictChurnRisk(input.snapshot) >= 55) {
+      await recordPredictiveActivitySafe({
+        organizationId: input.organizationId,
+        actorUserId: input.actorUserId,
+        eventType: "predictive.churn_detected",
+        message: `Churn risk detected — ${input.snapshot.clientName}`,
+        entityType: "client",
+        entityId: input.snapshot.clientId,
+        metadata: { churnProbability: predictChurnRisk(input.snapshot) },
+      });
+    }
+  }
+
+  return saved;
+}
+
+type GeneratePredictiveSnapshotInput = {
+  session: SessionContext;
+  persist?: boolean;
+  actorUserId?: string | null;
+};
+
+/** Generate org-wide predictive snapshots for all active clients. */
+export async function generatePredictiveSnapshot(
+  input: GeneratePredictiveSnapshotInput,
+): Promise<PredictiveSnapshotRecord[]> {
+  const orgSnapshot = await buildOrganizationPredictiveSnapshot(input.session);
+  const results: PredictiveSnapshotRecord[] = [];
+
+  for (const client of orgSnapshot.clients) {
+    const saved = await generateClientPrediction({
+      snapshot: client,
+      organizationId: input.session.organization.id,
+      actorUserId: input.actorUserId,
+      persist: input.persist ?? false,
+    });
+    if (saved) results.push(saved);
+  }
+
+  if (input.persist) {
+    await recordPredictiveActivitySafe({
+      organizationId: input.session.organization.id,
+      actorUserId: input.actorUserId,
+      eventType: "predictive.generated",
+      message: "Predictive intelligence generated",
+      metadata: {
+        clientCount: results.length,
+        engineVersion: ENGINE_VERSION,
+      },
+    });
+  }
+
+  return results;
 }

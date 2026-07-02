@@ -499,11 +499,11 @@ export default async function DashboardPage() {
 
           <div className="lg:col-span-12 xl:col-span-4">
             <DashboardPanel
-              title="Predictive Forecast"
-              description="Customers at risk, SLA and incident forecasts, revenue trend."
+              title="Predictive Intelligence"
+              description="Clients declining, incident and breach forecasts, churn risk, confidence."
               action={
                 predictiveAccess.allowed ? (
-                  <Link href="/dashboard/predictive" className={cn(linkText, "text-xs")}>
+                  <Link href="/predictive" className={cn(linkText, "text-xs")}>
                     View all
                   </Link>
                 ) : null
@@ -519,6 +519,9 @@ export default async function DashboardPage() {
                     predictedIncidents: 0,
                     revenueTrend: "unknown",
                     averageConfidence: 0,
+                    clientsDeclining: 0,
+                    highChurnRisk: 0,
+                    forecastAccuracy: null,
                   }
                 }
                 aiEnabled={predictiveAccess.allowed}

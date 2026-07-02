@@ -69,7 +69,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
       {loadError ? (
         <FormAlert variant="error">
-          Unable to load clients. {loadError}
+          Unable to load clients right now. Refresh the page or try again in a moment.
         </FormAlert>
       ) : null}
 

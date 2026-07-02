@@ -20,6 +20,8 @@ export type StripeEnvDiagnostics = {
   publishableKey: EnvVarStatus;
 };
 
+export type PlatformEnvDiagnostics = import("@/lib/diagnostics/platform-env").PlatformEnvDiagnostics;
+
 export type SubscriptionDiagnostics = {
   exists: boolean;
   row: OrganizationSubscription | null;
@@ -167,6 +169,7 @@ export type WorkspaceDiagnostics = {
   lockedFeatures: LockedFeatureInfo[];
   subscription: SubscriptionDiagnostics;
   stripeEnv: StripeEnvDiagnostics;
+  platformEnv: PlatformEnvDiagnostics;
   matchedPlanFromSubscriptionPriceId: PlanKey | null;
   ai: AIReadinessDiagnostics;
   automation: AutomationDiagnostics;

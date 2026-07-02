@@ -14,6 +14,9 @@ type MarketingHeaderProps = {
   auth?: MarketingAuthState;
 };
 
+const AUTH_LINK_CLASS =
+  "rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-white";
+
 export function MarketingHeader({ className, auth = { isAuthenticated: false } }: MarketingHeaderProps) {
   const actions = resolveMarketingHeaderActions(auth);
 
@@ -25,23 +28,37 @@ export function MarketingHeader({ className, auth = { isAuthenticated: false } }
       )}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-        <Link href={MARKETING_ROUTES.home} className={cn(focusRing, "flex shrink-0 items-center")}>
+        <Link href={actions.isAuthenticated ? "/dashboard" : MARKETING_ROUTES.home} className={cn(focusRing, "flex shrink-0 items-center")}>
           <MarketingHeaderLogo />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
-          {MARKETING_NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-white",
-                focusRing,
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {actions.isAuthenticated ? (
+            <>
+              <Link href={actions.billingHref} className={cn(AUTH_LINK_CLASS, focusRing)}>
+                Billing
+              </Link>
+              <Link href={actions.settingsHref} className={cn(AUTH_LINK_CLASS, focusRing)}>
+                Settings
+              </Link>
+              <Link href={actions.supportHref} className={cn(AUTH_LINK_CLASS, focusRing)}>
+                Support
+              </Link>
+              <Link href={actions.enterpriseHref} className={cn(AUTH_LINK_CLASS, focusRing)}>
+                Enterprise
+              </Link>
+            </>
+          ) : (
+            MARKETING_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(AUTH_LINK_CLASS, focusRing)}
+              >
+                {item.label}
+              </Link>
+            ))
+          )}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -64,13 +81,7 @@ export function MarketingHeader({ className, auth = { isAuthenticated: false } }
             </>
           ) : (
             <>
-              <Link
-                href={actions.signInHref}
-                className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground/80 hover:text-white",
-                  focusRing,
-                )}
-              >
+              <Link href={actions.signInHref} className={cn(AUTH_LINK_CLASS, focusRing)}>
                 {actions.signInLabel}
               </Link>
               <Link

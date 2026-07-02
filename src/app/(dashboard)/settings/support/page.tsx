@@ -46,6 +46,12 @@ export default async function SettingsSupportPage() {
           icon={Shield}
         />
         <SettingsNavCard
+          href="/settings/enterprise"
+          title="Enterprise request"
+          description="Review Enterprise plan status or submit a workspace request."
+          icon={MessageSquare}
+        />
+        <SettingsNavCard
           href={HELP_LINKS.feedback}
           title="Feedback"
           description="Share product feedback with our team."

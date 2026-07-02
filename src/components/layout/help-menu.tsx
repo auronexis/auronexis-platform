@@ -33,7 +33,7 @@ const HELP_ITEMS: HelpLinkItem[] = [
   { label: "Support", href: HELP_LINKS.support, icon: LifeBuoy },
   { label: "Security", href: HELP_LINKS.security, icon: Shield },
   { label: "Pilot Program", href: HELP_LINKS.pilotProgram, icon: Rocket },
-  { label: "Contact", href: HELP_LINKS.contact, icon: Mail },
+  { label: "Contact support", href: "/settings/support", icon: Mail },
   { label: "Help Center", href: HELP_LINKS.helpCenter, icon: CircleHelp },
 ];
 

@@ -16,6 +16,7 @@ const TREND_LABELS: Record<PredictiveDashboardSummary["revenueTrend"], string> =
   improving: "Improving",
   stable: "Stable",
   declining: "Declining",
+  critical: "Critical",
   unknown: "Unknown",
 };
 
@@ -28,7 +29,7 @@ export function PredictiveForecastHubCard({
   if (!aiEnabled) {
     return (
       <div className="rounded-2xl border border-dashed border-primary/25 bg-primary/[0.04] p-5">
-        <p className="text-sm font-semibold text-foreground">Predictive Forecast</p>
+        <p className="text-sm font-semibold text-foreground">Predictive Intelligence</p>
         <p className="mt-2 text-sm text-muted">{upgradeMessage}</p>
         {requiredPlanLabel ? (
           <p className="mt-1 text-xs font-medium text-foreground">{requiredPlanLabel} plan required</p>
@@ -38,10 +39,10 @@ export function PredictiveForecastHubCard({
   }
 
   const items = [
-    { label: "Customers at risk", value: summary.customersAtRisk },
-    { label: "Predicted SLA breaches", value: summary.predictedSlaBreaches },
+    { label: "Clients declining", value: summary.clientsDeclining },
     { label: "Predicted incidents", value: summary.predictedIncidents },
-    { label: "Revenue trend", value: TREND_LABELS[summary.revenueTrend] },
+    { label: "Predicted breaches", value: summary.predictedSlaBreaches },
+    { label: "High churn risk", value: summary.highChurnRisk },
   ];
 
   return (
@@ -49,6 +50,14 @@ export function PredictiveForecastHubCard({
       <p className="text-xs text-muted">
         Avg confidence:{" "}
         <span className="font-medium text-foreground">{summary.averageConfidence}%</span>
+        {summary.forecastAccuracy != null ? (
+          <>
+            {" · "}
+            Accuracy {summary.forecastAccuracy}%
+          </>
+        ) : null}
+        {" · "}
+        Trend {TREND_LABELS[summary.revenueTrend]}
       </p>
       <div className="grid grid-cols-2 gap-3">
         {items.map((item) => (
@@ -58,8 +67,8 @@ export function PredictiveForecastHubCard({
           </div>
         ))}
       </div>
-      <Link href="/dashboard/predictive" className={cn(linkText, "inline-flex text-sm")}>
-        Open predictive workspace
+      <Link href="/predictive" className={cn(linkText, "inline-flex text-sm")}>
+        Open predictive intelligence
       </Link>
     </div>
   );

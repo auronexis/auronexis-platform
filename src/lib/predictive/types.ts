@@ -10,7 +10,10 @@ export type PredictiveTrendLabel =
   | "improving"
   | "stable"
   | "declining"
+  | "critical"
   | "unknown";
+
+export type PredictiveTrajectory = "improving" | "stable" | "declining" | "critical";
 
 export type ChurnSegment = "likely_churn" | "stable" | "growing";
 
@@ -168,6 +171,69 @@ export type PredictiveDashboardSummary = {
   predictedIncidents: number;
   revenueTrend: PredictiveTrendLabel;
   averageConfidence: number;
+  clientsDeclining: number;
+  highChurnRisk: number;
+  forecastAccuracy: number | null;
+};
+
+export type PredictiveMetrics = {
+  totalClients: number;
+  clientsDeclining: number;
+  predictedIncidents: number;
+  predictedBreaches: number;
+  highChurnRisk: number;
+  averageConfidence: number;
+  forecastAccuracy: number | null;
+  trajectory: PredictiveTrajectory;
+};
+
+export type PredictiveSummary = {
+  metrics: PredictiveMetrics;
+  topDecliningClients: Array<{
+    clientId: string;
+    clientName: string;
+    trajectory: PredictiveTrajectory;
+    predictedHealth: number | null;
+    confidence: number;
+    href: string;
+  }>;
+  executiveOverview: string;
+  generatedAt: string | null;
+};
+
+export type ClientPredictiveSummary = {
+  clientId: string;
+  clientName: string;
+  trajectory: PredictiveTrajectory;
+  healthTrend: PredictiveTrendLabel;
+  riskTrend: PredictiveTrendLabel;
+  incidentTrend: PredictiveTrendLabel;
+  confidence: PredictiveConfidence;
+  topConcerns: string[];
+  recommendedActions: string[];
+  predictedHealth: number | null;
+  predictedRisk: number | null;
+  predictedIncidents: number | null;
+  churnProbability: number;
+};
+
+export type PredictiveSnapshotRecord = {
+  id: string;
+  organizationId: string;
+  clientId: string | null;
+  snapshotDate: string;
+  healthScore: number | null;
+  riskScore: number | null;
+  incidentCount: number | null;
+  breachCount: number | null;
+  monitoringFailures: number | null;
+  engagementScore: number | null;
+  predictedHealth: number | null;
+  predictedRisk: number | null;
+  predictedIncidents: number | null;
+  confidence: number | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
 };
 
 export type PredictiveDiagnosticsSnapshot = {
@@ -180,6 +246,6 @@ export type PredictiveDiagnosticsSnapshot = {
   lastGeneratedAt: string | null;
 };
 
-export const PREDICTIVE_ENGINE_VERSION = "predictive-v1";
+export const PREDICTIVE_ENGINE_VERSION = "predictive-v2";
 export const INSUFFICIENT_PREDICTIVE_DATA =
   "Not enough verified data to generate predictions for this client.";

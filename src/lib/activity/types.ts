@@ -83,7 +83,13 @@ export type ActivityEventType =
   | "enterprise.request_created"
   | "enterprise.request_approved"
   | "enterprise.request_rejected"
-  | "enterprise.override_updated";
+  | "enterprise.override_updated"
+  | "predictive.snapshot_created"
+  | "predictive.health_declining"
+  | "predictive.risk_increasing"
+  | "predictive.incident_forecast"
+  | "predictive.churn_detected"
+  | "predictive.generated";
 
 export type ActivityFilter =
   | "all"
@@ -178,6 +184,12 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "enterprise.request_approved": "Enterprise request approved",
   "enterprise.request_rejected": "Enterprise request rejected",
   "enterprise.override_updated": "Enterprise plan override updated",
+  "predictive.snapshot_created": "Predictive snapshot created",
+  "predictive.health_declining": "Predictive health declining",
+  "predictive.risk_increasing": "Predictive risk increasing",
+  "predictive.incident_forecast": "Predictive incident forecast",
+  "predictive.churn_detected": "Predictive churn detected",
+  "predictive.generated": "Predictive intelligence generated",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

@@ -30,9 +30,84 @@ function DiagnosticsSection({
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="grid gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[220px_1fr] sm:gap-4">
+    <div className="grid grid-cols-1 gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[220px_1fr] sm:items-start sm:gap-4">
       <dt className="text-sm font-medium text-muted">{label}</dt>
-      <dd className="break-all text-sm text-foreground">{value}</dd>
+      <dd className="min-w-0 break-words text-sm text-foreground">{value}</dd>
+    </div>
+  );
+}
+
+function EnvGridHeader() {
+  return (
+    <div className="mb-1 hidden border-b border-border/60 pb-2 md:grid md:grid-cols-[minmax(0,280px)_80px_120px_minmax(0,1fr)] md:items-center md:gap-4 md:text-xs md:font-semibold md:uppercase md:tracking-wider md:text-muted">
+      <span>Variable</span>
+      <span>Badge</span>
+      <span>Status</span>
+      <span>Value</span>
+    </div>
+  );
+}
+
+function EnvRow({
+  name,
+  present,
+  preview,
+}: {
+  name: string;
+  present: boolean;
+  preview?: string;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-2 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-2 md:grid-cols-[minmax(0,280px)_80px_120px_minmax(0,1fr)] md:items-center md:gap-4">
+      <div className="min-w-0 truncate text-sm font-medium text-foreground md:font-normal md:text-muted">
+        <span className="mr-2 text-xs uppercase tracking-wide text-muted md:hidden">Variable</span>
+        {name}
+      </div>
+      <div className="flex min-w-0 items-center gap-2 md:block">
+        <span className="text-xs text-muted md:hidden">Badge</span>
+        <BoolBadge value={present} />
+      </div>
+      <div className="min-w-0 truncate whitespace-nowrap text-sm text-foreground">
+        <span className="mr-2 text-xs text-muted md:hidden">Status</span>
+        {present ? "Present" : "Missing"}
+      </div>
+      <div className="min-w-0 overflow-hidden truncate font-mono text-xs text-muted">
+        <span className="mr-2 font-sans text-xs text-muted md:hidden">Value</span>
+        {preview ?? "—"}
+      </div>
+    </div>
+  );
+}
+
+function EnvGrid({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-x-auto">
+      <EnvGridHeader />
+      <div className="min-w-0">{children}</div>
+    </div>
+  );
+}
+
+function StatusListRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-1 gap-1 rounded-lg border border-border/60 px-3 py-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4">
+      <span className="min-w-0 truncate font-medium text-foreground">{label}</span>
+      <span className="min-w-0 truncate text-muted sm:text-right">{value}</span>
+    </div>
+  );
+}
+
+function InlineBadgeRow({
+  badge,
+  text,
+}: {
+  badge: boolean;
+  text: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:gap-3">
+      <BoolBadge value={badge} />
+      <span className="min-w-0 break-words">{text}</span>
     </div>
   );
 }
@@ -52,28 +127,6 @@ function BoolBadge({ value }: { value: boolean }) {
   );
 }
 
-function EnvRow({
-  name,
-  present,
-  preview,
-}: {
-  name: string;
-  present: boolean;
-  preview?: string;
-}) {
-  return (
-    <Row
-      label={name}
-      value={
-        <span className="inline-flex flex-wrap items-center gap-2">
-          <BoolBadge value={present} />
-          <span>{present ? "Present" : "Missing"}</span>
-          {preview ? <span className="font-mono text-xs text-muted">{preview}</span> : null}
-        </span>
-      }
-    />
-  );
-}
 
 export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
   const subscription = data.subscription.row;
@@ -131,9 +184,9 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
             {data.enabledFeatures.map((item) => (
               <li
                 key={item.key}
-                className="flex items-center justify-between rounded-md border border-border bg-muted/5 px-3 py-2 text-sm"
+                className="grid grid-cols-1 gap-2 rounded-md border border-border bg-muted/5 px-3 py-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4"
               >
-                <span>{getPlanFeatureLabel(item.key)}</span>
+                <span className="min-w-0 truncate">{getPlanFeatureLabel(item.key)}</span>
                 <BoolBadge value={item.enabled} />
               </li>
             ))}
@@ -192,10 +245,10 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
       </DiagnosticsSection>
 
       <DiagnosticsSection
-        title="Stripe price mapping"
-        description="Environment readiness — secrets are never shown."
+        title="Stripe environment"
+        description="Billing price IDs and Stripe credentials — secrets are never shown."
       >
-        <dl>
+        <EnvGrid>
           <EnvRow {...data.stripeEnv.starterPriceId} />
           <EnvRow {...data.stripeEnv.professionalPriceId} />
           <EnvRow {...data.stripeEnv.businessPriceId} />
@@ -203,7 +256,54 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           <EnvRow {...data.stripeEnv.webhookSecret} />
           <EnvRow {...data.stripeEnv.secretKey} />
           <EnvRow {...data.stripeEnv.publishableKey} />
+        </EnvGrid>
+      </DiagnosticsSection>
+
+      <DiagnosticsSection
+        title="Supabase environment"
+        description="Database and auth configuration — keys are masked."
+      >
+        <EnvGrid>
+          <EnvRow {...data.platformEnv.supabaseUrl} />
+          <EnvRow {...data.platformEnv.supabaseAnonKey} />
+          <EnvRow {...data.platformEnv.supabaseServiceRoleKey} />
+        </EnvGrid>
+      </DiagnosticsSection>
+
+      <DiagnosticsSection
+        title="OpenAI environment"
+        description="Report assistant provider configuration."
+      >
+        <EnvGrid>
+          <EnvRow {...data.platformEnv.openaiApiKey} />
+          <EnvRow {...data.platformEnv.openaiModel} />
+          <EnvRow {...data.platformEnv.aiProvider} />
+        </EnvGrid>
+        <dl className="mt-4">
+          <Row label="Resolved provider" value={data.ai.resolvedProviderId} />
+          <Row
+            label="Report assistant allowed"
+            value={<BoolBadge value={data.ai.aiFeatureAllowed} />}
+          />
         </dl>
+      </DiagnosticsSection>
+
+      <DiagnosticsSection
+        title="Anthropic environment"
+        description="Optional Anthropic provider configuration."
+      >
+        <EnvGrid>
+          <EnvRow {...data.platformEnv.anthropicApiKey} />
+        </EnvGrid>
+      </DiagnosticsSection>
+
+      <DiagnosticsSection
+        title="Enterprise admin"
+        description="Platform operator IDs for enterprise approval workflows."
+      >
+        <EnvGrid>
+          <EnvRow {...data.platformEnv.platformAdminUserIds} />
+        </EnvGrid>
       </DiagnosticsSection>
 
       <DiagnosticsSection
@@ -231,16 +331,8 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         </dl>
       </DiagnosticsSection>
 
-      <DiagnosticsSection title="AI readiness" description="Report assistant provider and usage.">
+      <DiagnosticsSection title="AI readiness" description="Report assistant usage and session metrics.">
         <dl>
-          <Row label="AI_PROVIDER" value={data.ai.aiProviderEnv} />
-          <Row label="OPENAI_API_KEY" value={<BoolBadge value={data.ai.openaiApiKeyPresent} />} />
-          <Row label="OPENAI_MODEL" value={data.ai.openaiModel} />
-          <Row label="Resolved provider" value={data.ai.resolvedProviderId} />
-          <Row
-            label="ai_report_assistant allowed"
-            value={<BoolBadge value={data.ai.aiFeatureAllowed} />}
-          />
           <Row
             label="Monthly AI calls"
             value={`${data.ai.usageSummary.callsThisMonth} / ${data.ai.usageSummary.limit}`}
@@ -264,10 +356,10 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           <Row
             label="Provider health"
             value={
-              <span className="inline-flex items-center gap-2">
-                <BoolBadge value={data.ai.diagnostics.providerHealthOk} />
-                {data.ai.diagnostics.providerHealthMessage}
-              </span>
+              <InlineBadgeRow
+                badge={data.ai.diagnostics.providerHealthOk}
+                text={data.ai.diagnostics.providerHealthMessage}
+              />
             }
           />
           <Row label="Last latency" value={data.ai.diagnostics.lastLatencyMs ?? "—"} />
@@ -432,13 +524,11 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         </dl>
         <div className="mt-4 space-y-2">
           {data.integrations.registeredProviders.map((provider) => (
-            <div
+            <StatusListRow
               key={provider.id}
-              className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2 text-sm"
-            >
-              <span className="font-medium text-foreground">{provider.name}</span>
-              <span className="text-muted capitalize">{provider.status.replace(/_/g, " ")}</span>
-            </div>
+              label={provider.name}
+              value={<span className="capitalize">{provider.status.replace(/_/g, " ")}</span>}
+            />
           ))}
         </div>
       </DiagnosticsSection>
@@ -503,8 +593,8 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
       </DiagnosticsSection>
 
       <DiagnosticsSection
-        title="Enterprise Connectors"
-        description="Native OAuth connectors, token validity, sync health, and refresh status."
+        title="Monitoring connectors"
+        description="Native connector health, OAuth tokens, and sync status."
       >
         <dl>
           <Row label="Registered connectors" value={data.connectors.registeredConnectors} />
@@ -529,25 +619,25 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         </dl>
         <div className="mt-4 space-y-2">
           {data.connectors.providers.map((provider) => (
-            <div
+            <StatusListRow
               key={provider.connectorId}
-              className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2 text-sm"
-            >
-              <span className="font-medium text-foreground">{provider.name}</span>
-              <span className="text-muted capitalize">
-                {provider.connected
-                  ? provider.tokenValid
-                    ? provider.healthStatus
-                    : "token invalid"
-                  : "not connected"}
-              </span>
-            </div>
+              label={provider.name}
+              value={
+                <span className="capitalize">
+                  {provider.connected
+                    ? provider.tokenValid
+                      ? provider.healthStatus
+                      : "token invalid"
+                    : "not connected"}
+                </span>
+              }
+            />
           ))}
         </div>
       </DiagnosticsSection>
 
       <DiagnosticsSection
-        title="Public API"
+        title="Public API & webhooks"
         description="Versioned REST API metrics, rate limits, webhook deliveries, and key inventory."
       >
         <dl>
@@ -753,15 +843,11 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         </dl>
         <div className="mt-4 space-y-2">
           {data.cron.jobs.map((job) => (
-            <div
+            <StatusListRow
               key={job.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 px-3 py-2 text-sm"
-            >
-              <span className="font-medium text-foreground">{job.name}</span>
-              <span className="text-muted capitalize">
-                {job.enabled ? job.lastStatus ?? "scheduled" : "disabled"}
-              </span>
-            </div>
+              label={job.name}
+              value={<span className="capitalize">{job.enabled ? job.lastStatus ?? "scheduled" : "disabled"}</span>}
+            />
           ))}
         </div>
       </DiagnosticsSection>
@@ -1189,22 +1275,26 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           <Row
             label="Database"
             value={
-              <span className="inline-flex items-center gap-2">
-                <BoolBadge value={data.platform.databaseHealth.ok} />
-                {data.platform.databaseHealth.message}
-                {data.platform.databaseHealth.latencyMs != null
-                  ? ` (${data.platform.databaseHealth.latencyMs}ms)`
-                  : null}
-              </span>
+              <InlineBadgeRow
+                badge={data.platform.databaseHealth.ok}
+                text={
+                  <>
+                    {data.platform.databaseHealth.message}
+                    {data.platform.databaseHealth.latencyMs != null
+                      ? ` (${data.platform.databaseHealth.latencyMs}ms)`
+                      : null}
+                  </>
+                }
+              />
             }
           />
           <Row
             label="Stripe configuration"
             value={
-              <span className="inline-flex items-center gap-2">
-                <BoolBadge value={data.platform.stripeHealth.ok} />
-                {data.platform.stripeHealth.message}
-              </span>
+              <InlineBadgeRow
+                badge={data.platform.stripeHealth.ok}
+                text={data.platform.stripeHealth.message}
+              />
             }
           />
           <Row label="React cache" value={<BoolBadge value={data.platform.cacheEnabled} />} />

@@ -61,7 +61,7 @@ export function detectPredictiveAnomalies(
       title: "Multiple accounts at churn risk",
       description: `${highChurnClients.length} clients exceed churn risk thresholds from verified signals.`,
       severity: "high",
-      href: "/dashboard/predictive",
+      href: "/predictive",
     });
   }
 
@@ -87,7 +87,7 @@ export function detectPredictiveAnomalies(
       title: "Incident hotspots emerging",
       description: `${incidentHotspots.length} clients show elevated incident probability.`,
       severity: "medium",
-      href: "/dashboard/predictive",
+      href: "/predictive",
     });
   }
 

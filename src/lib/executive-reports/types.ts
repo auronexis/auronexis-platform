@@ -29,6 +29,13 @@ export type ExecutiveReportMetadata = {
   suggestedPriorities?: string[];
   trendAnalysis?: string;
   executiveRecommendations?: string[];
+  predictiveTrajectory?: string | null;
+  predictedHealth?: number | null;
+  predictedRisk?: number | null;
+  predictedIncidents?: number | null;
+  predictedChurn?: number | null;
+  predictiveConfidence?: number | null;
+  predictiveSummary?: string | null;
   timeline?: Array<{ title: string; createdAt: string }>;
   published?: boolean;
   isMock?: boolean;
@@ -41,6 +48,7 @@ export type ExecutiveReportContent = {
   slaSummary: string;
   monitoringSummary: string;
   aiSummary: string;
+  predictiveSummary: string;
   metadata: ExecutiveReportMetadata;
 };
 

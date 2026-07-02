@@ -1,6 +1,7 @@
 import "server-only";
 
-import { getComplianceDashboardData } from "@/lib/compliance/repository";
+import { getClientPredictiveSummary } from "@/lib/predictive/summary";
+import { canUseFeature } from "@/lib/plans/guards";
 import { getClientIncidentAIReportSnapshot } from "@/lib/ai-incidents/summary";
 import { getClientRiskAIReportSnapshot } from "@/lib/ai-risks/queries";
 import { getMonitoringReportSnapshot } from "@/lib/monitoring/summary";
@@ -27,8 +28,29 @@ type GenerateExecutiveReportInput = {
   published?: boolean;
 };
 
+async function loadPredictiveSnapshot(session: SessionContext, clientId: string) {
+  try {
+    const enabled = await canUseFeature(session.organization.id, "ai_predictive_intelligence");
+    if (!enabled) return null;
+    const summary = await getClientPredictiveSummary(session, clientId);
+    if (!summary || summary.confidence.score < 25) return null;
+    return {
+      trajectory: summary.trajectory,
+      predictedHealth: summary.predictedHealth,
+      predictedRisk: summary.predictedRisk,
+      predictedIncidents: summary.predictedIncidents,
+      churnProbability: summary.churnProbability,
+      confidence: summary.confidence.score,
+      topConcerns: summary.topConcerns,
+      recommendedActions: summary.recommendedActions,
+    };
+  } catch {
+    return null;
+  }
+}
 async function loadComplianceScore(session: SessionContext): Promise<number | null> {
   try {
+    const { getComplianceDashboardData } = await import("@/lib/compliance/repository");
     const data = await getComplianceDashboardData(session);
     return data.readinessPercent ?? null;
   } catch {
@@ -55,6 +77,7 @@ export async function generateExecutiveReport(
       incidentAISnapshot,
       riskAISnapshot,
       monitoringSnapshot,
+      predictiveSnapshot,
     ] = await Promise.all([
       buildReportSummaryForReport({
         session: input.session,
@@ -71,6 +94,7 @@ export async function generateExecutiveReport(
       getClientIncidentAIReportSnapshot(input.session, report.client_id),
       getClientRiskAIReportSnapshot(input.session, report.client_id),
       getMonitoringReportSnapshot(input.session, report.client_id),
+      loadPredictiveSnapshot(input.session, report.client_id),
     ]);
 
     const content = buildExecutiveReportContent({
@@ -82,6 +106,7 @@ export async function generateExecutiveReport(
       riskAISnapshot,
       complianceScore,
       timeline,
+      predictiveSnapshot,
     });
 
     const snapshotId = await saveExecutiveReportSnapshot({
@@ -140,7 +165,7 @@ export async function previewExecutiveReportContent(
       return null;
     }
 
-    const [reportSummary, timeline, complianceScore, incidentAISnapshot, riskAISnapshot, monitoringSnapshot] =
+    const [reportSummary, timeline, complianceScore, incidentAISnapshot, riskAISnapshot, monitoringSnapshot, predictiveSnapshot] =
       await Promise.all([
       buildReportSummaryForReport({
         session,
@@ -156,6 +181,7 @@ export async function previewExecutiveReportContent(
       getClientIncidentAIReportSnapshot(session, report.client_id),
       getClientRiskAIReportSnapshot(session, report.client_id),
       getMonitoringReportSnapshot(session, report.client_id),
+      loadPredictiveSnapshot(session, report.client_id),
     ]);
 
     return buildExecutiveReportContent({
@@ -167,6 +193,7 @@ export async function previewExecutiveReportContent(
       riskAISnapshot,
       complianceScore,
       timeline,
+      predictiveSnapshot,
     });
   } catch (error) {
     console.warn("[executive-reports] previewExecutiveReportContent failed:", error);

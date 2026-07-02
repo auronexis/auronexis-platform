@@ -39,6 +39,7 @@ import {
 import { getOrganizationSubscription } from "@/lib/billing/queries";
 import type { WorkspaceDiagnostics } from "@/lib/diagnostics/types";
 import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
+import { getPlatformEnvDiagnostics } from "@/lib/diagnostics/platform-env";
 import {
   getMinimumPlanForFeature,
   getRequiredPlanLabel,
@@ -122,6 +123,7 @@ export async function getWorkspaceDiagnostics(
     getStripeStagingReadiness(session),
   ]);
   const stripeEnv = getStripeEnvDiagnostics();
+  const platformEnv = getPlatformEnvDiagnostics();
   const buildInfo = getBuildInfo();
   const stripeHealth = checkStripeHealth(stripeEnv);
 
@@ -191,6 +193,7 @@ export async function getWorkspaceDiagnostics(
         : "No subscription row found. This organization resolves to Starter fallback.",
     },
     stripeEnv,
+    platformEnv,
     matchedPlanFromSubscriptionPriceId,
     ai: {
       aiProviderEnv: aiDiagnostics.providerEnv,

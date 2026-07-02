@@ -106,6 +106,10 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
   const build = getBuildInfo();
   const showBuildEnvironment =
     Boolean(build.environment) && build.environment !== "production";
+  const showDeploymentUrl =
+    Boolean(build.deploymentUrl) &&
+    showBuildEnvironment &&
+    !/localhost|127\.0\.0\.1/i.test(build.deploymentUrl ?? "");
 
   const year = new Date().getFullYear();
 
@@ -167,7 +171,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
                 branding={platformBranding}
                 layout="horizontal"
                 variant="light"
-                className="w-[135px] w-auto max-w-none object-contain"
+                className="h-9 w-auto max-w-[200px] object-contain"
               />
 
               <p className="mt-3 text-sm leading-relaxed text-primary-foreground/75">
@@ -327,7 +331,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
             Version v{APP_VERSION}
             {showBuildEnvironment ? ` · ${build.environment}` : ""}
 
-            {build.deploymentUrl ? ` · ${build.deploymentUrl}` : ""}
+            {showDeploymentUrl ? ` · ${build.deploymentUrl}` : ""}
 
           </p>
 

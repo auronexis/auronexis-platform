@@ -3108,6 +3108,113 @@ export type Database = {
           },
         ];
       };
+      predictive_snapshots: {
+        Row: {
+          id: string;
+          organization_id: string;
+          client_id: string | null;
+          snapshot_date: string;
+          health_score: number | null;
+          risk_score: number | null;
+          incident_count: number | null;
+          breach_count: number | null;
+          monitoring_failures: number | null;
+          engagement_score: number | null;
+          predicted_health: number | null;
+          predicted_risk: number | null;
+          predicted_incidents: number | null;
+          confidence: number | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          client_id?: string | null;
+          snapshot_date: string;
+          health_score?: number | null;
+          risk_score?: number | null;
+          incident_count?: number | null;
+          breach_count?: number | null;
+          monitoring_failures?: number | null;
+          engagement_score?: number | null;
+          predicted_health?: number | null;
+          predicted_risk?: number | null;
+          predicted_incidents?: number | null;
+          confidence?: number | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          client_id?: string | null;
+          snapshot_date?: string;
+          health_score?: number | null;
+          risk_score?: number | null;
+          incident_count?: number | null;
+          breach_count?: number | null;
+          monitoring_failures?: number | null;
+          engagement_score?: number | null;
+          predicted_health?: number | null;
+          predicted_risk?: number | null;
+          predicted_incidents?: number | null;
+          confidence?: number | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "predictive_snapshots_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "predictive_snapshots_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      predictive_activity: {
+        Row: {
+          id: string;
+          organization_id: string;
+          event_type: string;
+          message: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          event_type: string;
+          message?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          event_type?: string;
+          message?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "predictive_activity_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       white_label_settings: {
         Row: {
           id: string;
@@ -4831,6 +4938,8 @@ export type WebhookEndpoint = Database["public"]["Tables"]["webhook_endpoints"][
 export type WebhookDelivery = Database["public"]["Tables"]["webhook_deliveries"]["Row"];
 export type EnterpriseRequest = Database["public"]["Tables"]["enterprise_requests"]["Row"];
 export type OrganizationPlanOverride = Database["public"]["Tables"]["organization_plan_overrides"]["Row"];
+export type PredictiveSnapshot = Database["public"]["Tables"]["predictive_snapshots"]["Row"];
+export type PredictiveActivity = Database["public"]["Tables"]["predictive_activity"]["Row"];
 export type WhiteLabelSettings = Database["public"]["Tables"]["white_label_settings"]["Row"];
 export type BillingUsageEvent = Database["public"]["Tables"]["billing_usage_events"]["Row"];
 export type SubscriptionUsageSnapshot =

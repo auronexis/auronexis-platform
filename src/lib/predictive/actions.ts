@@ -1,12 +1,13 @@
 "use server";
 
-import { recordActivityEvent } from "@/lib/activity/record";
 import { toAIActionError } from "@/lib/ai/core";
 import { AI_ACCESS_DENIED_MESSAGE, AIUserError } from "@/lib/ai/errors";
+import { recordPredictiveActivitySafe } from "@/lib/predictive/activity";
 import {
   refreshClientPredictiveAnalysis,
   refreshPredictiveIntelligence,
 } from "@/lib/predictive/cache";
+import { generatePredictiveSnapshot } from "@/lib/predictive/engine";
 import type {
   ClientPredictiveAnalysis,
   PredictiveIntelligenceResult,
@@ -39,13 +40,17 @@ export async function refreshPredictiveIntelligenceServerAction(): Promise<Refre
 
     const data = await refreshPredictiveIntelligence(session);
 
-    await recordActivityEvent({
+    await generatePredictiveSnapshot({
+      session,
+      persist: true,
+      actorUserId: session.user.id,
+    });
+
+    await recordPredictiveActivitySafe({
       organizationId: session.organization.id,
       actorUserId: session.user.id,
-      entityType: "organization",
-      entityId: session.organization.id,
-      action: "predictive_intelligence_refreshed",
-      title: "Predictive intelligence refreshed",
+      eventType: "predictive.generated",
+      message: "Predictive intelligence refreshed",
       metadata: {
         forecastCount: data.forecastCount,
         confidence: data.overallConfidence.score,
@@ -76,13 +81,13 @@ export async function refreshClientPredictiveServerAction(
       return { ok: false, error: "Client not found.", retryable: false };
     }
 
-    await recordActivityEvent({
+    await recordPredictiveActivitySafe({
       organizationId: session.organization.id,
       actorUserId: session.user.id,
+      eventType: "predictive.generated",
+      message: `Predictive intelligence refreshed — ${data.clientName}`,
       entityType: "client",
       entityId: clientId,
-      action: "predictive_intelligence_refreshed",
-      title: `Predictive intelligence refreshed — ${data.clientName}`,
       metadata: {
         confidence: data.confidence.score,
         churnProbability: data.churnProbability,

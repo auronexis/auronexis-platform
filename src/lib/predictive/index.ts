@@ -1,6 +1,7 @@
 export type {
   ChurnSegment,
   ClientPredictiveAnalysis,
+  ClientPredictiveSummary,
   ClientRankingEntry,
   CustomerForecastCard,
   ForecastValue,
@@ -13,9 +14,13 @@ export type {
   PredictiveDashboardSummary,
   PredictiveDiagnosticsSnapshot,
   PredictiveIntelligenceResult,
+  PredictiveMetrics,
   PredictiveOpportunityEntry,
   PredictiveRecommendation,
   PredictiveRiskEntry,
+  PredictiveSnapshotRecord,
+  PredictiveSummary,
+  PredictiveTrajectory,
   PredictiveTrendDirection,
   PredictiveTrendLabel,
   RevenueForecastCard,
@@ -45,5 +50,32 @@ export {
 export {
   buildPredictiveDashboardSummary,
   generateClientPredictiveAnalysis,
+  generateClientPrediction,
   generatePredictiveIntelligence,
+  generatePredictiveSnapshot,
 } from "@/lib/predictive/engine";
+
+export {
+  getClientPredictiveSummary,
+  getPredictiveDashboardSummaryFromResult,
+  getPredictiveMetrics,
+  getPredictiveSummary,
+} from "@/lib/predictive/summary";
+
+export {
+  calculateBreachTrend,
+  calculateEngagementTrend,
+  calculateHealthTrend,
+  calculateIncidentTrend,
+  calculateRiskTrend,
+  predictChurnRisk,
+  predictClientHealth,
+  predictClientRisk,
+  predictIncidents,
+} from "@/lib/predictive/models";
+
+export { extractClientSignals, extractOrganizationSignalSummary } from "@/lib/predictive/signals";
+
+export { recordPredictiveActivity, recordPredictiveActivitySafe } from "@/lib/predictive/activity";
+
+export { persistPredictiveSnapshot, listRecentPredictiveSnapshots } from "@/lib/predictive/record";

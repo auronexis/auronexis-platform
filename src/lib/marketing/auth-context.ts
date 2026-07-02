@@ -28,6 +28,10 @@ export function resolveMarketingHeaderActions(auth: MarketingAuthState) {
       dashboardHref: "/dashboard",
       dashboardLabel: "Dashboard",
       workspaceName: auth.organizationName,
+      billingHref: "/settings/billing",
+      settingsHref: "/settings",
+      supportHref: "/settings/support",
+      enterpriseHref: "/settings/enterprise",
     };
   }
 
