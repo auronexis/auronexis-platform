@@ -178,6 +178,7 @@ export const RISK_SOURCE_LABELS: Record<RiskSource, string> = {
   report: "Report",
   activity: "Activity",
   portal: "Portal",
+  monitoring: "Monitoring",
 };
 
 export const CLIENT_RISK_SELECT =

@@ -23,6 +23,7 @@ export type AppModule =
   | "knowledge"
   | "incidents"
   | "risks"
+  | "monitoring"
   | "reports"
   | "profitability"
   | "activity"
@@ -81,6 +82,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     knowledge: fullAccess,
     incidents: fullAccess,
     risks: fullAccess,
+    monitoring: fullAccess,
     reports: fullAccess,
     profitability: fullAccess,
     activity: readOnly,
@@ -96,6 +98,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     knowledge: fullAccess,
     incidents: fullAccess,
     risks: fullAccess,
+    monitoring: { read: true, create: true, update: true, delete: true, export: true, manage: false },
     reports: { read: true, create: true, update: true, delete: true, export: true, manage: false },
     profitability: { read: true, create: true, update: true, delete: false, export: false, manage: false },
     activity: readOnly,
@@ -111,6 +114,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     knowledge: { read: true, create: true, update: true, delete: false, export: false, manage: false },
     incidents: { read: true, create: true, update: true, delete: false, export: false, manage: false },
     risks: { read: true, create: true, update: true, delete: false, export: false, manage: false },
+    monitoring: { read: true, create: true, update: true, delete: false, export: false, manage: false },
     reports: { read: true, create: true, update: true, delete: false, export: false, manage: false },
     profitability: readOnly,
     activity: readOnly,
@@ -126,6 +130,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     knowledge: readOnly,
     incidents: readOnly,
     risks: readOnly,
+    monitoring: readOnly,
     reports: readOnly,
     profitability: readOnly,
     activity: readOnly,

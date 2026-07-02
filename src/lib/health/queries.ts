@@ -60,7 +60,7 @@ export async function gatherClientHealthMetrics(
   const reportSince = daysAgo(REPORT_WINDOW_DAYS);
   const inactiveSince = daysAgo(INACTIVE_DAYS);
 
-  const [incidentsResult, risksResult, reportsResult, portalResult, activityResult, clientActivityResult] =
+  const [incidentsResult, risksResult, reportsResult, portalResult, activityResult, clientActivityResult, monitoringResult] =
     await Promise.all([
       supabase
         .from("incidents")
@@ -102,6 +102,13 @@ export async function gatherClientHealthMetrics(
         .eq("entity_id", clientId)
         .gte("created_at", inactiveSince)
         .limit(1),
+      supabase
+        .from("monitoring_events")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", organizationId)
+        .eq("client_id", clientId)
+        .eq("severity", "critical")
+        .gte("created_at", activitySince),
     ]);
 
   const openIncidents = (incidentsResult.data ?? []) as Array<{ status: string; created_at: string }>;
@@ -139,6 +146,7 @@ export async function gatherClientHealthMetrics(
 
   return {
     slaViolations,
+    monitoringCriticalEvents: monitoringResult.count ?? 0,
     isInactiveClient: clientStatus === "archived" || !hasClientActivity,
     missingReports: !hasRecentReport,
     portalDisabled,

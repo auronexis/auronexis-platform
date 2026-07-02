@@ -40,6 +40,16 @@ export function calculateHealth(input: HealthCalculationInput): HealthCalculatio
     });
   }
 
+  if (metrics.monitoringCriticalEvents > 0) {
+    penalties.push({
+      label:
+        metrics.monitoringCriticalEvents === 1
+          ? "1 critical monitoring event"
+          : `${metrics.monitoringCriticalEvents} critical monitoring events`,
+      points: metrics.monitoringCriticalEvents * -8,
+    });
+  }
+
   if (metrics.isInactiveClient) {
     penalties.push({ label: "Inactive client", points: -5 });
   }

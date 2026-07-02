@@ -26,6 +26,8 @@ import { processOrganizationReportOverdueEscalations } from "@/lib/escalation/ev
 
 import { getSlaDashboardMetrics, processOrganizationSlaAlerts } from "@/lib/sla/queries";
 
+import { getMonitoringDashboardMetrics } from "@/lib/monitoring/summary";
+
 import type { EscalationDashboardMetrics } from "@/lib/escalation/types";
 
 import type { SlaDashboardMetrics } from "@/lib/sla/types";
@@ -76,6 +78,15 @@ const EMPTY_ESCALATION_METRICS: EscalationDashboardMetrics = {
 
   recentEscalations: [],
 
+};
+
+const EMPTY_MONITORING_METRICS = {
+  activeConnectors: 0,
+  failedConnectors: 0,
+  eventsToday: 0,
+  criticalEvents: 0,
+  lastCheckAt: null,
+  connectorHealthPercent: 100,
 };
 
 
@@ -308,7 +319,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
 
 
-  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult, riskHeatmap] =
+  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult, riskHeatmap, monitoringMetrics] =
 
     await Promise.all([
 
@@ -333,6 +344,8 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
       getRiskSummary(session),
 
       risksEnabled ? getRiskHeatmap(session) : Promise.resolve({ cells: [], maxCount: 0 }),
+
+      getMonitoringDashboardMetrics(session),
 
     ]);
 
@@ -370,6 +383,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
     draftReportsCount,
     upcomingSchedules,
     recentActivity,
+    monitoringMetrics: monitoringMetrics ?? EMPTY_MONITORING_METRICS,
     features: {
       risks: risksEnabled,
       incidents: incidentsEnabled,

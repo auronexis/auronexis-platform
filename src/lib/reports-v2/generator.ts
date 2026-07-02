@@ -17,6 +17,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { getClientRiskMetricsForReport } from "@/lib/risks/queries";
 import { getClientSLA, getTopBreachedClients } from "@/lib/sla/summary";
+import { getMonitoringReportSnapshot } from "@/lib/monitoring/summary";
 import { getSLAMetrics } from "@/lib/sla/metrics";
 
 type GenerateReportInput = {
@@ -221,10 +222,11 @@ export async function buildExecutiveSummaryForReport(
 export async function buildReportSummaryForReport(
   input: GenerateReportInput,
 ): Promise<ReportSummary> {
-  const [healthTrend, slaSnapshot, kpis] = await Promise.all([
+  const [healthTrend, slaSnapshot, kpis, monitoringSnapshot] = await Promise.all([
     buildHealthSection(input.session, input.clientId, input.clientStatus),
     buildSLASummary(input.session, input.clientId),
     buildKPISection(input.session, input.clientId, input.periodStart),
+    getMonitoringReportSnapshot(input.session, input.clientId),
   ]);
 
   const metrics: ReportMetrics = {
@@ -237,7 +239,7 @@ export async function buildReportSummaryForReport(
     ...kpis,
   };
 
-  return buildReportSummary({ metrics, healthTrend, slaSnapshot });
+  return buildReportSummary({ metrics, healthTrend, slaSnapshot, monitoringSnapshot });
 }
 
 /** Generate report content and metrics — never throws. */

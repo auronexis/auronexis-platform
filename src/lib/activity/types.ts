@@ -54,7 +54,13 @@ export type ActivityEventType =
   | "incident.assigned"
   | "incident.status_changed"
   | "incident.resolved"
-  | "incident.closed";
+  | "incident.closed"
+  | "monitoring.connector_created"
+  | "monitoring.connector_updated"
+  | "monitoring.connector_failed"
+  | "monitoring.connector_recovered"
+  | "monitoring.event_detected"
+  | "monitoring.health_checked";
 
 export type ActivityFilter =
   | "all"
@@ -120,6 +126,12 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "incident.status_changed": "Incident status changed",
   "incident.resolved": "Incident resolved",
   "incident.closed": "Incident closed",
+  "monitoring.connector_created": "Monitoring connector created",
+  "monitoring.connector_updated": "Monitoring connector updated",
+  "monitoring.connector_failed": "Monitoring connector failed",
+  "monitoring.connector_recovered": "Monitoring connector recovered",
+  "monitoring.event_detected": "Monitoring event detected",
+  "monitoring.health_checked": "Monitoring health checked",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

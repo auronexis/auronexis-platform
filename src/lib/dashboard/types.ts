@@ -6,6 +6,7 @@ import type { RiskHeatmap, RiskSummary } from "@/lib/risks/types";
 import type { ClientHealthCounts, ProfitabilitySummary } from "@/lib/profitability/types";
 import type { ReportScheduleWithRelations } from "@/lib/report-schedules/types";
 import type { SlaDashboardMetrics } from "@/lib/sla/types";
+import type { MonitoringDashboardMetrics } from "@/lib/monitoring/types";
 
 export type CriticalAlertItem =
   | {
@@ -54,5 +55,6 @@ export type DashboardData = {
   draftReportsCount: number;
   upcomingSchedules: ReportScheduleWithRelations[];
   recentActivity: ActivityEventView[];
+  monitoringMetrics: MonitoringDashboardMetrics;
   features: DashboardFeatureAccess;
 };

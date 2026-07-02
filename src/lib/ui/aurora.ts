@@ -10,6 +10,7 @@ export type AuroraModule =
   | "activity"
   | "risks"
   | "incidents"
+  | "monitoring"
   | "profitability"
   | "workflows"
   | "knowledge"
@@ -77,6 +78,14 @@ export const AURORA_MODULES: Record<AuroraModule, AuroraModuleIdentity> = {
     accentGlow: "from-red-500/12 via-red-500/5 to-transparent",
     iconContainer: "border-red-500/20 bg-red-500/10 text-red-600",
     statusBar: "bg-red-500",
+  },
+  monitoring: {
+    eyebrow: "Signal Collection",
+    accentEyebrow: "text-blue-600",
+    accentBorder: "border-blue-500/25",
+    accentGlow: "from-blue-500/12 via-blue-500/5 to-transparent",
+    iconContainer: "border-blue-500/20 bg-blue-500/10 text-blue-600",
+    statusBar: "bg-blue-500",
   },
   profitability: {
     eyebrow: "Financial Intelligence",
@@ -147,6 +156,7 @@ export function getAuroraModuleFromPath(pathname: string): AuroraModule | null {
   if (pathname.startsWith("/activity")) return "activity";
   if (pathname.startsWith("/risks")) return "risks";
   if (pathname.startsWith("/incidents")) return "incidents";
+  if (pathname.startsWith("/monitoring")) return "monitoring";
   if (pathname.startsWith("/profitability")) return "profitability";
   if (pathname.startsWith("/automation")) return "workflows";
   if (pathname.startsWith("/knowledge")) return "knowledge";

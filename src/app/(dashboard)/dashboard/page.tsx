@@ -27,6 +27,7 @@ import { DashboardMetricCard } from "@/components/dashboard/dashboard-panel";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 import { DashboardSlaOverview } from "@/components/dashboard/dashboard-sla-overview";
+import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-monitoring-overview";
 import {
   DashboardUpgradeMetricCard,
 } from "@/components/dashboard/dashboard-upgrade-cards";
@@ -619,6 +620,16 @@ export default async function DashboardPage() {
               </DashboardPanel>
             </div>
           ) : null}
+
+          <div className="lg:col-span-6 xl:col-span-6">
+            <DashboardPanel
+              title="Monitoring"
+              description="Connector health and operational signals."
+              className="min-h-[320px]"
+            >
+              <DashboardMonitoringOverview metrics={data.monitoringMetrics} />
+            </DashboardPanel>
+          </div>
 
           {data.features.escalation ? (
             <div className="lg:col-span-6 xl:col-span-6">

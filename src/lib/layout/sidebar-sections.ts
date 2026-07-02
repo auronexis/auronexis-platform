@@ -13,7 +13,7 @@ export const SIDEBAR_SECTIONS = [
   {
     id: "monitoring",
     label: "Monitoring",
-    itemLabels: ["Risks", "Incidents", "Profitability"],
+    itemLabels: ["Risks", "Incidents", "Monitoring", "Profitability"],
   },
   {
     id: "administration",

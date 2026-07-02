@@ -33,7 +33,8 @@ export type ClientRiskSource =
   | "sla"
   | "report"
   | "activity"
-  | "portal";
+  | "portal"
+  | "monitoring";
 
 export type IncidentSeverity = "low" | "medium" | "high" | "critical";
 
@@ -1471,6 +1472,120 @@ export type Database = {
           event_type?: string;
           actor_user_id?: string | null;
           incident_id?: string | null;
+          message?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      monitoring_connectors: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          provider: string;
+          status: string;
+          enabled: boolean;
+          configuration: Json;
+          last_check_at: string | null;
+          last_success_at: string | null;
+          last_failure_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          provider: string;
+          status?: string;
+          enabled?: boolean;
+          configuration?: Json;
+          last_check_at?: string | null;
+          last_success_at?: string | null;
+          last_failure_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          provider?: string;
+          status?: string;
+          enabled?: boolean;
+          configuration?: Json;
+          last_check_at?: string | null;
+          last_success_at?: string | null;
+          last_failure_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      monitoring_events: {
+        Row: {
+          id: string;
+          organization_id: string;
+          connector_id: string | null;
+          client_id: string | null;
+          severity: string;
+          status: string;
+          message: string | null;
+          payload: Json | null;
+          detected_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          connector_id?: string | null;
+          client_id?: string | null;
+          severity: string;
+          status: string;
+          message?: string | null;
+          payload?: Json | null;
+          detected_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          connector_id?: string | null;
+          client_id?: string | null;
+          severity?: string;
+          status?: string;
+          message?: string | null;
+          payload?: Json | null;
+          detected_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      monitoring_activity: {
+        Row: {
+          id: string;
+          organization_id: string;
+          connector_id: string | null;
+          event_type: string;
+          message: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          connector_id?: string | null;
+          event_type: string;
+          message?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          connector_id?: string | null;
+          event_type?: string;
           message?: string | null;
           metadata?: Json;
           created_at?: string;

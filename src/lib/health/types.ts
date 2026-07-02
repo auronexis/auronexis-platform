@@ -38,6 +38,7 @@ export type HealthCalculationInput = {
 
 export type HealthMetricsInput = {
   slaViolations: number;
+  monitoringCriticalEvents: number;
   isInactiveClient: boolean;
   missingReports: boolean;
   portalDisabled: boolean;

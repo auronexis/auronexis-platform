@@ -63,6 +63,12 @@ export function buildExecutiveSummary(input: {
   metrics: ReportMetrics;
   healthTrend: HealthTrend;
   slaSnapshot: SLASnapshot;
+  monitoringSnapshot?: {
+    connectorCount: number;
+    failures: number;
+    recoveries: number;
+    healthImpactEvents: number;
+  } | null;
 }): ExecutiveSummary {
   const paragraph = buildSummaryParagraph(input);
   const highlights: string[] = [];
@@ -73,6 +79,15 @@ export function buildExecutiveSummary(input: {
 
   if (input.slaSnapshot.score != null) {
     highlights.push(`SLA compliance: ${input.slaSnapshot.score}%`);
+  }
+
+  if (input.monitoringSnapshot && input.monitoringSnapshot.connectorCount > 0) {
+    highlights.push(`Monitoring connectors: ${input.monitoringSnapshot.connectorCount}`);
+    highlights.push(`Monitoring failures: ${input.monitoringSnapshot.failures}`);
+    highlights.push(`Monitoring recoveries: ${input.monitoringSnapshot.recoveries}`);
+    if (input.monitoringSnapshot.healthImpactEvents > 0) {
+      highlights.push(`Health impact events: ${input.monitoringSnapshot.healthImpactEvents}`);
+    }
   }
 
   highlights.push(`Open risks: ${input.metrics.openRisks}`);
@@ -86,6 +101,12 @@ export function buildReportSummary(input: {
   metrics: ReportMetrics;
   healthTrend: HealthTrend;
   slaSnapshot: SLASnapshot;
+  monitoringSnapshot?: {
+    connectorCount: number;
+    failures: number;
+    recoveries: number;
+    healthImpactEvents: number;
+  } | null;
 }): ReportSummary {
   const executiveSummary = buildExecutiveSummary(input);
   return {

@@ -54,6 +54,12 @@ export const PRIMARY_NAV: NavItem[] = [
     planFeature: "incidents",
     showLocked: true,
   },
+  {
+    label: "Monitoring",
+    href: "/monitoring",
+    module: "monitoring",
+    requiresRead: true,
+  },
   { label: "Reports", href: "/reports", module: "reports", requiresRead: true },
   {
     label: "Profitability",
