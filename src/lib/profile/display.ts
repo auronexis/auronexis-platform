@@ -63,3 +63,8 @@ export function getPermissionsSummary(role: UserRole): string[] {
 
   return items.length > 0 ? items : ["Standard workspace access for your role"];
 }
+
+/** Format account creation timestamp for profile identity display. */
+export function formatAccountCreatedDate(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", { dateStyle: "long" }).format(new Date(iso));
+}

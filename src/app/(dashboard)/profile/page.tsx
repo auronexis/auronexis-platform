@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { AccountCenter } from "@/components/profile/account-center";
 import { requireSession } from "@/lib/auth/session";
 import { getPermissionsSummary } from "@/lib/profile/display";
+import { getAccountSecurityContext } from "@/lib/profile/security";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default async function ProfilePage() {
   const session = await requireSession();
   const permissions = getPermissionsSummary(session.role);
+  const security = await getAccountSecurityContext();
 
   return (
     <>
@@ -25,7 +27,7 @@ export default async function ProfilePage() {
         }}
       />
 
-      <AccountCenter session={session} permissions={permissions} />
+      <AccountCenter session={session} permissions={permissions} security={security} />
     </>
   );
 }

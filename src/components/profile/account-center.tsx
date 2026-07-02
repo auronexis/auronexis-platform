@@ -1,15 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bell,
   Building2,
+  ExternalLink,
   Globe2,
   LogOut,
   Palette,
   Shield,
   UserRound,
 } from "lucide-react";
+import { AccountEmailSection } from "@/components/profile/account-email-section";
+import { AccountPasswordSection } from "@/components/profile/account-password-section";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
   ComingSoonBadge,
@@ -28,6 +32,8 @@ import { Switch } from "@/components/ui/switch";
 import { SignOutPendingSplash } from "@/components/branding/brand-splash";
 import { signOut } from "@/lib/auth/actions";
 import { updateAccountProfileAction, type ProfileActionState } from "@/lib/profile/actions";
+import { formatAccountCreatedDate } from "@/lib/profile/display";
+import type { AccountSecurityContext } from "@/lib/profile/security";
 import {
   DATE_FORMAT_OPTIONS,
   detectTimezone,
@@ -43,6 +49,7 @@ import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 type AccountCenterProps = {
   session: SessionContext;
   permissions: string[];
+  security: AccountSecurityContext;
 };
 
 const initialActionState: ProfileActionState = {};
@@ -125,7 +132,7 @@ function ThemeOption({
   );
 }
 
-export function AccountCenter({ session, permissions }: AccountCenterProps) {
+export function AccountCenter({ session, permissions, security }: AccountCenterProps) {
   const { preferences, persistPreferences } = useUserPreferences();
   const { ready: preferencesReady } = useClientPreference();
   const [actionState, submitAccountAction, isAccountPending] = useActionState(
@@ -257,6 +264,21 @@ export function AccountCenter({ session, permissions }: AccountCenterProps) {
           </div>
         </div>
 
+        <div className="grid gap-3 rounded-xl border border-border/70 bg-muted/5 p-4 sm:grid-cols-2">
+          <ProfileField label="Email">
+            <ProfileReadOnlyValue value={session.email} />
+          </ProfileField>
+          <ProfileField label="Role">
+            <ProfileReadOnlyValue value={USER_ROLE_LABELS[session.role]} />
+          </ProfileField>
+          <ProfileField label="Organization">
+            <ProfileReadOnlyValue value={session.organization.name} />
+          </ProfileField>
+          <ProfileField label="Member since">
+            <ProfileReadOnlyValue value={formatAccountCreatedDate(session.user.created_at)} />
+          </ProfileField>
+        </div>
+
         <Input
           name="fullName"
           label="Full name"
@@ -285,10 +307,6 @@ export function AccountCenter({ session, permissions }: AccountCenterProps) {
           onChange={(event) => setAccountDraft((current) => ({ ...current, phone: event.target.value }))}
           placeholder="Optional"
         />
-
-        <ProfileField label="Email" description="Managed by your authentication provider.">
-          <ProfileReadOnlyValue value={session.email} />
-        </ProfileField>
 
         <Input
           name="jobTitle"
@@ -538,20 +556,16 @@ export function AccountCenter({ session, permissions }: AccountCenterProps) {
       <ProfileSectionCard
         icon={Shield}
         title="Security"
-        description="Authentication controls and account safety for your personal login."
+        description="Manage sign-in credentials and review upcoming account safety features."
         className="lg:col-span-2"
       >
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-foreground">Authentication</p>
-              <p className="mt-1 text-xs text-muted">Sign-in methods managed outside Auroranexis.</p>
-            </div>
+            <AccountEmailSection currentEmail={session.email} />
+            <AccountPasswordSection hasPasswordProvider={security.hasPasswordProvider} />
+          </div>
 
-            <ProfileField label="Password">
-              <ProfileReadOnlyValue value="Managed by authentication provider" />
-            </ProfileField>
-
+          <div className="space-y-4">
             <ProfileField label="Two-factor authentication">
               <div className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-muted/5 px-3 py-2.5">
                 <span className="text-sm text-muted">Not configured</span>
@@ -559,31 +573,29 @@ export function AccountCenter({ session, permissions }: AccountCenterProps) {
               </div>
             </ProfileField>
 
-            <ProfileField label="Active sessions">
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-muted/5 px-3 py-2.5">
-                <span className="text-sm text-muted">Session management</span>
-                <ComingSoonBadge />
+            <div className="rounded-xl border border-border/70 bg-muted/5 px-4 py-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-foreground">API tokens</p>
+                  <p className="mt-1 text-xs text-muted">
+                    Create scoped tokens for integrations and automation.
+                  </p>
+                </div>
+                <Link
+                  href="/settings/api"
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground shadow-xs",
+                    transitionInteractive,
+                    "hover:border-primary/30 hover:bg-primary/[0.04]",
+                    focusRing,
+                  )}
+                >
+                  Manage
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                </Link>
               </div>
-            </ProfileField>
-
-            <ProfileField label="Recent sign-in">
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-muted/5 px-3 py-2.5">
-                <span className="text-sm text-muted">Sign-in history</span>
-                <ComingSoonBadge />
-              </div>
-            </ProfileField>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-foreground">Future account tools</p>
-              <p className="mt-1 text-xs text-muted">Reserved for upcoming account management features.</p>
             </div>
 
-            <FutureFeaturePlaceholder
-              title="API tokens"
-              description="Create scoped tokens for integrations and automation."
-            />
             <FutureFeaturePlaceholder
               title="Connected accounts"
               description="Link external identity providers and productivity tools."
@@ -592,27 +604,27 @@ export function AccountCenter({ session, permissions }: AccountCenterProps) {
               title="Audit history"
               description="Review personal account activity and security events."
             />
-
-            <div className="rounded-xl border border-danger/20 bg-danger/5 p-4">
-              <p className="text-sm font-semibold text-foreground">Danger zone</p>
-              <p className="mt-1 text-xs text-muted">End your current session on this device.</p>
-              <form action={signOut} className="mt-4">
-                <SignOutPendingSplash />
-                <button
-                  type="submit"
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-lg border border-danger/30 bg-surface px-4 py-2 text-sm font-medium text-danger shadow-xs",
-                    transitionInteractive,
-                    "hover:border-danger/50 hover:bg-danger/5",
-                    focusRing,
-                  )}
-                >
-                  <LogOut className="h-4 w-4" aria-hidden />
-                  Sign out
-                </button>
-              </form>
-            </div>
           </div>
+        </div>
+
+        <div className="rounded-xl border border-danger/20 bg-danger/5 p-4">
+          <p className="text-sm font-semibold text-foreground">Danger zone</p>
+          <p className="mt-1 text-xs text-muted">End your current session on this device.</p>
+          <form action={signOut} className="mt-4">
+            <SignOutPendingSplash />
+            <button
+              type="submit"
+              className={cn(
+                "inline-flex items-center gap-2 rounded-lg border border-danger/30 bg-surface px-4 py-2 text-sm font-medium text-danger shadow-xs",
+                transitionInteractive,
+                "hover:border-danger/50 hover:bg-danger/5",
+                focusRing,
+              )}
+            >
+              <LogOut className="h-4 w-4" aria-hidden />
+              Sign out
+            </button>
+          </form>
         </div>
       </ProfileSectionCard>
     </div>
