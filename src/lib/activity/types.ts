@@ -60,7 +60,10 @@ export type ActivityEventType =
   | "monitoring.connector_failed"
   | "monitoring.connector_recovered"
   | "monitoring.event_detected"
-  | "monitoring.health_checked";
+  | "monitoring.health_checked"
+  | "incident.ai_analysis_created"
+  | "incident.ai_summary_generated"
+  | "incident.ai_recommendation_created";
 
 export type ActivityFilter =
   | "all"
@@ -132,6 +135,9 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "monitoring.connector_recovered": "Monitoring connector recovered",
   "monitoring.event_detected": "Monitoring event detected",
   "monitoring.health_checked": "Monitoring health checked",
+  "incident.ai_analysis_created": "AI incident analysis created",
+  "incident.ai_summary_generated": "AI incident summary generated",
+  "incident.ai_recommendation_created": "AI incident recommendations created",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

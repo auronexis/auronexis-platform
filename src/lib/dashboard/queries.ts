@@ -28,6 +28,8 @@ import { getSlaDashboardMetrics, processOrganizationSlaAlerts } from "@/lib/sla/
 
 import { getMonitoringDashboardMetrics } from "@/lib/monitoring/summary";
 
+import { getIncidentAIDashboardMetrics } from "@/lib/ai-incidents/summary";
+
 import type { EscalationDashboardMetrics } from "@/lib/escalation/types";
 
 import type { SlaDashboardMetrics } from "@/lib/sla/types";
@@ -78,6 +80,13 @@ const EMPTY_ESCALATION_METRICS: EscalationDashboardMetrics = {
 
   recentEscalations: [],
 
+};
+
+const EMPTY_INCIDENT_AI_METRICS = {
+  analysesGenerated: 0,
+  highConfidenceAnalyses: 0,
+  incidentsReviewed: 0,
+  averageConfidence: null,
 };
 
 const EMPTY_MONITORING_METRICS = {
@@ -273,6 +282,8 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
     schedulingEnabled,
 
+    incidentAIEnabled,
+
   ] = await Promise.all([
 
     canUseFeature(session.organization.id, "risks"),
@@ -286,6 +297,8 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
     canUseFeature(session.organization.id, "profitability"),
 
     canUseFeature(session.organization.id, "report_scheduling"),
+
+    canUseFeature(session.organization.id, "ai_incident_assistant"),
 
   ]);
 
@@ -319,7 +332,7 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
 
 
 
-  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult, riskHeatmap, monitoringMetrics] =
+  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult, riskHeatmap, monitoringMetrics, incidentAIMetrics] =
 
     await Promise.all([
 
@@ -346,6 +359,8 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
       risksEnabled ? getRiskHeatmap(session) : Promise.resolve({ cells: [], maxCount: 0 }),
 
       getMonitoringDashboardMetrics(session),
+
+      incidentAIEnabled ? getIncidentAIDashboardMetrics(session) : Promise.resolve(EMPTY_INCIDENT_AI_METRICS),
 
     ]);
 
@@ -384,9 +399,11 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
     upcomingSchedules,
     recentActivity,
     monitoringMetrics: monitoringMetrics ?? EMPTY_MONITORING_METRICS,
+    incidentAIMetrics: incidentAIMetrics ?? EMPTY_INCIDENT_AI_METRICS,
     features: {
       risks: risksEnabled,
       incidents: incidentsEnabled,
+      incidentAI: incidentAIEnabled,
       sla: slaEnabled,
       escalation: escalationEnabled,
       scheduling: schedulingEnabled,

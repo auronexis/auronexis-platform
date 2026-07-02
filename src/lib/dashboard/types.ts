@@ -7,6 +7,7 @@ import type { ClientHealthCounts, ProfitabilitySummary } from "@/lib/profitabili
 import type { ReportScheduleWithRelations } from "@/lib/report-schedules/types";
 import type { SlaDashboardMetrics } from "@/lib/sla/types";
 import type { MonitoringDashboardMetrics } from "@/lib/monitoring/types";
+import type { IncidentAIDashboardMetrics } from "@/lib/ai-incidents/types";
 
 export type CriticalAlertItem =
   | {
@@ -33,6 +34,7 @@ export type CriticalAlertItem =
 export type DashboardFeatureAccess = {
   risks: boolean;
   incidents: boolean;
+  incidentAI: boolean;
   sla: boolean;
   escalation: boolean;
   scheduling: boolean;
@@ -56,5 +58,6 @@ export type DashboardData = {
   upcomingSchedules: ReportScheduleWithRelations[];
   recentActivity: ActivityEventView[];
   monitoringMetrics: MonitoringDashboardMetrics;
+  incidentAIMetrics: IncidentAIDashboardMetrics;
   features: DashboardFeatureAccess;
 };

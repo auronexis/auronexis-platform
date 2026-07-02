@@ -39,7 +39,9 @@ import { listOrgUsers } from "@/lib/risks/queries";
 import { getIncidentSlaInfo, getSLAForIncident } from "@/lib/sla/queries";
 import { OperationalEditableWithAI } from "@/components/operational/ai/operational-editable-with-ai";
 import { RelatedKnowledgeSection } from "@/components/knowledge/related-knowledge-section";
+import { IncidentAISection } from "@/components/incidents/ai/incident-ai-section";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
+import { getIncidentAnalysis, listIncidentAnalyses } from "@/lib/ai-incidents/queries";
 import {
   checkPlanFeatureForSession,
   getCurrentPlan,
@@ -104,9 +106,11 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
   const allowedStatuses =
     session.role === "staff" ? STAFF_INCIDENT_STATUSES : INCIDENT_STATUSES;
 
-  const [aiAccess, planKey] = await Promise.all([
+  const [aiAccess, planKey, latestAIAnalysis, aiHistory] = await Promise.all([
     checkPlanFeatureForSession(session, "ai_incident_assistant"),
     getCurrentPlan(session.organization.id),
+    getIncidentAnalysis(session, id),
+    listIncidentAnalyses(session, id, 8),
   ]);
   const aiUsageSummary = await getAIUsageSummaryForSession(session, planKey);
   const aiEnabled = aiAccess.allowed && editable;
@@ -218,6 +222,15 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
         >
           <IncidentTimeline events={activity} />
         </DetailSection>
+
+        <IncidentAISection
+          incidentId={incident.id}
+          latestAnalysis={latestAIAnalysis}
+          history={aiHistory}
+          aiEnabled={aiAccess.allowed}
+          upgradeMessage={aiUpgradeMessage}
+          requiredPlanLabel={aiRequiredPlanLabel}
+        />
 
         <DetailSection
           title="Activity feed"

@@ -1592,6 +1592,57 @@ export type Database = {
         };
         Relationships: [];
       };
+      incident_ai_analysis: {
+        Row: {
+          id: string;
+          organization_id: string;
+          incident_id: string | null;
+          provider: string;
+          model: string;
+          summary: string | null;
+          root_cause: string | null;
+          recommendations: string | null;
+          confidence: number | null;
+          tokens_used: number | null;
+          latency_ms: number | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          incident_id?: string | null;
+          provider: string;
+          model: string;
+          summary?: string | null;
+          root_cause?: string | null;
+          recommendations?: string | null;
+          confidence?: number | null;
+          tokens_used?: number | null;
+          latency_ms?: number | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          incident_id?: string | null;
+          provider?: string;
+          model?: string;
+          summary?: string | null;
+          root_cause?: string | null;
+          recommendations?: string | null;
+          confidence?: number | null;
+          tokens_used?: number | null;
+          latency_ms?: number | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       client_financials: {
         Row: {
           id: string;

@@ -69,6 +69,12 @@ export function buildExecutiveSummary(input: {
     recoveries: number;
     healthImpactEvents: number;
   } | null;
+  incidentAISnapshot?: {
+    summary: string | null;
+    rootCause: string | null;
+    suggestedImprovements: string | null;
+    confidence: number | null;
+  } | null;
 }): ExecutiveSummary {
   const paragraph = buildSummaryParagraph(input);
   const highlights: string[] = [];
@@ -90,6 +96,19 @@ export function buildExecutiveSummary(input: {
     }
   }
 
+  if (input.incidentAISnapshot?.summary) {
+    highlights.push(`AI incident summary available`);
+    if (input.incidentAISnapshot.rootCause) {
+      highlights.push(`AI root cause insight captured`);
+    }
+    if (input.incidentAISnapshot.suggestedImprovements) {
+      highlights.push(`AI suggested improvements available`);
+    }
+    if (input.incidentAISnapshot.confidence != null) {
+      highlights.push(`AI confidence: ${Math.round(input.incidentAISnapshot.confidence * 100)}%`);
+    }
+  }
+
   highlights.push(`Open risks: ${input.metrics.openRisks}`);
   highlights.push(`Open incidents: ${input.metrics.openIncidents}`);
   highlights.push(`Activity events: ${input.metrics.activityCount}`);
@@ -106,6 +125,12 @@ export function buildReportSummary(input: {
     failures: number;
     recoveries: number;
     healthImpactEvents: number;
+  } | null;
+  incidentAISnapshot?: {
+    summary: string | null;
+    rootCause: string | null;
+    suggestedImprovements: string | null;
+    confidence: number | null;
   } | null;
 }): ReportSummary {
   const executiveSummary = buildExecutiveSummary(input);
