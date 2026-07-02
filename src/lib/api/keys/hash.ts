@@ -1,10 +1,17 @@
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 
-const API_KEY_PREFIX = "anx_live_";
+const API_KEY_PREFIXES = ["ax_live_", "ax_test_", "anx_live_"] as const;
 
-export function generateApiKeyMaterial(): { plaintext: string; prefix: string; hash: string } {
+export type ApiKeyMode = "live" | "test";
+
+export function generateApiKeyMaterial(mode: ApiKeyMode = "live"): {
+  plaintext: string;
+  prefix: string;
+  hash: string;
+} {
+  const keyPrefix = mode === "test" ? "ax_test_" : "ax_live_";
   const secret = randomBytes(32).toString("base64url");
-  const plaintext = `${API_KEY_PREFIX}${secret}`;
+  const plaintext = `${keyPrefix}${secret}`;
   const prefix = plaintext.slice(0, 16);
   return {
     plaintext,
@@ -40,5 +47,8 @@ export function extractBearerToken(authorizationHeader: string | null): string |
 }
 
 export function isApiKeyFormat(token: string): boolean {
-  return token.startsWith(API_KEY_PREFIX) && token.length > API_KEY_PREFIX.length + 16;
+  return (
+    API_KEY_PREFIXES.some((prefix) => token.startsWith(prefix)) &&
+    token.length > 24
+  );
 }

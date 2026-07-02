@@ -2871,6 +2871,116 @@ export type Database = {
           },
         ];
       };
+      webhook_endpoints: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          url: string;
+          secret: string;
+          events: string[];
+          active: boolean;
+          last_success_at: string | null;
+          last_failure_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          url: string;
+          secret: string;
+          events?: string[];
+          active?: boolean;
+          last_success_at?: string | null;
+          last_failure_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          url?: string;
+          secret?: string;
+          events?: string[];
+          active?: boolean;
+          last_success_at?: string | null;
+          last_failure_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "webhook_endpoints_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      webhook_deliveries: {
+        Row: {
+          id: string;
+          organization_id: string;
+          endpoint_id: string;
+          event_type: string;
+          payload: Json;
+          status: string;
+          response_status: number | null;
+          response_body: string | null;
+          attempts: number;
+          next_retry_at: string | null;
+          delivered_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          endpoint_id: string;
+          event_type: string;
+          payload?: Json;
+          status?: string;
+          response_status?: number | null;
+          response_body?: string | null;
+          attempts?: number;
+          next_retry_at?: string | null;
+          delivered_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          endpoint_id?: string;
+          event_type?: string;
+          payload?: Json;
+          status?: string;
+          response_status?: number | null;
+          response_body?: string | null;
+          attempts?: number;
+          next_retry_at?: string | null;
+          delivered_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "webhook_deliveries_endpoint_id_fkey";
+            columns: ["endpoint_id"];
+            isOneToOne: false;
+            referencedRelation: "webhook_endpoints";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       white_label_settings: {
         Row: {
           id: string;
@@ -4590,6 +4700,8 @@ export type ApiKey = Database["public"]["Tables"]["api_keys"]["Row"];
 export type ApiRequestLog = Database["public"]["Tables"]["api_request_logs"]["Row"];
 export type ApiWebhookEndpoint = Database["public"]["Tables"]["api_webhook_endpoints"]["Row"];
 export type ApiWebhookDelivery = Database["public"]["Tables"]["api_webhook_deliveries"]["Row"];
+export type WebhookEndpoint = Database["public"]["Tables"]["webhook_endpoints"]["Row"];
+export type WebhookDelivery = Database["public"]["Tables"]["webhook_deliveries"]["Row"];
 export type WhiteLabelSettings = Database["public"]["Tables"]["white_label_settings"]["Row"];
 export type BillingUsageEvent = Database["public"]["Tables"]["billing_usage_events"]["Row"];
 export type SubscriptionUsageSnapshot =

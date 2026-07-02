@@ -1,6 +1,7 @@
 import "server-only";
 
 import { recordMonitoringActivity } from "@/lib/monitoring/activity";
+import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import { recordMonitoringEventSideEffects } from "@/lib/monitoring/integrations";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type {
@@ -72,6 +73,18 @@ export async function recordMonitoringEvent(input: RecordMonitoringEventInput): 
       },
       actorUserId: input.actorUserId ?? null,
     });
+
+    void dispatchWebhookEvent({
+      organizationId: input.organizationId,
+      eventType: "monitoring.event_detected",
+      payload: {
+        eventId,
+        connectorId: input.connectorId,
+        clientId: input.clientId ?? null,
+        severity: input.severity,
+        message: input.message,
+      },
+    }).catch(() => undefined);
 
     await recordMonitoringEventSideEffects({
       organizationId: input.organizationId,

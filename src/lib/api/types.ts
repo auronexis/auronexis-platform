@@ -15,6 +15,9 @@ export type ApiScope =
   | "risks.write"
   | "incidents.read"
   | "incidents.write"
+  | "health.read"
+  | "activity.read"
+  | "webhooks.write"
   | "automation.read"
   | "automation.write"
   | "ai.execute"
@@ -103,6 +106,9 @@ export const ALL_API_SCOPES: ApiScope[] = [
   "risks.write",
   "incidents.read",
   "incidents.write",
+  "health.read",
+  "activity.read",
+  "webhooks.write",
   "automation.read",
   "automation.write",
   "ai.execute",
@@ -122,6 +128,9 @@ export const API_SCOPE_LABELS: Record<ApiScope, string> = {
   "risks.write": "Write risks",
   "incidents.read": "Read incidents",
   "incidents.write": "Write incidents",
+  "health.read": "Read health snapshots",
+  "activity.read": "Read activity events",
+  "webhooks.write": "Manage webhook endpoints",
   "automation.read": "Read automation",
   "automation.write": "Write automation",
   "ai.execute": "Execute AI",
@@ -134,11 +143,15 @@ export const API_SCOPE_LABELS: Record<ApiScope, string> = {
 
 export const API_WEBHOOK_EVENTS = [
   "client.created",
-  "report.published",
+  "client.updated",
+  "health.changed",
   "risk.created",
+  "risk.updated",
   "incident.created",
-  "automation.executed",
-  "ai.generated",
+  "incident.resolved",
+  "report.published",
+  "sla.breached",
+  "monitoring.event_detected",
 ] as const;
 
 export type ApiWebhookEvent = (typeof API_WEBHOOK_EVENTS)[number];

@@ -1,7 +1,7 @@
 import { listClients, getClientById } from "@/lib/clients/queries";
 import { apiContextToSession } from "@/lib/api/resources/session";
 import { recordApiAuditEvent } from "@/lib/api/audit";
-import { dispatchApiWebhook } from "@/lib/api/webhooks/dispatcher";
+import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import type { ApiContext } from "@/lib/api/auth/context";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { assertCanCreateClient } from "@/lib/plans/guards";
@@ -71,7 +71,7 @@ export async function apiCreateClient(ctx: ApiContext, body: unknown) {
     action: "created",
     title: `Client created via API: ${created.name}`,
   });
-  await dispatchApiWebhook({
+  await dispatchWebhookEvent({
     organizationId: ctx.organization.id,
     eventType: "client.created",
     payload: { id: created.id, name: created.name, status: created.status },
@@ -102,6 +102,13 @@ export async function apiUpdateClient(ctx: ApiContext, clientId: string, body: u
   if (error || !data) {
     throw new Error("Client not found.");
   }
+
+  const updated = data as { id: string; name: string; status: string };
+  await dispatchWebhookEvent({
+    organizationId: ctx.organization.id,
+    eventType: "client.updated",
+    payload: { id: updated.id, name: updated.name, status: updated.status },
+  }).catch(() => undefined);
 
   return data;
 }

@@ -25,6 +25,7 @@ function isPublicPath(pathname: string): boolean {
     pathname === "/api/health" ||
     pathname.startsWith("/api/stripe/webhook") ||
     pathname.startsWith("/api/cron/run") ||
+    pathname.startsWith("/api/v1/") ||
     pathname === "/api/docs"
   ) {
     return true;

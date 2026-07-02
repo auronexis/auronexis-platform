@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordRiskActivity } from "@/lib/risks/activity";
+import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import { assertPermissionSafe, sessionHasPermission } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -192,6 +193,17 @@ export async function createRiskAction(
     metadata: { riskScore, likelihood, impactScore },
   });
 
+  void dispatchWebhookEvent({
+    organizationId: session.organization.id,
+    eventType: "risk.created",
+    payload: {
+      riskId,
+      clientId: parsed.data.clientId,
+      title: parsed.data.title,
+      riskScore,
+    },
+  }).catch(() => undefined);
+
   revalidateRiskPaths(parsed.data.clientId, riskId);
   redirect(`/risks/${riskId}`);
 }
@@ -300,6 +312,16 @@ export async function updateRiskAction(
     eventType: "risk.updated",
     message: `Risk updated: ${parsed.data.title}`,
   });
+
+  void dispatchWebhookEvent({
+    organizationId: session.organization.id,
+    eventType: "risk.updated",
+    payload: {
+      riskId,
+      clientId: parsed.data.clientId,
+      title: parsed.data.title,
+    },
+  }).catch(() => undefined);
 
   revalidateRiskPaths(parsed.data.clientId, riskId);
   return { success: "Risk updated." };

@@ -11,6 +11,7 @@ const DEFAULT_INTERVAL_MS: Record<JobId, number> = {
   predictive_refresh: 24 * 60 * 60 * 1000,
   automation_maintenance: 7 * 24 * 60 * 60 * 1000,
   retention_cleanup: 30 * 24 * 60 * 60 * 1000,
+  webhook_retries: 5 * 60 * 1000,
   queue_worker: 5 * 60 * 1000,
 };
 

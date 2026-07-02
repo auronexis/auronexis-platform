@@ -53,6 +53,13 @@ export const JOB_REGISTRY: JobDefinition[] = [
     enabled: true,
   },
   {
+    id: "webhook_retries",
+    name: "Webhook retries",
+    description: "Retry pending outbound webhook deliveries",
+    scheduleCron: "*/5 * * * *",
+    enabled: true,
+  },
+  {
     id: "queue_worker",
     name: "Queue worker",
     description: "Process pending background queue jobs",

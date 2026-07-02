@@ -2,8 +2,9 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { recordActivityEvent } from "@/lib/activity/record";
 import { validateApiScopes } from "@/lib/api/auth/scopes";
-import { generateApiKeyMaterial } from "@/lib/api/keys/hash";
+import { generateApiKeyMaterial, type ApiKeyMode } from "@/lib/api/keys/hash";
 import type {
   ApiKeyCreateResult,
   ApiKeyType,
@@ -48,11 +49,12 @@ export async function createApiKey(input: {
   session: SessionContext;
   name: string;
   keyType: ApiKeyType;
+  keyMode?: ApiKeyMode;
   scopes: ApiScope[];
   expiresAt?: string | null;
 }): Promise<ApiKeyCreateResult> {
   const scopes = validateApiScopes(input.scopes);
-  const material = generateApiKeyMaterial();
+  const material = generateApiKeyMaterial(input.keyMode ?? "live");
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -75,6 +77,17 @@ export async function createApiKey(input: {
     throw new Error(error?.message ?? "Failed to create API key.");
   }
 
+  await recordActivityEvent({
+    organizationId: input.session.organization.id,
+    actorUserId: input.session.user.id,
+    entityType: "organization",
+    entityId: input.session.organization.id,
+    eventType: "api_key.created",
+    action: "api_key_created",
+    title: `API key created: ${input.name.trim()}`,
+    metadata: { keyId: (data as ApiKey).id, keyPrefix: material.prefix },
+  }).catch(() => undefined);
+
   const view = rowToView(data as ApiKey);
   return { ...view, plaintextKey: material.plaintext };
 }
@@ -90,6 +103,17 @@ export async function revokeApiKey(session: SessionContext, keyId: string): Prom
   if (error) {
     throw new Error(error.message);
   }
+
+  await recordActivityEvent({
+    organizationId: session.organization.id,
+    actorUserId: session.user.id,
+    entityType: "organization",
+    entityId: session.organization.id,
+    eventType: "api_key.revoked",
+    action: "api_key_revoked",
+    title: "API key revoked",
+    metadata: { keyId },
+  }).catch(() => undefined);
 }
 
 export async function getApiKeyByHash(keyHash: string): Promise<ApiKey | null> {

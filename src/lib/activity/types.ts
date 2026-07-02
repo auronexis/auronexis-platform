@@ -73,7 +73,13 @@ export type ActivityEventType =
   | "risk.ai_analysis_created"
   | "risk.ai_summary_generated"
   | "risk.ai_mitigation_created"
-  | "risk.ai_recommendation_created";
+  | "risk.ai_recommendation_created"
+  | "api_key.created"
+  | "api_key.revoked"
+  | "webhook.endpoint_created"
+  | "webhook.endpoint_disabled"
+  | "webhook.delivery_succeeded"
+  | "webhook.delivery_failed";
 
 export type ActivityFilter =
   | "all"
@@ -158,6 +164,12 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "risk.ai_summary_generated": "AI risk summary generated",
   "risk.ai_mitigation_created": "AI risk mitigation plan created",
   "risk.ai_recommendation_created": "AI risk recommendations created",
+  "api_key.created": "API key created",
+  "api_key.revoked": "API key revoked",
+  "webhook.endpoint_created": "Webhook endpoint created",
+  "webhook.endpoint_disabled": "Webhook endpoint disabled",
+  "webhook.delivery_succeeded": "Webhook delivery succeeded",
+  "webhook.delivery_failed": "Webhook delivery failed",
 };
 
 export const ACTIVITY_FILTER_LABELS: Record<ActivityFilter, string> = {

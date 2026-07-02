@@ -9,6 +9,7 @@ import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { assertCanUseFeature } from "@/lib/plans/guards";
 import { canManageSlaPolicies } from "@/lib/team/guards";
 import { recordSLAActivity } from "@/lib/sla/activity";
+import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import {
   getDefaultSlaPolicy,
   getSlaEventByIncidentId,
@@ -548,6 +549,16 @@ export async function completeSlaForIncident(input: {
         message: "SLA resolution target breached",
         metadata: { eventId: event.id },
       });
+
+      void dispatchWebhookEvent({
+        organizationId: input.organizationId,
+        eventType: "sla.breached",
+        payload: {
+          incidentId: input.incidentId,
+          clientId: event.client_id,
+          eventId: event.id,
+        },
+      }).catch(() => undefined);
     }
   } catch (error) {
     console.warn("[sla] completeSlaForIncident failed:", error);

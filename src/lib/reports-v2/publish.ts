@@ -134,6 +134,22 @@ export async function publishReport(
       metadata: { reportId, clientId: report.client_id, version: report.version },
     });
 
+    void import("@/lib/webhooks/events")
+      .then(({ dispatchWebhookEvent }) =>
+        dispatchWebhookEvent({
+          organizationId: session.organization.id,
+          eventType: "report.published",
+          payload: {
+            reportId,
+            clientId: report.client_id,
+            title: report.title,
+            version: report.version,
+            publishedAt,
+          },
+        }),
+      )
+      .catch(() => undefined);
+
     await dispatchAutomation({
       trigger: "report_published",
       organizationId: session.organization.id,

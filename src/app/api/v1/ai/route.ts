@@ -4,7 +4,6 @@ import { withApiHandler } from "@/lib/api/middleware/handler";
 import { apiJson } from "@/lib/api/responses/json";
 import { parseJsonBody } from "@/lib/api/validation/body";
 import { recordApiAuditEvent } from "@/lib/api/audit";
-import { dispatchApiWebhook } from "@/lib/api/webhooks/dispatcher";
 import { z } from "zod";
 
 const aiBodySchema = z.object({
@@ -37,12 +36,6 @@ export async function POST(request: NextRequest) {
         action: "ai_generated",
         title: "AI task executed via Public API",
         metadata: { module: body.module },
-      });
-
-      await dispatchApiWebhook({
-        organizationId: ctx.organization.id,
-        eventType: "ai.generated",
-        payload: { module: body.module },
       });
 
       return apiJson(result);

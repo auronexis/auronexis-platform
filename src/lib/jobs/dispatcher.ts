@@ -15,6 +15,7 @@ import {
   isJobDue,
 } from "@/lib/jobs/scheduler";
 import type { JobId, JobRunResult } from "@/lib/jobs/types";
+import { processWebhookDeliveryRetries } from "@/lib/jobs/handlers/webhook-retries";
 import { processQueueWorkerJob } from "@/lib/queue/worker";
 
 type JobHandler = () => Promise<Record<string, unknown>>;
@@ -27,6 +28,7 @@ const JOB_HANDLERS: Record<JobId, JobHandler> = {
   predictive_refresh: processPredictiveRefreshJob,
   automation_maintenance: processAutomationMaintenanceJob,
   retention_cleanup: processRetentionCleanupJob,
+  webhook_retries: processWebhookDeliveryRetries,
   queue_worker: processQueueWorkerJob,
 };
 

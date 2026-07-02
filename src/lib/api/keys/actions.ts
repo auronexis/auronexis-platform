@@ -2,13 +2,14 @@
 
 import { requireSession } from "@/lib/auth/session";
 import { createApiKey, listApiKeys, revokeApiKey } from "@/lib/api/keys/repository";
-import { createWebhookEndpoint } from "@/lib/api/webhooks/dispatcher";
 import type { ApiKeyCreateResult, ApiKeyType, ApiKeyView, ApiScope } from "@/lib/api/types";
+import type { ApiKeyMode } from "@/lib/api/keys/hash";
 import { validateApiScopes } from "@/lib/api/auth/scopes";
 import { checkPlanFeatureForSession } from "@/lib/plans/guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import { createClient } from "@/lib/supabase/server";
-import type { ApiWebhookEndpoint } from "@/types/database";
+import { createWebhookEndpointAction as createWebhookEndpointInternal } from "@/lib/webhooks/actions";
+import { disableWebhookEndpointAction as disableWebhookEndpointInternal } from "@/lib/webhooks/actions";
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -41,6 +42,7 @@ export async function listApiKeysAction(): Promise<ActionResult<ApiKeyView[]>> {
 export async function createApiKeyAction(input: {
   name: string;
   keyType: ApiKeyType;
+  keyMode?: ApiKeyMode;
   scopes: ApiScope[];
   expiresAt?: string | null;
 }): Promise<ActionResult<ApiKeyCreateResult>> {
@@ -51,6 +53,7 @@ export async function createApiKeyAction(input: {
       session,
       name: input.name,
       keyType: input.keyType,
+      keyMode: input.keyMode,
       scopes: input.scopes,
       expiresAt: input.expiresAt,
     });
@@ -71,18 +74,17 @@ export async function revokeApiKeyAction(keyId: string): Promise<ActionResult<nu
 }
 
 export async function createWebhookEndpointAction(input: {
+  name: string;
   url: string;
-  description?: string;
   events: string[];
 }): Promise<ActionResult<{ endpointId: string; signingSecret: string; url: string }>> {
   try {
     const session = await ensureApiAccess();
-    const { endpoint, signingSecret } = await createWebhookEndpoint({
-      organizationId: session.organization.id,
+    const { endpoint, signingSecret } = await createWebhookEndpointInternal({
+      session,
+      name: input.name,
       url: input.url,
-      description: input.description,
       events: input.events,
-      createdBy: session.user.id,
     });
     return {
       ok: true,
@@ -93,15 +95,27 @@ export async function createWebhookEndpointAction(input: {
   }
 }
 
+export async function disableWebhookEndpointAction(
+  endpointId: string,
+): Promise<ActionResult<null>> {
+  try {
+    const session = await ensureApiAccess();
+    await disableWebhookEndpointInternal(session, endpointId);
+    return { ok: true, data: null };
+  } catch (error) {
+    return { ok: false, error: toActionError(error) };
+  }
+}
+
 export async function listWebhookEndpointsAction(): Promise<
-  ActionResult<Array<{ id: string; url: string; events: string[]; status: ApiWebhookEndpoint["status"] }>>
+  ActionResult<Array<{ id: string; url: string; name: string; events: string[]; active: boolean }>>
 > {
   try {
     const session = await ensureApiAccess();
     const supabase = await createClient();
     const { data, error } = await supabase
-      .from("api_webhook_endpoints")
-      .select("id, url, events, status")
+      .from("webhook_endpoints")
+      .select("id, url, name, events, active")
       .eq("organization_id", session.organization.id)
       .order("created_at", { ascending: false });
 
@@ -109,7 +123,16 @@ export async function listWebhookEndpointsAction(): Promise<
       throw new Error(error.message);
     }
 
-    return { ok: true, data: (data ?? []) as Array<{ id: string; url: string; events: string[]; status: ApiWebhookEndpoint["status"] }> };
+    return {
+      ok: true,
+      data: (data ?? []) as Array<{
+        id: string;
+        url: string;
+        name: string;
+        events: string[];
+        active: boolean;
+      }>,
+    };
   } catch (error) {
     return { ok: false, error: toActionError(error) };
   }

@@ -135,6 +135,23 @@ export async function computeAndRecordClientHealth(
             reason: result.reason,
           },
         });
+
+        void import("@/lib/webhooks/events")
+          .then(({ dispatchWebhookEvent }) =>
+            dispatchWebhookEvent({
+              organizationId: session.organization.id,
+              eventType: "health.changed",
+              payload: {
+                clientId: client.id,
+                clientName: client.name,
+                previousScore: previous.score,
+                score: result.score,
+                delta: result.delta,
+                status: result.status,
+              },
+            }),
+          )
+          .catch(() => undefined);
       }
     } else if (previous) {
       snapshot = {

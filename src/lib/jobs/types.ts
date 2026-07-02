@@ -6,7 +6,8 @@ export type JobId =
   | "predictive_refresh"
   | "automation_maintenance"
   | "retention_cleanup"
-  | "queue_worker";
+  | "queue_worker"
+  | "webhook_retries";
 
 export type JobExecutionStatus = "pending" | "running" | "completed" | "failed";
 

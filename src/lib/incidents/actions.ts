@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordIncidentActivity } from "@/lib/incidents/activity";
+import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import { dispatchAutomation } from "@/lib/automation";
 import { recordSlaResolvedIfNeeded } from "@/lib/sla/evaluations";
 import {
@@ -273,6 +274,18 @@ export async function createIncidentAction(
       assignedUserId,
     },
   });
+
+  void dispatchWebhookEvent({
+    organizationId: session.organization.id,
+    eventType: "incident.created",
+    payload: {
+      incidentId: created.id,
+      clientId: parsed.data.clientId,
+      title: parsed.data.title,
+      severity: parsed.data.severity,
+      status: parsed.data.status,
+    },
+  }).catch(() => undefined);
 
   await assignSLAToIncident({
     organizationId: session.organization.id,
@@ -568,6 +581,16 @@ export async function resolveIncidentAction(
     title: `Incident resolved: ${existing.title}`,
     metadata: { title: existing.title },
   });
+
+  void dispatchWebhookEvent({
+    organizationId: session.organization.id,
+    eventType: "incident.resolved",
+    payload: {
+      incidentId,
+      clientId: existing.client_id,
+      title: existing.title,
+    },
+  }).catch(() => undefined);
 
   await recordSlaResolvedIfNeeded({
     organizationId: session.organization.id,
