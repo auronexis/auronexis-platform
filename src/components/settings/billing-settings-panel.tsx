@@ -126,7 +126,10 @@ export function BillingSettingsPanel({
 }: BillingSettingsPanelProps) {
   const { overview } = dashboard;
   const [actionError, setActionError] = useState<string | null>(null);
-  const [discountMessage, setDiscountMessage] = useState<string | null>(null);
+  const [discountNotice, setDiscountNotice] = useState<{
+    variant: "success" | "warning";
+    message: string;
+  } | null>(null);
   const [isPortalPending, startPortalTransition] = useTransition();
   const [isDiscountPending, startDiscountTransition] = useTransition();
 
@@ -145,15 +148,23 @@ export function BillingSettingsPanel({
   };
 
   const previewDiscount = (formData: FormData) => {
-    setDiscountMessage(null);
-    setActionError(null);
+    const code = String(formData.get("discountCode") ?? "").trim();
+    setDiscountNotice(null);
+
+    if (!code) {
+      return;
+    }
+
     startDiscountTransition(async () => {
       const result = await validateDiscountCodeAction({}, formData);
       if (result.error) {
-        setActionError(result.error);
+        setDiscountNotice({ variant: "warning", message: result.error });
         return;
       }
-      setDiscountMessage(result.success ?? "Discount validated.");
+
+      if (result.success) {
+        setDiscountNotice({ variant: "success", message: result.success });
+      }
     });
   };
 
@@ -266,7 +277,9 @@ export function BillingSettingsPanel({
               Preview discount
             </Button>
           </form>
-          {discountMessage ? <FormAlert variant="success">{discountMessage}</FormAlert> : null}
+          {discountNotice ? (
+            <FormAlert variant={discountNotice.variant}>{discountNotice.message}</FormAlert>
+          ) : null}
           {dashboard.discounts.length > 0 ? (
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {dashboard.discounts.map((discount) => (

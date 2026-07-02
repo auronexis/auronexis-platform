@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { FormAlert } from "@/components/ui/form-alert";
+import { formatAIProviderLabel, isAIProviderConfigured } from "@/lib/ai/provider-labels";
 import { formatBillingDateTime } from "@/lib/billing/types";
 import type { WorkspaceDiagnostics } from "@/lib/diagnostics/types";
 import { getMatchedPlanLabel, getPlanFeatureLabel } from "@/lib/diagnostics/queries";
@@ -130,6 +131,10 @@ function BoolBadge({ value }: { value: boolean }) {
 
 export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
   const subscription = data.subscription.row;
+  const aiConfigured = isAIProviderConfigured(data.ai.resolvedProviderId);
+  const resolvedProviderLabel = formatAIProviderLabel(data.ai.resolvedProviderId, {
+    isDevelopment: data.isDevelopment,
+  });
 
   return (
     <div className="space-y-6">
@@ -244,66 +249,70 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         </dl>
       </DiagnosticsSection>
 
-      <DiagnosticsSection
-        title="Stripe environment"
-        description="Billing price IDs and Stripe credentials — secrets are never shown."
-      >
-        <EnvGrid>
-          <EnvRow {...data.stripeEnv.starterPriceId} />
-          <EnvRow {...data.stripeEnv.professionalPriceId} />
-          <EnvRow {...data.stripeEnv.businessPriceId} />
-          <EnvRow {...data.stripeEnv.enterprisePriceId} />
-          <EnvRow {...data.stripeEnv.webhookSecret} />
-          <EnvRow {...data.stripeEnv.secretKey} />
-          <EnvRow {...data.stripeEnv.publishableKey} />
-        </EnvGrid>
-      </DiagnosticsSection>
+      {data.isDevelopment ? (
+        <>
+          <DiagnosticsSection
+            title="Stripe environment"
+            description="Billing price IDs and Stripe credentials — secrets are never shown."
+          >
+            <EnvGrid>
+              <EnvRow {...data.stripeEnv.starterPriceId} />
+              <EnvRow {...data.stripeEnv.professionalPriceId} />
+              <EnvRow {...data.stripeEnv.businessPriceId} />
+              <EnvRow {...data.stripeEnv.enterprisePriceId} />
+              <EnvRow {...data.stripeEnv.webhookSecret} />
+              <EnvRow {...data.stripeEnv.secretKey} />
+              <EnvRow {...data.stripeEnv.publishableKey} />
+            </EnvGrid>
+          </DiagnosticsSection>
 
-      <DiagnosticsSection
-        title="Supabase environment"
-        description="Database and auth configuration — keys are masked."
-      >
-        <EnvGrid>
-          <EnvRow {...data.platformEnv.supabaseUrl} />
-          <EnvRow {...data.platformEnv.supabaseAnonKey} />
-          <EnvRow {...data.platformEnv.supabaseServiceRoleKey} />
-        </EnvGrid>
-      </DiagnosticsSection>
+          <DiagnosticsSection
+            title="Supabase environment"
+            description="Database and auth configuration — keys are masked."
+          >
+            <EnvGrid>
+              <EnvRow {...data.platformEnv.supabaseUrl} />
+              <EnvRow {...data.platformEnv.supabaseAnonKey} />
+              <EnvRow {...data.platformEnv.supabaseServiceRoleKey} />
+            </EnvGrid>
+          </DiagnosticsSection>
 
-      <DiagnosticsSection
-        title="OpenAI environment"
-        description="Report assistant provider configuration."
-      >
-        <EnvGrid>
-          <EnvRow {...data.platformEnv.openaiApiKey} />
-          <EnvRow {...data.platformEnv.openaiModel} />
-          <EnvRow {...data.platformEnv.aiProvider} />
-        </EnvGrid>
-        <dl className="mt-4">
-          <Row label="Resolved provider" value={data.ai.resolvedProviderId} />
-          <Row
-            label="Report assistant allowed"
-            value={<BoolBadge value={data.ai.aiFeatureAllowed} />}
-          />
-        </dl>
-      </DiagnosticsSection>
+          <DiagnosticsSection
+            title="OpenAI environment"
+            description="Report assistant provider configuration."
+          >
+            <EnvGrid>
+              <EnvRow {...data.platformEnv.openaiApiKey} />
+              <EnvRow {...data.platformEnv.openaiModel} />
+              <EnvRow {...data.platformEnv.aiProvider} />
+            </EnvGrid>
+            <dl className="mt-4">
+              <Row label="Resolved provider" value={resolvedProviderLabel} />
+              <Row
+                label="Report assistant allowed"
+                value={<BoolBadge value={data.ai.aiFeatureAllowed} />}
+              />
+            </dl>
+          </DiagnosticsSection>
 
-      <DiagnosticsSection
-        title="Anthropic environment"
-        description="Optional Anthropic provider configuration."
-      >
-        <EnvGrid>
-          <EnvRow {...data.platformEnv.anthropicApiKey} />
-        </EnvGrid>
-      </DiagnosticsSection>
+          <DiagnosticsSection
+            title="Anthropic environment"
+            description="Optional Anthropic provider configuration."
+          >
+            <EnvGrid>
+              <EnvRow {...data.platformEnv.anthropicApiKey} />
+            </EnvGrid>
+          </DiagnosticsSection>
+        </>
+      ) : null}
 
       <DiagnosticsSection
         title="Enterprise admin"
-        description="Platform operator IDs for enterprise approval workflows."
+        description="Platform operator access for enterprise approval workflows."
       >
-        <EnvGrid>
-          <EnvRow {...data.platformEnv.platformAdminUserIds} />
-        </EnvGrid>
+        <dl>
+          <Row label="Platform operators" value={data.platformEnv.platformOperators.label} />
+        </dl>
       </DiagnosticsSection>
 
       <DiagnosticsSection
@@ -333,6 +342,14 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
 
       <DiagnosticsSection title="AI readiness" description="Report assistant usage and session metrics.">
         <dl>
+          {!aiConfigured ? (
+            <>
+              <Row label="AI status" value="AI disabled" />
+              <Row label="Provider" value="No provider configured" />
+            </>
+          ) : (
+            <Row label="Provider" value={resolvedProviderLabel} />
+          )}
           <Row
             label="Monthly AI calls"
             value={`${data.ai.usageSummary.callsThisMonth} / ${data.ai.usageSummary.limit}`}
@@ -340,71 +357,79 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           <Row
             label="Estimated tokens this month"
             value={
-              data.ai.usageSummary.totalTokensThisMonth != null
-                ? data.ai.usageSummary.totalTokensThisMonth.toLocaleString()
-                : "—"
+              !aiConfigured
+                ? "—"
+                : data.ai.usageSummary.totalTokensThisMonth != null
+                  ? data.ai.usageSummary.totalTokensThisMonth.toLocaleString()
+                  : "—"
             }
+          />
+          <Row
+            label="Report assistant allowed"
+            value={<BoolBadge value={data.ai.aiFeatureAllowed} />}
           />
         </dl>
       </DiagnosticsSection>
 
-      <DiagnosticsSection
-        title="AI diagnostics"
-        description="Developer-only generation metrics — never shown to customers."
-      >
-        <dl>
-          <Row
-            label="Provider health"
-            value={
-              <InlineBadgeRow
-                badge={data.ai.diagnostics.providerHealthOk}
-                text={data.ai.diagnostics.providerHealthMessage}
-              />
-            }
-          />
-          <Row label="Last latency" value={data.ai.diagnostics.lastLatencyMs ?? "—"} />
-          <Row label="Average latency" value={data.ai.diagnostics.averageLatencyMs ?? "—"} />
-          <Row label="Failed calls (session buffer)" value={data.ai.diagnostics.failedCallsEstimate} />
-          <Row label="Retries (session buffer)" value={data.ai.diagnostics.retriesEstimate} />
-          <Row label="Timeouts (session buffer)" value={data.ai.diagnostics.timeoutsEstimate} />
-          <Row label="Cancelled (session buffer)" value={data.ai.diagnostics.cancelledEstimate} />
-          <Row label="React cache enabled" value={<BoolBadge value={data.ai.diagnostics.cacheEnabled} />} />
-          <Row label="Development mode" value={<BoolBadge value={data.ai.diagnostics.developmentMode} />} />
-          <Row label="Core version" value={data.ai.diagnostics.versions.core} />
-          <Row label="Prompt version" value={data.ai.diagnostics.versions.prompts} />
-          <Row label="Context version" value={data.ai.diagnostics.versions.context} />
-          <Row label="Knowledge version" value={data.ai.diagnostics.versions.knowledge} />
-          <Row label="Automation version" value={data.ai.diagnostics.versions.automation} />
-        </dl>
-        {data.ai.diagnostics.recentMetrics.length > 0 ? (
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-border text-muted">
-                  <th className="px-2 py-2">Module</th>
-                  <th className="px-2 py-2">Action</th>
-                  <th className="px-2 py-2">Total ms</th>
-                  <th className="px-2 py-2">Context ms</th>
-                  <th className="px-2 py-2">Provider ms</th>
-                  <th className="px-2 py-2">Success</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.ai.diagnostics.recentMetrics.map((metric) => (
-                  <tr key={`${metric.startedAt}-${metric.action}`} className="border-b border-border/60">
-                    <td className="px-2 py-2">{metric.module}</td>
-                    <td className="px-2 py-2">{metric.action}</td>
-                    <td className="px-2 py-2">{metric.totalMs}</td>
-                    <td className="px-2 py-2">{metric.contextBuildMs}</td>
-                    <td className="px-2 py-2">{metric.providerLatencyMs}</td>
-                    <td className="px-2 py-2">{metric.success ? "Yes" : "No"}</td>
+      {data.isDevelopment ? (
+        <DiagnosticsSection
+          title="AI diagnostics"
+          description="Developer-only generation metrics — never shown to customers."
+        >
+          <dl>
+            <Row
+              label="Provider health"
+              value={
+                <InlineBadgeRow
+                  badge={data.ai.diagnostics.providerHealthOk}
+                  text={data.ai.diagnostics.providerHealthMessage}
+                />
+              }
+            />
+            <Row label="Last latency" value={data.ai.diagnostics.lastLatencyMs ?? "—"} />
+            <Row label="Average latency" value={data.ai.diagnostics.averageLatencyMs ?? "—"} />
+            <Row label="Failed calls (session buffer)" value={data.ai.diagnostics.failedCallsEstimate} />
+            <Row label="Retries (session buffer)" value={data.ai.diagnostics.retriesEstimate} />
+            <Row label="Timeouts (session buffer)" value={data.ai.diagnostics.timeoutsEstimate} />
+            <Row label="Cancelled (session buffer)" value={data.ai.diagnostics.cancelledEstimate} />
+            <Row label="React cache enabled" value={<BoolBadge value={data.ai.diagnostics.cacheEnabled} />} />
+            <Row label="Development mode" value={<BoolBadge value={data.ai.diagnostics.developmentMode} />} />
+            <Row label="Core version" value={data.ai.diagnostics.versions.core} />
+            <Row label="Prompt version" value={data.ai.diagnostics.versions.prompts} />
+            <Row label="Context version" value={data.ai.diagnostics.versions.context} />
+            <Row label="Knowledge version" value={data.ai.diagnostics.versions.knowledge} />
+            <Row label="Automation version" value={data.ai.diagnostics.versions.automation} />
+          </dl>
+          {data.ai.diagnostics.recentMetrics.length > 0 ? (
+            <div className="mt-4 overflow-x-auto">
+              <table className="min-w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border text-muted">
+                    <th className="px-2 py-2">Module</th>
+                    <th className="px-2 py-2">Action</th>
+                    <th className="px-2 py-2">Total ms</th>
+                    <th className="px-2 py-2">Context ms</th>
+                    <th className="px-2 py-2">Provider ms</th>
+                    <th className="px-2 py-2">Success</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-      </DiagnosticsSection>
+                </thead>
+                <tbody>
+                  {data.ai.diagnostics.recentMetrics.map((metric) => (
+                    <tr key={`${metric.startedAt}-${metric.action}`} className="border-b border-border/60">
+                      <td className="px-2 py-2">{metric.module}</td>
+                      <td className="px-2 py-2">{metric.action}</td>
+                      <td className="px-2 py-2">{metric.totalMs}</td>
+                      <td className="px-2 py-2">{metric.contextBuildMs}</td>
+                      <td className="px-2 py-2">{metric.providerLatencyMs}</td>
+                      <td className="px-2 py-2">{metric.success ? "Yes" : "No"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </DiagnosticsSection>
+      ) : null}
 
       <DiagnosticsSection title="Permissions" description="Effective access for the signed-in user.">
         <dl>
@@ -503,7 +528,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
             }
           />
           <Row label="Last execution status" value={data.automation.engine.lastExecutionStatus ?? "—"} />
-          <Row label="Placeholder actions today" value={data.automation.engine.placeholderActionsToday} />
+          <Row label="Skipped actions today" value={data.automation.engine.placeholderActionsToday} />
           <Row label="Queue status" value={data.automation.engine.queueStatus} />
         </dl>
       </DiagnosticsSection>

@@ -13,17 +13,19 @@ export type AIConfig = {
 export function getAIConfig(): AIConfig {
   const rawProvider = process.env.AI_PROVIDER?.trim().toLowerCase();
   const providerId: AIProviderId =
-    rawProvider === "openai" ||
-    rawProvider === "anthropic" ||
-    rawProvider === "gemini" ||
-    rawProvider === "azure_openai" ||
-    rawProvider === "local"
-      ? rawProvider
-      : rawProvider === "placeholder"
-        ? "placeholder"
-        : process.env.OPENAI_API_KEY
-          ? "openai"
-          : "placeholder";
+    rawProvider === "disabled"
+      ? "placeholder"
+      : rawProvider === "openai" ||
+          rawProvider === "anthropic" ||
+          rawProvider === "gemini" ||
+          rawProvider === "azure_openai" ||
+          rawProvider === "local"
+        ? rawProvider
+        : rawProvider === "placeholder"
+          ? "placeholder"
+          : process.env.OPENAI_API_KEY
+            ? "openai"
+            : "placeholder";
 
   return {
     providerId,

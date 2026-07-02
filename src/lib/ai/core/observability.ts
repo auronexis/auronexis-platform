@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { formatAIProviderHealthMessage } from "@/lib/ai/provider-labels";
 import { getAIConfig } from "@/lib/ai/server/config";
 import { resolveAIProvider } from "@/lib/ai/server/resolve-provider";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
@@ -63,12 +64,14 @@ export function getRecentAIGenerationMetrics(organizationId?: string): AIGenerat
 
 export async function checkAIProviderHealth(): Promise<{ ok: boolean; message: string; latencyMs?: number }> {
   const started = Date.now();
+  const isDevelopment = process.env.NODE_ENV !== "production";
+
   try {
     const { provider } = resolveAIProvider();
-    if (provider.id === "placeholder") {
-      return { ok: true, message: "Placeholder provider active", latencyMs: Date.now() - started };
-    }
-    return { ok: true, message: `${provider.id} configured`, latencyMs: Date.now() - started };
+    const message = formatAIProviderHealthMessage(provider.id, { isDevelopment });
+    const ok = provider.id !== "placeholder" || isDevelopment;
+
+    return { ok, message, latencyMs: Date.now() - started };
   } catch {
     return { ok: false, message: "Provider resolution failed", latencyMs: Date.now() - started };
   }

@@ -87,8 +87,19 @@ export async function listActiveDiscountPreviews(planKey: PlanKey): Promise<Disc
 export async function validateDiscountCode(
   code: string,
   planKey: PlanKey,
-): Promise<ValidatedDiscount | { valid: false; message: string }> {
-  const normalized = validateDiscountCodeFormat(code);
+): Promise<ValidatedDiscount | { valid: false; message: string; silent?: boolean }> {
+  const trimmed = code.trim();
+  if (!trimmed) {
+    return { valid: false, message: "", silent: true };
+  }
+
+  let normalized: string;
+  try {
+    normalized = validateDiscountCodeFormat(trimmed);
+  } catch {
+    return { valid: false, message: "Coupon invalid" };
+  }
+
   const admin = createAdminClient();
   const plan = getPlanByKey(planKey);
   const planPriceCents = plan.priceMonthly * 100;
@@ -100,7 +111,7 @@ export async function validateDiscountCode(
     .maybeSingle();
 
   if (error || !data) {
-    return { valid: false, message: "Discount code not found." };
+    return { valid: false, message: "Coupon invalid" };
   }
 
   const row = data as DiscountRow;

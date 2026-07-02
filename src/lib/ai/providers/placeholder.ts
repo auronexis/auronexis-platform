@@ -8,6 +8,7 @@ import {
   type AIImproveRequest,
   type AISummarizeRequest,
 } from "@/lib/ai/types";
+import { formatAIProviderHealthMessage } from "@/lib/ai/provider-labels";
 import type { AIProvider } from "@/lib/ai/providers/types";
 
 const PLACEHOLDER_BANNER =
@@ -54,7 +55,7 @@ function toResponse(request: AIGenerateRequest, content: string): AIGenerateResp
 /** Simulated provider — 800ms delay, clearly labeled placeholder content. */
 export class PlaceholderAIProvider implements AIProvider {
   readonly id = "placeholder" as const;
-  readonly displayName = "Placeholder (dev)";
+  readonly displayName = "Mock (development)";
 
   async generate(request: AIGenerateRequest): Promise<AIGenerateResponse> {
     await delay(PLACEHOLDER_SIMULATION_DELAY_MS);
@@ -115,7 +116,7 @@ export class PlaceholderAIProvider implements AIProvider {
     return {
       ok: true,
       providerId: "placeholder",
-      message: "Placeholder provider active — connect a real provider to enable AI.",
+      message: formatAIProviderHealthMessage("placeholder"),
       latencyMs: 0,
     };
   }

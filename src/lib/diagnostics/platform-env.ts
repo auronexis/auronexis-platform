@@ -25,6 +25,11 @@ function envStatus(name: string, showPreview = false): EnvVarStatus {
   };
 }
 
+export type PlatformOperatorStatus = {
+  configured: boolean;
+  label: string;
+};
+
 export type PlatformEnvDiagnostics = {
   supabaseUrl: EnvVarStatus;
   supabaseAnonKey: EnvVarStatus;
@@ -33,8 +38,17 @@ export type PlatformEnvDiagnostics = {
   openaiModel: EnvVarStatus;
   anthropicApiKey: EnvVarStatus;
   aiProvider: EnvVarStatus;
-  platformAdminUserIds: EnvVarStatus;
+  platformOperators: PlatformOperatorStatus;
 };
+
+function getPlatformOperatorStatus(): PlatformOperatorStatus {
+  const configured = Boolean(readEnv("PLATFORM_ADMIN_USER_IDS"));
+
+  return {
+    configured,
+    label: configured ? "Platform operators configured" : "Not configured",
+  };
+}
 
 export function getPlatformEnvDiagnostics(): PlatformEnvDiagnostics {
   return {
@@ -45,6 +59,6 @@ export function getPlatformEnvDiagnostics(): PlatformEnvDiagnostics {
     openaiModel: envStatus("OPENAI_MODEL", true),
     anthropicApiKey: envStatus("ANTHROPIC_API_KEY"),
     aiProvider: envStatus("AI_PROVIDER", true),
-    platformAdminUserIds: envStatus("PLATFORM_ADMIN_USER_IDS"),
+    platformOperators: getPlatformOperatorStatus(),
   };
 }

@@ -197,9 +197,11 @@ export async function validateDiscountCodeAction(
 
 
   if (!result.valid) {
+    if ("silent" in result && result.silent) {
+      return {};
+    }
 
-    return { error: result.message };
-
+    return { error: result.message || "No active discount applied" };
   }
 
 
