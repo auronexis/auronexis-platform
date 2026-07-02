@@ -40,6 +40,7 @@ import { getIncidentSlaInfo, getSLAForIncident } from "@/lib/sla/queries";
 import { OperationalEditableWithAI } from "@/components/operational/ai/operational-editable-with-ai";
 import { RelatedKnowledgeSection } from "@/components/knowledge/related-knowledge-section";
 import { IncidentAISection } from "@/components/incidents/ai/incident-ai-section";
+import { IncidentPortalSettings } from "@/components/incidents/incident-portal-settings";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
 import { getIncidentAnalysis, listIncidentAnalyses } from "@/lib/ai-incidents/queries";
 import {
@@ -222,6 +223,19 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
         >
           <IncidentTimeline events={activity} />
         </DetailSection>
+
+        {editable ? (
+          <DetailSection
+            title="Client portal visibility"
+            description="Control whether this incident and its client summary appear in the client portal."
+          >
+            <IncidentPortalSettings
+              incidentId={incident.id}
+              portalVisible={Boolean(incident.portal_visible)}
+              clientSummary={incident.client_summary}
+            />
+          </DetailSection>
+        ) : null}
 
         <IncidentAISection
           incidentId={incident.id}

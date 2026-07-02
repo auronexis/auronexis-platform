@@ -1,6 +1,8 @@
 import type { Client, ClientPortalUser, Organization } from "@/types/database";
 import type { ClientSlaAssignment } from "@/lib/sla/types";
 import type { HealthSnapshot } from "@/lib/health/types";
+import type { ExecutiveReportSnapshot } from "@/lib/executive-reports/types";
+import type { PortalSlaSummary } from "@/lib/sla/types";
 
 export type ClientPortalSessionContext = {
   authUserId: string;
@@ -35,7 +37,14 @@ export type PortalIncidentView = {
   title: string;
   severity: string;
   status: string;
+  clientSummary: string | null;
+  detectedAt: string;
+  resolvedAt: string | null;
   created_at: string;
+};
+
+export type PortalIncidentDetailView = PortalIncidentView & {
+  resolutionSummary: string | null;
 };
 
 export type PortalReportView = {
@@ -88,6 +97,20 @@ export type PortalContactsData = {
   supportEmail: string | null;
 };
 
+export type PortalOverviewDataV3 = {
+  clientName: string;
+  health: Pick<HealthSnapshot, "score" | "status" | "delta" | "reason" | "calculated_at"> | null;
+  executiveOverview: ExecutiveReportSnapshot | null;
+  latestReport: PortalReportListItem | null;
+  slaSummary: PortalSlaSummary & {
+    assignment: ClientSlaAssignment;
+  };
+  openIncidents: PortalIncidentView[];
+  openIncidentsCount: number;
+  recentEvents: PortalTimelineEvent[];
+  contacts: PortalContactsData;
+};
+
 export type PortalOverviewData = {
   clientName: string;
   health: Pick<HealthSnapshot, "score" | "status" | "delta" | "reason" | "calculated_at"> | null;
@@ -112,24 +135,34 @@ export const PORTAL_CLIENT_SELECT_MINIMAL =
   "id, organization_id, name, status, contact_name, contact_email";
 
 export const PORTAL_REPORT_SELECT =
-  "id, title, reporting_period_start, reporting_period_end, status, executive_summary, summary, key_wins, key_risks, next_actions, sent_at, published_at, health_score, sla_score, version, updated_at";
+  "id, title, reporting_period_start, reporting_period_end, status, executive_summary, summary, portal_summary, key_wins, key_risks, next_actions, sent_at, published_at, health_score, sla_score, version, updated_at";
 
 export const PORTAL_REPORT_LIST_SELECT =
-  "id, title, reporting_period_start, reporting_period_end, sent_at, status, updated_at, published_at, summary, health_score, sla_score, version";
+  "id, title, reporting_period_start, reporting_period_end, sent_at, status, updated_at, published_at, summary, portal_summary, health_score, sla_score, version";
 
-export const PORTAL_RISK_SELECT = "id, title, severity, status, due_date, created_at";
+export const PORTAL_INCIDENT_SELECT =
+  "id, title, severity, status, client_summary, description, occurred_at, resolved_at, created_at";
 
-export const PORTAL_INCIDENT_SELECT = "id, title, severity, status, created_at";
+export const PORTAL_INCIDENT_DETAIL_SELECT =
+  "id, title, severity, status, client_summary, description, resolution_notes, occurred_at, resolved_at, created_at";
 
 export const PORTAL_USER_SELECT =
   "id, auth_user_id, organization_id, client_id, email, full_name, is_active, last_login_at, created_at";
 
+export const PORTAL_RISK_SELECT = "id, title, severity, status, due_date, created_at";
+
 export const PORTAL_TIMELINE_EVENT_TYPES = [
-  "client.updated",
+  "report.published",
   "health.changed",
-  "report.created",
-  "report.updated",
-  "sla.updated",
+  "sla.resolved",
+  "sla.breached",
+  "portal.login",
+  "portal.viewed",
+  "portal.report_viewed",
+  "portal.incident_viewed",
+  "portal.support_viewed",
+  "incident.created",
+  "incident.resolved",
 ] as const;
 
 export type PortalTimelineEventType = (typeof PORTAL_TIMELINE_EVENT_TYPES)[number];

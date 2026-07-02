@@ -6,16 +6,7 @@ import Link from "next/link";
 
 import { usePathname } from "next/navigation";
 
-import {
-  Activity,
-  FileText,
-  History,
-  LayoutDashboard,
-  LifeBuoy,
-  LogOut,
-  Timer,
-  Users,
-} from "lucide-react";
+import { Activity, FileText, History, LayoutDashboard, LifeBuoy, LogOut, ShieldAlert, Timer, Users } from "lucide-react";
 
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { SkipLink } from "@/components/ui/skip-link";
@@ -260,7 +251,9 @@ export function PortalShell({
 export const PORTAL_NAV_ITEMS = {
   overview: { label: "Overview", href: "/client-portal/overview", icon: LayoutDashboard },
   health: { label: "Health", href: "/client-portal/health", icon: Activity },
+  executive: { label: "Executive", href: "/client-portal/executive", icon: FileText },
   reports: { label: "Reports", href: "/client-portal/reports", icon: FileText },
+  incidents: { label: "Incidents", href: "/client-portal/incidents", icon: ShieldAlert },
   sla: { label: "SLA", href: "/client-portal/sla", icon: Timer },
   timeline: { label: "Timeline", href: "/client-portal/timeline", icon: History },
   contacts: { label: "Contacts", href: "/client-portal/contacts", icon: Users },

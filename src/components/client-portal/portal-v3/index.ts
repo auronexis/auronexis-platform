@@ -1,0 +1,12 @@
+export { PortalHero as PortalOverviewHero } from "@/components/client-portal/portal-ui";
+export { PortalKpiCard as PortalMetricCard } from "@/components/client-portal/portal-ui";
+export { PortalEmptyState } from "@/components/client-portal/portal-ui";
+export { PortalExecutiveSummary } from "@/components/client-portal/portal-v3/portal-executive-summary";
+export { PortalHealthSummary } from "@/components/client-portal/portal-v3/portal-health-summary";
+export { PortalReportCard } from "@/components/client-portal/portal-v3/portal-report-card";
+export { PortalSlaSummaryCard } from "@/components/client-portal/portal-v3/portal-sla-summary-card";
+export { PortalTimeline } from "@/components/client-portal/portal-v3/portal-timeline";
+export { PortalContactsCard } from "@/components/client-portal/portal-v3/portal-contacts-card";
+export { PortalSupportCard } from "@/components/client-portal/portal-v3/portal-support-card";
+export { PortalIncidentCard } from "@/components/client-portal/portal-v3/portal-incident-card";
+export { PortalIncidentDetail } from "@/components/client-portal/portal-v3/portal-incident-detail";

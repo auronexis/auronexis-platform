@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PortalPageHeader } from "@/components/client-portal/portal-ui";
-import { PortalTimelineList } from "@/components/client-portal/portal-timeline-list";
-import { listPortalTimelineEvents } from "@/lib/client-portal/queries";
+import { PortalTimeline } from "@/components/client-portal/portal-v3";
+import { getPortalTimeline } from "@/lib/client-portal/portal-timeline";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function ClientPortalTimelinePage() {
   const session = await requireClientPortalSession();
-  const events = await listPortalTimelineEvents(session, 20);
+  const events = await getPortalTimeline(session, 20);
 
   return (
     <>
@@ -18,7 +18,7 @@ export default async function ClientPortalTimelinePage() {
         title="Timeline"
         description="Client-facing updates about your account, reports, health, and SLA."
       />
-      <PortalTimelineList events={events} />
+      <PortalTimeline events={events} />
     </>
   );
 }

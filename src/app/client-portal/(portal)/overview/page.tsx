@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, FileText, LifeBuoy, Timer } from "lucide-react";
-import { ClientHealthBadge } from "@/components/health/client-health-badge";
-import { PortalTimelineList } from "@/components/client-portal/portal-timeline-list";
 import {
-  PortalCard,
-  PortalHero,
-  PortalKpiCard,
-  PortalKpiMetric,
-  PortalQuickAccessCard,
-} from "@/components/client-portal/portal-ui";
-import { PortalExecutiveOverview } from "@/components/executive-reports/portal-executive-overview";
+  PortalContactsCard,
+  PortalExecutiveSummary,
+  PortalMetricCard,
+  PortalOverviewHero,
+  PortalReportCard,
+  PortalSlaSummaryCard,
+  PortalSupportCard,
+  PortalTimeline,
+} from "@/components/client-portal/portal-v3";
+import { PortalIncidentCard } from "@/components/client-portal/portal-v3/portal-incident-card";
+import { PortalCard, PortalKpiMetric, PortalQuickAccessCard } from "@/components/client-portal/portal-ui";
+import { ClientHealthBadge } from "@/components/health/client-health-badge";
 import { recordPortalActivity } from "@/lib/client-portal/activity";
-import { getPortalOverviewData } from "@/lib/client-portal/queries";
-import { getPortalExecutiveOverview } from "@/lib/executive-reports/queries";
+import { getPortalOverview } from "@/lib/client-portal/portal-queries";
+import { getPortalSupport } from "@/lib/client-portal/portal-support";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
 import { getOrganizationBrandingForOrganization } from "@/lib/branding/queries";
 import { HEALTH_STATUS_LABELS } from "@/lib/health/types";
@@ -31,11 +34,10 @@ export default async function ClientPortalOverviewPage() {
     session.organization.id,
     session.organization.name,
   );
-  const data = await getPortalOverviewData(session, branding.supportEmail ?? null);
-  const executiveOverview = await getPortalExecutiveOverview(
-    session.organization.id,
-    session.client.id,
-  );
+  const [data, support] = await Promise.all([
+    getPortalOverview(session, branding.supportEmail ?? null),
+    getPortalSupport(session, branding.supportEmail ?? null),
+  ]);
 
   void recordPortalActivity(session, {
     eventType: "portal.viewed",
@@ -43,7 +45,7 @@ export default async function ClientPortalOverviewPage() {
     description: session.client.name,
   }).catch(() => undefined);
 
-  const slaPolicy = data.slaAssignment.effectivePolicy;
+  const slaPolicy = data.slaSummary.assignment.effectivePolicy;
   const healthSummary = data.health
     ? {
         clientId: session.client.id,
@@ -57,28 +59,24 @@ export default async function ClientPortalOverviewPage() {
 
   return (
     <>
-      <PortalHero clientName={data.clientName} branding={branding} />
+      <PortalOverviewHero clientName={data.clientName} branding={branding} />
 
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        <PortalKpiCard
+        <PortalMetricCard
           label="Health"
           icon={Activity}
           tone="primary"
           href="/client-portal/health"
-          subtext={
-            data.health
-              ? HEALTH_STATUS_LABELS[data.health.status]
-              : "Health score pending"
-          }
+          subtext={data.health ? HEALTH_STATUS_LABELS[data.health.status] : "Health score pending"}
         >
           {healthSummary ? (
             <ClientHealthBadge summary={healthSummary} />
           ) : (
             <PortalKpiMetric>—</PortalKpiMetric>
           )}
-        </PortalKpiCard>
+        </PortalMetricCard>
 
-        <PortalKpiCard
+        <PortalMetricCard
           label="Latest report"
           icon={FileText}
           tone="primary"
@@ -103,9 +101,9 @@ export default async function ClientPortalOverviewPage() {
           ) : (
             <p className="text-sm font-medium text-muted">No reports available yet.</p>
           )}
-        </PortalKpiCard>
+        </PortalMetricCard>
 
-        <PortalKpiCard
+        <PortalMetricCard
           label="SLA status"
           icon={Timer}
           tone="neutral"
@@ -115,23 +113,27 @@ export default async function ClientPortalOverviewPage() {
           <PortalKpiMetric>
             {slaPolicy ? formatSlaHours(slaPolicy.incident_hours) : "—"}
           </PortalKpiMetric>
-        </PortalKpiCard>
+        </PortalMetricCard>
 
-        <PortalKpiCard
-          label="Main contact"
+        <PortalMetricCard
+          label="Open incidents"
           icon={LifeBuoy}
           tone="neutral"
-          href="/client-portal/contacts"
-          subtext={data.contacts.accountOwnerName ?? "Contact details available"}
+          href="/client-portal/incidents"
+          subtext={
+            data.openIncidentsCount > 0
+              ? `${data.openIncidentsCount} shared with your portal`
+              : "No portal-visible incidents"
+          }
         >
-          <PortalKpiMetric className="text-base">
-            {data.contacts.contactName ?? data.contacts.accountOwnerName ?? "—"}
-          </PortalKpiMetric>
-        </PortalKpiCard>
+          <PortalKpiMetric>{data.openIncidentsCount}</PortalKpiMetric>
+        </PortalMetricCard>
       </div>
 
-      <section className="mt-10">
-        <PortalExecutiveOverview snapshot={executiveOverview} />
+      <section className="mt-10 space-y-6">
+        <PortalExecutiveSummary snapshot={data.executiveOverview} />
+        {data.latestReport ? <PortalReportCard report={data.latestReport} /> : null}
+        <PortalSlaSummaryCard summary={data.slaSummary} />
       </section>
 
       <section className="mt-10 grid gap-6 lg:grid-cols-2">
@@ -139,39 +141,31 @@ export default async function ClientPortalOverviewPage() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-foreground">Recent activity</h2>
-              <p className="mt-1 text-sm text-muted">
-                Latest updates shared with your organization.
-              </p>
+              <p className="mt-1 text-sm text-muted">Client-safe updates from your agency.</p>
             </div>
             <Link href="/client-portal/timeline" className={linkText}>
               View all
             </Link>
           </div>
           <div className="mt-5">
-            <PortalTimelineList events={data.recentEvents} />
+            <PortalTimeline events={data.recentEvents} />
           </div>
         </PortalCard>
 
-        <PortalCard>
-          <h2 className="text-lg font-semibold text-foreground">Support</h2>
-          <p className="mt-1 text-sm text-muted">
-            Need help? Support requests are coming soon.
-          </p>
-          <div className="mt-5 space-y-4">
-            <p className="text-sm text-muted">
-              {data.contacts.supportEmail
-                ? `For urgent matters, email ${data.contacts.supportEmail}.`
-                : "Your agency team will enable support requests in a future update."}
-            </p>
-            <Link
-              href="/client-portal/support"
-              className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-            >
-              Go to support
-            </Link>
-          </div>
-        </PortalCard>
+        <div className="space-y-6">
+          <PortalContactsCard contacts={data.contacts} />
+          <PortalSupportCard support={support} />
+        </div>
       </section>
+
+      {data.openIncidents.length > 0 ? (
+        <section className="mt-10 space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">Shared incidents</h2>
+          {data.openIncidents.slice(0, 3).map((incident) => (
+            <PortalIncidentCard key={incident.id} incident={incident} />
+          ))}
+        </section>
+      ) : null}
 
       <section className="mt-10">
         <h2 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
@@ -179,18 +173,18 @@ export default async function ClientPortalOverviewPage() {
         </h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <PortalQuickAccessCard
+            href="/client-portal/executive"
+            icon={FileText}
+            tone="primary"
+            title="Executive"
+            description="Review leadership summaries from published reports."
+          />
+          <PortalQuickAccessCard
             href="/client-portal/health"
             icon={Activity}
             tone="primary"
             title="Health"
             description="Review your operational health score and trend."
-          />
-          <PortalQuickAccessCard
-            href="/client-portal/reports"
-            icon={FileText}
-            tone="primary"
-            title="Reports"
-            description="View reports shared by your agency."
           />
           <PortalQuickAccessCard
             href="/client-portal/support"

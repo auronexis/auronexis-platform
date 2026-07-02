@@ -41,6 +41,9 @@ export type ActivityEventType =
   | "health.changed"
   | "portal.login"
   | "portal.viewed"
+  | "portal.report_viewed"
+  | "portal.incident_viewed"
+  | "portal.support_viewed"
   | "risk.created"
   | "risk.updated"
   | "risk.assigned"
@@ -122,6 +125,9 @@ export const ACTIVITY_EVENT_TYPE_LABELS: Record<ActivityEventType, string> = {
   "health.changed": "Health changed",
   "portal.login": "Portal login",
   "portal.viewed": "Portal viewed",
+  "portal.report_viewed": "Portal report viewed",
+  "portal.incident_viewed": "Portal incident viewed",
+  "portal.support_viewed": "Portal support viewed",
   "risk.created": "Risk created",
   "risk.updated": "Risk updated",
   "risk.assigned": "Risk assigned",

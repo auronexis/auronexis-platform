@@ -71,7 +71,7 @@ export const STAFF_INCIDENT_STATUSES: IncidentStatus[] = ["open", "investigating
 export const OPEN_INCIDENT_STATUSES: IncidentStatus[] = ["open", "investigating"];
 
 export const INCIDENT_SELECT_COLUMNS =
-  "id, organization_id, client_id, risk_id, client_risk_id, title, description, severity, status, assigned_user_id, occurred_at, due_at, resolution_notes, resolved_at, created_at, updated_at";
+  "id, organization_id, client_id, risk_id, client_risk_id, title, description, severity, status, assigned_user_id, occurred_at, due_at, resolution_notes, resolved_at, portal_visible, client_summary, created_at, updated_at";
 
 export const INCIDENT_LIST_SELECT = `
   ${INCIDENT_SELECT_COLUMNS},

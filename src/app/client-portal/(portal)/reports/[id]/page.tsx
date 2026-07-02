@@ -5,7 +5,8 @@ import { PortalActionLink, PortalCard } from "@/components/client-portal/portal-
 import { ExecutiveMetrics } from "@/components/executive-reports/executive-metrics";
 import { ExecutiveSummaryCard } from "@/components/executive-reports/executive-summary-card";
 import { getPortalReportById } from "@/lib/client-portal/queries";
-import { getPortalExecutiveReport } from "@/lib/executive-reports/queries";
+import { recordPortalActivity } from "@/lib/client-portal/activity";
+import { getPortalReportDetail } from "@/lib/client-portal/portal-reports";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
 import { formatReportDate, formatReportPeriod } from "@/lib/reports/types";
 
@@ -26,17 +27,17 @@ export async function generateMetadata({ params }: PortalReportDetailPageProps):
 export default async function ClientPortalReportDetailPage({ params }: PortalReportDetailPageProps) {
   const session = await requireClientPortalSession();
   const { id } = await params;
-  const report = await getPortalReportById(session, id);
+  const { report, executiveSnapshot } = await getPortalReportDetail(session, id);
 
   if (!report) {
     notFound();
   }
 
-  const executiveSnapshot = await getPortalExecutiveReport(
-    session.organization.id,
-    session.client.id,
-    report.id,
-  );
+  void recordPortalActivity(session, {
+    eventType: "portal.report_viewed",
+    title: `Portal report viewed: ${report.title}`,
+    metadata: { reportId: report.id },
+  }).catch(() => undefined);
 
   return (
     <>

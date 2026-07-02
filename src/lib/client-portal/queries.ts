@@ -19,11 +19,9 @@ import type {
 } from "@/lib/reports/types";
 import {
   HEALTH_SNAPSHOT_PORTAL_SELECT,
-  PORTAL_INCIDENT_SELECT,
   PORTAL_REPORT_LIST_SELECT,
   PORTAL_REPORT_SELECT,
   PORTAL_RISK_SELECT,
-  PORTAL_TIMELINE_EVENT_TYPES,
   PORTAL_USER_SELECT,
 } from "@/lib/client-portal/types";
 import type { ClientSlaAssignment, PortalSlaSummary } from "@/lib/sla/types";
@@ -174,21 +172,8 @@ export async function listPortalRisks(
 export async function listPortalIncidents(
   session: ClientPortalSessionContext,
 ): Promise<PortalIncidentView[]> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("incidents")
-    .select(PORTAL_INCIDENT_SELECT)
-    .eq("client_id", session.client.id)
-    .in("status", ["open", "investigating"])
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.warn("[client-portal] listPortalIncidents failed:", error.message);
-    return [];
-  }
-
-  return (data ?? []) as PortalIncidentView[];
+  const { getPortalIncidents } = await import("@/lib/client-portal/portal-incidents");
+  return getPortalIncidents(session);
 }
 
 /** Metrics for portal PDF export. */
@@ -485,24 +470,8 @@ export async function listPortalTimelineEvents(
   session: ClientPortalSessionContext,
   limit = 20,
 ): Promise<PortalTimelineEvent[]> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("activity_events")
-      .select("id, event_type, title, description, created_at")
-      .eq("organization_id", session.organization.id)
-      .in("event_type", [...PORTAL_TIMELINE_EVENT_TYPES])
-      .order("created_at", { ascending: false })
-      .limit(limit * 2);
-
-    if (error || !data) {
-      return [];
-    }
-
-    return (data as PortalTimelineEvent[]).slice(0, limit);
-  } catch {
-    return [];
-  }
+  const { getPortalTimeline } = await import("@/lib/client-portal/portal-timeline");
+  return getPortalTimeline(session, limit);
 }
 
 /** Contacts and support details for the portal user. */

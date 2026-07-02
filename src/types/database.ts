@@ -612,6 +612,8 @@ export type Database = {
           due_at: string | null;
           resolution_notes: string | null;
           resolved_at: string | null;
+          portal_visible: boolean;
+          client_summary: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -630,6 +632,8 @@ export type Database = {
           due_at?: string | null;
           resolution_notes?: string | null;
           resolved_at?: string | null;
+          portal_visible?: boolean;
+          client_summary?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -648,6 +652,8 @@ export type Database = {
           due_at?: string | null;
           resolution_notes?: string | null;
           resolved_at?: string | null;
+          portal_visible?: boolean;
+          client_summary?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -814,6 +820,7 @@ export type Database = {
           version: number;
           root_report_id: string | null;
           summary: string | null;
+          portal_summary: string | null;
           health_score: number | null;
           sla_score: number | null;
           created_at: string;
@@ -829,6 +836,7 @@ export type Database = {
           status?: ReportStatus;
           executive_summary?: string | null;
           summary?: string | null;
+          portal_summary?: string | null;
           key_wins?: string | null;
           key_risks?: string | null;
           next_actions?: string | null;
@@ -852,6 +860,7 @@ export type Database = {
           status?: ReportStatus;
           executive_summary?: string | null;
           summary?: string | null;
+          portal_summary?: string | null;
           key_wins?: string | null;
           key_risks?: string | null;
           next_actions?: string | null;
@@ -1907,6 +1916,7 @@ export type Database = {
           title: string;
           description: string | null;
           metadata: Json;
+          portal_visible: boolean;
           created_at: string;
         };
         Insert: {
@@ -1920,6 +1930,7 @@ export type Database = {
           title: string;
           description?: string | null;
           metadata?: Json;
+          portal_visible?: boolean;
           created_at?: string;
         };
         Update: {
@@ -1933,6 +1944,7 @@ export type Database = {
           title?: string;
           description?: string | null;
           metadata?: Json;
+          portal_visible?: boolean;
           created_at?: string;
         };
         Relationships: [

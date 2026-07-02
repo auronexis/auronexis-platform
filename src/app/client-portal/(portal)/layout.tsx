@@ -20,7 +20,9 @@ export default async function PortalAuthenticatedLayout({
   const navItems: PortalNavItem[] = [
     PORTAL_NAV_ITEMS.overview,
     PORTAL_NAV_ITEMS.health,
+    PORTAL_NAV_ITEMS.executive,
     PORTAL_NAV_ITEMS.reports,
+    PORTAL_NAV_ITEMS.incidents,
     PORTAL_NAV_ITEMS.sla,
     PORTAL_NAV_ITEMS.timeline,
     PORTAL_NAV_ITEMS.contacts,
