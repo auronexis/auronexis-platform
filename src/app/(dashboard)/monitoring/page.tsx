@@ -7,6 +7,7 @@ import { MonitoringEventList } from "@/components/monitoring/monitoring-event-li
 import { MonitoringMetrics } from "@/components/monitoring/monitoring-metrics";
 import { MonitoringTimeline } from "@/components/monitoring/monitoring-timeline";
 import { PageHeader } from "@/components/layout/page-header";
+import { DashboardPage } from "@/components/layout/dashboard-page";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
 import { Button } from "@/components/ui/button";
 import { requireSession } from "@/lib/auth/session";
@@ -48,28 +49,26 @@ export default async function MonitoringPage() {
   );
 
   return (
-    <>
+    <DashboardPage>
       <PageHeader
         module="monitoring"
         title="Monitoring Connectors"
         description="Collect operational signals from providers and route failures into health, risk, and incident workflows."
       />
 
-      <div className="mb-8">
-        <MonitoringMetrics
-          metrics={{
-            activeConnectors: summary.activeConnectors,
-            failedConnectors: summary.failedConnectors,
-            eventsToday: summary.eventsToday,
-            criticalEvents: summary.criticalEventsToday,
-            lastCheckAt: summary.lastCheckAt,
-            connectorHealthPercent: summary.connectorHealthPercent,
-          }}
-        />
-      </div>
+      <MonitoringMetrics
+        metrics={{
+          activeConnectors: summary.activeConnectors,
+          failedConnectors: summary.failedConnectors,
+          eventsToday: summary.eventsToday,
+          criticalEvents: summary.criticalEventsToday,
+          lastCheckAt: summary.lastCheckAt,
+          connectorHealthPercent: summary.connectorHealthPercent,
+        }}
+      />
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-7 space-y-6">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-12">
+        <div className="min-w-0 space-y-6 lg:col-span-7">
           <DashboardPanel title="Connectors" description="Active monitoring integrations for this organization.">
             {connectors.length === 0 ? (
               <ConnectorEmptyState
@@ -101,7 +100,7 @@ export default async function MonitoringPage() {
           </DashboardPanel>
         </div>
 
-        <div className="lg:col-span-5 space-y-6">
+        <div className="min-w-0 space-y-6 lg:col-span-5">
           {canManage ? (
             <div id="add-connector">
             <DashboardPanel title="Add connector" description="Register a new monitoring provider.">
@@ -139,6 +138,6 @@ export default async function MonitoringPage() {
           </DashboardPanel>
         </div>
       </div>
-    </>
+    </DashboardPage>
   );
 }

@@ -20,8 +20,8 @@ export function MonitoringEventList({
 }: MonitoringEventListProps) {
   if (events.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border-strong bg-muted/5 px-4 py-8 text-center">
-        <p className="text-sm text-muted">{emptyMessage}</p>
+      <div className="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-border-strong bg-muted/5 px-4 py-8 text-center">
+        <p className="max-w-sm text-sm text-muted">{emptyMessage}</p>
       </div>
     );
   }

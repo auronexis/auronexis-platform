@@ -28,7 +28,8 @@ function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/api/stripe/webhook") ||
     pathname.startsWith("/api/cron/run") ||
     pathname.startsWith("/api/v1/") ||
-    pathname === "/api/docs"
+    pathname === "/api/docs" ||
+    pathname.startsWith("/api/docs/")
   ) {
     return true;
   }

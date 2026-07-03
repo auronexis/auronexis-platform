@@ -13,6 +13,8 @@ type DashboardPanelProps = {
   className?: string;
   contentClassName?: string;
   variant?: "default" | "glass";
+  /** Stretch panel to fill grid row height — off by default to avoid empty-state/footer overlap. */
+  stretch?: boolean;
 };
 
 export function DashboardPanel({
@@ -23,11 +25,12 @@ export function DashboardPanel({
   className,
   contentClassName,
   variant = "default",
+  stretch = false,
 }: DashboardPanelProps) {
   return (
     <section
       className={cn(
-        "flex h-full flex-col",
+        stretch ? "flex h-full min-h-0 flex-col" : "min-w-0 overflow-hidden",
         variant === "glass"
           ? "rounded-2xl border border-border/80 bg-surface/90 shadow-md backdrop-blur-sm"
           : auroraSurface,
@@ -43,7 +46,7 @@ export function DashboardPanel({
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
-      <div className={cn("flex-1 p-5", contentClassName)}>{children}</div>
+      <div className={cn(stretch ? "min-h-0 flex-1 p-5" : "p-5", contentClassName)}>{children}</div>
     </section>
   );
 }

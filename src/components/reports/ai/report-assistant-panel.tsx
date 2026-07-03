@@ -150,17 +150,17 @@ export function ReportAssistantPanel({
         />
       ) : null}
 
+      {panelOpen ? (
       <aside
         ref={panelRef}
         tabIndex={-1}
         role="dialog"
-        aria-modal={panelOpen}
+        aria-modal="true"
         aria-label="AI report copilot"
-        aria-hidden={!panelOpen}
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-border bg-surface shadow-2xl",
+          "fixed inset-y-0 right-0 z-50 flex w-[min(100vw,28rem)] max-w-md flex-col border-l border-border bg-surface shadow-2xl",
           transitionInteractive,
-          panelOpen ? "translate-x-0" : "translate-x-full pointer-events-none",
+          "translate-x-0",
         )}
       >
         <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
@@ -353,6 +353,7 @@ export function ReportAssistantPanel({
           )}
         </div>
       </aside>
+      ) : null}
     </>
   );
 }

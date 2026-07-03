@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ReportForm } from "@/components/reports/report-form";
 import { ReportEditableWithAI } from "@/components/reports/ai/report-editable-with-ai";
 import { PageHeader, ModulePlaceholder } from "@/components/layout/page-header";
+import { DashboardPage, DashboardPageGrid, DashboardPageMain } from "@/components/layout/dashboard-page";
 import { PageSurface } from "@/components/ui/page-surface";
 import { LinkButton } from "@/components/ui/link-button";
 import { listClients } from "@/lib/clients/queries";
@@ -87,7 +88,7 @@ export default async function NewReportPage() {
   }
 
   return (
-    <>
+    <DashboardPage>
       <PageHeader
         module="reports"
         title="Create report"
@@ -99,28 +100,32 @@ export default async function NewReportPage() {
         }
       />
 
-      <PageSurface className="max-w-3xl overflow-hidden">
-        <ReportEditableWithAI
-          aiEnabled={aiEnabled}
-          upgradeMessage={getFeatureUpgradeMessage("ai_report_assistant")}
-          requiredPlanLabel={getRequiredPlanLabel("ai_report_assistant")}
-          context={aiContext}
-          usageSummary={aiUsageSummary}
-        >
-          <ReportForm
-            action={createReportAction}
-            clients={clients}
-            orgUsers={orgUsers}
-            showAssigneeSelect={showAssigneeSelect}
-            allowedStatuses={STAFF_REPORT_STATUSES}
-            defaultAssignedUserId={session.user.id}
-            templates={templates}
-            submitLabel="Create report"
-            pendingLabel="Creating…"
-            aiEnabled={aiEnabled}
-          />
-        </ReportEditableWithAI>
-      </PageSurface>
-    </>
+      <DashboardPageGrid>
+        <DashboardPageMain>
+          <PageSurface className="min-w-0 overflow-hidden">
+            <ReportEditableWithAI
+              aiEnabled={aiEnabled}
+              upgradeMessage={getFeatureUpgradeMessage("ai_report_assistant")}
+              requiredPlanLabel={getRequiredPlanLabel("ai_report_assistant")}
+              context={aiContext}
+              usageSummary={aiUsageSummary}
+            >
+              <ReportForm
+                action={createReportAction}
+                clients={clients}
+                orgUsers={orgUsers}
+                showAssigneeSelect={showAssigneeSelect}
+                allowedStatuses={STAFF_REPORT_STATUSES}
+                defaultAssignedUserId={session.user.id}
+                templates={templates}
+                submitLabel="Create report"
+                pendingLabel="Creating…"
+                aiEnabled={aiEnabled}
+              />
+            </ReportEditableWithAI>
+          </PageSurface>
+        </DashboardPageMain>
+      </DashboardPageGrid>
+    </DashboardPage>
   );
 }

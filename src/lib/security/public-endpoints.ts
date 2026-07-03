@@ -28,7 +28,13 @@ export const PUBLIC_ENDPOINT_REGISTRY: PublicEndpointProtection[] = [
   {
     path: "/api/docs",
     methods: ["GET"],
-    protection: "static OpenAPI HTML",
+    protection: "public API reference page",
+    authenticated: false,
+  },
+  {
+    path: "/api/docs/openapi",
+    methods: ["GET"],
+    protection: "OpenAPI JSON spec",
     authenticated: false,
   },
   {

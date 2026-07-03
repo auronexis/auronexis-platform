@@ -62,9 +62,11 @@ export function DashboardShell({
           branding={branding}
         />
         <DashboardMain>
-          <PageTransition className={cn(pageContainer, "flex min-h-full flex-col")}>
-            {children}
-            <SiteFooter className="mt-10" />
+          <PageTransition
+            className={cn(pageContainer, "flex min-h-full min-w-0 flex-col")}
+          >
+            <div className="min-w-0 flex-1 space-y-8">{children}</div>
+            <SiteFooter variant="minimal" className="mt-10 shrink-0 px-0" />
           </PageTransition>
         </DashboardMain>
       </div>
