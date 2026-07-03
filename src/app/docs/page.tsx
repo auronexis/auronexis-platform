@@ -2,21 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowLeft,
-  BarChart3,
   BookOpen,
-  Bot,
-  CreditCard,
-  FileText,
-  Palette,
-  Plug,
-  Shield,
-  Sparkles,
-  Users,
-  Workflow,
+  ScrollText,
 } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
-import { COMPANY_NAME, DOCS_URL } from "@/lib/company/contact";
+import { COMPANY_NAME, DOCS_URL, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
+import { DOCS_HUB_DOC, DOC_HUB_CARDS } from "@/lib/docs/registry";
 import { cn } from "@/lib/utils/cn";
 import { getAuroraModule, auroraSurfaceInteractive } from "@/lib/ui/aurora";
 import { focusRing } from "@/lib/ui/tokens";
@@ -26,18 +18,10 @@ export const metadata: Metadata = {
   description: `${COMPANY_NAME} product documentation`,
 };
 
-const DOC_CARDS = [
-  { slug: "getting-started", title: "Getting Started", description: "Sign up, onboarding, and first workspace setup.", icon: BookOpen, module: "dashboard" as const },
-  { slug: "clients", title: "Clients", description: "Manage client portfolio, health, and revenue.", icon: Users, module: "clients" as const },
-  { slug: "reports", title: "Reports", description: "Templates, schedules, publish workflow, and portal delivery.", icon: FileText, module: "reports" as const },
-  { slug: "automation", title: "Automation", description: "Workflow builder, triggers, and execution history.", icon: Workflow, module: "workflows" as const },
-  { slug: "integrations", title: "Integrations", description: "Connectors, OAuth, sync, and runtime delivery.", icon: Plug, module: "workflows" as const },
-  { slug: "billing", title: "Billing", description: "Plans, Stripe checkout, invoices, and usage.", icon: CreditCard, module: "settings" as const },
-  { slug: "api", title: "API", description: "Public API keys, scopes, and OpenAPI reference.", icon: Bot, module: "settings" as const, href: "/api/docs" },
-  { slug: "compliance", title: "Compliance", description: "Audit, GDPR, retention, and security incidents.", icon: Shield, module: "settings" as const },
-  { slug: "white-label", title: "White Label", description: "Branding, portal, email, and PDF customization.", icon: Palette, module: "settings" as const },
-  { slug: "predictive", title: "Predictive Intelligence", description: "Forecasts, health scores, and risk signals.", icon: Sparkles, module: "dashboard" as const },
-] as const;
+const HUB_ICONS = {
+  "getting-started": BookOpen,
+  "release-notes": ScrollText,
+} as const;
 
 export default function DocsHubPage() {
   return (
@@ -55,15 +39,11 @@ export default function DocsHubPage() {
         <div className="relative mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-10 sm:py-12">
           <div>
             <h1 className="text-2xl font-semibold text-white sm:text-3xl">{COMPANY_NAME} Docs</h1>
-            <p className="mt-2 max-w-xl text-sm text-primary-foreground/85">
-              In-app documentation hub. Full docs also at{" "}
-              <a href={DOCS_URL} className="underline hover:text-white" target="_blank" rel="noopener noreferrer">
-                {DOCS_URL.replace("https://", "")}
-              </a>
-              .
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-primary-foreground/85">
+              {DOCS_HUB_DOC.intro}
             </p>
           </div>
-          <Link href="/login" className="inline-flex items-center gap-1.5 text-sm text-white hover:underline">
+          <Link href="/login" className="inline-flex shrink-0 items-center gap-1.5 text-sm text-white hover:underline">
             <ArrowLeft className="h-4 w-4" aria-hidden />
             App
           </Link>
@@ -72,9 +52,10 @@ export default function DocsHubPage() {
 
       <div className="mx-auto w-full max-w-5xl px-6 py-10">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {DOC_CARDS.map((card) => {
+          {DOC_HUB_CARDS.map((card) => {
             const identity = getAuroraModule(card.module);
-            const href = "href" in card ? card.href : `/docs/${card.slug}`;
+            const href = card.href ?? `/docs/${card.slug}`;
+            const Icon = HUB_ICONS[card.slug as keyof typeof HUB_ICONS] ?? BookOpen;
 
             return (
               <Link
@@ -92,24 +73,69 @@ export default function DocsHubPage() {
                     identity.iconContainer,
                   )}
                 >
-                  <card.icon className="h-5 w-5" aria-hidden />
+                  <Icon className="h-5 w-5" aria-hidden />
                 </span>
                 <h2 className="mt-4 font-semibold text-white">{card.title}</h2>
                 <p className="mt-2 text-sm text-primary-foreground/75">{card.description}</p>
               </Link>
             );
           })}
+
+          <Link
+            href="/docs/release-notes"
+            className={cn(
+              auroraSurfaceInteractive,
+              "block rounded-2xl border border-white/10 bg-white/[0.03] p-5",
+              focusRing,
+            )}
+          >
+            <span
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-xl border",
+                getAuroraModule("settings").iconContainer,
+              )}
+            >
+              <ScrollText className="h-5 w-5" aria-hidden />
+            </span>
+            <h2 className="mt-4 font-semibold text-white">Release Notes</h2>
+            <p className="mt-2 text-sm text-primary-foreground/75">Product updates and platform changes.</p>
+          </Link>
         </div>
 
-        <div className="mt-10 rounded-xl border border-white/10 bg-white/[0.03] p-5">
-          <div className="flex items-center gap-2 text-sm font-medium text-white">
-            <BarChart3 className="h-4 w-4 text-primary" aria-hidden />
-            Usage & analytics
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-sm font-semibold text-white">Related resources</h2>
+            <ul className="mt-3 space-y-2 text-sm text-primary-foreground/75">
+              {DOCS_HUB_DOC.relatedDocs.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-white hover:underline">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <a href={DOCS_URL} className="hover:text-white hover:underline" target="_blank" rel="noopener noreferrer">
+                  External docs site
+                </a>
+              </li>
+              <li>
+                <Link href="/api/docs" className="hover:text-white hover:underline">
+                  OpenAPI reference
+                </Link>
+              </li>
+            </ul>
           </div>
-          <p className="mt-2 text-sm text-primary-foreground/75">
-            Detailed guides for each module are being published to {DOCS_URL}. Use Settings → Diagnostics for
-            environment and readiness checks in your workspace.
-          </p>
+
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="text-sm font-semibold text-white">Need help?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
+              Email{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-white hover:underline">
+                {SUPPORT_EMAIL}
+              </a>{" "}
+              for onboarding, billing, or product questions. Signed-in users can also open Settings → Support.
+            </p>
+          </div>
         </div>
       </div>
     </MarketingShell>
