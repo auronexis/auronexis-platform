@@ -11,8 +11,8 @@ type PricingHeroProps = {
 const pricingIdentity = getAuroraModule("pricing");
 
 export function PricingHero({
-  title = "Choose the plan that fits your agency",
-  subtitle = "Upgrade, downgrade, or compare plans anytime. Billing stays transparent and under your control.",
+  title = "Choose Professional, Business, or Enterprise",
+  subtitle = "Compare Professional, Business, and Enterprise. Pilot and Founding programs are invite-only.",
 }: PricingHeroProps) {
   return (
     <section

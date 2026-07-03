@@ -190,7 +190,7 @@ export async function getWorkspaceDiagnostics(
       row: subscription,
       missingMessage: subscription
         ? null
-        : "No subscription row found. This organization resolves to Starter fallback.",
+        : "No subscription row found. This organization uses Professional limits until a plan is linked.",
     },
     stripeEnv,
     platformEnv,

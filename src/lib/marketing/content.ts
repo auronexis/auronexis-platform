@@ -89,9 +89,11 @@ export const PUBLIC_PRICING_PLANS = [
   },
 ] as const;
 
-/** Copy-only public pricing note — Stripe checkout uses workspace billing separately. */
+/** Copy-only footnote for public pricing pages — invite-only programs are not listed here. */
 export const PUBLIC_PRICING_NOTE =
-  "Pilot Partner and Founding Customer offers are limited private programs, not standard public list pricing.";
+  "Enterprise pricing is negotiated. Contact sales for custom limits and onboarding.";
+
+export const INVITE_ONLY_PROGRAMS_NOTE = "Pilot and Founding programs are invite-only.";
 
 export const SECURITY_HIGHLIGHTS = [
   "Encryption in transit (TLS) and at rest for platform data stores.",
@@ -136,7 +138,8 @@ export const FAQ_ITEMS = [
   },
   {
     question: "Is there a pilot program?",
-    answer: "Yes. The pilot runs for 6 weeks with 50% beta pricing, dedicated onboarding, and roadmap influence for founding customers.",
+    answer:
+      "Pilot Partner is an invite-only private onboarding program — not a public plan tier. Contact sales if you received an invitation.",
   },
   {
     question: "Where is data hosted?",
@@ -154,17 +157,18 @@ export const FAQ_ITEMS = [
 
 export const PILOT_PROGRAM = {
   duration: "6 weeks",
-  discount: "50% discount on selected plans during the pilot period",
+  discount: "Invite-only beta pricing on approved Pilot Partner terms",
   targets: ["MSPs", "IT agencies", "Consultancies", "Automation firms"],
   includes: [
     "Dedicated onboarding and workspace setup",
     "Weekly check-ins with product team",
     "Priority support channel",
-    "Founding customer pricing lock-in options",
+    "Approved pricing terms for the pilot period",
     "Roadmap influence and feedback sessions",
     "Early access to upcoming modules",
   ],
   requirements: [
+    "Direct invitation or approved application",
     "Active client portfolio (minimum 3 managed clients)",
     "Designated operations owner for the pilot",
     "Willingness to provide structured feedback",
@@ -173,7 +177,7 @@ export const PILOT_PROGRAM = {
   benefits: [
     "Dedicated onboarding",
     "Roadmap influence",
-    "Founding customer pricing",
+    "Invite-only pricing terms",
     "Early access to new capabilities",
   ],
   emails: [SUPPORT_EMAIL, SALES_EMAIL],
@@ -204,7 +208,7 @@ export const HELP_TOPICS = [
   { title: "Documentation hub", href: "/docs", description: "Module guides and API reference." },
   { title: "Release notes", href: "/docs/release-notes", description: "Product updates and changes." },
   { title: "System status", href: MARKETING_ROUTES.status, description: "Platform component health." },
-  { title: "Pilot program", href: MARKETING_ROUTES.pilotProgram, description: "Apply for the founding customer cohort." },
+  { title: "Pilot program", href: MARKETING_ROUTES.pilotProgram, description: "Invite-only Pilot Partner application." },
   { title: "Contact support", href: MARKETING_ROUTES.contact, description: "Reach sales, support, or security." },
 ] as const;
 

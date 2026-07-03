@@ -227,7 +227,7 @@ export function buildBillingOverview(
 ): BillingOverview {
   const status = subscription?.status ?? "inactive";
   const isActive = isActiveSubscriptionStatus(status);
-  const planLabel = currentPlanName ?? "Starter";
+  const planLabel = currentPlanName ?? "Professional";
 
   const billingPeriodStart = formatBillingDate(subscription?.current_period_start);
   const billingPeriodEnd = formatBillingDate(subscription?.current_period_end);

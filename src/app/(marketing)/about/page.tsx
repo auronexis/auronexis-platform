@@ -17,14 +17,14 @@ export default function AboutPage() {
         eyebrow="Company"
         title={`About ${COMPANY_NAME}`}
         description="We build the Operations Command Center for AI automation agencies, MSPs, and service providers."
-        primaryHref="/pilot-program"
-        primaryLabel="Join the pilot"
+        primaryHref="/pricing"
+        primaryLabel="View pricing"
       />
       <MarketingSection title="Our mission">
         <p className="max-w-3xl text-base leading-relaxed text-muted">
           {COMPANY_NAME} helps agencies monitor client operations, detect risks early, automate delivery,
-          and prove value through reporting and client portals. We are pilot-ready and onboarding founding
-          customers in Germany and the EU.
+          and prove value through reporting and client portals. Public plans are Professional, Business, and Enterprise.
+          Pilot and Founding programs are invite-only.
         </p>
         <p className="mt-4 text-sm text-muted">
           Contact:{" "}

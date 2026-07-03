@@ -10,7 +10,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
     {
       variant: "tip",
       title: "Pilot program",
-      body: "Founding customers can apply for a six-week pilot with dedicated onboarding and beta pricing. Visit the Pilot Program page on the marketing site or Settings → About for eligibility and next steps.",
+      body: "Pilot Partner and Founding Customer are invite-only private onboarding programs and early access cohorts. They are not public plan tiers. Visit the Pilot Program page only if you received an invitation, or contact sales from Settings → About.",
     },
     {
       variant: "info",

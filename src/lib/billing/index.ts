@@ -5,7 +5,7 @@ export {
   validateDiscountCodeAction,
   type BillingActionState,
 } from "./actions";
-export { getAvailablePlans, getPlanByKey, PLAN_KEYS, formatPlanPrice } from "./plans";
+export { getAvailablePlans, getPublicSelfServePlans, getPlanByKey, PLAN_KEYS, formatPlanPrice } from "./plans";
 export type { PlanKey, SubscriptionPlanDefinition } from "./plans";
 export {
   getBillingDashboardData,

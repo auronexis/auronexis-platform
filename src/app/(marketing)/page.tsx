@@ -15,6 +15,7 @@ import {
   FEATURES,
   PUBLIC_PRICING_PLANS,
   PUBLIC_PRICING_NOTE,
+  INVITE_ONLY_PROGRAMS_NOTE,
   USE_CASES,
 } from "@/lib/marketing/content";
 import { MARKETING_ROUTES } from "@/lib/company/contact";
@@ -108,7 +109,7 @@ export default async function MarketingHomePage() {
         </div>
       </MarketingSection>
 
-      <MarketingSection eyebrow="Pricing" title="Plans that scale with your agency" description="Professional, Business, and Enterprise — transparent subscription pricing. Pilot Partner and Founding cohorts are separate limited programs.">
+      <MarketingSection eyebrow="Pricing" title="Plans that scale with your agency" description="Professional, Business, and Enterprise — three public subscription tiers with transparent pricing.">
         <div className="grid gap-4 lg:grid-cols-3">
           {PUBLIC_PRICING_PLANS.map((plan) => (
             <article
@@ -140,6 +141,7 @@ export default async function MarketingHomePage() {
           ))}
         </div>
         <p className="mt-6 max-w-3xl text-sm text-muted">{PUBLIC_PRICING_NOTE}</p>
+        <p className="mt-2 max-w-3xl text-sm text-muted">{INVITE_ONLY_PROGRAMS_NOTE}</p>
         <Link href={MARKETING_ROUTES.pricing} className={cn("mt-6 inline-flex text-sm font-medium text-primary hover:underline", focusRing, "rounded-lg")}>
           Compare plans →
         </Link>
@@ -150,10 +152,10 @@ export default async function MarketingHomePage() {
       </MarketingSection>
 
       <MarketingCta
-        title="Apply for the pilot program"
-        description="Join the founding customer cohort — 6 weeks, dedicated onboarding, roadmap influence, and 50% beta pricing."
+        title="Request a Pilot Partner invitation"
+        description="Pilot Partner is invite-only — six weeks of dedicated onboarding, roadmap influence, and approved beta pricing for qualified agencies."
         href={MARKETING_ROUTES.pilotProgram}
-        label="Apply for Pilot"
+        label="Learn about Pilot Partner"
       />
     </MarketingShell>
   );

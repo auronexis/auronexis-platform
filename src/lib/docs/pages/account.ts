@@ -13,6 +13,11 @@ export const BILLING_DOC: DocPageInput = {
       title: "Who can manage billing",
       body: "Only workspace owners and admins with billing permissions can change plans, apply discount codes, or open the customer portal. Staff and viewer roles cannot modify payment details or subscription settings.",
     },
+    {
+      variant: "info",
+      title: "Invite-only programs",
+      body: "Pilot Partner and Founding Customer are private onboarding programs delivered through direct invitation. They are not public plan tiers and do not appear on the pricing page. Contact sales if you received an invite link.",
+    },
   ],
   sections: [
     {
@@ -20,7 +25,7 @@ export const BILLING_DOC: DocPageInput = {
       paragraphs: [
         "Auroranexis subscriptions are billed through Stripe, a PCI-compliant payment processor. Your workspace plan determines feature access, usage limits, seat counts, and support tier. All billing activity — plan selection, checkout, invoices, and subscription changes — is accessible from Settings → Billing within the application.",
         "Billing is tied to your organization, not individual user accounts. When you upgrade or downgrade, the change applies to the entire workspace. Usage meters and effective limits are reflected in Settings → Usage and update after plan changes are processed.",
-        "Three self-serve tiers are available: Professional for growing teams that need automation and client portal delivery, Business for agencies requiring advanced compliance features and white-label branding, and Enterprise for organizations that need custom limits and negotiated arrangements. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
+        "Three public self-serve plans are available: Professional for growing teams that need automation and client portal delivery, Business for agencies requiring advanced compliance features and white-label branding, and Enterprise for organizations that need custom limits and negotiated arrangements. Pilot Partner and Founding Customer are invite-only early access cohorts — not public plan tiers. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
       ],
     },
     {
@@ -245,6 +250,11 @@ export const BILLING_DOC: DocPageInput = {
       question: "What is the difference between Business and Enterprise?",
       answer:
         "Business is a self-serve tier with expanded limits and features available through Stripe checkout. Enterprise involves a reviewed request process with custom limits, onboarding, and negotiated terms submitted from Settings → Enterprise or Settings → Billing.",
+    },
+    {
+      question: "What are Pilot Partner and Founding Customer programs?",
+      answer:
+        "They are invite-only private onboarding programs and early access cohorts — not public plan tiers. Access is provided through direct invitation or private invite links. Contact sales if you received an invitation.",
     },
   ],
   relatedLinks: [

@@ -13,14 +13,17 @@ export type SubscriptionPlanDefinition = {
   order: number;
 };
 
+/** Public self-serve tiers shown in marketing and workspace plan pickers. */
+export const PUBLIC_SELF_SERVE_PLAN_KEYS = ["professional", "business", "enterprise"] as const satisfies readonly PlanKey[];
+
 export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
   {
     key: "starter",
-    name: "Starter",
-    priceMonthly: 29,
+    name: "Professional",
+    priceMonthly: 149,
     currency: "EUR",
-    description: "For freelancers and small agencies",
-    order: 1,
+    description: "Internal fallback tier — Professional limits apply without an active subscription",
+    order: 0,
     features: [
       "Client management",
       "Reports",
@@ -32,49 +35,50 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
   {
     key: "professional",
     name: "Professional",
-    priceMonthly: 79,
+    priceMonthly: 149,
     currency: "EUR",
-    description: "For growing agencies",
-    order: 2,
-    recommended: true,
+    description: "For growing agencies starting with automation and client portal delivery",
+    order: 1,
     features: [
-      "Everything in Starter",
-      "Report templates",
-      "Report scheduling",
-      "Email delivery",
-      "Notifications",
-      "White label branding",
+      "Up to 25 clients",
+      "Automation workflows",
+      "Client portal",
+      "Integrations",
+      "Report templates and scheduling",
+      "AI report assistant",
     ],
   },
   {
     key: "business",
     name: "Business",
-    priceMonthly: 149,
+    priceMonthly: 499,
     currency: "EUR",
-    description: "For MSPs and operational teams",
-    order: 3,
+    description: "For established agencies with compliance, white-label, and higher limits",
+    order: 2,
+    recommended: true,
     features: [
-      "Everything in Professional",
-      "Risk management",
-      "Incident management",
-      "SLA tracking",
-      "Escalation rules",
+      "Higher client and seat limits",
+      "White label branding",
+      "Compliance center",
+      "Risk and incident management",
       "Automation engine",
+      "Priority support options",
     ],
   },
   {
     key: "enterprise",
     name: "Enterprise",
-    priceMonthly: 499,
+    priceMonthly: 1499,
     currency: "EUR",
-    description: "For advanced teams",
-    order: 4,
+    description: "For large portfolios and custom requirements",
+    order: 3,
     features: [
-      "Everything in Business",
+      "Custom client limits",
+      "Dedicated onboarding",
       "Priority support",
+      "Plan overrides",
       "Advanced reporting",
-      "Custom onboarding",
-      "Future API/Webhooks ready",
+      "Enterprise API readiness",
     ],
   },
 ];
@@ -83,9 +87,16 @@ const PLAN_BY_KEY = new Map(SUBSCRIPTION_PLANS.map((plan) => [plan.key, plan]));
 
 export const PLAN_KEYS: PlanKey[] = SUBSCRIPTION_PLANS.map((plan) => plan.key);
 
-/** All subscription plans in display order. */
+/** All subscription plans in display order (includes legacy/internal keys). */
 export function getAvailablePlans(): SubscriptionPlanDefinition[] {
-  return SUBSCRIPTION_PLANS;
+  return SUBSCRIPTION_PLANS.filter((plan) => plan.key !== "starter");
+}
+
+/** Public self-serve plans for workspace pricing UI — excludes invite-only programs. */
+export function getPublicSelfServePlans(): SubscriptionPlanDefinition[] {
+  return SUBSCRIPTION_PLANS.filter((plan) =>
+    (PUBLIC_SELF_SERVE_PLAN_KEYS as readonly PlanKey[]).includes(plan.key),
+  );
 }
 
 /** Look up a plan definition by key. */
@@ -128,6 +139,15 @@ export function resolvePlanActionLabel(
 }
 
 export function formatPlanPrice(plan: SubscriptionPlanDefinition): string {
+  if (plan.key === "enterprise") {
+    return `From ${new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: plan.currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(plan.priceMonthly)}`;
+  }
+
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: plan.currency,

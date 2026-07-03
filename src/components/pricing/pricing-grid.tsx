@@ -61,7 +61,7 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
         <FormAlert variant="warning">{unavailableMessage}</FormAlert>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {plans.map((plan) => {
           const action = resolvePlanActionLabel(
             plan.key,

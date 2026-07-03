@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PricingGrid } from "@/components/pricing/pricing-grid";
 import { PricingHero } from "@/components/pricing/pricing-hero";
-import { getAvailablePlans } from "@/lib/billing/plans";
+import { getPublicSelfServePlans } from "@/lib/billing/plans";
 import { getBillingOverview } from "@/lib/billing/queries";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
 import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
@@ -13,7 +13,7 @@ import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export const metadata: Metadata = {
   title: "Plans & Pricing",
-  description: "Compare Auroranexis plans and choose the subscription that fits your agency.",
+  description: "Compare Professional, Business, and Enterprise plans for your agency.",
 };
 
 export default async function WorkspacePlansPage() {
@@ -21,7 +21,7 @@ export default async function WorkspacePlansPage() {
   const session = await requireSession();
   const [overview, plans, seatUsage, clientUsage] = await Promise.all([
     getBillingOverview(session),
-    Promise.resolve(getAvailablePlans()),
+    Promise.resolve(getPublicSelfServePlans()),
     getOrganizationSeatUsageFromSession(session),
     getClientLimitUsageForSession(session),
   ]);

@@ -11,8 +11,8 @@ import {
 } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = createMarketingMetadata({
-  title: "Pilot Program",
-  description: "Apply for the Auroranexis founding customer pilot — 6 weeks, 50% beta pricing.",
+  title: "Pilot Partner Program",
+  description: "Invite-only Pilot Partner program for qualified agencies — dedicated onboarding and approved beta pricing.",
   path: "/pilot-program",
 });
 
@@ -21,11 +21,11 @@ export default function PilotProgramPage() {
     <MarketingShell>
       <JsonLdScript data={pilotProgramJsonLd()} />
       <MarketingHero
-        eyebrow="Pilot Program"
-        title="Founding customer pilot"
-        description="Six weeks of dedicated onboarding, roadmap influence, and 50% beta pricing for qualified agencies."
+        eyebrow="Pilot Partner"
+        title="Invite-only pilot program"
+        description="Pilot Partner is not a public plan tier. Qualified agencies receive direct invitations with six weeks of dedicated onboarding, roadmap influence, and approved beta pricing."
         primaryHref="#apply"
-        primaryLabel="Apply below"
+        primaryLabel="Request invitation"
         secondaryHref={MARKETING_ROUTES.contact}
         secondaryLabel="Contact sales"
       />
@@ -53,7 +53,7 @@ export default function PilotProgramPage() {
         </div>
       </MarketingSection>
 
-      <MarketingSection id="apply" title="Apply for the pilot">
+      <MarketingSection id="apply" title="Request a Pilot Partner invitation">
         <div className="max-w-2xl">
           <PilotApplicationForm />
         </div>
@@ -88,10 +88,10 @@ export default function PilotProgramPage() {
       </MarketingSection>
 
       <MarketingCta
-        title="Ready to join the cohort?"
-        description="Submit your application above or contact sales for a discovery call."
+        title="Received an invitation?"
+        description="Submit your application above or contact sales if you need a Pilot Partner or Founding Customer invite link."
         href="#apply"
-        label="Apply for Pilot"
+        label="Request invitation"
       />
     </MarketingShell>
   );

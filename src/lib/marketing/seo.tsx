@@ -98,8 +98,8 @@ export function pilotProgramJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Offer",
-    name: "Auroranexis Pilot Program",
-    description: "6-week founding customer pilot with 50% beta pricing for MSPs and agencies.",
+    name: "Auroranexis Pilot Partner Program",
+    description: "Invite-only Pilot Partner program for qualified MSPs and agencies.",
     category: "Pilot Program",
     eligibleCustomerType: "Business",
     seller: {

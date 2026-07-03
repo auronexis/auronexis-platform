@@ -44,12 +44,12 @@ export async function getBillingOverview(session: SessionContext): Promise<Billi
     isActive && subscription?.stripe_price_id
       ? getPlanByPriceId(subscription.stripe_price_id)
       : null;
-  const starterPlan = getPlanByKey("starter");
+  const professionalPlan = getPlanByKey("professional");
 
   return buildBillingOverview(
     subscription,
     session.organization.plan,
-    currentPlan?.name ?? starterPlan.name,
+    currentPlan?.name ?? professionalPlan.name,
     currentPlan?.key ?? null,
   );
 }
