@@ -61,9 +61,8 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "Plan tiers",
           bullets: [
-            "Professional — for growing agencies with core client operations, automation, client portal delivery, and essential monitoring.",
-            "Professional — adds automation workflows, client portal delivery, integrations, and higher usage limits for growing teams.",
-            "Business — includes advanced compliance features, white-label branding, expanded limits, and priority support options.",
+            "Professional — core client operations, automation, client portal delivery, integrations, and essential monitoring for growing agencies.",
+            "Business — advanced compliance features, white-label branding, expanded limits, and priority support options.",
             "Enterprise — custom limits, tailored onboarding, plan overrides, and dedicated support; request via Settings → Billing or Enterprise.",
           ],
         },
