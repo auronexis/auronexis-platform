@@ -71,7 +71,7 @@ export function softwareApplicationJsonLd() {
     operatingSystem: "Web",
     offers: {
       "@type": "Offer",
-      price: "49",
+      price: "149",
       priceCurrency: "EUR",
     },
     description:

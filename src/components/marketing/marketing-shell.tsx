@@ -18,19 +18,56 @@ async function MarketingHeaderWithAuth() {
   return <MarketingHeader auth={auth} />;
 }
 
-/** Sync shell — keeps main content and footer in one boundary to avoid streaming reorder. */
-export function MarketingShell({ children, className, hideHeader = false }: MarketingShellProps) {
+async function MarketingAuthMain({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const session = await getSession();
+  const auth = getMarketingAuthState(session);
+  return (
+    <MarketingAuthProvider value={auth}>
+      <main className={cn("flex-auto", className)}>{children}</main>
+    </MarketingAuthProvider>
+  );
+}
+
+function MarketingAuthMainFallback({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <MarketingAuthProvider value={{ isAuthenticated: false }}>
-      <div className="marketing-theme flex min-h-screen flex-col bg-secondary text-primary-foreground">
-        {hideHeader ? null : (
-          <Suspense fallback={<MarketingHeader />}>
-            <MarketingHeaderWithAuth />
-          </Suspense>
-        )}
-        <main className={cn("flex-auto", className)}>{children}</main>
-        <SiteFooter variant="marketing" />
-      </div>
+      <main className={cn("flex-auto", className)}>{children}</main>
     </MarketingAuthProvider>
+  );
+}
+
+/**
+ * Public page shell — footer is a sync sibling after main so React streaming
+ * never inserts the site footer before long page content finishes.
+ */
+export function MarketingShell({ children, className, hideHeader = false }: MarketingShellProps) {
+  return (
+    <div className="marketing-theme flex min-h-screen flex-col bg-secondary text-primary-foreground">
+      {hideHeader ? null : (
+        <Suspense fallback={<MarketingHeader />}>
+          <MarketingHeaderWithAuth />
+        </Suspense>
+      )}
+      <Suspense
+        fallback={
+          <MarketingAuthMainFallback className={className}>{children}</MarketingAuthMainFallback>
+        }
+      >
+        <MarketingAuthMain className={className}>{children}</MarketingAuthMain>
+      </Suspense>
+      <SiteFooter variant="marketing" />
+    </div>
   );
 }

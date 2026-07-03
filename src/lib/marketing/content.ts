@@ -67,23 +67,23 @@ export const PUBLIC_PRICING_PLANS = [
     name: "Professional",
     price: "€149",
     period: "/ month",
-    description: "For growing agencies with automation and portal delivery.",
+    description: "For growing agencies starting with automation and client portal delivery.",
     highlights: ["Up to 25 clients", "Automation workflows", "Client portal", "Integrations"],
-    featured: true,
-  },
-  {
-    name: "Business",
-    price: "€399",
-    period: "/ month",
-    description: "For established agencies with compliance and white-label needs.",
-    highlights: ["Higher limits", "White label", "Compliance center", "Priority support"],
     featured: false,
   },
   {
+    name: "Business",
+    price: "€499",
+    period: "/ month",
+    description: "For established agencies with compliance, white-label, and higher operational limits.",
+    highlights: ["Higher limits", "White label", "Compliance center", "Priority support"],
+    featured: true,
+  },
+  {
     name: "Enterprise",
-    price: "Custom",
-    period: "",
-    description: "For large portfolios, custom limits, and negotiated onboarding.",
+    price: "From €1,499",
+    period: "/ month",
+    description: "For large portfolios and custom requirements. Contact Sales for tailored limits and onboarding.",
     highlights: ["Custom client limits", "Dedicated onboarding", "Priority support", "Plan overrides"],
     featured: false,
   },
@@ -91,7 +91,7 @@ export const PUBLIC_PRICING_PLANS = [
 
 /** Copy-only public pricing note — Stripe checkout uses workspace billing separately. */
 export const PUBLIC_PRICING_NOTE =
-  "Public subscription tiers are Professional, Business, and Enterprise. Enterprise pricing is negotiated — contact sales for a quote. Pilot Partner and Founding programs are limited cohort offers, not standard list pricing.";
+  "Pilot Partner and Founding Customer offers are limited private programs, not standard public list pricing.";
 
 export const SECURITY_HIGHLIGHTS = [
   "Encryption in transit (TLS) and at rest for platform data stores.",
@@ -110,7 +110,7 @@ export const COMPLIANCE_READINESS = [
   {
     framework: "SOC 2",
     status: "Readiness",
-    detail: "Controls mapped; formal certification not yet claimed.",
+    detail: "Designed to support compliance workflows; no SOC 2 certification claim is made.",
   },
   {
     framework: "ISO 27001",

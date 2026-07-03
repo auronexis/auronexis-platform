@@ -26,7 +26,7 @@ export function resolveMarketingHeaderActions(auth: MarketingAuthState) {
     return {
       isAuthenticated: true as const,
       dashboardHref: "/dashboard",
-      dashboardLabel: "Dashboard",
+      dashboardLabel: "Return to workspace",
       workspaceName: auth.organizationName,
       billingHref: "/settings/billing",
       settingsHref: "/settings",
@@ -99,7 +99,7 @@ export function resolveMarketingHeroActions(
 
   if (primaryIsPublicAuth) {
     primaryHref = "/dashboard";
-    primaryLabel = "Dashboard";
+    primaryLabel = "Return to workspace";
   } else if (primaryIsContactMessage) {
     primaryHref = SUPPORT_BILLING_CONTACT_PATH;
     primaryLabel = "Contact support";
@@ -140,7 +140,7 @@ export function resolveMarketingCtaActions(
     PUBLIC_AUTH_PATHS.has(props.href) || PUBLIC_SIGNUP_LABELS.some((pattern) => pattern.test(props.label));
 
   if (isPublicSignup) {
-    return { href: "/dashboard", label: "Dashboard" };
+    return { href: "/dashboard", label: "Return to workspace" };
   }
 
   return {

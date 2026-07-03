@@ -31,7 +31,7 @@ export default function HelpPage() {
           <span className="sr-only">Search help</span>
           <input
             type="search"
-            placeholder="Search documentation and help topics (placeholder)"
+            placeholder="Search documentation and help topics"
             className="w-full rounded-xl border border-border-subtle bg-surface-1 px-4 py-3 text-sm"
             disabled
           />

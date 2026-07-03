@@ -5,7 +5,7 @@ import {
   BookOpen,
   ScrollText,
 } from "lucide-react";
-import { DocsPageShell } from "@/components/docs/docs-page-shell";
+import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { COMPANY_NAME, DOCS_URL, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { DOCS_HUB_DOC, DOC_HUB_CARDS } from "@/lib/docs/registry";
@@ -25,7 +25,7 @@ const HUB_ICONS = {
 
 export default function DocsHubPage() {
   return (
-    <DocsPageShell>
+    <MarketingShell>
       <section className="relative overflow-hidden border-b border-white/10">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -138,6 +138,6 @@ export default function DocsHubPage() {
           </div>
         </div>
       </div>
-    </DocsPageShell>
+    </MarketingShell>
   );
 }

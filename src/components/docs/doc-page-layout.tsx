@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, LifeBuoy } from "lucide-react";
-import { DocsPageShell } from "@/components/docs/docs-page-shell";
+import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { getDocPageSections } from "@/lib/docs/build-page";
 import type { DocContentBlock, DocPageContent, DocSubsection, DocTable } from "@/lib/docs/types";
@@ -110,7 +110,7 @@ export function DocPageLayout({ doc }: DocPageLayoutProps) {
   const sections = getDocPageSections(doc);
 
   return (
-    <DocsPageShell>
+    <MarketingShell>
       <div className="docs-page">
         <header className="border-b border-white/10">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-8">
@@ -236,6 +236,6 @@ export function DocPageLayout({ doc }: DocPageLayoutProps) {
           </section>
         </div>
       </div>
-    </DocsPageShell>
+    </MarketingShell>
   );
 }

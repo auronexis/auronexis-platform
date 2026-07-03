@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { DocsPageShell } from "@/components/docs/docs-page-shell";
+import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { COMPANY_NAME } from "@/lib/company/contact";
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ const RELEASES = [
 
 export default function ReleaseNotesPage() {
   return (
-    <DocsPageShell>
+    <MarketingShell>
       <section className="border-b border-white/10">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-8">
           <div>
@@ -60,6 +60,6 @@ export default function ReleaseNotesPage() {
           </section>
         ))}
       </div>
-    </DocsPageShell>
+    </MarketingShell>
   );
 }

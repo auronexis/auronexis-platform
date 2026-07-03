@@ -549,7 +549,7 @@ export const API_DOC: DocPageInput = {
     {
       variant: "warning",
       title: "Protect your API keys",
-      body: "API keys grant access to your organization's data. Store them in a secrets manager, never commit them to source control, and revoke keys immediately when no longer needed. Documentation uses placeholder keys only — never use example values in production.",
+      body: "API keys grant access to your organization's data. Store them in a secrets manager, never commit them to source control, and revoke keys immediately when no longer needed. Documentation shows example keys only — never use sample values in production.",
     },
   ],
   sections: [
@@ -578,7 +578,7 @@ export const API_DOC: DocPageInput = {
         "Webhook endpoint — a URL registered to receive HTTPS POST event deliveries.",
         "Rate limit — a per-organization cap on request frequency to protect platform stability.",
         "Plan gating — certain endpoints require features enabled on your subscription tier.",
-        "Placeholder keys — documentation examples such as ax_live_example_key_abc123 are not valid credentials.",
+        "Example keys — documentation samples such as ax_live_example_key_abc123 are not valid credentials.",
       ],
     },
     {
@@ -775,7 +775,7 @@ export const API_DOC: DocPageInput = {
     {
       question: "Are example keys in documentation real?",
       answer:
-        "No. Documentation uses placeholder keys such as ax_live_example_key_abc123. Never use example values in production integrations.",
+        "No. Documentation shows sample keys such as ax_live_example_key_abc123. Never use example values in production integrations.",
     },
     {
       question: "Can I use the API on the Professional plan?",

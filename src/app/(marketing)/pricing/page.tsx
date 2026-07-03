@@ -33,10 +33,15 @@ export default function PublicPricingPage() {
             <article
               key={plan.name}
               className={cn(
-                "rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm",
+                "relative rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm",
                 plan.featured && "border-primary/20 ring-1 ring-primary/10",
               )}
             >
+              {plan.featured ? (
+                <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                  Recommended
+                </span>
+              ) : null}
               <h3 className="text-lg font-semibold">{plan.name}</h3>
               <p className="mt-2 text-3xl font-semibold tracking-tight">
                 {plan.price}
