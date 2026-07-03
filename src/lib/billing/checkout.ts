@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { PlanKey } from "@/lib/billing/plans";
+import { BILLING_PROMO_MESSAGES } from "@/lib/billing/messages";
 import { validateDiscountCode } from "@/lib/billing/discounts";
 import { createCheckoutSession as createStripeCheckoutSession } from "@/lib/stripe/subscriptions";
 
@@ -15,7 +16,7 @@ export async function createCheckoutSessionWithDiscount(input: {
   if (input.discountCode) {
     const validation = await validateDiscountCode(input.discountCode, input.planKey);
     if (!validation.valid) {
-      throw new Error(validation.message);
+      throw new Error(BILLING_PROMO_MESSAGES.UNABLE_TO_APPLY);
     }
   }
 

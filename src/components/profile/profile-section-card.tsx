@@ -98,7 +98,7 @@ export function LocalDeviceBadge() {
 export function ComingSoonBadge() {
   return (
     <span className="inline-flex rounded-full border border-border bg-muted/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">
-      Coming soon
+      Available soon
     </span>
   );
 }

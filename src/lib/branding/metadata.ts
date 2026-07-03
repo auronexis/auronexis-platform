@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { PLATFORM_NAME } from "@/lib/branding/defaults";
+import { PRODUCTION_DOMAINS } from "@/lib/deployment/production-domains";
 
 const SITE_DESCRIPTION =
   "The Operations Command Center for AI Automation Agencies. Monitor clients. Detect risks. Prove value.";
 
-const metadataBase = new URL(
-  process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://app.auroranexis.com",
-);
+function resolveMetadataBase(): URL {
+  const raw = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (!raw || /localhost|127\.0\.0\.1|\.vercel\.app/i.test(raw)) {
+    return new URL(`https://${PRODUCTION_DOMAINS.app}`);
+  }
+
+  return new URL(raw);
+}
+
+const metadataBase = resolveMetadataBase();
 
 export const PLATFORM_METADATA: Metadata = {
   metadataBase,

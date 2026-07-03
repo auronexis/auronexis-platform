@@ -6,6 +6,7 @@ import { LegalLinksInline } from "@/components/legal/legal-links-inline";
 import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
 import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { getSession } from "@/lib/auth/session";
+import { AUTH_MESSAGES } from "@/lib/auth/messages";
 import { headers } from "next/headers";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; redirect?: string }>;
+  searchParams: Promise<{ error?: string; redirect?: string; reset?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -30,6 +31,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     params.error === "auth_callback_failed"
       ? "Sign-in could not be completed. Please try again."
       : undefined;
+  const resetSuccess =
+    params.reset === "success" ? AUTH_MESSAGES.PASSWORD_UPDATED : undefined;
 
   return (
     <>
@@ -39,7 +42,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           branding={branding}
           footer={<LegalLinksInline className="mt-8 px-4" />}
         >
-          <LoginForm redirectTo={params.redirect} initialError={callbackError} />
+          <LoginForm
+            redirectTo={params.redirect}
+            initialError={callbackError}
+            initialSuccess={resetSuccess}
+          />
         </LoginBrandingShell>
       </div>
     </>

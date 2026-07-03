@@ -1,5 +1,5 @@
-import { BrandSplash } from "@/components/branding/brand-splash";
+import { RouteLoadingShell } from "@/components/ui/route-loading-shell";
 
 export default function DashboardLoading() {
-  return <BrandSplash fullScreen />;
+  return <RouteLoadingShell variant="page" className="p-1" />;
 }

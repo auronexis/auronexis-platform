@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { PricingCard } from "@/components/pricing/pricing-card";
 import { createCheckoutSessionAction } from "@/lib/billing/actions";
+import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import {
   resolvePlanActionLabel,
@@ -48,7 +49,7 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
     startTransition(async () => {
       const result = await createCheckoutSessionAction(planKey);
       if (result?.error) {
-        setError(result.error);
+        setError(sanitizeBillingCustomerError(new Error(result.error), "Unable to start checkout."));
         setPendingPlanKey(null);
       }
     });
@@ -103,7 +104,7 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
         })}
       </div>
 
-      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
+      {error ? <FormAlert variant="warning">{error}</FormAlert> : null}
     </div>
   );
 }

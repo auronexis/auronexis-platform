@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ClientHealthBadge } from "@/components/health/client-health-badge";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
@@ -14,6 +15,7 @@ import {
 import type { ClientWithRelations } from "@/lib/clients/types";
 import type { ClientHealthSummary } from "@/lib/health/types";
 import { formatClientDate } from "@/lib/clients/types";
+import { Button } from "@/components/ui/button";
 
 type ClientListProps = {
   clients: ClientWithRelations[];
@@ -27,6 +29,13 @@ export function ClientList({ clients, canManage, healthSummaries }: ClientListPr
       <AuroraTableEmpty
         title="No clients yet"
         description="Add a client to start monitoring operational health across your portfolio."
+        action={
+          canManage ? (
+            <Link href="/clients/new">
+              <Button size="sm">Add client</Button>
+            </Link>
+          ) : undefined
+        }
       />
     );
   }

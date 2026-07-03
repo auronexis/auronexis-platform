@@ -18,7 +18,6 @@ import {
 
 import { AdaptiveBrandLogo, BrandLogo } from "@/components/branding/brand-logo";
 import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
-import { getBuildInfo } from "@/lib/diagnostics/platform-health";
 
 import { cn } from "@/lib/utils/cn";
 
@@ -103,14 +102,6 @@ function FooterLinkColumn({
 
 export function SiteFooter({ variant = "default", className, poweredByLabel }: SiteFooterProps) {
 
-  const build = getBuildInfo();
-  const showBuildEnvironment =
-    Boolean(build.environment) && build.environment !== "production";
-  const showDeploymentUrl =
-    Boolean(build.deploymentUrl) &&
-    showBuildEnvironment &&
-    !/localhost|127\.0\.0\.1/i.test(build.deploymentUrl ?? "");
-
   const year = new Date().getFullYear();
 
   const platformBranding = getPlatformBrandingDefaults();
@@ -127,7 +118,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
           <p>
 
-            © {year} {COMPANY_NAME} · v{APP_VERSION}
+            © {year} {COMPANY_NAME} · Version {APP_VERSION}
 
           </p>
 
@@ -205,12 +196,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
             <p>© {year} {COMPANY_NAME}</p>
 
-            <p>
-
-              Version v{APP_VERSION}
-              {showBuildEnvironment ? ` · ${build.environment}` : ""}
-
-            </p>
+            <p>Version {APP_VERSION}</p>
 
           </div>
 
@@ -326,14 +312,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
           </p>
 
-          <p>
-
-            Version v{APP_VERSION}
-            {showBuildEnvironment ? ` · ${build.environment}` : ""}
-
-            {showDeploymentUrl ? ` · ${build.deploymentUrl}` : ""}
-
-          </p>
+          <p>Version {APP_VERSION}</p>
 
         </div>
 

@@ -119,8 +119,20 @@ export default async function IncidentsPage({ searchParams }: IncidentsPageProps
       {incidents.length === 0 ? (
         <EmptyState
           icon={ShieldAlert}
-          title={`No ${tab} incidents`}
+          title={tab === "open" ? "No incidents detected" : `No ${tab} incidents`}
           description="Operational failures will surface here for triage and resolution."
+          action={
+            canCreate ? (
+              <IncidentCreateModal
+                clients={clients}
+                risks={risks}
+                orgUsers={orgUsers}
+                showAssigneeSelect={showAssigneeSelect}
+                defaultAssignedUserId={session.user.id}
+                allowedStatuses={allowedStatuses}
+              />
+            ) : undefined
+          }
         />
       ) : view === "table" ? (
         <IncidentList incidents={incidents} />

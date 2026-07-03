@@ -128,11 +128,13 @@ export const COMPLIANCE_READINESS = [
 
 export const TESTIMONIALS = [
   {
+    id: "pilot-partner-msp",
     quote: "Placeholder — pilot customer quote will be published after founding cohort onboarding.",
     author: "Pilot Partner",
     role: "Managing Director, MSP",
   },
   {
+    id: "pilot-partner-agency",
     quote: "Placeholder — agency operations team feedback during beta evaluation.",
     author: "Pilot Partner",
     role: "Head of Delivery, IT Agency",

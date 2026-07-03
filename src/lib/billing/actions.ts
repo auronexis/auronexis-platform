@@ -13,6 +13,7 @@ import { createCheckoutSessionWithDiscount } from "@/lib/billing/checkout";
 import { openCustomerPortal } from "@/lib/billing/customer-portal";
 
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
+import { BILLING_PROMO_MESSAGES, formatPromoValidationSuccess } from "@/lib/billing/messages";
 
 import { validateDiscountCode } from "@/lib/billing/discounts";
 
@@ -201,14 +202,14 @@ export async function validateDiscountCodeAction(
       return {};
     }
 
-    return { error: result.message || "No active discount applied" };
+    return { error: result.message || BILLING_PROMO_MESSAGES.NOT_APPLIED };
   }
 
 
 
   return {
 
-    success: `Code ${result.code} saves ${result.formattedSavings} on ${planKey}.`,
+    success: formatPromoValidationSuccess(result.code, result.formattedSavings),
 
     preview: result,
 

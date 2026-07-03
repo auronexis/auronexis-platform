@@ -35,7 +35,7 @@ export function formatHistoryMeta(entry: AIHistoryEntryBase): string {
     entry.inputTokens != null || entry.outputTokens != null
       ? `${entry.inputTokens ?? 0}+${entry.outputTokens ?? 0} tokens`
       : null,
-    entry.isPlaceholder ? "Placeholder" : null,
+    entry.isPlaceholder ? "Simulated" : null,
   ].filter(Boolean);
 
   return parts.join(" · ");

@@ -140,12 +140,12 @@ export default async function MarketingHomePage() {
       <MarketingSection
         eyebrow="Customers"
         title="What pilot partners say"
-        description="Placeholder testimonials — founding customer quotes will be published after onboarding."
+        description="Founding customer quotes will be published after onboarding."
         className="border-t border-border/70 bg-surface-2/30"
       >
         <div className="grid gap-4 md:grid-cols-2">
           {TESTIMONIALS.map((item) => (
-            <blockquote key={item.author} className="rounded-2xl border border-border-subtle bg-surface-1 p-6">
+            <blockquote key={item.id} className="rounded-2xl border border-border-subtle bg-surface-1 p-6">
               <p className="text-sm leading-relaxed text-muted">&ldquo;{item.quote}&rdquo;</p>
               <footer className="mt-4 text-sm font-medium text-foreground">
                 {item.author}

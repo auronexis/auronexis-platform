@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import { BILLING_PROMO_MESSAGES } from "@/lib/billing/messages";
 import type { DiscountPreview, ValidatedDiscount } from "@/lib/billing/types";
 import { normalizeDiscountCode, validateDiscountCodeFormat } from "@/lib/billing/validation";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -97,7 +98,7 @@ export async function validateDiscountCode(
   try {
     normalized = validateDiscountCodeFormat(trimmed);
   } catch {
-    return { valid: false, message: "Coupon invalid" };
+    return { valid: false, message: BILLING_PROMO_MESSAGES.INVALID };
   }
 
   const admin = createAdminClient();
@@ -111,21 +112,21 @@ export async function validateDiscountCode(
     .maybeSingle();
 
   if (error || !data) {
-    return { valid: false, message: "Coupon invalid" };
+    return { valid: false, message: BILLING_PROMO_MESSAGES.INVALID };
   }
 
   const row = data as DiscountRow;
 
   if (!row.active) {
-    return { valid: false, message: "This discount code is no longer active." };
+    return { valid: false, message: BILLING_PROMO_MESSAGES.UNAVAILABLE };
   }
 
   if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
-    return { valid: false, message: "This discount code has expired." };
+    return { valid: false, message: BILLING_PROMO_MESSAGES.UNAVAILABLE };
   }
 
   if (row.max_redemptions !== null && row.redemption_count >= row.max_redemptions) {
-    return { valid: false, message: "This discount code has reached its usage limit." };
+    return { valid: false, message: BILLING_PROMO_MESSAGES.UNAVAILABLE };
   }
 
   const preview = mapDiscountPreview(row, planPriceCents);

@@ -4,6 +4,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
+import { sanitizeCustomerMessage } from "@/lib/ui/customer-messages";
 
 type ConfirmActionButtonProps = Omit<ButtonProps, "onClick" | "loading"> & {
   dialogTitle: string;
@@ -41,7 +42,7 @@ export function ConfirmActionButton({
         }
       } catch (error) {
         toast({
-          title: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+          title: sanitizeCustomerMessage(error, "Something went wrong. Please try again."),
           variant: "error",
         });
       }

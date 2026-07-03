@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DiagnosticsPanel } from "@/components/settings/diagnostics-panel";
+import { RefreshDiagnosticsButton } from "@/components/settings/refresh-diagnostics-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { getWorkspaceDiagnostics } from "@/lib/diagnostics/queries";
 import { requireSession } from "@/lib/auth/session";
@@ -37,6 +38,7 @@ export default async function DiagnosticsSettingsPage() {
         eyebrow="Workspace Diagnostics"
         title="Diagnostics"
         description="Inspect organization, billing, plan enforcement, AI, and environment readiness."
+        action={<RefreshDiagnosticsButton />}
       />
 
       <DiagnosticsPanel data={diagnostics} />

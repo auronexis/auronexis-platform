@@ -97,6 +97,12 @@ export const getAIDiagnosticsSnapshot = cache(
   async (session: SessionContext, planKey: PlanKey): Promise<AIDiagnosticsSnapshot> => {
     const aiConfig = getAIConfig();
     const { provider } = resolveAIProvider();
+    const openaiKeyPresent = Boolean(aiConfig.openaiApiKey);
+    const labelOptions = {
+      isDevelopment: process.env.NODE_ENV !== "production",
+      openaiKeyPresent,
+      anthropicKeyPresent: Boolean(process.env.ANTHROPIC_API_KEY?.trim()),
+    };
     const [usageSummary, health] = await Promise.all([
       getAIUsageSummaryForSession(session, planKey),
       checkAIProviderHealth(),
@@ -106,9 +112,7 @@ export const getAIDiagnosticsSnapshot = cache(
     const estimates = estimateFromMetrics(orgMetrics);
 
     return {
-      providerEnv:
-        process.env.AI_PROVIDER?.trim() ||
-        "(not set — defaults from OPENAI_API_KEY or placeholder)",
+      providerEnv: formatAIProviderHealthMessage(provider.id, labelOptions),
       openaiApiKeyPresent: Boolean(aiConfig.openaiApiKey),
       openaiModel: aiConfig.openaiModel,
       resolvedProviderId: provider.id,

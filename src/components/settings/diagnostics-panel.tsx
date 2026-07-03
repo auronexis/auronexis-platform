@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { FormAlert } from "@/components/ui/form-alert";
-import { formatAIProviderLabel, isAIProviderConfigured } from "@/lib/ai/provider-labels";
+import { formatAIProviderLabel, isAIProviderConfigured, resolveAIReadinessStatus } from "@/lib/ai/provider-labels";
 import { formatBillingDateTime } from "@/lib/billing/types";
 import type { WorkspaceDiagnostics } from "@/lib/diagnostics/types";
 import { getMatchedPlanLabel, getPlanFeatureLabel } from "@/lib/diagnostics/queries";
@@ -131,10 +131,20 @@ function BoolBadge({ value }: { value: boolean }) {
 
 export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
   const subscription = data.subscription.row;
-  const aiConfigured = isAIProviderConfigured(data.ai.resolvedProviderId);
-  const resolvedProviderLabel = formatAIProviderLabel(data.ai.resolvedProviderId, {
+  const openAiConfigured = data.platformEnv.openaiApiKey.present;
+  const anthropicConfigured = data.platformEnv.anthropicApiKey.present;
+  const providerLabelOptions = {
     isDevelopment: data.isDevelopment,
-  });
+    openaiKeyPresent: openAiConfigured,
+    anthropicKeyPresent: anthropicConfigured,
+  };
+  const aiConfigured = isAIProviderConfigured(data.ai.resolvedProviderId);
+  const aiReadiness = resolveAIReadinessStatus(data.ai.resolvedProviderId, providerLabelOptions);
+  const resolvedProviderLabel = formatAIProviderLabel(data.ai.resolvedProviderId, providerLabelOptions);
+  const showEnterpriseAdmin =
+    data.isDevelopment || data.platformEnv.platformOperators.configured;
+  const showAnthropicEnv = data.isDevelopment && anthropicConfigured;
+  const showOpenAiWarning = !data.isDevelopment && !openAiConfigured && !aiConfigured;
 
   return (
     <div className="space-y-6">
@@ -295,30 +305,35 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
             </dl>
           </DiagnosticsSection>
 
-          <DiagnosticsSection
-            title="Anthropic environment"
-            description="Optional Anthropic provider configuration."
-          >
-            <EnvGrid>
-              <EnvRow {...data.platformEnv.anthropicApiKey} />
-            </EnvGrid>
-          </DiagnosticsSection>
+          {showAnthropicEnv ? (
+            <DiagnosticsSection
+              title="Anthropic environment"
+              description="Optional Anthropic provider configuration."
+            >
+              <EnvGrid>
+                <EnvRow {...data.platformEnv.anthropicApiKey} />
+              </EnvGrid>
+            </DiagnosticsSection>
+          ) : null}
         </>
       ) : null}
 
-      <DiagnosticsSection
-        title="Enterprise admin"
-        description="Platform operator access for enterprise approval workflows."
-      >
-        <dl>
-          <Row label="Platform operators" value={data.platformEnv.platformOperators.label} />
-        </dl>
-      </DiagnosticsSection>
+      {showEnterpriseAdmin ? (
+        <DiagnosticsSection
+          title="Enterprise admin"
+          description="Platform operator access for enterprise approval workflows."
+        >
+          <dl>
+            <Row label="Platform operators" value={data.platformEnv.platformOperators.label} />
+          </dl>
+        </DiagnosticsSection>
+      ) : null}
 
-      <DiagnosticsSection
-        title="Stripe webhooks"
-        description="Idempotent webhook processing — event IDs deduplicated, retries safe."
-      >
+      {data.isDevelopment ? (
+        <DiagnosticsSection
+          title="Stripe webhooks"
+          description="Idempotent webhook processing — event IDs deduplicated, retries safe."
+        >
         <dl>
           <Row
             label="Events table reachable"
@@ -339,17 +354,17 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           <Row label="Last event type" value={data.stripeWebhook.lastWebhookEventType ?? "—"} />
         </dl>
       </DiagnosticsSection>
+      ) : null}
 
       <DiagnosticsSection title="AI readiness" description="Report assistant usage and session metrics.">
+        {showOpenAiWarning ? (
+          <FormAlert variant="warning" className="mb-4">
+            Missing API configuration. Connect an AI provider to enable report assistant features.
+          </FormAlert>
+        ) : null}
         <dl>
-          {!aiConfigured ? (
-            <>
-              <Row label="AI status" value="AI disabled" />
-              <Row label="Provider" value="No provider configured" />
-            </>
-          ) : (
-            <Row label="Provider" value={resolvedProviderLabel} />
-          )}
+          <Row label="AI status" value={aiReadiness.status} />
+          <Row label="Provider" value={aiReadiness.provider} />
           <Row
             label="Monthly AI calls"
             value={`${data.ai.usageSummary.callsThisMonth} / ${data.ai.usageSummary.limit}`}
@@ -371,10 +386,10 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         </dl>
       </DiagnosticsSection>
 
-      {data.isDevelopment ? (
+      {data.isDevelopment && aiConfigured ? (
         <DiagnosticsSection
           title="AI diagnostics"
-          description="Developer-only generation metrics — never shown to customers."
+          description="Generation metrics for local troubleshooting."
         >
           <dl>
             <Row
@@ -481,10 +496,11 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         </DiagnosticsSection>
       ) : null}
 
-      <DiagnosticsSection
-        title="Automation persistence"
-        description="Workflow storage, migration, and repository health."
-      >
+      {data.isDevelopment ? (
+        <DiagnosticsSection
+          title="Automation persistence"
+          description="Workflow storage, migration, and repository health."
+        >
         <dl>
           <Row label="Storage backend" value={data.automation.storageBackend} />
           <Row label="Repository status" value={data.automation.repositoryStatus} />
@@ -509,7 +525,17 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           />
         </dl>
       </DiagnosticsSection>
+      ) : (
+        <DiagnosticsSection title="Automation" description="Workflow execution summary for this workspace.">
+          <dl>
+            <Row label="Active workflows" value={data.automation.engine.activeWorkflowCount} />
+            <Row label="Executions today" value={data.automation.engine.executionsToday} />
+            <Row label="Failed today" value={data.automation.engine.failedExecutionsToday} />
+          </dl>
+        </DiagnosticsSection>
+      )}
 
+      {data.isDevelopment ? (
       <DiagnosticsSection
         title="Automation engine"
         description="Live workflow execution metrics for today."
@@ -532,6 +558,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           <Row label="Queue status" value={data.automation.engine.queueStatus} />
         </dl>
       </DiagnosticsSection>
+      ) : null}
 
       <DiagnosticsSection
         title="Integrations"

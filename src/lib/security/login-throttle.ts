@@ -50,6 +50,40 @@ export function checkSignupThrottle(email: string): AuthThrottleResult {
   };
 }
 
+const RESET_LIMIT_PER_HOUR = 5;
+const RESET_COOLDOWN_MS = 30_000;
+
+/** Throttle password reset requests by email — 30s cooldown and hourly cap. */
+export function checkPasswordResetThrottle(email: string): AuthThrottleResult {
+  if (isSecurityEnforcementDisabledForE2E()) {
+    return { allowed: true, retryAfterSeconds: 0 };
+  }
+
+  const cooldown = checkSlidingWindowRateLimit({
+    key: normalizeKey("password-reset-cooldown", email),
+    limit: 1,
+    windowMs: RESET_COOLDOWN_MS,
+  });
+
+  if (!cooldown.allowed) {
+    return {
+      allowed: false,
+      retryAfterSeconds: cooldown.retryAfterSeconds,
+    };
+  }
+
+  const hourly = checkSlidingWindowRateLimit({
+    key: normalizeKey("password-reset", email),
+    limit: RESET_LIMIT_PER_HOUR,
+    windowMs: WINDOW_1_HOUR,
+  });
+
+  return {
+    allowed: hourly.allowed,
+    retryAfterSeconds: hourly.retryAfterSeconds,
+  };
+}
+
 /** Throttle public contact/support form submissions by email. */
 export function checkPublicFormThrottle(email: string): AuthThrottleResult {
   if (isSecurityEnforcementDisabledForE2E()) {

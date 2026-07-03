@@ -15,6 +15,11 @@ import {
   createPortalSessionAction,
   validateDiscountCodeAction,
 } from "@/lib/billing/actions";
+import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
+import {
+  formatForecastWarning,
+  formatProrationSummary,
+} from "@/lib/billing/messages";
 import type { BillingDashboardData, StripeBillingUiStatus } from "@/lib/billing/types";
 import { formatBillingDateTime } from "@/lib/billing/types";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
@@ -135,6 +140,7 @@ export function BillingSettingsPanel({
 
   const showManage =
     canManage && stripeStatus.portalAvailable && Boolean(overview.subscription?.stripe_customer_id);
+  const showPromotions = canManage && !enterpriseAutoOpen;
   const usingStarterFallback =
     planUsage.plan.planSource === "starter_fallback" ||
     planUsage.plan.planSource === "unmapped_price_id";
@@ -143,7 +149,9 @@ export function BillingSettingsPanel({
     setActionError(null);
     startPortalTransition(async () => {
       const result = await createPortalSessionAction();
-      if (result?.error) setActionError(result.error);
+      if (result?.error) {
+        setActionError(sanitizeBillingCustomerError(new Error(result.error), "Unable to open billing portal."));
+      }
     });
   };
 
@@ -188,22 +196,21 @@ export function BillingSettingsPanel({
           autoOpen={enterpriseAutoOpen}
         />
       ) : null}
-      {usingStarterFallback ? (
+      {usingStarterFallback && !enterpriseAutoOpen ? (
         <FormAlert variant="warning">
           No active subscription is linked to your workspace yet. Choose a plan to get started.
         </FormAlert>
       ) : null}
-      {dashboard.forecastStatus !== "healthy" ? (
-        <FormAlert variant={dashboard.forecastStatus === "critical" ? "error" : "warning"}>
-          Usage forecast is {dashboard.forecastStatus}. Review{" "}
+      {dashboard.forecastStatus !== "healthy" && !enterpriseAutoOpen ? (
+        <FormAlert variant={dashboard.forecastStatus === "critical" ? "warning" : "warning"}>
+          {formatForecastWarning(dashboard.forecastStatus === "critical" ? "critical" : "warning")}{" "}
           <Link href="/settings/usage" className="font-medium underline">
-            Usage
-          </Link>{" "}
-          for details.
+            Usage dashboard
+          </Link>
         </FormAlert>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BillingCard title="Current plan">
           <p className="text-lg font-semibold text-foreground">{overview.planLabel}</p>
           {!overview.isActive ? (
@@ -265,16 +272,16 @@ export function BillingSettingsPanel({
 
       <InvoiceCenterPanel invoices={dashboard.invoices} canManage={canManage} />
 
-      {canManage ? (
+      {showPromotions ? (
         <PageSurface>
-          <PageSurfaceHeading title="Discount codes" description="Validate coupon codes before checkout." />
-          <form action={previewDiscount} className="mt-4 flex flex-wrap items-end gap-3">
+          <PageSurfaceHeading title="Promotions" description="Check whether a promo code applies to your plan before checkout." />
+          <form action={previewDiscount} className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
             <input type="hidden" name="planKey" value={overview.currentPlanKey ?? "starter"} />
-            <div className="min-w-[220px] flex-1">
-              <Input name="discountCode" label="Coupon code" placeholder="LAUNCH20" />
+            <div className="min-w-0 flex-1 sm:min-w-[220px]">
+              <Input name="discountCode" label="Promo code" placeholder="LAUNCH20" />
             </div>
             <Button type="submit" variant="secondary" loading={isDiscountPending}>
-              Preview discount
+              Check promotion
             </Button>
           </form>
           {discountNotice ? (
@@ -294,9 +301,12 @@ export function BillingSettingsPanel({
         </PageSurface>
       ) : null}
 
-      {canManage && dashboard.prorationPreviews.length > 0 ? (
+      {canManage && overview.isActive && dashboard.prorationPreviews.length > 0 ? (
         <PageSurface>
-          <PageSurfaceHeading title="Proration preview" description="Estimated mid-cycle plan change costs before confirmation." />
+          <PageSurfaceHeading
+            title="Plan change estimate"
+            description="Estimated costs if you change plans before your current billing period ends."
+          />
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {dashboard.prorationPreviews.map((preview) => (
               <div key={preview.toPlanKey} className="rounded-lg border border-border/70 p-4 text-sm">
@@ -304,7 +314,7 @@ export function BillingSettingsPanel({
                   {preview.direction} to {preview.toPlanKey}
                 </p>
                 <p className="mt-1 text-muted">
-                  {preview.daysRemainingInPeriod} day(s) remaining · Net due {preview.formattedNetDue}
+                  {formatProrationSummary(preview)}
                 </p>
               </div>
             ))}
@@ -315,7 +325,7 @@ export function BillingSettingsPanel({
       {canManage ? (
         <PageSurface>
           <PageSurfaceHeading title="Billing actions" description="Upgrade, downgrade, cancel, or manage payment methods." />
-          {actionError ? <FormAlert variant="error">{actionError}</FormAlert> : null}
+          {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
           {!stripeStatus.portalAvailable ? (
             <p className="text-sm text-muted">Billing is currently unavailable.</p>
           ) : null}

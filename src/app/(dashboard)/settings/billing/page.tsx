@@ -71,7 +71,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
       <PageHeader
         module="settings"
         title="Subscription & Billing"
-        description="Manage your plan, usage limits, invoices, discounts, and Stripe customer portal."
+        description="Manage your plan, usage limits, invoices, promotions, and billing preferences."
       />
 
       <div className="mb-4 text-sm text-muted">

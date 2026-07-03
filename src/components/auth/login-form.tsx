@@ -21,9 +21,10 @@ const inputClassName = cn(
 type LoginFormProps = {
   redirectTo?: string;
   initialError?: string;
+  initialSuccess?: string;
 };
 
-export function LoginForm({ redirectTo, initialError }: LoginFormProps) {
+export function LoginForm({ redirectTo, initialError, initialSuccess }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
   const [logoFailed, setLogoFailed] = useState(false);
   const errorMessage = state.error ?? initialError;
@@ -65,9 +66,17 @@ export function LoginForm({ redirectTo, initialError }: LoginFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <label htmlFor="password" className={labelClassName}>
-          Password
-        </label>
+        <div className="flex items-center justify-between gap-2">
+          <label htmlFor="password" className={labelClassName}>
+            Password
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 rounded"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <input
           id="password"
           name="password"
@@ -78,6 +87,13 @@ export function LoginForm({ redirectTo, initialError }: LoginFormProps) {
           className={inputClassName}
         />
       </div>
+      {initialSuccess ? (
+        <FormAlert variant="success" className="[color-scheme:light]">
+          <span role="status" aria-live="polite">
+            {initialSuccess}
+          </span>
+        </FormAlert>
+      ) : null}
       {errorMessage ? <FormAlert variant="error">{errorMessage}</FormAlert> : null}
       <TurnstileField className="pt-1" />
       <button

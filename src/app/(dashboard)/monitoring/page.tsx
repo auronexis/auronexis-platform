@@ -8,6 +8,7 @@ import { MonitoringMetrics } from "@/components/monitoring/monitoring-metrics";
 import { MonitoringTimeline } from "@/components/monitoring/monitoring-timeline";
 import { PageHeader } from "@/components/layout/page-header";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
+import { Button } from "@/components/ui/button";
 import { requireSession } from "@/lib/auth/session";
 import { listClients } from "@/lib/clients/queries";
 import { createMonitoringConnectorAction } from "@/lib/monitoring/actions";
@@ -71,7 +72,17 @@ export default async function MonitoringPage() {
         <div className="lg:col-span-7 space-y-6">
           <DashboardPanel title="Connectors" description="Active monitoring integrations for this organization.">
             {connectors.length === 0 ? (
-              <ConnectorEmptyState />
+              <ConnectorEmptyState
+                action={
+                  canManage ? (
+                    <a href="#add-connector" className="inline-flex">
+                      <Button type="button" size="sm">
+                        Add connector
+                      </Button>
+                    </a>
+                  ) : undefined
+                }
+              />
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {connectorCards.map(({ connector, metrics }) => (
@@ -92,6 +103,7 @@ export default async function MonitoringPage() {
 
         <div className="lg:col-span-5 space-y-6">
           {canManage ? (
+            <div id="add-connector">
             <DashboardPanel title="Add connector" description="Register a new monitoring provider.">
               <ConnectorForm
                 action={createConnectorFormAction}
@@ -99,6 +111,7 @@ export default async function MonitoringPage() {
                 submitLabel="Create connector"
               />
             </DashboardPanel>
+            </div>
           ) : null}
 
           <DashboardPanel title="Activity" description="Connector lifecycle and health check history.">
