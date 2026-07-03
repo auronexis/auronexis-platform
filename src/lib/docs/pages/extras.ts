@@ -25,7 +25,7 @@ export const COMPLIANCE_DOC: DocPageInput = {
       paragraphs: [
         "Auroranexis records significant workspace activity — user actions, configuration changes, report publishing, integration events, API usage, and more — in an organization-scoped audit trail. The Compliance module aggregates that activity with governance controls, retention configuration, GDPR request tracking, and security incident records into a single readiness view at Dashboard → Compliance.",
         "The compliance dashboard shows a composite compliance score, maturity level, framework readiness percentages, open findings, and counts of open GDPR requests and security incidents. Framework cards cover common procurement targets including SOC 2, ISO 27001, GDPR, NIS2, DORA, and HIPAA readiness mappings. Percentages reflect implemented controls with available evidence — not certification status.",
-        "From the compliance workspace you can open the audit explorer for filtered event search, manage the GDPR center for data subject requests, review retention rules with simulation status, register security incidents, and download structured evidence exports. Full compliance features are included on the Business plan and above; Starter and Professional workspaces can review security settings and activity history elsewhere, but the dedicated compliance workspace and evidence tooling require Business or Enterprise.",
+        "From the compliance workspace you can open the audit explorer for filtered event search, manage the GDPR center for data subject requests, review retention rules with simulation status, register security incidents, and download structured evidence exports. Full compliance features are included on the Business plan and above; Professional workspaces can review security settings and activity history elsewhere, but the dedicated compliance workspace and evidence tooling require Business or Enterprise.",
       ],
     },
     {
@@ -138,7 +138,7 @@ export const COMPLIANCE_DOC: DocPageInput = {
           ],
           [
             "Module unavailable on your plan",
-            "Workspace is on Starter or Professional without Business compliance features",
+            "Workspace is on Professional without Business compliance features",
             "Upgrade to Business via Settings → Billing or contact sales for Enterprise compliance tooling",
           ],
           [
@@ -199,7 +199,7 @@ export const COMPLIANCE_DOC: DocPageInput = {
     {
       question: "Which plan includes the compliance workspace?",
       answer:
-        "Business and Enterprise plans include the dedicated compliance workspace, audit explorer, GDPR center, retention overview, and evidence exports. Starter and Professional workspaces should use Security and Activity modules for baseline review.",
+        "Business and Enterprise plans include the dedicated compliance workspace, audit explorer, GDPR center, retention overview, and evidence exports. Professional workspaces should use Security and Activity modules for baseline review.",
     },
   ],
   relatedLinks: [
@@ -344,7 +344,7 @@ export const WHITE_LABEL_DOC: DocPageInput = {
         rows: [
           [
             "Branding page locked or unavailable",
-            "Workspace is on Starter plan without white_label feature",
+            "Workspace is on Professional plan without white_label feature",
             "Upgrade to Professional via Settings → Billing",
           ],
           [
@@ -432,7 +432,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
     {
       variant: "info",
       title: "Plan-gated feature",
-      body: "Predictive Intelligence requires the ai_predictive_intelligence feature on your subscription. Starter workspaces see an upgrade prompt. Professional, Business, and Enterprise plans include health scores and portfolio signals.",
+      body: "Predictive Intelligence requires the ai_predictive_intelligence feature on your subscription. Workspaces without the feature may see an upgrade prompt. Professional, Business, and Enterprise plans include health scores and portfolio signals.",
     },
     {
       variant: "tip",
@@ -556,7 +556,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
         rows: [
           [
             "Module locked or missing from navigation",
-            "Plan lacks ai_predictive_intelligence feature (Starter workspace)",
+            "Plan lacks ai_predictive_intelligence feature on current subscription",
             "Upgrade to Professional via Settings → Billing or contact sales for Enterprise",
           ],
           [
@@ -597,7 +597,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
     {
       question: "Which plan includes Predictive Intelligence?",
       answer:
-        "Professional, Business, and Enterprise plans include the ai_predictive_intelligence feature with health scores and portfolio forecasts. Starter workspaces do not have access.",
+        "Professional, Business, and Enterprise plans include the ai_predictive_intelligence feature with health scores and portfolio forecasts. Workspaces without the feature should upgrade through Settings → Billing.",
     },
     {
       question: "How often are forecasts updated?",

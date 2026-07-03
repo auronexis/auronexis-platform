@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { COMPANY_NAME } from "@/lib/company/contact";
+import { COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 
 const metadataBase = new URL(
@@ -57,7 +57,7 @@ export function organizationJsonLd() {
     name: COMPANY_NAME,
     url: metadataBase.toString(),
     logo: new URL(BRANDING_ASSETS.approvedCompositeLogo, metadataBase).toString(),
-    email: "info@auroranexis.com",
+    email: SUPPORT_EMAIL,
     sameAs: [],
   };
 }

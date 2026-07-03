@@ -20,21 +20,21 @@ export const BILLING_DOC: DocPageInput = {
       paragraphs: [
         "Auroranexis subscriptions are billed through Stripe, a PCI-compliant payment processor. Your workspace plan determines feature access, usage limits, seat counts, and support tier. All billing activity — plan selection, checkout, invoices, and subscription changes — is accessible from Settings → Billing within the application.",
         "Billing is tied to your organization, not individual user accounts. When you upgrade or downgrade, the change applies to the entire workspace. Usage meters and effective limits are reflected in Settings → Usage and update after plan changes are processed.",
-        "Four self-serve tiers are available: Starter for small agencies beginning with core operations, Professional for growing teams that need automation and client portal delivery, Business for agencies requiring advanced compliance features and white-label branding, and Enterprise for organizations that need custom limits and negotiated arrangements. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
+        "Three self-serve tiers are available: Professional for growing teams that need automation and client portal delivery, Business for agencies requiring advanced compliance features and white-label branding, and Enterprise for organizations that need custom limits and negotiated arrangements. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
       ],
     },
     {
       title: "Purpose",
       paragraphs: [
         "The billing module gives agency operators a self-serve way to subscribe, pay, and manage their Auroranexis workspace without manual invoicing or back-and-forth with sales for standard plans. Stripe handles payment collection, card storage, and invoice generation; Auroranexis surfaces plan status, usage against limits, and links to the customer portal.",
-        "For agencies on Starter, Professional, or Business tiers, billing is fully automated. You choose a plan, complete checkout, and manage renewals through the customer portal. Enterprise customers may have custom arrangements negotiated separately, but day-to-day invoice access and payment method management still flow through the same billing interface where applicable.",
+        "For agencies on Professional or Business tiers, billing is fully automated. You choose a plan, complete checkout, and manage renewals through the customer portal. Enterprise customers may have custom arrangements negotiated separately, but day-to-day invoice access and payment method management still flow through the same billing interface where applicable.",
         "The billing page also serves as the starting point for understanding what your plan includes. Before upgrading, compare tier summaries against your current consumption in Settings → Usage so you select a plan that covers client count, seats, API volume, and feature requirements without unnecessary overspend.",
       ],
     },
     {
       title: "Core Concepts",
       bullets: [
-        "Workspace plan — the subscription tier (Starter, Professional, Business, or Enterprise) that governs features and limits.",
+        "Workspace plan — the subscription tier (Professional, Business, or Enterprise) that governs features and limits.",
         "Billing cycle — monthly or annual period during which your subscription is active and renewed.",
         "Proration — a partial charge or credit applied when you change plans mid-cycle.",
         "Customer portal — Stripe's hosted page for payment methods, invoices, and subscription management.",
@@ -49,7 +49,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       title: "Features",
       bullets: [
-        "Plan comparison — view Starter, Professional, Business, and Enterprise tiers with feature and limit summaries.",
+        "Plan comparison — view Professional, Business, and Enterprise tiers with feature and limit summaries.",
         "Stripe checkout — secure, hosted payment flow for new subscriptions and upgrades.",
         "Invoice history — access recent invoices with payment status and PDF downloads where available.",
         "Customer portal — update payment methods, view billing history, and manage subscription details.",
@@ -61,7 +61,7 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "Plan tiers",
           bullets: [
-            "Starter — for small agencies beginning with core client operations, basic reporting, and essential monitoring.",
+            "Professional — for growing agencies with core client operations, automation, client portal delivery, and essential monitoring.",
             "Professional — adds automation workflows, client portal delivery, integrations, and higher usage limits for growing teams.",
             "Business — includes advanced compliance features, white-label branding, expanded limits, and priority support options.",
             "Enterprise — custom limits, tailored onboarding, plan overrides, and dedicated support; request via Settings → Billing or Enterprise.",
@@ -148,13 +148,13 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "AI automation agency",
           paragraphs: [
-            "A twelve-person automation shop on Starter hits monthly automation run limits while onboarding webhook-driven workflows for thirty clients. The founder opens Settings → Billing, compares Professional tier automation allowances, and completes Stripe checkout. Prorated charges apply for the remainder of the cycle. After upgrade, the team confirms expanded run limits in Settings → Usage before enabling high-volume incident-creation automations.",
+            "A twelve-person automation shop on Professional approaches monthly automation run limits while onboarding webhook-driven workflows for thirty clients. The founder opens Settings → Billing, compares Business tier automation allowances, and completes Stripe checkout. Prorated charges apply for the remainder of the cycle. After upgrade, the team confirms expanded run limits in Settings → Usage before enabling high-volume incident-creation automations.",
           ],
         },
         {
           title: "MSP",
           paragraphs: [
-            "A twelve-person MSP on Starter needs automation and client portal delivery for forty managed clients. The operations director opens Settings → Billing, selects Professional, and completes Stripe checkout. The upgrade takes effect immediately with prorated charges for the remainder of the billing cycle. The team verifies automation and portal modules are now available and checks Settings → Usage for updated client and seat limits before rolling out portal access to key accounts.",
+            "A twelve-person MSP on Professional needs expanded client and portal capacity for forty managed clients. The operations director opens Settings → Billing, selects Business, and completes Stripe checkout. The upgrade takes effect immediately with prorated charges for the remainder of the billing cycle. The team verifies automation and portal modules remain available and checks Settings → Usage for updated client and seat limits before rolling out portal access to key accounts.",
           ],
         },
         {
@@ -779,7 +779,7 @@ export const API_DOC: DocPageInput = {
         "No. Documentation uses placeholder keys such as ax_live_example_key_abc123. Never use example values in production integrations.",
     },
     {
-      question: "Can I use the API on the Starter plan?",
+      question: "Can I use the API on the Professional plan?",
       answer:
         "API access and rate limits depend on your subscription tier. Review Settings → API for availability and consult /api/docs for plan-gated endpoints such as ai.execute.",
     },
@@ -809,7 +809,7 @@ export const ENTERPRISE_DOC: DocPageInput = {
     {
       title: "Overview",
       paragraphs: [
-        "Enterprise arrangements extend Starter, Professional, and Business capabilities with negotiated limits, feature enablement, dedicated onboarding, and priority support. Enterprise customers typically manage large client portfolios, operate integration-heavy environments, or require compliance and branding configurations beyond standard plan tiers.",
+        "Enterprise arrangements extend Professional and Business capabilities with negotiated limits, feature enablement, dedicated onboarding, and priority support. Enterprise customers typically manage large client portfolios, operate integration-heavy environments, or require compliance and branding configurations beyond standard plan tiers.",
         "Unlike self-serve plan upgrades through Stripe checkout, enterprise onboarding involves a review process. Once approved, plan overrides and support contacts are applied to your workspace and visible in Settings → Enterprise and Settings → Billing.",
         "Enterprise is designed for customer-facing outcomes: higher limits, tailored rollout, and direct support — not internal platform administration. All request, status, and override visibility flows through Settings → Enterprise and Settings → Billing within your workspace.",
       ],

@@ -1,4 +1,4 @@
-import { COMPANY_NAME, INFO_EMAIL, SALES_EMAIL, SECURITY_EMAIL, SUPPORT_EMAIL } from "@/lib/company/contact";
+import { COMPANY_NAME, SALES_EMAIL, SECURITY_EMAIL, SUPPORT_EMAIL } from "@/lib/company/contact";
 
 export type LegalPageKey =
   | "imprint"
@@ -25,11 +25,11 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
     sections: [
       {
         heading: "Service provider",
-        body: `${COMPANY_NAME} provides the Auroranexis operations platform for agencies and service providers. Contact: ${INFO_EMAIL}.`,
+        body: `${COMPANY_NAME} provides the Auroranexis operations platform for agencies and service providers. Contact: ${SUPPORT_EMAIL}.`,
       },
       {
         heading: "Support",
-        body: `General inquiries: ${INFO_EMAIL}. Product support: ${SUPPORT_EMAIL}. Security reports: ${SECURITY_EMAIL}.`,
+        body: `Product support and general inquiries: ${SUPPORT_EMAIL}. Sales and partnerships: ${SALES_EMAIL}. Security reports: ${SECURITY_EMAIL}.`,
       },
       {
         heading: "Responsible for content",
@@ -148,7 +148,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "Contact",
-        body: `Sub-processor inquiries: ${INFO_EMAIL}.`,
+        body: `Sub-processor inquiries: ${SUPPORT_EMAIL}.`,
       },
     ],
   },

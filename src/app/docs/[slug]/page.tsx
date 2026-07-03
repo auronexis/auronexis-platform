@@ -33,29 +33,5 @@ export default async function DocTopicPage({ params }: DocTopicPageProps) {
     notFound();
   }
 
-  // TEMP DEBUG — docs live render audit (remove after verification)
-  console.log("[docs audit]", slug, {
-    keys: Object.keys(doc),
-    sectionCount: [
-      doc.overview,
-      doc.purpose,
-      doc.coreConcepts,
-      doc.features,
-      doc.stepByStepUsage,
-      doc.bestPractices,
-      doc.examples,
-      doc.troubleshooting,
-    ].filter(
-      (block) =>
-        block.paragraphs?.length ||
-        block.bullets?.length ||
-        block.ordered?.length ||
-        block.subsections?.length ||
-        block.table,
-    ).length,
-    faqCount: doc.faq.length,
-    relatedDocsCount: doc.relatedDocs.length,
-  });
-
   return <DocPageLayout doc={doc} />;
 }

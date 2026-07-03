@@ -268,7 +268,7 @@ export const AUTOMATION_DOC: DocPageInput = {
     {
       question: "Is automation available on all plans?",
       answer:
-        "The workflow builder is plan-gated. Starter workspaces may see an upgrade prompt; Professional and higher tiers include automation. Review Settings → Billing for your effective entitlements.",
+        "The workflow builder is plan-gated. Workspaces without automation entitlements may see an upgrade prompt; Professional and higher tiers include automation. Review Settings → Billing for your effective entitlements.",
     },
   ],
   relatedLinks: [

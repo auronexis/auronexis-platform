@@ -152,7 +152,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
         {
           title: "AI automation agency",
           paragraphs: [
-            "An automation consultancy on Starter configures five clients who receive workflow monitoring via HTTP connectors linked on each client record. They log Medium incidents when integrations fail, publish quarterly executive summaries, and upgrade through Settings → Billing when client count approaches plan limits.",
+            "An automation consultancy on Professional configures five clients who receive workflow monitoring via HTTP connectors linked on each client record. They log Medium incidents when integrations fail, publish quarterly executive summaries, and upgrade through Settings → Billing when client count approaches plan limits.",
           ],
         },
         {

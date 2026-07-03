@@ -1,6 +1,5 @@
 import {
   COMPANY_NAME,
-  INFO_EMAIL,
   LEGAL_ROUTES,
   MARKETING_ROUTES,
   SALES_EMAIL,
@@ -65,14 +64,6 @@ export const USE_CASES = [
 
 export const PUBLIC_PRICING_PLANS = [
   {
-    name: "Starter",
-    price: "€49",
-    period: "/ month",
-    description: "For small agencies getting started with client operations.",
-    highlights: ["Up to 5 clients", "Core reporting", "Risk tracking", "Email support"],
-    featured: false,
-  },
-  {
     name: "Professional",
     price: "€149",
     period: "/ month",
@@ -86,6 +77,14 @@ export const PUBLIC_PRICING_PLANS = [
     period: "/ month",
     description: "For established agencies with compliance and white-label needs.",
     highlights: ["Higher limits", "White label", "Compliance center", "Priority support"],
+    featured: false,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    description: "For large portfolios, custom limits, and negotiated onboarding.",
+    highlights: ["Custom client limits", "Dedicated onboarding", "Priority support", "Plan overrides"],
     featured: false,
   },
 ] as const;
@@ -192,9 +191,8 @@ export const PILOT_PROGRAM = {
 } as const;
 
 export const CONTACT_EMAILS = [
-  { label: "General", email: INFO_EMAIL, description: "Company and product inquiries" },
+  { label: "Support", email: SUPPORT_EMAIL, description: "Product support, onboarding, and general inquiries" },
   { label: "Sales", email: SALES_EMAIL, description: "Pricing, pilots, and partnerships" },
-  { label: "Support", email: SUPPORT_EMAIL, description: "Product support and onboarding help" },
   { label: "Security", email: SECURITY_EMAIL, description: "Security reports and trust inquiries" },
 ] as const;
 

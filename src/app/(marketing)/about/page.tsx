@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
-import { COMPANY_NAME, INFO_EMAIL } from "@/lib/company/contact";
+import { COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { createMarketingMetadata } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = createMarketingMetadata({
@@ -28,8 +28,8 @@ export default function AboutPage() {
         </p>
         <p className="mt-4 text-sm text-muted">
           Contact:{" "}
-          <a href={`mailto:${INFO_EMAIL}`} className="font-medium text-primary hover:underline">
-            {INFO_EMAIL}
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-primary hover:underline">
+            {SUPPORT_EMAIL}
           </a>
         </p>
       </MarketingSection>

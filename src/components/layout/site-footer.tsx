@@ -10,8 +10,6 @@ import {
 
   FOOTER_SECTIONS,
 
-  INFO_EMAIL,
-
   SUPPORT_EMAIL,
 
 } from "@/lib/company/contact";
@@ -150,7 +148,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
     return (
 
-      <footer className={cn("mt-auto border-t border-white/10 bg-secondary", className)}>
+      <footer className={cn("border-t border-white/10 bg-secondary", className)}>
 
         <div className="mx-auto max-w-6xl px-6 py-12">
 
@@ -172,11 +170,11 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
               </p>
 
               <a
-                href={`mailto:${INFO_EMAIL}`}
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="mt-4 inline-block text-sm text-primary-foreground/90 hover:text-white hover:underline"
               >
 
-                {INFO_EMAIL}
+                {SUPPORT_EMAIL}
 
               </a>
 
