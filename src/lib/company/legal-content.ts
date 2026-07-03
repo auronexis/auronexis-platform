@@ -129,7 +129,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "Certifications",
-        body: "We describe readiness for frameworks such as SOC 2 and ISO 27001 but do not claim certifications unless explicitly published in a current attestation.",
+        body: "We describe readiness for frameworks such as SOC 2 and ISO 27001 and align with ISO 27001 principles where applicable. We do not claim certifications unless explicitly published in a current attestation.",
       },
     ],
   },

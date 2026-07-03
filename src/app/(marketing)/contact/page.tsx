@@ -19,7 +19,7 @@ export default function ContactPage() {
       <MarketingHero
         eyebrow="Contact"
         title="Talk to our team"
-        description="Sales, support, security, and general inquiries."
+        description="Sales, support, and security — reach the right team at Auroranexis."
         primaryHref="#message"
         primaryLabel="Send a message"
       />

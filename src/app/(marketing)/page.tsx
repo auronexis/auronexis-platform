@@ -14,7 +14,7 @@ import {
   FAQ_ITEMS,
   FEATURES,
   PUBLIC_PRICING_PLANS,
-  TESTIMONIALS,
+  PUBLIC_PRICING_NOTE,
   USE_CASES,
 } from "@/lib/marketing/content";
 import { MARKETING_ROUTES } from "@/lib/company/contact";
@@ -75,7 +75,7 @@ export default async function MarketingHomePage() {
             "Encryption in transit and at rest",
             "Role-based access control and audit logs",
             "Responsible disclosure via security@auroranexis.com",
-            "SOC 2 / ISO 27001 readiness — certifications not claimed",
+            "Aligned with ISO 27001 principles — no certification claimed",
           ].map((item) => (
             <li key={item} className="rounded-xl border border-border-subtle bg-surface-1 px-4 py-3 text-sm text-muted">
               {item}
@@ -108,7 +108,7 @@ export default async function MarketingHomePage() {
         </div>
       </MarketingSection>
 
-      <MarketingSection eyebrow="Pricing" title="Plans that scale with your agency" description="Transparent subscription pricing. Pilot customers receive 50% beta pricing for 6 weeks.">
+      <MarketingSection eyebrow="Pricing" title="Plans that scale with your agency" description="Professional, Business, and Enterprise — transparent subscription pricing. Pilot Partner and Founding cohorts are separate limited programs.">
         <div className="grid gap-4 lg:grid-cols-3">
           {PUBLIC_PRICING_PLANS.map((plan) => (
             <article
@@ -121,7 +121,9 @@ export default async function MarketingHomePage() {
               <h3 className="text-lg font-semibold">{plan.name}</h3>
               <p className="mt-2 text-3xl font-semibold tracking-tight">
                 {plan.price}
-                <span className="text-base font-normal text-muted">{plan.period}</span>
+                {plan.period ? (
+                  <span className="text-base font-normal text-muted">{plan.period}</span>
+                ) : null}
               </p>
               <p className="mt-3 text-sm text-muted">{plan.description}</p>
               <ul className="mt-4 space-y-2 text-sm text-muted">
@@ -132,28 +134,10 @@ export default async function MarketingHomePage() {
             </article>
           ))}
         </div>
+        <p className="mt-6 max-w-3xl text-sm text-muted">{PUBLIC_PRICING_NOTE}</p>
         <Link href={MARKETING_ROUTES.pricing} className={cn("mt-6 inline-flex text-sm font-medium text-primary hover:underline", focusRing, "rounded-lg")}>
           Compare plans →
         </Link>
-      </MarketingSection>
-
-      <MarketingSection
-        eyebrow="Customers"
-        title="What pilot partners say"
-        description="Founding customer quotes will be published after onboarding."
-        className="border-t border-border/70 bg-surface-2/30"
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          {TESTIMONIALS.map((item) => (
-            <blockquote key={item.id} className="rounded-2xl border border-border-subtle bg-surface-1 p-6">
-              <p className="text-sm leading-relaxed text-muted">&ldquo;{item.quote}&rdquo;</p>
-              <footer className="mt-4 text-sm font-medium text-foreground">
-                {item.author}
-                <span className="block text-xs font-normal text-muted">{item.role}</span>
-              </footer>
-            </blockquote>
-          ))}
-        </div>
       </MarketingSection>
 
       <MarketingSection eyebrow="FAQ" title="Frequently asked questions">

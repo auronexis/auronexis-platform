@@ -3,8 +3,8 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { AuthAwareMarketingLink } from "@/components/marketing/auth-aware-marketing-link";
 import { NewsletterSignupForm } from "@/components/marketing/newsletter-signup-form";
 import { MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
-import { PUBLIC_PRICING_PLANS } from "@/lib/marketing/content";
-import { MARKETING_ROUTES } from "@/lib/company/contact";
+import { PUBLIC_PRICING_PLANS, PUBLIC_PRICING_NOTE } from "@/lib/marketing/content";
+import { MARKETING_ROUTES, SALES_EMAIL } from "@/lib/company/contact";
 import { createMarketingMetadata } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
@@ -20,10 +20,10 @@ export default function PublicPricingPage() {
     <MarketingShell>
       <MarketingHero
         eyebrow="Pricing"
-        title="Transparent plans for growing agencies"
-        description="Pilot customers receive 50% beta pricing for 6 weeks. Sign in to manage your subscription in the app."
+        title="Professional, Business, and Enterprise"
+        description="Three public subscription tiers for agencies. Enterprise pricing is negotiated. Pilot Partner and Founding programs are limited cohort offers with separate terms."
         primaryHref="/signup"
-        primaryLabel="Start free trial"
+        primaryLabel="Get started"
         secondaryHref="/login"
         secondaryLabel="Sign in"
       />
@@ -40,7 +40,11 @@ export default function PublicPricingPage() {
               <h3 className="text-lg font-semibold">{plan.name}</h3>
               <p className="mt-2 text-3xl font-semibold tracking-tight">
                 {plan.price}
-                <span className="text-base font-normal text-muted">{plan.period}</span>
+                {plan.period ? (
+                  <span className="text-base font-normal text-muted">{plan.period}</span>
+                ) : (
+                  <span className="block text-base font-normal text-muted">pricing</span>
+                )}
               </p>
               <p className="mt-3 text-sm text-muted">{plan.description}</p>
               <ul className="mt-4 space-y-2 text-sm text-muted">
@@ -51,19 +55,24 @@ export default function PublicPricingPage() {
             </article>
           ))}
         </div>
-        <p className="mt-8 text-sm text-muted">
+        <p className="mt-8 max-w-3xl text-sm text-muted">{PUBLIC_PRICING_NOTE}</p>
+        <p className="mt-4 text-sm text-muted">
           Existing customers can compare plans and upgrade in{" "}
           <AuthAwareMarketingLink href="/settings/plans" className="font-medium text-primary hover:underline">
             workspace billing
           </AuthAwareMarketingLink>
-          . Questions?{" "}
+          . Enterprise questions?{" "}
           <AuthAwareMarketingLink
             href={MARKETING_ROUTES.contact}
             contactIntent="enterprise"
             className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}
           >
             Contact sales
-          </AuthAwareMarketingLink>
+          </AuthAwareMarketingLink>{" "}
+          at{" "}
+          <a href={`mailto:${SALES_EMAIL}`} className="font-medium text-primary hover:underline">
+            {SALES_EMAIL}
+          </a>
           .
         </p>
       </MarketingSection>

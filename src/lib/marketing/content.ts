@@ -89,6 +89,10 @@ export const PUBLIC_PRICING_PLANS = [
   },
 ] as const;
 
+/** Copy-only public pricing note — Stripe checkout uses workspace billing separately. */
+export const PUBLIC_PRICING_NOTE =
+  "Public subscription tiers are Professional, Business, and Enterprise. Enterprise pricing is negotiated — contact sales for a quote. Pilot Partner and Founding programs are limited cohort offers, not standard list pricing.";
+
 export const SECURITY_HIGHLIGHTS = [
   "Encryption in transit (TLS) and at rest for platform data stores.",
   "Role-based access control with organization-scoped permissions.",
@@ -111,7 +115,7 @@ export const COMPLIANCE_READINESS = [
   {
     framework: "ISO 27001",
     status: "Readiness",
-    detail: "Information security practices aligned; certification in progress.",
+    detail: "Aligned with ISO 27001 principles; no certification claimed.",
   },
   {
     framework: "NIS2",
@@ -122,21 +126,6 @@ export const COMPLIANCE_READINESS = [
     framework: "DORA",
     status: "Readiness",
     detail: "Operational resilience features planned for financial-sector partners.",
-  },
-] as const;
-
-export const TESTIMONIALS = [
-  {
-    id: "pilot-partner-msp",
-    quote: "Placeholder — pilot customer quote will be published after founding cohort onboarding.",
-    author: "Pilot Partner",
-    role: "Managing Director, MSP",
-  },
-  {
-    id: "pilot-partner-agency",
-    quote: "Placeholder — agency operations team feedback during beta evaluation.",
-    author: "Pilot Partner",
-    role: "Head of Delivery, IT Agency",
   },
 ] as const;
 
