@@ -73,7 +73,7 @@ export default function PublicPricingPage() {
             contactIntent="enterprise"
             className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}
           >
-            Contact sales
+            Contact Sales
           </AuthAwareMarketingLink>{" "}
           at{" "}
           <a href={`mailto:${SALES_EMAIL}`} className="font-medium text-primary hover:underline">

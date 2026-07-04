@@ -160,7 +160,7 @@ export function ApiSettingsWorkspace({ snapshot }: ApiSettingsWorkspaceProps) {
         ))}
       </section>
 
-      <section className="space-y-4 rounded-2xl border border-border bg-surface/80 p-5">
+      <section id="create-api-key" className="space-y-4 rounded-2xl border border-border bg-surface/80 p-5">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Create API key</h2>
           <p className="mt-1 text-sm text-muted">
@@ -176,6 +176,11 @@ export function ApiSettingsWorkspace({ snapshot }: ApiSettingsWorkspaceProps) {
           <ApiEmptyState
             title="No API keys yet"
             description="Create a key to authenticate Public API requests."
+            action={
+              <a href="#create-api-key" className="text-sm font-medium text-primary hover:underline">
+                Create your first key
+              </a>
+            }
           />
         ) : (
           <div className="space-y-2">
@@ -191,7 +196,7 @@ export function ApiSettingsWorkspace({ snapshot }: ApiSettingsWorkspaceProps) {
         )}
       </section>
 
-      <section className="space-y-4 rounded-2xl border border-border bg-surface/80 p-5">
+      <section id="create-webhook" className="space-y-4 rounded-2xl border border-border bg-surface/80 p-5">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Outbound webhooks</h2>
           <p className="mt-1 text-sm text-muted">
@@ -208,6 +213,11 @@ export function ApiSettingsWorkspace({ snapshot }: ApiSettingsWorkspaceProps) {
           <ApiEmptyState
             title="No webhook endpoints"
             description="Register an endpoint to receive outbound events."
+            action={
+              <a href="#create-webhook" className="text-sm font-medium text-primary hover:underline">
+                Register an endpoint
+              </a>
+            }
           />
         ) : (
           <div className="space-y-2">

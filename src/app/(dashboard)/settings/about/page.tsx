@@ -3,7 +3,8 @@ import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getBuildInfo } from "@/lib/diagnostics/platform-health";
-import { APP_VERSION, COMPANY_NAME } from "@/lib/company/contact";
+import { APP_VERSION, COMPANY_NAME, MARKETING_ROUTES, SUPPORT_EMAIL } from "@/lib/company/contact";
+import { INVITE_ONLY_PROGRAMS_NOTE } from "@/lib/marketing/content";
 
 export const metadata: Metadata = {
   title: "About",
@@ -43,19 +44,26 @@ export default async function SettingsAboutPage() {
       <section className="mt-8 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Pilot program</h2>
         <p className="text-sm text-muted">
-          Auroranexis is accepting up to three pilot agencies for a six-week program with direct support and
-          discounted pricing. See workspace Help → Feedback or contact support@auroranexis.com.
+          {INVITE_ONLY_PROGRAMS_NOTE} Qualified agencies receive dedicated onboarding and approved pricing
+          terms. Contact{" "}
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-primary hover:underline">
+            {SUPPORT_EMAIL}
+          </a>{" "}
+          or visit{" "}
+          <Link href={MARKETING_ROUTES.pilotProgram} className="font-medium text-primary hover:underline">
+            Pilot program
+          </Link>
+          .
         </p>
       </section>
 
       <section className="mt-8 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Roadmap</h2>
         <ul className="list-disc space-y-2 pl-5 text-sm text-muted">
-          <li>v1.0 GA — production hardening, status page, expanded E2E</li>
+          <li>Production hardening, status page, and expanded E2E coverage</li>
           <li>SSO / SAML for enterprise workspaces</li>
           <li>Public API keys and webhook expansion</li>
           <li>Additional connector catalog</li>
-          <li>External docs site at docs.auroranexis.com</li>
         </ul>
         <p className="text-sm text-muted">
           <Link href="/docs" className="text-primary hover:underline">
@@ -64,6 +72,10 @@ export default async function SettingsAboutPage() {
           {" · "}
           <Link href="/docs/release-notes" className="text-primary hover:underline">
             Release notes
+          </Link>
+          {" · "}
+          <Link href="/settings/support" className="text-primary hover:underline">
+            Support
           </Link>
         </p>
       </section>

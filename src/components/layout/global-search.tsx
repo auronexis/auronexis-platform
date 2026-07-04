@@ -341,7 +341,7 @@ export function GlobalSearchProvider({ children }: GlobalSearchProviderProps) {
 
             <div className="border-t border-border bg-muted/5 px-4 py-3">
               <MutedText className="text-xs">
-                Search across your workspace. Full search coming soon.
+                Quick navigation across workspace modules. Use filters above to narrow results.
               </MutedText>
               <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted">
                 <span>

@@ -107,7 +107,7 @@ export function AuroraTableEmpty({ title, description, action }: AuroraTableEmpt
   return (
     <div
       className={cn(
-        "rounded-2xl border border-dashed border-border-strong bg-gradient-to-b from-muted/5 to-surface px-8 py-14 text-center",
+        "flex min-h-[12rem] flex-col items-center justify-center rounded-2xl border border-dashed border-border-strong bg-gradient-to-b from-muted/5 to-surface px-6 py-10 text-center",
         motionEmptyEnter,
       )}
     >

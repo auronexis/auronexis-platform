@@ -161,7 +161,7 @@ export function getPlanActionButtonLabel(action: PlanActionLabel): string {
     case "current":
       return "Current plan";
     case "choose":
-      return "Choose Plan";
+      return "Subscribe";
     case "upgrade":
       return "Upgrade";
     case "downgrade":

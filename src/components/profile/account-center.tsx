@@ -16,8 +16,6 @@ import { AccountEmailSection } from "@/components/profile/account-email-section"
 import { AccountPasswordSection } from "@/components/profile/account-password-section";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
-  ComingSoonBadge,
-  FutureFeaturePlaceholder,
   LocalDeviceBadge,
   ProfileField,
   ProfileReadOnlyValue,
@@ -31,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { SignOutPendingSplash } from "@/components/branding/brand-splash";
 import { signOut } from "@/lib/auth/actions";
+import { SUPPORT_EMAIL } from "@/lib/company/contact";
 import { updateAccountProfileAction, type ProfileActionState } from "@/lib/profile/actions";
 import { formatAccountCreatedDate } from "@/lib/profile/display";
 import type { AccountSecurityContext } from "@/lib/profile/security";
@@ -556,7 +555,7 @@ export function AccountCenter({ session, permissions, security }: AccountCenterP
       <ProfileSectionCard
         icon={Shield}
         title="Security"
-        description="Manage sign-in credentials and review upcoming account safety features."
+        description="Manage sign-in credentials and API access for your account."
         className="lg:col-span-2"
       >
         <div className="grid gap-6 lg:grid-cols-2">
@@ -567,9 +566,14 @@ export function AccountCenter({ session, permissions, security }: AccountCenterP
 
           <div className="space-y-4">
             <ProfileField label="Two-factor authentication">
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-muted/5 px-3 py-2.5">
-                <span className="text-sm text-muted">Not configured</span>
-                <ComingSoonBadge />
+              <div className="rounded-lg border border-border/70 bg-muted/5 px-3 py-2.5">
+                <p className="text-sm text-muted">
+                  Not configured. Contact{" "}
+                  <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-primary hover:underline">
+                    {SUPPORT_EMAIL}
+                  </a>{" "}
+                  for Enterprise SSO options.
+                </p>
               </div>
             </ProfileField>
 
@@ -595,15 +599,6 @@ export function AccountCenter({ session, permissions, security }: AccountCenterP
                 </Link>
               </div>
             </div>
-
-            <FutureFeaturePlaceholder
-              title="Connected accounts"
-              description="Link external identity providers and productivity tools."
-            />
-            <FutureFeaturePlaceholder
-              title="Audit history"
-              description="Review personal account activity and security events."
-            />
           </div>
         </div>
 

@@ -35,7 +35,7 @@ export default async function SalesInboxPage({ searchParams }: InboxPageProps) {
       <PageHeader
         module="sales"
         title="Contact inbox"
-        description="support@, sales@, info@, and security@ inbound activity."
+        description="Inbound activity across support@, sales@, and security@ mailboxes."
       />
 
       <ContactInboxWidget metrics={metrics} />

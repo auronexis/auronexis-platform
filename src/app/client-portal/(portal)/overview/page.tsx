@@ -191,7 +191,7 @@ export default async function ClientPortalOverviewPage() {
             icon={LifeBuoy}
             tone="primary"
             title="Support"
-            description="Support requests are coming soon."
+            description="Contact your agency team for help and operational questions."
           />
         </div>
       </section>

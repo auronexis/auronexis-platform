@@ -3,8 +3,15 @@ import Link from "next/link";
 import { ContactForm } from "@/components/marketing/contact-form";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
-import { MARKETING_ROUTES, SECURITY_EMAIL, SUPPORT_EMAIL } from "@/lib/company/contact";
+import { MARKETING_ROUTES, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { createMarketingMetadata } from "@/lib/marketing/seo";
+import {
+  SUPPORT_CHANNELS,
+  SUPPORT_RESPONSE_EXPECTATIONS,
+  SUPPORT_SECURITY_NOTE,
+} from "@/lib/support/content";
+import { cn } from "@/lib/utils/cn";
+import { focusRing } from "@/lib/ui/tokens";
 
 export const metadata: Metadata = createMarketingMetadata({
   title: "Support",
@@ -18,47 +25,48 @@ export default function SupportPage() {
       <MarketingHero
         eyebrow="Support"
         title="We are here to help"
-        description="Product support, onboarding assistance, and pilot program guidance."
+        description="Product support, billing questions, documentation, and Enterprise onboarding."
         primaryHref={`mailto:${SUPPORT_EMAIL}`}
         primaryLabel={`Email ${SUPPORT_EMAIL}`}
-        secondaryHref={MARKETING_ROUTES.contact}
-        secondaryLabel="Contact form"
+        secondaryHref={MARKETING_ROUTES.documentation}
+        secondaryLabel="Documentation"
       />
+
       <MarketingSection title="Support channels">
-        <ul className="space-y-4 text-sm text-muted">
-          <li>
-            <strong className="text-foreground">Product support:</strong>{" "}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-primary hover:underline">
-              {SUPPORT_EMAIL}
-            </a>
-          </li>
-          <li>
-            <strong className="text-foreground">Documentation:</strong>{" "}
-            <Link href={MARKETING_ROUTES.documentation} className="text-primary hover:underline">
-              Documentation hub
-            </Link>
-          </li>
-          <li>
-            <strong className="text-foreground">System status:</strong>{" "}
-            <Link href={MARKETING_ROUTES.status} className="text-primary hover:underline">
-              Status page
-            </Link>
-          </li>
-          <li>
-            <strong className="text-foreground">Security issues:</strong>{" "}
-            <a href={`mailto:${SECURITY_EMAIL}`} className="text-primary hover:underline">
-              {SECURITY_EMAIL}
-            </a>
-          </li>
-          <li>
-            <strong className="text-foreground">Pilot program:</strong>{" "}
-            <Link href={MARKETING_ROUTES.pilotProgram} className="text-primary hover:underline">
-              Apply for pilot
-            </Link>
-          </li>
-        </ul>
+        <div className="grid gap-4 md:grid-cols-2">
+          {SUPPORT_CHANNELS.map((channel) => (
+            <article
+              key={channel.id}
+              className={cn(
+                "rounded-2xl border border-border-subtle bg-surface-1 p-5 shadow-sm",
+                focusRing,
+              )}
+            >
+              <h3 className="font-semibold text-foreground">{channel.title}</h3>
+              <p className="mt-2 text-sm text-muted">{channel.description}</p>
+              <Link
+                href={channel.href}
+                className={cn("mt-4 inline-block text-sm font-medium text-primary hover:underline", focusRing, "rounded")}
+              >
+                {channel.linkLabel}
+              </Link>
+            </article>
+          ))}
+        </div>
+        <p className="mt-6 text-sm text-muted">{SUPPORT_RESPONSE_EXPECTATIONS}</p>
+        <p className="mt-3 text-sm text-muted">
+          <Link href={MARKETING_ROUTES.status} className="font-medium text-primary hover:underline">
+            System status
+          </Link>
+          {" · "}
+          {SUPPORT_SECURITY_NOTE}
+        </p>
       </MarketingSection>
+
       <MarketingSection title="Send a message" className="border-t border-border/70 bg-surface-2/30">
+        <p className="mb-4 max-w-2xl text-sm text-muted">
+          Prefer a form? Send a message and we will route it to the right team.
+        </p>
         <div className="max-w-2xl">
           <ContactForm />
         </div>

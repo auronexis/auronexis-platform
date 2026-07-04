@@ -27,7 +27,7 @@ export default async function ClientPortalSupportPage() {
     <>
       <PortalPageHeader
         title="Support"
-        description="Support requests are coming soon."
+        description="Contact your agency team for workspace help, billing questions, and operational support."
       />
       <PortalSupportCard support={contacts} />
     </>

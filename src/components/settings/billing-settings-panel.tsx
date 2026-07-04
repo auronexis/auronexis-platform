@@ -276,7 +276,7 @@ export function BillingSettingsPanel({
         <PageSurface>
           <PageSurfaceHeading title="Promotions" description="Check whether a promo code applies to your plan before checkout." />
           <form action={previewDiscount} className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-            <input type="hidden" name="planKey" value={overview.currentPlanKey ?? "starter"} />
+            <input type="hidden" name="planKey" value={overview.currentPlanKey ?? "professional"} />
             <div className="min-w-0 flex-1 sm:min-w-[220px]">
               <Input name="discountCode" label="Promo code" placeholder="LAUNCH20" />
             </div>
@@ -336,20 +336,22 @@ export function BillingSettingsPanel({
           ) : null}
           <FormFooter className="border-t-0 pt-0">
             <Link href="/settings/plans">
-              <Button type="button">Upgrade plan</Button>
+              <Button type="button">Upgrade</Button>
             </Link>
             <LinkButton href="/settings/usage" variant="secondary" size="md">
               Usage dashboard
             </LinkButton>
             {showManage ? (
-              <>
-                <Button type="button" variant="secondary" disabled={isPortalPending} loading={isPortalPending} loadingText="Opening…" onClick={runPortal}>
-                  Manage billing
-                </Button>
-                <Button type="button" variant="ghost" disabled={isPortalPending} onClick={runPortal}>
-                  Customer portal
-                </Button>
-              </>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={isPortalPending}
+                loading={isPortalPending}
+                loadingText="Opening…"
+                onClick={runPortal}
+              >
+                Manage billing
+              </Button>
             ) : null}
           </FormFooter>
         </PageSurface>

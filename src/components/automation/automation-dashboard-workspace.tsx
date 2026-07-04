@@ -99,13 +99,13 @@ export function AutomationDashboardWorkspace({
       </section>
 
       {filtered.length === 0 ? (
-        <div className={cn(auroraSurface, "px-6 py-10 text-center")}>
-          <p className="text-sm font-medium text-foreground">No automations yet</p>
-          <p className="mt-2 text-sm text-muted">
+        <div className={cn(auroraSurface, "flex min-h-[12rem] flex-col items-center justify-center px-6 py-10 text-center")}>
+          <p className="text-base font-semibold text-foreground">No automations yet</p>
+          <p className="mt-2 max-w-md text-sm text-muted">
             Create your first workflow with the visual builder or AI builder.
           </p>
           {canManage ? (
-            <Link href="/automation/new" className="mt-4 inline-block">
+            <Link href="/automation/new" className="mt-6 inline-block">
               <Button variant="primary">Create automation</Button>
             </Link>
           ) : null}

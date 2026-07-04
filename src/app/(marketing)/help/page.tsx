@@ -26,17 +26,14 @@ export default function HelpPage() {
         secondaryHref={MARKETING_ROUTES.support}
         secondaryLabel="Support"
       />
-      <MarketingSection title="Search support">
-        <label className="block max-w-xl">
-          <span className="sr-only">Search help</span>
-          <input
-            type="search"
-            placeholder="Search documentation and help topics"
-            className="w-full rounded-xl border border-border-subtle bg-surface-1 px-4 py-3 text-sm"
-            disabled
-          />
-        </label>
-        <p className="mt-2 text-xs text-muted">Search indexing is planned — browse topics below or email {SUPPORT_EMAIL}.</p>
+      <MarketingSection title="Browse help topics">
+        <p className="mb-4 max-w-2xl text-sm text-muted">
+          Browse topics below or email{" "}
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-primary hover:underline">
+            {SUPPORT_EMAIL}
+          </a>{" "}
+          for direct assistance.
+        </p>
       </MarketingSection>
       <MarketingSection title="Popular topics" className="border-t border-border/70 bg-surface-2/30">
         <div className="grid gap-4 md:grid-cols-2">

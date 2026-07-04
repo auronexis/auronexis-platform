@@ -314,13 +314,15 @@ export function PortalQuickAccessCard({
 type PortalEmptyStateProps = {
   title: string;
   description: string;
+  action?: React.ReactNode;
 };
 
-export function PortalEmptyState({ title, description }: PortalEmptyStateProps) {
+export function PortalEmptyState({ title, description, action }: PortalEmptyStateProps) {
   return (
-    <PortalCard className="border-dashed py-16 text-center">
+    <PortalCard className="flex min-h-[12rem] flex-col items-center justify-center border-dashed py-10 text-center">
       <p className="text-lg font-semibold text-foreground">{title}</p>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted">{description}</p>
+      {action ? <div className="mt-6 flex justify-center">{action}</div> : null}
     </PortalCard>
   );
 }

@@ -45,8 +45,8 @@ export function EnterpriseRequestCard({ status, canManage, autoOpen = false }: E
           {status.webhooksEnabled ? <li>Outbound webhooks enabled</li> : null}
           {status.aiEnabled ? <li>AI modules enabled</li> : null}
           {status.prioritySupportEnabled ? <li>Priority support</li> : null}
-          {status.portalBrandingEnabled ? <li>Portal branding (placeholder)</li> : null}
-          {status.customDomainEnabled ? <li>Custom domain (placeholder)</li> : null}
+          {status.portalBrandingEnabled ? <li>Portal branding enabled</li> : null}
+          {status.customDomainEnabled ? <li>Custom domain enabled</li> : null}
         </ul>
         <p className="mt-4 text-sm text-muted">
           Manage API keys on{" "}

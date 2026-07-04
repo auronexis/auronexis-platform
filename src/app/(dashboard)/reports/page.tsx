@@ -92,6 +92,11 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         <ReportEmptyState
           title={`No ${tab} reports`}
           description="Create a report or switch tabs to view other report states."
+          action={
+            canCreate ? (
+              <LinkButton href="/reports/new">Create report</LinkButton>
+            ) : undefined
+          }
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

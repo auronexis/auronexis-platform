@@ -204,7 +204,16 @@ export default async function RisksPage({ searchParams }: RisksPageProps) {
       </div>
 
       {risks.length === 0 ? (
-        <RiskEmptyState title={`No ${tab} risks`} />
+        <RiskEmptyState
+          title={`No ${tab} risks`}
+          action={
+            canCreate ? (
+              <Link href="/risks/new">
+                <Button>Add risk</Button>
+              </Link>
+            ) : undefined
+          }
+        />
       ) : view === "table" ? (
         <RiskList risks={risks} />
       ) : (
