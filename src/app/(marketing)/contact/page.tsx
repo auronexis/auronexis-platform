@@ -4,7 +4,8 @@ import { ContactForm } from "@/components/marketing/contact-form";
 import { DemoBookingForm } from "@/components/marketing/demo-booking-form";
 import { HideWhenAuthenticated } from "@/components/marketing/hide-when-authenticated";
 import { ReferralLeadForm } from "@/components/marketing/referral-lead-form";
-import { MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
+import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { CONTACT_EMAILS } from "@/lib/marketing/content";
 import { createMarketingMetadata } from "@/lib/marketing/seo";
 

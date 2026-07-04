@@ -5,15 +5,23 @@ import {
   selectFirstOption,
   uniqueSuffix,
 } from "./helpers/auth";
+import {
+  createRecordOrExpectUpgradeGate,
+  expectModuleOrUpgradeGate,
+  gotoAppRoute,
+} from "./helpers/module-gate";
 
 test.describe.configure({ mode: "serial" });
 
 test.beforeEach(() => {
-  test.skip(!hasE2ECredentials(), "Set E2E_EMAIL and E2E_PASSWORD for authenticated flows.");
+  test.skip(
+    !hasE2ECredentials(),
+    "Set E2E_TEST_EMAIL and E2E_TEST_PASSWORD (or E2E_EMAIL / E2E_PASSWORD) for authenticated flows.",
+  );
 });
 
 test("login session reaches dashboard", async ({ page }) => {
-  await page.goto("/dashboard");
+  await gotoAppRoute(page, "/dashboard");
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByRole("main")).toBeVisible();
 });
@@ -29,22 +37,30 @@ test("create client", async ({ page }) => {
 
 test("create risk", async ({ page }) => {
   const title = `E2E Risk ${uniqueSuffix()}`;
-  await page.goto("/risks/new");
-  await page.getByLabel("Risk title").fill(title);
-  await selectFirstOption(page, "Client");
-  await page.getByRole("button", { name: /create risk/i }).click();
-  await page.waitForURL(/\/risks\/[a-f0-9-]+/, { timeout: 30_000 });
-  await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
+  await createRecordOrExpectUpgradeGate(page, {
+    route: "/risks/new",
+    runCreate: async () => {
+      await page.getByLabel("Risk title").fill(title);
+      await selectFirstOption(page, "Client");
+      await page.getByRole("button", { name: /create risk/i }).click();
+    },
+    successUrl: /\/risks\/[a-f0-9-]+/,
+    successHeading: title,
+  });
 });
 
 test("create incident", async ({ page }) => {
   const title = `E2E Incident ${uniqueSuffix()}`;
-  await page.goto("/incidents/new");
-  await page.getByLabel("Incident title").fill(title);
-  await selectFirstOption(page, "Client");
-  await page.getByRole("button", { name: /create incident/i }).click();
-  await page.waitForURL(/\/incidents\/[a-f0-9-]+/, { timeout: 30_000 });
-  await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
+  await createRecordOrExpectUpgradeGate(page, {
+    route: "/incidents/new",
+    runCreate: async () => {
+      await page.getByLabel("Incident title").fill(title);
+      await selectFirstOption(page, "Client");
+      await page.getByRole("button", { name: /create incident/i }).click();
+    },
+    successUrl: /\/incidents\/[a-f0-9-]+/,
+    successHeading: title,
+  });
 });
 
 test("create report", async ({ page }) => {
@@ -60,17 +76,17 @@ test("create report", async ({ page }) => {
 });
 
 test("reports list loads", async ({ page }) => {
-  await page.goto("/reports");
+  await gotoAppRoute(page, "/reports");
   await expect(page.getByRole("heading", { level: 1, name: "Reports" })).toBeVisible();
 });
 
 test("automation hub loads", async ({ page }) => {
-  await page.goto("/automation");
-  await expect(page.getByRole("heading", { level: 1, name: "Automation" })).toBeVisible();
+  await gotoAppRoute(page, "/automation");
+  await expectModuleOrUpgradeGate(page, { moduleHeading: "Automation" });
 });
 
 test("settings diagnostics loads platform sections", async ({ page }) => {
-  await page.goto("/settings/diagnostics");
+  await gotoAppRoute(page, "/settings/diagnostics");
   await expect(page.getByRole("heading", { level: 1, name: "Diagnostics" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Production readiness" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Pilot execution readiness" })).toBeVisible();
@@ -78,24 +94,24 @@ test("settings diagnostics loads platform sections", async ({ page }) => {
 });
 
 test("billing settings loads", async ({ page }) => {
-  await page.goto("/settings/billing");
+  await gotoAppRoute(page, "/settings/billing");
   await expect(
     page.getByRole("heading", { level: 1, name: /subscription & billing/i }),
   ).toBeVisible();
 });
 
 test("compliance center loads", async ({ page }) => {
-  await page.goto("/dashboard/compliance");
+  await gotoAppRoute(page, "/dashboard/compliance");
   await expect(page.getByRole("heading", { level: 1, name: /compliance & governance/i })).toBeVisible();
 });
 
 test("API settings loads", async ({ page }) => {
-  await page.goto("/settings/api");
+  await gotoAppRoute(page, "/settings/api");
   await expect(page.getByRole("heading", { level: 1, name: "Public API" })).toBeVisible();
 });
 
 test("skip link targets main content", async ({ page }) => {
-  await page.goto("/dashboard");
+  await gotoAppRoute(page, "/dashboard");
   await page.keyboard.press("Tab");
   const skip = page.getByRole("link", { name: "Skip to main content" });
   await expect(skip).toBeFocused();
@@ -106,7 +122,7 @@ test("skip link targets main content", async ({ page }) => {
 test.afterAll(() => {
   if (!hasE2ECredentials()) {
     console.info(
-      `[e2e] Authenticated flows skipped — set E2E_EMAIL and E2E_PASSWORD (currently: ${e2eCredentials.email ? "email set" : "no email"})`,
+      `[e2e] Authenticated flows skipped — set E2E_TEST_EMAIL and E2E_TEST_PASSWORD (currently: ${e2eCredentials.email ? "email set" : "no email"})`,
     );
   }
 });

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
-import { MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
+import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { COMPLIANCE_READINESS } from "@/lib/marketing/content";
 import { createMarketingMetadata } from "@/lib/marketing/seo";
 

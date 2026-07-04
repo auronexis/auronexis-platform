@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
-import { MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
+import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { SECURITY_HIGHLIGHTS } from "@/lib/marketing/content";
 import { LEGAL_ROUTES, MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company/contact";
 import { createMarketingMetadata } from "@/lib/marketing/seo";

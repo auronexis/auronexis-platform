@@ -1,12 +1,22 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import type { NextRequest } from "next/server";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { AppUser, Organization } from "@/types/database";
+import type { Database } from "@/types/database";
 
-/** Load session from Supabase cookies — safe for route handlers and server components. */
-export async function readSessionContext(): Promise<SessionContext | null> {
-  const supabase = await createClient();
+async function loadSessionContext(
+  getAllCookies: () => { name: string; value: string }[],
+  setAllCookies?: (cookies: { name: string; value: string; options: CookieOptions }[]) => void,
+): Promise<SessionContext | null> {
+  const supabase = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
+    cookies: {
+      getAll: getAllCookies,
+      setAll: setAllCookies ?? (() => undefined),
+    },
+  });
 
   const {
     data: { user: authUser },
@@ -47,6 +57,27 @@ export async function readSessionContext(): Promise<SessionContext | null> {
     organization,
     role: appUser.role,
   };
+}
+
+/** Load session from Supabase cookies — safe for route handlers and server components. */
+export async function readSessionContext(): Promise<SessionContext | null> {
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  return loadSessionContext(
+    () => cookieStore.getAll(),
+    (cookiesToSet) => {
+      cookiesToSet.forEach(({ name, value, options }) => {
+        cookieStore.set(name, value, options);
+      });
+    },
+  );
+}
+
+/** Load session directly from an incoming request — used by `/api/docs` HTML route. */
+export async function readSessionContextFromRequest(
+  request: NextRequest,
+): Promise<SessionContext | null> {
+  return loadSessionContext(() => request.cookies.getAll());
 }
 
 /**

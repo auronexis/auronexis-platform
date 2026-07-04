@@ -25,8 +25,12 @@ async function globalSetup(): Promise<void> {
   loadEnvFile(".env.local");
   loadEnvFile(".env");
 
-  if (!process.env.E2E_EMAIL) {
-    process.env.E2E_EMAIL = "demo@auroranexis.com";
+  if (process.env.E2E_TEST_EMAIL && !process.env.E2E_EMAIL) {
+    process.env.E2E_EMAIL = process.env.E2E_TEST_EMAIL;
+  }
+
+  if (process.env.E2E_TEST_PASSWORD && !process.env.E2E_PASSWORD) {
+    process.env.E2E_PASSWORD = process.env.E2E_TEST_PASSWORD;
   }
 
   if (!process.env.E2E_PASSWORD && process.env.PILOT_SEED_PASSWORD) {

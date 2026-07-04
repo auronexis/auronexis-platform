@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { PilotApplicationForm } from "@/components/marketing/pilot-application-form";
-import { MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
+import { MarketingCta } from "@/components/marketing/marketing-cta";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
+import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { PILOT_PROGRAM } from "@/lib/marketing/content";
 import { MARKETING_ROUTES } from "@/lib/company/contact";
 import {

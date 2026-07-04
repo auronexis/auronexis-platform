@@ -1,8 +1,9 @@
 import { expect, type Page } from "@playwright/test";
 
+/** Resolve E2E credentials from env — prefers E2E_TEST_* without hardcoding secrets. */
 export const e2eCredentials = {
-  email: process.env.E2E_EMAIL ?? "",
-  password: process.env.E2E_PASSWORD ?? "",
+  email: process.env.E2E_TEST_EMAIL ?? process.env.E2E_EMAIL ?? "",
+  password: process.env.E2E_TEST_PASSWORD ?? process.env.E2E_PASSWORD ?? "",
 };
 
 export function hasE2ECredentials(): boolean {
@@ -12,7 +13,9 @@ export function hasE2ECredentials(): boolean {
 /** Sign in via the login form and wait for dashboard. */
 export async function loginAsTestUser(page: Page): Promise<void> {
   if (!hasE2ECredentials()) {
-    throw new Error("Set E2E_EMAIL and E2E_PASSWORD to run authenticated flows.");
+    throw new Error(
+      "Set E2E_TEST_EMAIL and E2E_TEST_PASSWORD (or E2E_EMAIL / E2E_PASSWORD) to run authenticated flows.",
+    );
   }
 
   await page.goto("/login");

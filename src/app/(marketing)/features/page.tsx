@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
 import {
   MarketingCardGrid,
-  MarketingHero,
   MarketingSection,
 } from "@/components/marketing/marketing-sections";
 import { FEATURES } from "@/lib/marketing/content";

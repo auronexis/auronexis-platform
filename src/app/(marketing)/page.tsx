@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { MarketingCta } from "@/components/marketing/marketing-cta";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
 import {
   MarketingCardGrid,
-  MarketingCta,
   MarketingFaq,
-  MarketingHero,
   MarketingSection,
 } from "@/components/marketing/marketing-sections";
 import { getSession } from "@/lib/auth/session";

@@ -5,7 +5,10 @@ import { authStoragePath } from "./helpers/auth-storage";
 import { hasE2ECredentials, loginAsTestUser } from "./helpers/auth";
 
 setup("authenticate", async ({ page }) => {
-  setup.skip(!hasE2ECredentials(), "Set E2E_EMAIL and E2E_PASSWORD for authenticated flows.");
+  setup.skip(
+    !hasE2ECredentials(),
+    "Set E2E_TEST_EMAIL and E2E_TEST_PASSWORD (or E2E_EMAIL / E2E_PASSWORD) for authenticated flows.",
+  );
   mkdirSync(dirname(authStoragePath), { recursive: true });
   await loginAsTestUser(page);
   await page.context().storageState({ path: authStoragePath });

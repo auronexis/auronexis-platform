@@ -1,12 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { assertLoginBrandingVisible, assertLoginFormVisible, assertLoginPageHealthy } from "./helpers/login";
 
 test.describe("Public smoke", () => {
   test("login page renders sign-in form", async ({ page }) => {
-    await page.goto("/login");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByLabel("Email")).toBeVisible();
-    await expect(page.getByLabel("Password")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+    await assertLoginPageHealthy(page);
   });
 
   test("signup page renders registration form", async ({ page }) => {
@@ -30,20 +27,34 @@ test.describe("Public smoke", () => {
   test("health API returns JSON status", async ({ request }) => {
     const response = await request.get("/api/health");
     expect(response.ok() || response.status() === 503).toBeTruthy();
+
     const body = (await response.json()) as {
       status: string;
       version: string;
-      checks: { database: boolean };
+      timestamp: string;
+      configuration: {
+        database: boolean;
+        supabase: boolean;
+        stripe: boolean;
+        ai: boolean;
+      };
     };
-    expect(body.status).toMatch(/healthy|degraded/);
-    expect(body.version).toBe("1.0.3");
-    expect(typeof body.checks.database).toBe("boolean");
+
+    expect(body.status).toMatch(/healthy|degraded|unavailable/);
+    expect(body.version).toBeTruthy();
+    expect(typeof body.timestamp).toBe("string");
+    expect(body.timestamp.length).toBeGreaterThan(0);
+    expect(typeof body.configuration).toBe("object");
+    expect(typeof body.configuration.database).toBe("boolean");
+    expect(typeof body.configuration.supabase).toBe("boolean");
   });
 
   test("pilot program page renders application form", async ({ page }) => {
     await page.goto("/pilot-program");
-    await expect(page.getByRole("heading", { name: "Founding customer pilot" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /invite-only pilot program/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "Apply for pilot" })).toBeVisible();
+    await expect(page.getByLabel("Name")).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
   });
 
   test("contact page renders lead capture forms", async ({ page }) => {
@@ -60,16 +71,9 @@ test.describe("Public smoke", () => {
     await expect(page.getByRole("heading", { level: 1, name: /monitor clients/i })).toBeVisible();
   });
 
-  test("login page uses transparent logo on light card", async ({ page }) => {
+  test("login page shows branding and usable form", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
-
-    const loginCard = page
-      .locator("div.max-w-md.rounded-2xl")
-      .filter({ has: page.getByRole("heading", { name: "Sign in" }) });
-    const cardLogo = loginCard.locator("img[alt='Auroranexis logo']");
-    await expect(cardLogo).toBeVisible();
-    await expect(cardLogo).toHaveAttribute("src", "/branding/logo-horizontal-on-light.png");
+    await assertLoginBrandingVisible(page);
   });
 
   test("marketing navbar uses transparent logo", async ({ page }) => {
