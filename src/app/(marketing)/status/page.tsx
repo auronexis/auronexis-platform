@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Activity, ArrowLeft } from "lucide-react";
+import { Suspense } from "react";
+import { Activity } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { PublicAppLink } from "@/components/marketing/public-app-link";
 import { StatusBadge, type StatusLevel } from "@/components/marketing/status-badge";
 import { STATUS_COMPONENTS_STATIC } from "@/lib/marketing/content";
 import { COMPANY_NAME } from "@/lib/company/contact";
@@ -147,13 +148,13 @@ export default async function StatusPage() {
               </p>
             </div>
           </div>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 text-sm text-primary-foreground/90 hover:text-white hover:underline"
+          <Suspense
+            fallback={
+              <span className="inline-flex items-center gap-1.5 text-sm text-primary-foreground/60">App</span>
+            }
           >
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            App
-          </Link>
+            <PublicAppLink className="inline-flex items-center gap-1.5 text-sm text-primary-foreground/90 hover:text-white hover:underline" />
+          </Suspense>
         </div>
       </header>
 

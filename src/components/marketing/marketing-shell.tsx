@@ -12,39 +12,46 @@ type MarketingShellProps = {
   hideHeader?: boolean;
 };
 
-async function MarketingHeaderWithAuth() {
-  const session = await getSession();
-  const auth = getMarketingAuthState(session);
-  return <MarketingHeader auth={auth} />;
-}
-
-async function MarketingAuthMain({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  const session = await getSession();
-  const auth = getMarketingAuthState(session);
+function MarketingHeaderSkeleton() {
   return (
-    <MarketingAuthProvider value={auth}>
-      <main className={cn("flex-auto", className)}>{children}</main>
-    </MarketingAuthProvider>
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-secondary/95 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+        <div className="h-11 w-40 animate-pulse rounded-lg bg-white/10" aria-hidden />
+        <div className="hidden items-center gap-2 lg:flex" aria-hidden>
+          <div className="h-9 w-16 animate-pulse rounded-lg bg-white/10" />
+          <div className="h-9 w-16 animate-pulse rounded-lg bg-white/10" />
+          <div className="h-9 w-16 animate-pulse rounded-lg bg-white/10" />
+        </div>
+        <div className="h-9 w-28 animate-pulse rounded-lg bg-white/10" aria-hidden />
+      </div>
+    </header>
   );
 }
 
-function MarketingAuthMainFallback({
+async function MarketingShellContent({
   children,
   className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+  hideHeader = false,
+}: MarketingShellProps) {
+  const session = await getSession();
+  const auth = getMarketingAuthState(session);
+
   return (
-    <MarketingAuthProvider value={{ isAuthenticated: false }}>
-      <main className={cn("flex-auto", className)}>{children}</main>
-    </MarketingAuthProvider>
+    <>
+      {hideHeader ? null : <MarketingHeader auth={auth} />}
+      <MarketingAuthProvider value={auth}>
+        <main className={cn("flex-auto", className)}>{children}</main>
+      </MarketingAuthProvider>
+    </>
+  );
+}
+
+function MarketingShellFallback({ hideHeader }: { hideHeader?: boolean }) {
+  return (
+    <>
+      {hideHeader ? null : <MarketingHeaderSkeleton />}
+      <main className="flex-auto min-h-[40vh]" aria-busy="true" />
+    </>
   );
 }
 
@@ -55,17 +62,10 @@ function MarketingAuthMainFallback({
 export function MarketingShell({ children, className, hideHeader = false }: MarketingShellProps) {
   return (
     <div className="marketing-theme flex min-h-screen flex-col bg-secondary text-primary-foreground">
-      {hideHeader ? null : (
-        <Suspense fallback={<MarketingHeader />}>
-          <MarketingHeaderWithAuth />
-        </Suspense>
-      )}
-      <Suspense
-        fallback={
-          <MarketingAuthMainFallback className={className}>{children}</MarketingAuthMainFallback>
-        }
-      >
-        <MarketingAuthMain className={className}>{children}</MarketingAuthMain>
+      <Suspense fallback={<MarketingShellFallback hideHeader={hideHeader} />}>
+        <MarketingShellContent className={className} hideHeader={hideHeader}>
+          {children}
+        </MarketingShellContent>
       </Suspense>
       <SiteFooter variant="marketing" />
     </div>

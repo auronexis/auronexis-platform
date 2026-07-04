@@ -1,5 +1,11 @@
 import { API_BASE_PATH } from "@/lib/api/versioning/constants";
 import { COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/company/contact";
+import type { MarketingAuthState } from "@/lib/marketing/auth-context";
+import { resolvePublicAppShortcut } from "@/lib/marketing/auth-context";
+import {
+  buildStandalonePublicHeaderHtml,
+  STANDALONE_PUBLIC_HEADER_STYLES,
+} from "@/lib/marketing/public-header-html";
 import { WEBHOOK_EVENTS } from "@/lib/webhooks/types";
 
 const FEATURED_SCOPES = [
@@ -25,8 +31,9 @@ const FEATURED_ENDPOINTS = [
 ] as const;
 
 /** Self-contained dark HTML for /api/docs — no client JS or external CSS required. */
-export function buildPublicApiDocsHtml(): string {
+export function buildPublicApiDocsHtml(auth: MarketingAuthState): string {
   const year = new Date().getFullYear();
+  const appShortcut = resolvePublicAppShortcut(auth);
 
   const scopeRows = FEATURED_SCOPES.map(
     (scope) => `<tr><td><code>${scope}</code></td></tr>`,
@@ -72,7 +79,8 @@ export function buildPublicApiDocsHtml(): string {
     a { color: var(--primary); text-decoration: none; }
     a:hover { color: var(--primary-hover); text-decoration: underline; }
     .wrap { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem; }
-    header {
+    ${STANDALONE_PUBLIC_HEADER_STYLES}
+    .page-hero {
       border-bottom: 1px solid var(--border);
       background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
       padding: 1.5rem 0 1.75rem;
@@ -222,7 +230,8 @@ export function buildPublicApiDocsHtml(): string {
   </style>
 </head>
 <body>
-  <header>
+  ${buildStandalonePublicHeaderHtml(auth)}
+  <div class="page-hero">
     <div class="wrap">
       <p class="eyebrow">REST API</p>
       <h1>Auroranexis API</h1>
@@ -230,10 +239,10 @@ export function buildPublicApiDocsHtml(): string {
       <div class="actions">
         <a class="btn btn-primary" href="/docs/api">Open full API documentation</a>
         <a class="btn" href="/api/docs/openapi">OpenAPI JSON</a>
-        <a class="btn" href="/login">Sign in</a>
+        <a class="btn" href="${appShortcut.href}">${appShortcut.label}</a>
       </div>
     </div>
-  </header>
+  </div>
 
   <main>
     <div class="wrap">

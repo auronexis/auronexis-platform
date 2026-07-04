@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  BookOpen,
-  ScrollText,
-} from "lucide-react";
+import { Suspense } from "react";
+import { BookOpen, ScrollText } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { PublicAppLink } from "@/components/marketing/public-app-link";
 import { COMPANY_NAME, DOCS_URL, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { DOCS_HUB_DOC, DOC_HUB_CARDS } from "@/lib/docs/registry";
@@ -43,10 +41,13 @@ export default function DocsHubPage() {
               {DOCS_HUB_DOC.intro}
             </p>
           </div>
-          <Link href="/login" className="inline-flex shrink-0 items-center gap-1.5 text-sm text-white hover:underline">
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            App
-          </Link>
+          <Suspense
+            fallback={
+              <span className="inline-flex shrink-0 items-center gap-1.5 text-sm text-white/60">App</span>
+            }
+          >
+            <PublicAppLink className="inline-flex shrink-0 items-center gap-1.5 text-sm text-white hover:underline" />
+          </Suspense>
         </div>
       </section>
 

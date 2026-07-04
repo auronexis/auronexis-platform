@@ -168,3 +168,49 @@ export function resolveAuthenticatedMarketingLink(
 
   return remapPublicHrefForAuthenticated(href);
 }
+
+export type MarketingHeaderNavLink = {
+  href: string;
+  label: string;
+  variant: "primary" | "secondary" | "text";
+};
+
+/** Shared header nav links for marketing shell and standalone public HTML pages. */
+export function getMarketingHeaderNavLinks(auth: MarketingAuthState): {
+  logoHref: string;
+  workspaceName?: string;
+  links: MarketingHeaderNavLink[];
+} {
+  const actions = resolveMarketingHeaderActions(auth);
+
+  if (actions.isAuthenticated) {
+    return {
+      logoHref: "/dashboard",
+      workspaceName: actions.workspaceName,
+      links: [
+        { href: actions.billingHref, label: "Billing", variant: "text" },
+        { href: actions.settingsHref, label: "Settings", variant: "text" },
+        { href: actions.supportHref, label: "Support", variant: "text" },
+        { href: actions.enterpriseHref, label: "Enterprise", variant: "text" },
+        { href: actions.dashboardHref, label: actions.dashboardLabel, variant: "primary" },
+      ],
+    };
+  }
+
+  return {
+    logoHref: MARKETING_ROUTES.home,
+    links: [
+      { href: actions.signInHref, label: actions.signInLabel, variant: "text" },
+      { href: actions.signupHref, label: actions.signupLabel, variant: "primary" },
+    ],
+  };
+}
+
+/** Auth-aware app shortcut used on docs hub pages. */
+export function resolvePublicAppShortcut(auth: MarketingAuthState): { href: string; label: string } {
+  if (auth.isAuthenticated) {
+    return { href: "/dashboard", label: "Return to workspace" };
+  }
+
+  return { href: "/login", label: "Sign in" };
+}
