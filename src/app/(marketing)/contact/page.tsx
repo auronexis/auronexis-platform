@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { ContactForm } from "@/components/marketing/contact-form";
 import { DemoBookingForm } from "@/components/marketing/demo-booking-form";
+import { HideWhenAuthenticated } from "@/components/marketing/hide-when-authenticated";
 import { ReferralLeadForm } from "@/components/marketing/referral-lead-form";
 import { MarketingHero, MarketingSection } from "@/components/marketing/marketing-sections";
 import { CONTACT_EMAILS } from "@/lib/marketing/content";
@@ -36,11 +37,13 @@ export default function ContactPage() {
           ))}
         </div>
       </MarketingSection>
-      <MarketingSection title="Book a demo" className="border-t border-white/10 bg-white/[0.02]">
-        <div className="max-w-2xl">
-          <DemoBookingForm />
-        </div>
-      </MarketingSection>
+      <HideWhenAuthenticated>
+        <MarketingSection title="Book a demo" className="border-t border-white/10 bg-white/[0.02]">
+          <div className="max-w-2xl">
+            <DemoBookingForm />
+          </div>
+        </MarketingSection>
+      </HideWhenAuthenticated>
       <MarketingSection title="Partner referral" className="border-t border-white/10 bg-white/[0.02]">
         <div className="max-w-2xl">
           <ReferralLeadForm />

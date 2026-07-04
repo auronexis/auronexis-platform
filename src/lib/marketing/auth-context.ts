@@ -1,3 +1,4 @@
+import { MARKETING_NAV } from "@/lib/marketing/content";
 import { MARKETING_ROUTES } from "@/lib/company/contact";
 import {
   ENTERPRISE_BILLING_CONTACT_PATH,
@@ -26,7 +27,7 @@ export function resolveMarketingHeaderActions(auth: MarketingAuthState) {
     return {
       isAuthenticated: true as const,
       dashboardHref: "/dashboard",
-      dashboardLabel: "Return to workspace",
+      dashboardLabel: "Dashboard",
       workspaceName: auth.organizationName,
       billingHref: "/settings/billing",
       settingsHref: "/settings",
@@ -46,8 +47,14 @@ export function resolveMarketingHeaderActions(auth: MarketingAuthState) {
 
 const PUBLIC_AUTH_PATHS = new Set(["/login", "/signup", "/register"]);
 
-const PUBLIC_SIGNUP_LABELS = [/start free trial/i, /get started/i, /^sign up$/i];
-const PUBLIC_SIGNIN_LABELS = [/^sign in$/i];
+const PUBLIC_SIGNUP_LABELS = [
+  /start free trial/i,
+  /get started/i,
+  /^sign up$/i,
+  /try for free/i,
+  /book demo/i,
+];
+const PUBLIC_SIGNIN_LABELS = [/^sign in$/i, /^login$/i];
 
 export function remapPublicHrefForAuthenticated(href: string): string {
   if (href === MARKETING_ROUTES.contact || href === "/contact") {
@@ -99,7 +106,7 @@ export function resolveMarketingHeroActions(
 
   if (primaryIsPublicAuth) {
     primaryHref = "/dashboard";
-    primaryLabel = "Return to workspace";
+    primaryLabel = "Dashboard";
   } else if (primaryIsContactMessage) {
     primaryHref = SUPPORT_BILLING_CONTACT_PATH;
     primaryLabel = "Contact support";
@@ -140,7 +147,7 @@ export function resolveMarketingCtaActions(
     PUBLIC_AUTH_PATHS.has(props.href) || PUBLIC_SIGNUP_LABELS.some((pattern) => pattern.test(props.label));
 
   if (isPublicSignup) {
-    return { href: "/dashboard", label: "Return to workspace" };
+    return { href: "/dashboard", label: "Dashboard" };
   }
 
   return {
@@ -175,42 +182,92 @@ export type MarketingHeaderNavLink = {
   variant: "primary" | "secondary" | "text";
 };
 
-/** Shared header nav links for marketing shell and standalone public HTML pages. */
-export function getMarketingHeaderNavLinks(auth: MarketingAuthState): {
+export type PublicHeaderVariant = "marketing" | "compact";
+
+export type PublicHeaderNav = {
   logoHref: string;
   workspaceName?: string;
-  links: MarketingHeaderNavLink[];
-} {
+  navLinks: MarketingHeaderNavLink[];
+  actionLinks: MarketingHeaderNavLink[];
+};
+
+const DOCS_NAV_LINK: MarketingHeaderNavLink = { href: "/docs", label: "Docs", variant: "text" };
+const PRICING_NAV_LINK: MarketingHeaderNavLink = {
+  href: "/pricing",
+  label: "Pricing",
+  variant: "text",
+};
+const SUPPORT_NAV_LINK: MarketingHeaderNavLink = {
+  href: "/settings/support",
+  label: "Support",
+  variant: "text",
+};
+const DASHBOARD_NAV_LINK: MarketingHeaderNavLink = {
+  href: "/dashboard",
+  label: "Dashboard",
+  variant: "primary",
+};
+
+/** Shared public header navigation for React shells and standalone HTML pages. */
+export function getPublicHeaderNavLinks(
+  auth: MarketingAuthState,
+  variant: PublicHeaderVariant = "marketing",
+): PublicHeaderNav {
   const actions = resolveMarketingHeaderActions(auth);
 
   if (actions.isAuthenticated) {
     return {
       logoHref: "/dashboard",
       workspaceName: actions.workspaceName,
-      links: [
-        { href: actions.billingHref, label: "Billing", variant: "text" },
-        { href: actions.settingsHref, label: "Settings", variant: "text" },
-        { href: actions.supportHref, label: "Support", variant: "text" },
-        { href: actions.enterpriseHref, label: "Enterprise", variant: "text" },
-        { href: actions.dashboardHref, label: actions.dashboardLabel, variant: "primary" },
-      ],
+      navLinks: [DOCS_NAV_LINK, PRICING_NAV_LINK, SUPPORT_NAV_LINK],
+      actionLinks: [DASHBOARD_NAV_LINK],
+    };
+  }
+
+  const anonymousActions: MarketingHeaderNavLink[] = [
+    { href: actions.signInHref, label: actions.signInLabel, variant: "text" },
+    { href: actions.signupHref, label: actions.signupLabel, variant: "primary" },
+  ];
+
+  if (variant === "compact") {
+    return {
+      logoHref: MARKETING_ROUTES.home,
+      navLinks: [DOCS_NAV_LINK, PRICING_NAV_LINK],
+      actionLinks: anonymousActions,
     };
   }
 
   return {
     logoHref: MARKETING_ROUTES.home,
-    links: [
-      { href: actions.signInHref, label: actions.signInLabel, variant: "text" },
-      { href: actions.signupHref, label: actions.signupLabel, variant: "primary" },
-    ],
+    navLinks: MARKETING_NAV.map((item) => ({
+      href: item.href,
+      label: item.label,
+      variant: "text" as const,
+    })),
+    actionLinks: anonymousActions,
+  };
+}
+
+/** @deprecated Use getPublicHeaderNavLinks instead. */
+export function getMarketingHeaderNavLinks(auth: MarketingAuthState) {
+  const header = getPublicHeaderNavLinks(auth, "compact");
+  return {
+    logoHref: header.logoHref,
+    workspaceName: header.workspaceName,
+    links: [...header.navLinks, ...header.actionLinks],
   };
 }
 
 /** Auth-aware app shortcut used on docs hub pages. */
 export function resolvePublicAppShortcut(auth: MarketingAuthState): { href: string; label: string } {
   if (auth.isAuthenticated) {
-    return { href: "/dashboard", label: "Return to workspace" };
+    return { href: "/dashboard", label: "Dashboard" };
   }
 
   return { href: "/login", label: "Sign in" };
+}
+
+/** Returns true when anonymous-only CTA copy must not render. */
+export function isPublicAnonymousCtaHidden(auth: MarketingAuthState): boolean {
+  return auth.isAuthenticated;
 }

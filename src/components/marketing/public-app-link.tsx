@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getSession } from "@/lib/auth/session";
-import { getMarketingAuthState, resolvePublicAppShortcut } from "@/lib/marketing/auth-context";
+import { getPublicNavState } from "@/lib/marketing/public-nav";
+import { resolvePublicAppShortcut } from "@/lib/marketing/auth-context";
 
 type PublicAppLinkProps = {
   className?: string;
@@ -9,8 +9,7 @@ type PublicAppLinkProps = {
 
 /** Auth-aware shortcut from public docs pages back to the workspace or sign-in. */
 export async function PublicAppLink({ className }: PublicAppLinkProps) {
-  const session = await getSession();
-  const auth = getMarketingAuthState(session);
+  const auth = await getPublicNavState();
   const shortcut = resolvePublicAppShortcut(auth);
 
   return (

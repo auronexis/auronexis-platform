@@ -1,7 +1,6 @@
 import { API_BASE_PATH } from "@/lib/api/versioning/constants";
 import { COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/company/contact";
 import type { MarketingAuthState } from "@/lib/marketing/auth-context";
-import { resolvePublicAppShortcut } from "@/lib/marketing/auth-context";
 import {
   buildStandalonePublicHeaderHtml,
   STANDALONE_PUBLIC_HEADER_STYLES,
@@ -33,7 +32,6 @@ const FEATURED_ENDPOINTS = [
 /** Self-contained dark HTML for /api/docs — no client JS or external CSS required. */
 export function buildPublicApiDocsHtml(auth: MarketingAuthState): string {
   const year = new Date().getFullYear();
-  const appShortcut = resolvePublicAppShortcut(auth);
 
   const scopeRows = FEATURED_SCOPES.map(
     (scope) => `<tr><td><code>${scope}</code></td></tr>`,
@@ -239,7 +237,6 @@ export function buildPublicApiDocsHtml(auth: MarketingAuthState): string {
       <div class="actions">
         <a class="btn btn-primary" href="/docs/api">Open full API documentation</a>
         <a class="btn" href="/api/docs/openapi">OpenAPI JSON</a>
-        <a class="btn" href="${appShortcut.href}">${appShortcut.label}</a>
       </div>
     </div>
   </div>

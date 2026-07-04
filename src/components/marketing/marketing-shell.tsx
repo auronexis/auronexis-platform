@@ -2,8 +2,7 @@ import { Suspense, type ReactNode } from "react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingAuthProvider } from "@/components/marketing/marketing-auth-provider";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { getSession } from "@/lib/auth/session";
-import { getMarketingAuthState } from "@/lib/marketing/auth-context";
+import { getPublicNavState } from "@/lib/marketing/public-nav";
 import { cn } from "@/lib/utils/cn";
 
 type MarketingShellProps = {
@@ -33,8 +32,7 @@ async function MarketingShellContent({
   className,
   hideHeader = false,
 }: MarketingShellProps) {
-  const session = await getSession();
-  const auth = getMarketingAuthState(session);
+  const auth = await getPublicNavState();
 
   return (
     <>

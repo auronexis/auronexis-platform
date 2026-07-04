@@ -3,11 +3,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { AppUser, Organization } from "@/types/database";
-/**
- * Load the authenticated user, application profile, and organization.
- * Cached per request — safe to call from layouts and Server Components.
- */
-export const getSession = cache(async (): Promise<SessionContext | null> => {
+
+/** Load session from Supabase cookies — safe for route handlers and server components. */
+export async function readSessionContext(): Promise<SessionContext | null> {
   const supabase = await createClient();
 
   const {
@@ -49,7 +47,13 @@ export const getSession = cache(async (): Promise<SessionContext | null> => {
     organization,
     role: appUser.role,
   };
-});
+}
+
+/**
+ * Load the authenticated user, application profile, and organization.
+ * Cached per request — safe to call from layouts and Server Components.
+ */
+export const getSession = cache(readSessionContext);
 
 /** Require an authenticated session or redirect to login. */
 export async function requireSession(): Promise<SessionContext> {

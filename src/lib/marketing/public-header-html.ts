@@ -1,52 +1,43 @@
 import {
-  getMarketingHeaderNavLinks,
+  getPublicHeaderNavLinks,
   type MarketingAuthState,
 } from "@/lib/marketing/auth-context";
 
+function renderNavLink(link: { href: string; label: string }, className: string): string {
+  return `<a class="${className}" href="${link.href}">${escapeHtml(link.label)}</a>`;
+}
+
 /** Sticky public header HTML for standalone pages such as /api/docs. */
 export function buildStandalonePublicHeaderHtml(auth: MarketingAuthState): string {
-  const nav = getMarketingHeaderNavLinks(auth);
-  const textLinks = nav.links.filter((link) => link.variant === "text");
-  const primaryLink = nav.links.find((link) => link.variant === "primary");
+  const header = getPublicHeaderNavLinks(auth, "compact");
 
-  const desktopNavLinks = auth.isAuthenticated
-    ? textLinks
-        .map(
-          (link) =>
-            `<a class="site-nav-link" href="${link.href}">${escapeHtml(link.label)}</a>`,
-        )
-        .join("")
-    : "";
+  const navHtml = header.navLinks
+    .map((link) => renderNavLink(link, "site-nav-link"))
+    .join("");
 
-  const actionTextLinks = auth.isAuthenticated
-    ? ""
-    : textLinks
-        .map(
-          (link) =>
-            `<a class="site-action-link" href="${link.href}">${escapeHtml(link.label)}</a>`,
-        )
-        .join("");
+  const actionsHtml = header.actionLinks
+    .map((link) =>
+      link.variant === "primary"
+        ? renderNavLink(link, "site-btn-primary")
+        : renderNavLink(link, "site-action-link"),
+    )
+    .join("");
 
-  return `<div class="site-header">
+  return `<div class="site-header site-header--compact">
   <div class="site-header-inner">
-    <a class="site-logo" href="${nav.logoHref}" aria-label="Auroranexis home">
+    <a class="site-logo" href="${header.logoHref}" aria-label="Auroranexis home">
       <img src="/branding/logo-horizontal-transparent.png" alt="Auroranexis logo" width="170" height="44" />
     </a>
     <nav class="site-nav" aria-label="Primary">
-      ${desktopNavLinks}
+      ${navHtml}
     </nav>
     <div class="site-actions">
       ${
-        nav.workspaceName
-          ? `<span class="site-workspace">${escapeHtml(nav.workspaceName)}</span>`
+        header.workspaceName
+          ? `<span class="site-workspace">${escapeHtml(header.workspaceName)}</span>`
           : ""
       }
-      ${actionTextLinks}
-      ${
-        primaryLink
-          ? `<a class="site-btn-primary" href="${primaryLink.href}">${escapeHtml(primaryLink.label)}</a>`
-          : ""
-      }
+      ${actionsHtml}
     </div>
   </div>
 </div>`;
@@ -76,7 +67,8 @@ export const STANDALONE_PUBLIC_HEADER_STYLES = `
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 .site-logo {
   display: flex;
@@ -93,10 +85,12 @@ export const STANDALONE_PUBLIC_HEADER_STYLES = `
   object-position: left center;
 }
 .site-nav {
-  display: none;
+  display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.125rem;
   min-width: 0;
+  flex: 1 1 auto;
+  justify-content: center;
 }
 .site-nav-link {
   padding: 0.5rem 0.75rem;
@@ -105,6 +99,7 @@ export const STANDALONE_PUBLIC_HEADER_STYLES = `
   font-weight: 500;
   color: rgba(226, 232, 240, 0.82);
   text-decoration: none;
+  white-space: nowrap;
 }
 .site-nav-link:hover {
   color: #fff;
@@ -115,6 +110,7 @@ export const STANDALONE_PUBLIC_HEADER_STYLES = `
   align-items: center;
   gap: 0.5rem;
   shrink: 0;
+  margin-left: auto;
 }
 .site-action-link {
   padding: 0.5rem 0.75rem;
@@ -123,6 +119,7 @@ export const STANDALONE_PUBLIC_HEADER_STYLES = `
   font-weight: 500;
   color: rgba(226, 232, 240, 0.82);
   text-decoration: none;
+  white-space: nowrap;
 }
 .site-action-link:hover {
   color: #fff;
@@ -148,6 +145,7 @@ export const STANDALONE_PUBLIC_HEADER_STYLES = `
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
 }
 .site-btn-primary:hover {
   background: var(--primary-hover);
@@ -155,7 +153,8 @@ export const STANDALONE_PUBLIC_HEADER_STYLES = `
   text-decoration: none;
 }
 @media (min-width: 768px) {
-  .site-nav { display: flex; }
   .site-workspace { display: inline; }
+  .site-header--compact .site-header-inner { flex-wrap: nowrap; }
+  .site-header--compact .site-nav { justify-content: flex-start; flex: 0 1 auto; }
 }
 `;

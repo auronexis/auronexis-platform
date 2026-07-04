@@ -69,7 +69,7 @@ export default defineConfig({
     },
     {
       name: "chromium-auth",
-      testMatch: /(flows|staging|z-logout)\.spec\.ts/,
+      testMatch: /(flows|staging|z-logout|public-nav-authenticated)\.spec\.ts/,
       dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
@@ -78,7 +78,7 @@ export default defineConfig({
     },
     {
       name: "chromium-smoke",
-      testMatch: /smoke\.spec\.ts/,
+      testMatch: /(smoke|public-nav-anonymous)\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
   ],
