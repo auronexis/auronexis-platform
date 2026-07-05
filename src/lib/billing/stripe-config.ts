@@ -2,7 +2,8 @@ import "server-only";
 
 import type { PlanKey } from "@/lib/billing/plans";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
-import type { StripeEnvDiagnostics } from "@/lib/diagnostics/types";;
+import type { StripeEnvDiagnostics } from "@/lib/diagnostics/types";
+import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
 
 const CHECKOUT_ENV_CHECKS = [
   "secretKey",
