@@ -2,7 +2,7 @@ import "server-only";
 
 import type { PlanKey } from "@/lib/billing/plans";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
-import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
+import type { StripeEnvDiagnostics } from "@/lib/diagnostics/types";;
 
 const CHECKOUT_ENV_CHECKS = [
   "secretKey",
@@ -10,7 +10,7 @@ const CHECKOUT_ENV_CHECKS = [
   "starterPriceId",
   "professionalPriceId",
   "businessPriceId",
-];
+] as const satisfies readonly (keyof StripeEnvDiagnostics)[];
 
 /** Log missing Stripe env vars server-side — never shown in customer UI. */
 export function logStripeEnvGaps(context = "billing"): void {
