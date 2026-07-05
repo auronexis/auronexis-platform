@@ -47,7 +47,7 @@ export function getStripeSecretKey(): string {
 
 /** Stripe webhook signing secret — server-only. */
 export function getStripeWebhookSecret(): string {
-  return requireEnv("STRIPE_WEBHOOK_SECRET");
+  return requireEnv("STRIPE_WEBHOOK_SECRET").trim();
 }
 
 /** Stripe publishable key — safe for client checkout elements. */

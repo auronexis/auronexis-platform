@@ -5,6 +5,20 @@
       "schedule": "*/15 * * * *"
     }
   ],
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "auroranexis.com" }],
+      "destination": "https://www.auroranexis.com/",
+      "permanent": true
+    },
+    {
+      "source": "/:path((?!api/).*)",
+      "has": [{ "type": "host", "value": "auroranexis.com" }],
+      "destination": "https://www.auroranexis.com/:path",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/api/health",

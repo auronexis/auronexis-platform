@@ -7,6 +7,7 @@ import {
   isMarketingPublicPath,
   isPortalLoginPath,
 } from "@/lib/deployment/domain-routing";
+import { isApiRoute, shouldBypassSessionMiddleware } from "@/lib/deployment/middleware-routing";
 import type { Database } from "@/types/database";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 
@@ -21,16 +22,7 @@ function isPublicPath(pathname: string): boolean {
     return true;
   }
 
-  if (
-    pathname === "/api/health" ||
-    pathname === "/api/status" ||
-    pathname === "/api/ready" ||
-    pathname.startsWith("/api/stripe/webhook") ||
-    pathname.startsWith("/api/cron/run") ||
-    pathname.startsWith("/api/v1/") ||
-    pathname === "/api/docs" ||
-    pathname.startsWith("/api/docs/")
-  ) {
+  if (isApiRoute(pathname)) {
     return true;
   }
 
@@ -44,6 +36,12 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (shouldBypassSessionMiddleware(pathname)) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -76,7 +74,6 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
   const isAuthRoute = isAuthPath(pathname);
   const isPublicRoute =
     isPublicPath(pathname) || isPortalLoginPath(pathname) || isAuthRoute;

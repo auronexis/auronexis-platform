@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getStripeWebhookSecret } from "@/lib/env";
 import { getStripeClient } from "@/lib/stripe/client";
 import {
   ensureStripeIdempotency,
@@ -10,47 +9,87 @@ import { handleStripeWebhookEvent } from "@/lib/stripe/webhooks";
 
 export const runtime = "nodejs";
 
+function webhookSecretPrefix(secret: string): string {
+  if (secret.startsWith("whsec_")) {
+    return `${secret.slice(0, 12)}...`;
+  }
+  return "(unexpected format)";
+}
+
+function logWebhookDiagnostics(input: {
+  webhookSecret: string | null | undefined;
+  signature: string | null;
+  eventType?: string;
+  note?: string;
+}): void {
+  console.info("[stripe] webhook diagnostics", {
+    webhookSecretConfigured: Boolean(input.webhookSecret?.trim()),
+    webhookSecretPrefix: input.webhookSecret?.trim()
+      ? webhookSecretPrefix(input.webhookSecret.trim())
+      : null,
+    stripeSignaturePresent: Boolean(input.signature),
+    eventType: input.eventType ?? null,
+    note: input.note ?? null,
+  });
+}
+
 /** Stripe webhook endpoint — verifies signatures and syncs subscription state. */
 export async function POST(request: Request): Promise<Response> {
-  let webhookSecret: string;
+  console.log("STRIPE_WEBHOOK_SECRET loaded:", !!process.env.STRIPE_WEBHOOK_SECRET);
+  console.log("secret prefix:", process.env.STRIPE_WEBHOOK_SECRET?.slice(0, 8));
 
-  try {
-    webhookSecret = getStripeWebhookSecret();
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Stripe webhook is not configured.";
-    console.error("[stripe] webhook misconfigured:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+
+  if (!webhookSecret) {
+    console.error("[stripe] Missing STRIPE_WEBHOOK_SECRET");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+
+  const body = await request.text();
+  const signature = request.headers.get("stripe-signature");
+
+  logWebhookDiagnostics({ webhookSecret, signature, note: "incoming request" });
+
+  if (!signature) {
+    return NextResponse.json({ error: "Missing Stripe signature" }, { status: 400 });
   }
 
   const stripe = getStripeClient();
-  const signature = request.headers.get("stripe-signature");
-
-  if (!signature) {
-    return NextResponse.json({ error: "Missing Stripe signature." }, { status: 400 });
-  }
-
-  const payload = await request.text();
-
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid webhook signature.";
     console.error("[stripe] webhook verification failed:", message);
+    logWebhookDiagnostics({
+      webhookSecret,
+      signature,
+      note: `constructEvent failed: ${message}`,
+    });
     return NextResponse.json({ error: message }, { status: 400 });
   }
+
+  logWebhookDiagnostics({
+    webhookSecret,
+    signature,
+    eventType: event.type,
+    note: "signature verified",
+  });
 
   const idempotency = await ensureStripeIdempotency(event);
 
   if (idempotency.status === "duplicate") {
-    return NextResponse.json({ received: true, duplicate: true });
+    return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
   }
 
   try {
-    await handleStripeWebhookEvent(event);
+    const handled = await handleStripeWebhookEvent(event);
     await markStripeEventProcessed(event.id, event.type);
+
+    if (!handled) {
+      return NextResponse.json({ received: true, ignored: true }, { status: 200 });
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Webhook handler failed.";
     console.error("[stripe] webhook handler failed:", message);
@@ -58,8 +97,16 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 
-  return NextResponse.json({
-    received: true,
-    retried: idempotency.status === "retry",
-  });
+  return NextResponse.json(
+    {
+      received: true,
+      retried: idempotency.status === "retry",
+    },
+    { status: 200 },
+  );
+}
+
+/** Stripe probes with GET — return 405; POST is the only supported method. */
+export async function GET(): Promise<Response> {
+  return NextResponse.json({ error: "Method not allowed." }, { status: 405 });
 }

@@ -350,8 +350,8 @@ async function handleInvoicePaymentFailed(
   });
 }
 
-/** Process a verified Stripe webhook event. */
-export async function handleStripeWebhookEvent(event: Stripe.Event): Promise<void> {
+/** Process a verified Stripe webhook event. Returns false for unsupported event types. */
+export async function handleStripeWebhookEvent(event: Stripe.Event): Promise<boolean> {
   const stripeEventId = event.id;
 
   switch (event.type) {
@@ -360,7 +360,7 @@ export async function handleStripeWebhookEvent(event: Stripe.Event): Promise<voi
         event.data.object as Stripe.Checkout.Session,
         stripeEventId,
       );
-      break;
+      return true;
     case "customer.subscription.created":
     case "customer.subscription.updated":
       await handleSubscriptionUpsert(
@@ -368,17 +368,17 @@ export async function handleStripeWebhookEvent(event: Stripe.Event): Promise<voi
         event.type,
         stripeEventId,
       );
-      break;
+      return true;
     case "customer.subscription.deleted":
       await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, stripeEventId);
-      break;
+      return true;
     case "invoice.payment_succeeded":
       await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice, stripeEventId);
-      break;
+      return true;
     case "invoice.payment_failed":
       await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice, stripeEventId);
-      break;
+      return true;
     default:
-      break;
+      return false;
   }
 }

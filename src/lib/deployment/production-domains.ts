@@ -10,13 +10,15 @@ export type ProductionDomainKey = keyof typeof PRODUCTION_DOMAINS;
 
 export const PRODUCTION_DOMAIN_LIST = Object.values(PRODUCTION_DOMAINS);
 
-/** Canonical redirect rules — configure in Vercel Domains only (not next.config). */
+/** Canonical redirect rules — apex → www for marketing; never redirect /api/* (Stripe webhooks). */
 export const PRODUCTION_DOMAIN_REDIRECTS = [
   {
-    sourceHost: PRODUCTION_DOMAINS.www,
-    destination: `https://${PRODUCTION_DOMAINS.apex}`,
+    sourceHost: PRODUCTION_DOMAINS.apex,
+    destination: `https://${PRODUCTION_DOMAINS.www}`,
     permanent: true,
-    description: "WWW → apex (Vercel Domains UI — do not duplicate in next.config).",
+    excludePathPrefixes: ["/api/"] as const,
+    description:
+      "Marketing apex → www. API routes must stay on the requested host. Disable the blanket apex redirect in Vercel Domains and use vercel.json redirects instead.",
   },
 ] as const;
 
