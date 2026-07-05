@@ -111,12 +111,12 @@ export async function createCheckoutSessionAction(
 
     });
 
-  } catch (error) {
+    } catch (error) {
+    console.error("[billing][checkout] failed", error);
 
     return {
       error: sanitizeBillingCustomerError(error, "Unable to start checkout."),
     };
-
   }
 
 
