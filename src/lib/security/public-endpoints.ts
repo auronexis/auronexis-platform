@@ -20,6 +20,12 @@ export const PUBLIC_ENDPOINT_REGISTRY: PublicEndpointProtection[] = [
     authenticated: false,
   },
   {
+    path: "/api/stripe/webhook-v2",
+    methods: ["POST"],
+    protection: "Stripe signature (STRIPE_WEBHOOK_SECRET_V2) + idempotency table",
+    authenticated: false,
+  },
+  {
     path: "/api/cron/run",
     methods: ["GET", "POST"],
     protection: "Bearer CRON_SECRET required",

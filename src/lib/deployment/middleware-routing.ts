@@ -7,7 +7,11 @@ export function isApiRoute(pathname: string): boolean {
 }
 
 export function isStripeWebhookRoute(pathname: string): boolean {
-  return pathname === "/api/stripe/webhook" || pathname.startsWith("/api/stripe/");
+  return (
+    pathname === "/api/stripe/webhook" ||
+    pathname === "/api/stripe/webhook-v2" ||
+    pathname.startsWith("/api/stripe/")
+  );
 }
 
 export function isInboundWebhookRoute(pathname: string): boolean {
