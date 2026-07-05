@@ -10,8 +10,7 @@ const CHECKOUT_ENV_CHECKS = [
   "starterPriceId",
   "professionalPriceId",
   "businessPriceId",
-  "webhookSecret",
-] as const;
+];
 
 /** Log missing Stripe env vars server-side — never shown in customer UI. */
 export function logStripeEnvGaps(context = "billing"): void {
