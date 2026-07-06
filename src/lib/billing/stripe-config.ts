@@ -4,6 +4,7 @@ import type { PlanKey } from "@/lib/billing/plans";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import type { StripeEnvDiagnostics } from "@/lib/diagnostics/types";
 import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
+import { isStripePortalCancellationEnabled } from "@/lib/stripe/portal-config";
 
 const CHECKOUT_ENV_CHECKS = [
   "secretKey",
@@ -32,12 +33,26 @@ export function getStripeBillingUiStatus(): StripeBillingUiStatus {
   return {
     checkoutAvailable,
     portalAvailable: env.secretKey.present,
+    portalCancellationAvailable: false,
     planCheckoutReady: {
       starter: checkoutAvailable && env.starterPriceId.present,
       professional: checkoutAvailable && env.professionalPriceId.present,
       business: checkoutAvailable && env.businessPriceId.present,
       enterprise: false,
     },
+  };
+}
+
+/** Billing UI status including live Stripe Customer Portal feature flags. */
+export async function getStripeBillingUiStatusWithPortalFeatures(): Promise<StripeBillingUiStatus> {
+  const base = getStripeBillingUiStatus();
+  const portalCancellationAvailable = base.portalAvailable
+    ? await isStripePortalCancellationEnabled()
+    : false;
+
+  return {
+    ...base,
+    portalCancellationAvailable,
   };
 }
 

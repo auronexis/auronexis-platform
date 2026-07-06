@@ -6,7 +6,7 @@ import {
   SUPPORT_CONTACT_CARD,
 } from "@/lib/billing/billing-contact";
 import { getBillingDashboardData } from "@/lib/billing/queries";
-import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
+import { getStripeBillingUiStatusWithPortalFeatures } from "@/lib/billing/stripe-config";
 import { syncCheckoutSessionForOrganization } from "@/lib/stripe/checkout-sync";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
@@ -41,7 +41,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
   const session = await requireSession();
   const canManage = canManageOrganizationSettings(session);
   const params = await searchParams;
-  const stripeStatus = getStripeBillingUiStatus();
+  const stripeStatus = await getStripeBillingUiStatusWithPortalFeatures();
 
   let checkoutSuccessMessage: string | null = null;
 

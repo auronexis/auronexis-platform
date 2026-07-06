@@ -154,6 +154,9 @@ export function BillingSettingsPanel({
   const usingStarterFallback =
     planUsage.plan.planSource === "starter_fallback" ||
     planUsage.plan.planSource === "unmapped_price_id";
+  const showSubscriptionManagement = canManage && overview.isUsable && showPortal;
+  const showCancelSubscription =
+    showSubscriptionManagement && stripeStatus.portalCancellationAvailable;
 
   const runPortal = () => {
     setActionError(null);
@@ -198,6 +201,15 @@ export function BillingSettingsPanel({
           Checkout was cancelled. No changes were made to your subscription.
         </FormAlert>
       ) : null}
+      {overview.isCanceled ? (
+        <FormAlert variant="warning">Subscription canceled</FormAlert>
+      ) : null}
+      {overview.cancelAtPeriodEnd && overview.scheduledCancellationDate ? (
+        <FormAlert variant="warning">
+          Your subscription will end on {overview.scheduledCancellationDate}. You keep access until
+          then.
+        </FormAlert>
+      ) : null}
       {billingContactCard ? <BillingContactCard card={billingContactCard} /> : null}
       {enterpriseStatus ? (
         <EnterpriseRequestCard
@@ -231,7 +243,7 @@ export function BillingSettingsPanel({
                 onClick={runPortal}
                 disabled={isPortalPending}
               >
-                Open billing portal
+                Open Billing Portal
               </button>
             </>
           ) : null}
@@ -280,17 +292,48 @@ export function BillingSettingsPanel({
             <span>{overview.statusLabel}</span>
             <StatusBadge tone={resolveStatusTone(overview)} label={overview.statusLabel} />
           </div>
-          {overview.cancelAtPeriodEnd ? (
-            <p className="text-warning">Cancellation scheduled at end of billing period.</p>
-          ) : null}
+          {overview.isCanceled ? <p className="text-muted">Subscription canceled</p> : null}
           {overview.trialEndsAt ? <p>Trial ends {formatBillingDateTime(overview.trialEndsAt) ?? "—"}</p> : null}
         </BillingCard>
         <BillingCard title="Billing period">
-          {overview.billingPeriodLabel ? <p>{overview.billingPeriodLabel}</p> : <p>No billing period on file.</p>}
-          <p>
-            Renewal date:{" "}
-            <span className="font-medium text-foreground">{overview.renewalDate ?? "—"}</span>
-          </p>
+          {overview.isUsable ? (
+            <>
+              {overview.billingPeriodLabel ? (
+                <p>
+                  Current period:{" "}
+                  <span className="font-medium text-foreground">{overview.billingPeriodLabel}</span>
+                </p>
+              ) : (
+                <p>No billing period on file.</p>
+              )}
+              <p>
+                Renewal date:{" "}
+                <span className="font-medium text-foreground">{overview.renewalDate ?? "—"}</span>
+              </p>
+              <p>
+                Cancel at period end:{" "}
+                <span className="font-medium text-foreground">
+                  {overview.cancelAtPeriodEnd ? "Yes" : "No"}
+                </span>
+              </p>
+              {overview.scheduledCancellationDate ? (
+                <p>
+                  Scheduled cancellation:{" "}
+                  <span className="font-medium text-foreground">
+                    {overview.scheduledCancellationDate}
+                  </span>
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <>
+              {overview.billingPeriodLabel ? <p>{overview.billingPeriodLabel}</p> : <p>No billing period on file.</p>}
+              <p>
+                Renewal date:{" "}
+                <span className="font-medium text-foreground">{overview.renewalDate ?? "—"}</span>
+              </p>
+            </>
+          )}
         </BillingCard>
         <BillingCard title="Payment status">
           <div className="flex items-center justify-between gap-3">
@@ -302,13 +345,18 @@ export function BillingSettingsPanel({
 
       <PlanUsageSummary summary={planUsage} seatUsage={seatUsage} />
 
-      {showPortal ? (
+      {showSubscriptionManagement ? (
         <PageSurface>
           <PageSurfaceHeading
-            title="Self-service billing"
-            description="Update payment methods, download invoices, and manage your subscription in Stripe."
+            title="Subscription management"
+            description="Manage your subscription, payment methods, and invoices in the Stripe Customer Portal."
           />
           {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
+          {!stripeStatus.portalCancellationAvailable ? (
+            <p className="text-sm text-muted">
+              Subscription cancellation is not currently available.
+            </p>
+          ) : null}
           <FormFooter className="border-t-0 pt-4">
             <Button
               type="button"
@@ -317,14 +365,24 @@ export function BillingSettingsPanel({
               loadingText="Opening…"
               onClick={runPortal}
             >
-              Open billing portal
+              Open Billing Portal
             </Button>
-            {overview.isUsable ? (
-              <Link href="/settings/plans">
-                <Button type="button" variant="secondary">
-                  Change plan
-                </Button>
-              </Link>
+            <Link href="/settings/plans">
+              <Button type="button" variant="secondary">
+                Change Plan
+              </Button>
+            </Link>
+            {showCancelSubscription ? (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={isPortalPending}
+                loading={isPortalPending}
+                loadingText="Opening…"
+                onClick={runPortal}
+              >
+                Cancel Subscription
+              </Button>
             ) : null}
           </FormFooter>
         </PageSurface>
@@ -404,9 +462,9 @@ export function BillingSettingsPanel({
         </PageSurface>
       ) : null}
 
-      {canManage ? (
+      {canManage && !showSubscriptionManagement ? (
         <PageSurface>
-          <PageSurfaceHeading title="Billing actions" description="Upgrade, downgrade, cancel, or manage payment methods." />
+          <PageSurfaceHeading title="Billing actions" description="Upgrade, downgrade, or manage payment methods." />
           {!showPortal && actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
           {!stripeStatus.portalAvailable ? (
             <p className="text-sm text-muted">Billing is currently unavailable.</p>
@@ -417,37 +475,37 @@ export function BillingSettingsPanel({
               subscription needs payment.
             </p>
           ) : null}
-          <FormFooter className="border-t-0 pt-0">
-            {!overview.isUsable ? (
+          {showPortal && !overview.isUsable ? (
+            <>
+              {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
+              <FormFooter className="border-t-0 pt-0">
+                <Button
+                  type="button"
+                  disabled={isPortalPending}
+                  loading={isPortalPending}
+                  loadingText="Opening…"
+                  onClick={runPortal}
+                >
+                  Open Billing Portal
+                </Button>
+              </FormFooter>
+            </>
+          ) : null}
+          {!overview.isUsable && !showPortal ? (
+            <FormFooter className="border-t-0 pt-0">
               <Link href="/settings/plans">
                 <Button type="button">Choose a plan</Button>
               </Link>
-            ) : (
-              <Link href="/settings/plans">
-                <Button type="button" variant={showPortal ? "secondary" : undefined}>
-                  Change plan
-                </Button>
-              </Link>
-            )}
-            <LinkButton href="/settings/usage" variant="secondary" size="md">
-              Usage dashboard
-            </LinkButton>
-            {showPortal ? (
-              <Button
-                type="button"
-                disabled={isPortalPending}
-                loading={isPortalPending}
-                loadingText="Opening…"
-                onClick={runPortal}
-              >
-                Open billing portal
-              </Button>
-            ) : null}
-          </FormFooter>
+              <LinkButton href="/settings/usage" variant="secondary" size="md">
+                Usage dashboard
+              </LinkButton>
+            </FormFooter>
+          ) : null}
         </PageSurface>
-      ) : (
+      ) : null}
+      {!canManage ? (
         <p className="text-sm text-muted">Billing management is limited to organization owners and admins.</p>
-      )}
+      ) : null}
 
       {canManage ? (
         <p className="text-xs text-muted">

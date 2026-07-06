@@ -7,6 +7,7 @@ import {
   isPaymentProblem,
   isSubscriptionInactive,
   isSubscriptionUsable,
+  isSubscriptionCanceled,
 } from "@/lib/billing/status";
 import { isActiveSubscriptionStatus } from "@/lib/stripe/types";
 
@@ -184,6 +185,9 @@ export type BillingOverview = {
   billingPeriodLabel: string | null;
   trialEndsAt: string | null;
   cancelAtPeriodEnd: boolean;
+  /** Formatted end date when cancellation is scheduled at period end. */
+  scheduledCancellationDate: string | null;
+  isCanceled: boolean;
 };
 
 export function formatBillingDate(value: string | null | undefined): string | null {
@@ -224,6 +228,7 @@ export function buildBillingOverview(
   const paymentPending = isPaymentPending(rawStatus);
   const isInactive = isSubscriptionInactive(rawStatus);
   const isActive = isActiveSubscriptionStatus(rawStatus);
+  const isCanceled = isSubscriptionCanceled(rawStatus);
 
   const planLabel = isUsable
     ? (currentPlanName ?? "Subscription")
@@ -254,6 +259,9 @@ export function buildBillingOverview(
     billingPeriodLabel,
     trialEndsAt: subscription?.trial_ends_at ?? null,
     cancelAtPeriodEnd: subscription?.cancel_at_period_end ?? false,
+    scheduledCancellationDate:
+      subscription?.cancel_at_period_end && billingPeriodEnd ? billingPeriodEnd : null,
+    isCanceled,
   };
 }
 
@@ -271,5 +279,7 @@ export function formatInvoiceDueLabel(invoice: CustomerInvoiceView): string {
 export type StripeBillingUiStatus = {
   checkoutAvailable: boolean;
   portalAvailable: boolean;
+  /** Stripe Customer Portal allows customers to cancel subscriptions. */
+  portalCancellationAvailable: boolean;
   planCheckoutReady: Record<PlanKey, boolean>;
 };

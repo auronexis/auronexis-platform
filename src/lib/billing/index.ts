@@ -33,6 +33,7 @@ export {
   normalizeSubscriptionStatus,
   isSubscriptionUsable,
   isSubscriptionInactive,
+  isSubscriptionCanceled,
   isPaymentProblem,
   isPaymentPending,
   getBillingStatusLabel,

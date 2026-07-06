@@ -42,6 +42,11 @@ export function isSubscriptionInactive(status: string | null | undefined): boole
   return INACTIVE_STATUSES.has(normalized) || normalized === "inactive";
 }
 
+export function isSubscriptionCanceled(status: string | null | undefined): boolean {
+  const normalized = normalizeSubscriptionStatus(status);
+  return normalized === "canceled" || normalized === "cancelled";
+}
+
 export function isPaymentProblem(status: string | null | undefined): boolean {
   return PAYMENT_PROBLEM_STATUSES.has(normalizeSubscriptionStatus(status));
 }
