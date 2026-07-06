@@ -114,13 +114,13 @@ export function getPlanByKey(key: PlanKey): SubscriptionPlanDefinition {
 export function resolvePlanActionLabel(
   targetKey: PlanKey,
   currentKey: PlanKey | null,
-  isActive: boolean,
+  isUsable: boolean,
 ): PlanActionLabel {
-  if (isActive && currentKey === targetKey) {
+  if (isUsable && currentKey === targetKey) {
     return "current";
   }
 
-  if (!isActive || !currentKey) {
+  if (!isUsable || !currentKey) {
     return "choose";
   }
 

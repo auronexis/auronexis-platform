@@ -29,8 +29,39 @@ export {
   BILLING_PLATFORM_VERSION,
   USAGE_METRIC_LABELS,
 } from "./types";
+export {
+  normalizeSubscriptionStatus,
+  isSubscriptionUsable,
+  isSubscriptionInactive,
+  isPaymentProblem,
+  isPaymentPending,
+  getBillingStatusLabel,
+  getBillingStatusTone,
+  getPaymentSummaryLabel,
+  findLatestOpenInvoice,
+  canOpenBillingPortal,
+  isUnpaidInvoice,
+  getInvoiceDisplayLabel,
+  formatMoneyFromCents,
+  shortenStripeId,
+} from "./status";
+export type { BillingStatusTone } from "./status";
 export { getUsageDashboardData, getCurrentUsageSummary } from "./usage";
 export { getBillingDiagnosticsSnapshot } from "./diagnostics";
+export { getBillingProductionDiagnostics } from "./production-diagnostics";
+export type { BillingProductionDiagnostics } from "./production-diagnostics";
+export {
+  classifySubscriptionRow,
+  classifyInvoiceRow,
+  classifyWebhookEventRow,
+  collectBillingSanityWarnings,
+  collectSubscriptionHygieneFlags,
+  getWebhookEventStatusLabel,
+  getSubscriptionHygieneLabel,
+  getInvoiceHygieneLabel,
+  maskStripeId,
+} from "./hygiene";
+export type { BillingHygieneFlag, BillingRowKind } from "./hygiene";
 export {
   assertUsageWithinLimit,
   checkUsageLimit,

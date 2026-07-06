@@ -2,7 +2,7 @@ import "server-only";
 
 import type { PlanKey } from "@/lib/billing/plans";
 import { getPlanKeyByPriceId, getPlanPriceId } from "@/lib/billing/plans.server";
-import { getOrganizationIdByStripeCustomerId } from "@/lib/stripe/customers";
+import { getOrganizationIdByStripeCustomerId, ensureSubscriptionCustomer } from "@/lib/stripe/customers";
 import { getStripeClient } from "@/lib/stripe/client";
 import {
   syncOrganizationPlan,
@@ -256,6 +256,12 @@ export async function applyCheckoutSessionToOrganization(
       trialEndsAt: null,
     });
 
+    await ensureSubscriptionCustomer({
+      organizationId,
+      status: "incomplete",
+      stripeCustomerIdHint: customerId,
+    });
+
     logCheckoutSync({
       checkoutSessionId: session.id,
       subscriptionId: null,
@@ -297,6 +303,13 @@ export async function applyCheckoutSessionToOrganization(
 
   await upsertOrganizationSubscription(syncInput);
   await syncOrganizationPlan(organizationId, subscription.status);
+
+  await ensureSubscriptionCustomer({
+    organizationId,
+    status: subscription.status,
+    stripeSubscriptionId: subscriptionId,
+    stripeCustomerIdHint: customerId ?? syncInput.stripeCustomerId,
+  });
 
   logCheckoutSync({
     checkoutSessionId: session.id,

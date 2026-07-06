@@ -17,14 +17,41 @@ import {
 } from "@/lib/diagnostics/pricing-reasons";
 import { getPricingPlanBlockReason } from "@/lib/plans/features";
 import { FormAlert } from "@/components/ui/form-alert";
+import type { BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
+import { findLatestOpenInvoice } from "@/lib/billing/status";
 
 export type PricingSelectionContext = {
   currentPlanKey: PlanKey | null;
-  isActive: boolean;
+  /** True when subscription is active or trialing (current plan badge). */
+  isUsable: boolean;
+  hasPaymentProblem: boolean;
+  isPaymentPending: boolean;
+  latestOpenInvoiceUrl: string | null;
   canManage: boolean;
   usedSeats: number;
   usedClients: number;
 };
+
+export function buildPricingSelectionContext(input: {
+  overview: BillingOverview;
+  invoices: CustomerInvoiceView[];
+  canManage: boolean;
+  usedSeats: number;
+  usedClients: number;
+}): PricingSelectionContext {
+  const latestOpen = findLatestOpenInvoice(input.invoices);
+
+  return {
+    currentPlanKey: input.overview.currentPlanKey,
+    isUsable: input.overview.isUsable,
+    hasPaymentProblem: input.overview.hasPaymentProblem,
+    isPaymentPending: input.overview.isPaymentPending,
+    latestOpenInvoiceUrl: latestOpen?.hostedInvoiceUrl ?? null,
+    canManage: input.canManage,
+    usedSeats: input.usedSeats,
+    usedClients: input.usedClients,
+  };
+}
 
 type PricingGridProps = {
   plans: SubscriptionPlanDefinition[];
@@ -61,12 +88,32 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
         <FormAlert variant="warning">{unavailableMessage}</FormAlert>
       ) : null}
 
+      {selection.hasPaymentProblem || selection.isPaymentPending ? (
+        <FormAlert variant="warning">
+          Your billing status is payment pending or needs attention. Complete payment before
+          changing plans.
+          {selection.latestOpenInvoiceUrl ? (
+            <>
+              {" "}
+              <a
+                href={selection.latestOpenInvoiceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium underline"
+              >
+                Open invoice
+              </a>
+            </>
+          ) : null}
+        </FormAlert>
+      ) : null}
+
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {plans.map((plan) => {
           const action = resolvePlanActionLabel(
             plan.key,
             selection.currentPlanKey,
-            selection.isActive,
+            selection.isUsable,
           );
           const isCurrent = action === "current";
           const seatBlock = getPricingPlanBlockReason(
@@ -77,7 +124,9 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
           const disabledReasons = getPricingButtonDisabledReasons({
             planKey: plan.key,
             currentPlanKey: selection.currentPlanKey,
-            isActive: selection.isActive,
+            isUsable: selection.isUsable,
+            hasPaymentProblem: selection.hasPaymentProblem,
+            isPaymentPending: selection.isPaymentPending,
             canManage: selection.canManage,
             isLoading: isPending && pendingPlanKey === plan.key,
             isCurrent,

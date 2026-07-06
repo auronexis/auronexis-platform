@@ -4,7 +4,9 @@ import type { StripeBillingUiStatus } from "@/lib/billing/types";
 export function getPricingButtonDisabledReasons(input: {
   planKey: PlanKey;
   currentPlanKey: PlanKey | null;
-  isActive: boolean;
+  isUsable: boolean;
+  hasPaymentProblem?: boolean;
+  isPaymentPending?: boolean;
   canManage: boolean;
   isLoading: boolean;
   isCurrent: boolean;
@@ -23,6 +25,14 @@ export function getPricingButtonDisabledReasons(input: {
 
   if (input.isCurrent) {
     reasons.push("This is your organization's current plan.");
+  }
+
+  if (input.hasPaymentProblem) {
+    reasons.push("Complete or update your payment before changing plans.");
+  }
+
+  if (input.isPaymentPending) {
+    reasons.push("Your billing status is payment pending. Complete payment before changing plans.");
   }
 
   if (input.isLoading) {

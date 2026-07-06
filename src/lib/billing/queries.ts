@@ -1,12 +1,16 @@
 import { buildBillingOverview } from "@/lib/billing/types";
 import type { BillingDashboardData, BillingOverview } from "@/lib/billing/types";
-import { getPlanByKey } from "@/lib/billing/plans";
-import { getPlanByPriceId } from "@/lib/billing/plans.server";
 import { listActiveDiscountPreviews } from "@/lib/billing/discounts";
 import { listCustomerInvoices } from "@/lib/billing/invoices";
 import { listProrationPreviews } from "@/lib/billing/proration";
 import { getCurrentUsageSummary } from "@/lib/billing/usage";
-import { isActiveSubscriptionStatus } from "@/lib/stripe/types";
+import { getPlanByPriceId } from "@/lib/billing/plans.server";
+import {
+  isPaymentPending,
+  isPaymentProblem,
+  isSubscriptionUsable,
+} from "@/lib/billing/status";
+import { ensureSubscriptionCustomer, subscriptionRequiresCustomerId } from "@/lib/stripe/customers";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
@@ -36,20 +40,37 @@ export async function getOrganizationSubscription(
 
 /** Billing overview for settings UI. */
 export async function getBillingOverview(session: SessionContext): Promise<BillingOverview> {
-  const subscription = await getOrganizationSubscription(session);
-  const isActive = Boolean(
-    subscription?.status && isActiveSubscriptionStatus(subscription.status),
-  );
-  const currentPlan =
-    isActive && subscription?.stripe_price_id
-      ? getPlanByPriceId(subscription.stripe_price_id)
-      : null;
-  const professionalPlan = getPlanByKey("professional");
+  let subscription = await getOrganizationSubscription(session);
+
+  if (
+    subscription &&
+    subscriptionRequiresCustomerId(subscription.status) &&
+    !subscription.stripe_customer_id
+  ) {
+    await ensureSubscriptionCustomer({
+      organizationId: session.organization.id,
+      organizationName: session.organization.name,
+      email: session.email,
+      status: subscription.status,
+      stripeSubscriptionId: subscription.stripe_subscription_id,
+    });
+    subscription = await getOrganizationSubscription(session);
+  }
+
+  const rawStatus = subscription?.status;
+  const showPlanFromSubscription =
+    Boolean(subscription?.stripe_price_id) &&
+    (isSubscriptionUsable(rawStatus) ||
+      isPaymentProblem(rawStatus) ||
+      isPaymentPending(rawStatus));
+  const currentPlan = showPlanFromSubscription
+    ? getPlanByPriceId(subscription!.stripe_price_id!)
+    : null;
 
   return buildBillingOverview(
     subscription,
     session.organization.plan,
-    currentPlan?.name ?? professionalPlan.name,
+    currentPlan?.name ?? null,
     currentPlan?.key ?? null,
   );
 }

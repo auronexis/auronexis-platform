@@ -148,19 +148,17 @@ export async function createPortalSessionAction(): Promise<BillingActionState> {
 
 
   try {
-
     portalUrl = await openCustomerPortal({
-
       organizationId: session.organization.id,
-
+      organizationName: session.organization.name,
+      email: session.email,
     });
-
   } catch (error) {
+    console.error("[billing][portal] failed", error);
 
     return {
       error: sanitizeBillingCustomerError(error, "Unable to open billing portal."),
     };
-
   }
 
 

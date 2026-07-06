@@ -777,7 +777,11 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           <Link href="/settings/billing" className="font-medium text-primary hover:underline">
             Subscription & Billing
           </Link>{" "}
-          or review usage on{" "}
+          or open{" "}
+          <Link href="/settings/billing/diagnostics" className="font-medium text-primary hover:underline">
+            Billing diagnostics
+          </Link>{" "}
+          for subscription rows, invoices, webhooks, and sanity checks. Review usage on{" "}
           <Link href="/settings/usage" className="font-medium text-primary hover:underline">
             Usage
           </Link>

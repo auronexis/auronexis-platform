@@ -2,7 +2,7 @@ import { recordActivityEvent } from "@/lib/activity/record";
 import { recordBillingEvent, syncCustomerInvoiceFromStripe } from "@/lib/billing/invoices";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
 import { applyCheckoutSessionToOrganization } from "@/lib/stripe/checkout-sync";
-import { getOrganizationIdByStripeCustomerId } from "@/lib/stripe/customers";
+import { getOrganizationIdByStripeCustomerId, ensureSubscriptionCustomer } from "@/lib/stripe/customers";
 import { getStripeClient } from "@/lib/stripe/client";
 import {
   markOrganizationSubscriptionCancelled,
@@ -151,6 +151,16 @@ async function handleSubscriptionUpsert(
 
   await upsertOrganizationSubscription(mapStripeSubscription(organizationId, subscription));
   await syncOrganizationPlan(organizationId, subscription.status);
+
+  await ensureSubscriptionCustomer({
+    organizationId,
+    status: subscription.status,
+    stripeSubscriptionId: subscription.id,
+    stripeCustomerIdHint:
+      typeof subscription.customer === "string"
+        ? subscription.customer
+        : subscription.customer?.id ?? null,
+  });
 
   await recordBillingEvent({
     organizationId,

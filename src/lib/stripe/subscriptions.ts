@@ -1,7 +1,7 @@
 import { getAppUrl } from "@/lib/env";
 import type { PlanKey } from "@/lib/billing/plans";
 import { getPlanPriceId } from "@/lib/billing/plans.server";
-import { getOrCreateStripeCustomer } from "@/lib/stripe/customers";
+import { getOrCreateStripeCustomer, ensureSubscriptionCustomer, subscriptionRequiresCustomerId } from "@/lib/stripe/customers";
 import { getStripeClient } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { StripeSubscriptionSyncInput } from "@/lib/stripe/types";
@@ -17,6 +17,8 @@ type CreateCheckoutSessionInput = {
 
 type CreatePortalSessionInput = {
   organizationId: string;
+  organizationName: string;
+  email: string;
   returnUrl?: string;
 };
 
@@ -26,9 +28,23 @@ export async function upsertOrganizationSubscription(
 ): Promise<void> {
   const admin = createAdminClient();
 
+  const { data: existingData, error: existingError } = await admin
+    .from("organization_subscriptions")
+    .select("stripe_customer_id")
+    .eq("organization_id", input.organizationId)
+    .maybeSingle();
+
+  if (existingError) {
+    throw new Error(`Unable to sync subscription: ${existingError.message}`);
+  }
+
+  const existingCustomerId =
+    (existingData as { stripe_customer_id: string | null } | null)?.stripe_customer_id ?? null;
+  const stripeCustomerId = input.stripeCustomerId ?? existingCustomerId;
+
   const payload = {
     organization_id: input.organizationId,
-    stripe_customer_id: input.stripeCustomerId,
+    stripe_customer_id: stripeCustomerId,
     stripe_subscription_id: input.stripeSubscriptionId,
     stripe_price_id: input.stripePriceId,
     status: input.status,
@@ -44,6 +60,15 @@ export async function upsertOrganizationSubscription(
 
   if (error) {
     throw new Error(`Unable to sync subscription: ${error.message}`);
+  }
+
+  if (subscriptionRequiresCustomerId(input.status) && !stripeCustomerId) {
+    await ensureSubscriptionCustomer({
+      organizationId: input.organizationId,
+      status: input.status,
+      stripeSubscriptionId: input.stripeSubscriptionId,
+      stripeCustomerIdHint: input.stripeCustomerId,
+    });
   }
 }
 
@@ -131,30 +156,31 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput): 
 
 /** Create a Stripe Customer Portal session. */
 export async function createPortalSession(input: CreatePortalSessionInput): Promise<string> {
-  const admin = createAdminClient();
   const stripe = getStripeClient();
   const appUrl = getAppUrl();
 
-  const { data, error } = await admin
-    .from("organization_subscriptions")
-    .select("stripe_customer_id")
-    .eq("organization_id", input.organizationId)
-    .maybeSingle();
+  const ensured = await ensureSubscriptionCustomer({
+    organizationId: input.organizationId,
+    organizationName: input.organizationName,
+    email: input.email,
+  });
 
-  if (error) {
-    throw new Error("Unable to load billing profile.");
-  }
-
-  const stripeCustomerId = (data as { stripe_customer_id: string | null } | null)?.stripe_customer_id;
-
-  if (!stripeCustomerId) {
-    throw new Error("No Stripe customer found for this organization.");
-  }
+  const stripeCustomerId =
+    ensured.stripeCustomerId ??
+    (await getOrCreateStripeCustomer({
+      organizationId: input.organizationId,
+      organizationName: input.organizationName,
+      email: input.email,
+    }));
 
   const session = await stripe.billingPortal.sessions.create({
     customer: stripeCustomerId,
     return_url: input.returnUrl ?? `${appUrl}/settings/billing`,
   });
+
+  if (!session.url) {
+    throw new Error("Stripe billing portal did not return a URL.");
+  }
 
   return session.url;
 }

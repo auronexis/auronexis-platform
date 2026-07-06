@@ -1,9 +1,14 @@
 import type { OrganizationSubscription } from "@/types/database";
 import type { PlanKey } from "@/lib/billing/plans";
 import {
-  isActiveSubscriptionStatus,
-  SUBSCRIPTION_STATUS_LABELS,
-} from "@/lib/stripe/types";
+  getBillingStatusLabel,
+  getPaymentSummaryLabel,
+  isPaymentPending,
+  isPaymentProblem,
+  isSubscriptionInactive,
+  isSubscriptionUsable,
+} from "@/lib/billing/status";
+import { isActiveSubscriptionStatus } from "@/lib/stripe/types";
 
 export type UsageMetricKey =
   | "ai_generations"
@@ -164,7 +169,13 @@ export const USAGE_METRIC_LABELS: Record<UsageMetricKey, string> = {
 export type BillingOverview = {
   subscription: OrganizationSubscription | null;
   hasSubscription: boolean;
+  /** Entitled for feature access (active, trialing, past_due). */
   isActive: boolean;
+  /** Paid and healthy subscription (active or trialing only). */
+  isUsable: boolean;
+  hasPaymentProblem: boolean;
+  isPaymentPending: boolean;
+  isInactive: boolean;
   planLabel: string;
   currentPlanKey: PlanKey | null;
   statusLabel: string;
@@ -201,33 +212,24 @@ export function formatBillingDateTime(value: string | null | undefined): string 
   }).format(new Date(value));
 }
 
-function resolvePaymentStatusLabel(status: string | null | undefined): string {
-  switch (status) {
-    case "active":
-    case "trialing":
-      return "Paid";
-    case "past_due":
-    case "unpaid":
-      return "Payment failed";
-    case "canceled":
-      return "Cancelled";
-    case "incomplete":
-    case "incomplete_expired":
-      return "Incomplete";
-    default:
-      return "No payment on file";
-  }
-}
-
 export function buildBillingOverview(
   subscription: OrganizationSubscription | null,
-  organizationPlan: string,
+  _organizationPlan: string,
   currentPlanName: string | null,
   currentPlanKey: PlanKey | null,
 ): BillingOverview {
-  const status = subscription?.status ?? "inactive";
-  const isActive = isActiveSubscriptionStatus(status);
-  const planLabel = currentPlanName ?? "Professional";
+  const rawStatus = subscription?.status;
+  const isUsable = isSubscriptionUsable(rawStatus);
+  const hasPaymentProblem = isPaymentProblem(rawStatus);
+  const paymentPending = isPaymentPending(rawStatus);
+  const isInactive = isSubscriptionInactive(rawStatus);
+  const isActive = isActiveSubscriptionStatus(rawStatus);
+
+  const planLabel = isUsable
+    ? (currentPlanName ?? "Subscription")
+    : hasPaymentProblem || paymentPending
+      ? (currentPlanName ?? "Subscription")
+      : "No active subscription";
 
   const billingPeriodStart = formatBillingDate(subscription?.current_period_start);
   const billingPeriodEnd = formatBillingDate(subscription?.current_period_end);
@@ -240,10 +242,14 @@ export function buildBillingOverview(
     subscription,
     hasSubscription: Boolean(subscription?.stripe_subscription_id),
     isActive,
+    isUsable,
+    hasPaymentProblem,
+    isPaymentPending: paymentPending,
+    isInactive,
     planLabel,
-    currentPlanKey,
-    statusLabel: SUBSCRIPTION_STATUS_LABELS[status] ?? status,
-    paymentStatusLabel: resolvePaymentStatusLabel(status),
+    currentPlanKey: isUsable ? currentPlanKey : hasPaymentProblem || paymentPending ? currentPlanKey : null,
+    statusLabel: getBillingStatusLabel(rawStatus),
+    paymentStatusLabel: getPaymentSummaryLabel(rawStatus),
     renewalDate: billingPeriodEnd,
     billingPeriodLabel,
     trialEndsAt: subscription?.trial_ends_at ?? null,

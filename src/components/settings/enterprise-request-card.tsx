@@ -90,7 +90,7 @@ export function EnterpriseRequestCard({ status, canManage, autoOpen = false }: E
   return (
     <PageSurface>
       <PageSurfaceHeading
-        title="Enterprise plan"
+        title="Enterprise request"
         description="Enterprise onboarding is handled manually with custom seats, limits, API access, and support."
       />
 

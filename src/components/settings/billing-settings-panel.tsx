@@ -17,6 +17,13 @@ import {
 } from "@/lib/billing/actions";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import {
+  billingStatusToneToBadge,
+  canOpenBillingPortal,
+  findLatestOpenInvoice,
+  getBillingStatusTone,
+  getPaymentSummaryTone,
+} from "@/lib/billing/status";
+import {
   formatForecastWarning,
   formatProrationSummary,
 } from "@/lib/billing/messages";
@@ -89,17 +96,13 @@ function StatusBadge({
 }
 
 function resolveStatusTone(overview: BillingDashboardData["overview"]): "green" | "amber" | "red" | "slate" {
-  if (overview.isActive) return "green";
-  if (overview.subscription?.status === "past_due" || overview.subscription?.status === "unpaid") return "red";
-  if (overview.subscription?.status === "trialing") return "amber";
-  return "slate";
+  return billingStatusToneToBadge(
+    getBillingStatusTone(overview.subscription?.status ?? "inactive"),
+  );
 }
 
 function resolvePaymentTone(overview: BillingDashboardData["overview"]): "green" | "amber" | "red" | "slate" {
-  if (overview.paymentStatusLabel === "Paid") return "green";
-  if (overview.paymentStatusLabel === "Payment failed") return "red";
-  if (overview.paymentStatusLabel === "Incomplete") return "amber";
-  return "slate";
+  return billingStatusToneToBadge(getPaymentSummaryTone(overview.subscription?.status ?? "inactive"));
 }
 
 function BillingContactCard({ card }: { card: BillingContactCardContent }) {
@@ -138,9 +141,16 @@ export function BillingSettingsPanel({
   const [isPortalPending, startPortalTransition] = useTransition();
   const [isDiscountPending, startDiscountTransition] = useTransition();
 
-  const showManage =
-    canManage && stripeStatus.portalAvailable && Boolean(overview.subscription?.stripe_customer_id);
+  const showPortal = canOpenBillingPortal({
+    canManage,
+    portalAvailable: stripeStatus.portalAvailable,
+    isUsable: overview.isUsable,
+    hasPaymentProblem: overview.hasPaymentProblem,
+    isPaymentPending: overview.isPaymentPending,
+    stripeCustomerId: overview.subscription?.stripe_customer_id,
+  });
   const showPromotions = canManage && !enterpriseAutoOpen;
+  const latestOpenInvoice = findLatestOpenInvoice(dashboard.invoices);
   const usingStarterFallback =
     planUsage.plan.planSource === "starter_fallback" ||
     planUsage.plan.planSource === "unmapped_price_id";
@@ -196,9 +206,42 @@ export function BillingSettingsPanel({
           autoOpen={enterpriseAutoOpen}
         />
       ) : null}
-      {usingStarterFallback && !enterpriseAutoOpen ? (
+      {overview.isUsable ? null : overview.hasPaymentProblem || overview.isPaymentPending ? (
         <FormAlert variant="warning">
-          No active subscription is linked to your workspace yet. Choose a plan to get started.
+          Your subscription is not fully active yet. Please complete or update your payment.
+          {latestOpenInvoice?.hostedInvoiceUrl ? (
+            <>
+              {" "}
+              <a
+                href={latestOpenInvoice.hostedInvoiceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium underline"
+              >
+                Open invoice
+              </a>
+            </>
+          ) : null}
+          {showPortal ? (
+            <>
+              {" "}
+              <button
+                type="button"
+                className="font-medium underline"
+                onClick={runPortal}
+                disabled={isPortalPending}
+              >
+                Open billing portal
+              </button>
+            </>
+          ) : null}
+        </FormAlert>
+      ) : overview.isInactive || usingStarterFallback ? (
+        <FormAlert variant="warning">
+          No active subscription is linked to this workspace.{" "}
+          <Link href="/settings/plans" className="font-medium underline">
+            Choose a plan
+          </Link>
         </FormAlert>
       ) : null}
       {dashboard.forecastStatus !== "healthy" && !enterpriseAutoOpen ? (
@@ -213,13 +256,24 @@ export function BillingSettingsPanel({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BillingCard title="Current plan">
           <p className="text-lg font-semibold text-foreground">{overview.planLabel}</p>
-          {!overview.isActive ? (
-            <p>
-              {stripeStatus.checkoutAvailable
-                ? "Select a plan on the pricing page to subscribe."
-                : "Billing is currently unavailable. Contact sales for assistance."}
+          {overview.isUsable ? (
+            <p className="text-muted">Your workspace has an active paid subscription.</p>
+          ) : overview.hasPaymentProblem || overview.isPaymentPending ? (
+            <p className="text-muted">Plan selected, waiting for payment to complete.</p>
+          ) : (
+            <p className="text-muted">
+              {stripeStatus.checkoutAvailable ? (
+                <>
+                  <Link href="/settings/plans" className="font-medium text-primary hover:underline">
+                    Choose a plan
+                  </Link>{" "}
+                  to subscribe.
+                </>
+              ) : (
+                "Billing is currently unavailable. Contact sales for assistance."
+              )}
             </p>
-          ) : null}
+          )}
         </BillingCard>
         <BillingCard title="Subscription status">
           <div className="flex items-center justify-between gap-3">
@@ -247,6 +301,34 @@ export function BillingSettingsPanel({
       </div>
 
       <PlanUsageSummary summary={planUsage} seatUsage={seatUsage} />
+
+      {showPortal ? (
+        <PageSurface>
+          <PageSurfaceHeading
+            title="Self-service billing"
+            description="Update payment methods, download invoices, and manage your subscription in Stripe."
+          />
+          {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
+          <FormFooter className="border-t-0 pt-4">
+            <Button
+              type="button"
+              disabled={isPortalPending}
+              loading={isPortalPending}
+              loadingText="Opening…"
+              onClick={runPortal}
+            >
+              Open billing portal
+            </Button>
+            {overview.isUsable ? (
+              <Link href="/settings/plans">
+                <Button type="button" variant="secondary">
+                  Change plan
+                </Button>
+              </Link>
+            ) : null}
+          </FormFooter>
+        </PageSurface>
+      ) : null}
 
       <PageSurface>
         <PageSurfaceHeading title="Plan limits" description="Monthly quotas enforced server-side for your current plan." />
@@ -301,7 +383,7 @@ export function BillingSettingsPanel({
         </PageSurface>
       ) : null}
 
-      {canManage && overview.isActive && dashboard.prorationPreviews.length > 0 ? (
+      {canManage && overview.isUsable && dashboard.prorationPreviews.length > 0 ? (
         <PageSurface>
           <PageSurfaceHeading
             title="Plan change estimate"
@@ -325,32 +407,40 @@ export function BillingSettingsPanel({
       {canManage ? (
         <PageSurface>
           <PageSurfaceHeading title="Billing actions" description="Upgrade, downgrade, cancel, or manage payment methods." />
-          {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
+          {!showPortal && actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
           {!stripeStatus.portalAvailable ? (
             <p className="text-sm text-muted">Billing is currently unavailable.</p>
           ) : null}
-          {stripeStatus.portalAvailable && !showManage ? (
+          {!showPortal && stripeStatus.portalAvailable && (overview.isInactive || usingStarterFallback) ? (
             <p className="text-sm text-muted">
-              Manage billing will be available after you complete checkout.
+              Choose a plan to start a subscription. The billing portal opens after checkout or when a
+              subscription needs payment.
             </p>
           ) : null}
           <FormFooter className="border-t-0 pt-0">
-            <Link href="/settings/plans">
-              <Button type="button">Upgrade</Button>
-            </Link>
+            {!overview.isUsable ? (
+              <Link href="/settings/plans">
+                <Button type="button">Choose a plan</Button>
+              </Link>
+            ) : (
+              <Link href="/settings/plans">
+                <Button type="button" variant={showPortal ? "secondary" : undefined}>
+                  Change plan
+                </Button>
+              </Link>
+            )}
             <LinkButton href="/settings/usage" variant="secondary" size="md">
               Usage dashboard
             </LinkButton>
-            {showManage ? (
+            {showPortal ? (
               <Button
                 type="button"
-                variant="secondary"
                 disabled={isPortalPending}
                 loading={isPortalPending}
                 loadingText="Opening…"
                 onClick={runPortal}
               >
-                Manage billing
+                Open billing portal
               </Button>
             ) : null}
           </FormFooter>
@@ -358,6 +448,15 @@ export function BillingSettingsPanel({
       ) : (
         <p className="text-sm text-muted">Billing management is limited to organization owners and admins.</p>
       )}
+
+      {canManage ? (
+        <p className="text-xs text-muted">
+          Internal billing diagnostics for owners and admins:{" "}
+          <Link href="/settings/billing/diagnostics" className="font-medium text-primary hover:underline">
+            Billing diagnostics
+          </Link>
+        </p>
+      ) : null}
     </div>
   );
 }

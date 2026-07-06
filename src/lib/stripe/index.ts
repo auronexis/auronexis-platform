@@ -3,7 +3,8 @@ export {
   syncCheckoutSessionForOrganization,
 } from "./checkout-sync";
 export { getStripeClient } from "./client";
-export { getOrCreateStripeCustomer, getOrganizationIdByStripeCustomerId } from "./customers";
+export { getOrCreateStripeCustomer, getOrganizationIdByStripeCustomerId, ensureSubscriptionCustomer, subscriptionRequiresCustomerId } from "./customers";
+export type { EnsureSubscriptionCustomerInput, EnsureSubscriptionCustomerResult } from "./customers";
 export {
   createCheckoutSession,
   createPortalSession,
