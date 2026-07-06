@@ -15,6 +15,7 @@ import {
   createPortalSessionAction,
   validateDiscountCodeAction,
 } from "@/lib/billing/actions";
+import { PENDING_PAYMENT_CHECKOUT_MESSAGE } from "@/lib/billing/checkout-guards";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import {
   billingStatusToneToBadge,
@@ -220,7 +221,7 @@ export function BillingSettingsPanel({
       ) : null}
       {overview.isUsable ? null : overview.hasPaymentProblem || overview.isPaymentPending ? (
         <FormAlert variant="warning">
-          Your subscription is not fully active yet. Please complete or update your payment.
+          {PENDING_PAYMENT_CHECKOUT_MESSAGE}
           {latestOpenInvoice?.hostedInvoiceUrl ? (
             <>
               {" "}
@@ -508,9 +509,12 @@ export function BillingSettingsPanel({
       ) : null}
 
       {canManage ? (
-        <p className="text-xs text-muted">
-          Internal billing diagnostics for owners and admins:{" "}
-          <Link href="/settings/billing/diagnostics" className="font-medium text-primary hover:underline">
+        <p className="text-[11px] text-muted/80">
+          Internal ·{" "}
+          <Link
+            href="/settings/billing/diagnostics"
+            className="text-muted hover:text-foreground hover:underline"
+          >
             Billing diagnostics
           </Link>
         </p>

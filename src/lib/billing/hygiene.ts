@@ -130,6 +130,16 @@ export function classifyInvoiceRow(invoice: CustomerInvoiceView): BillingRowKind
   return "unknown";
 }
 
+/** Invoices shown on customer billing pages — excludes void, uncollectible, and internal drafts. */
+export function filterCustomerFacingInvoices(
+  invoices: CustomerInvoiceView[],
+): CustomerInvoiceView[] {
+  return invoices.filter((invoice) => {
+    const kind = classifyInvoiceRow(invoice);
+    return kind === "production" || kind === "unknown";
+  });
+}
+
 export function classifyWebhookEventRow(event: StripeWebhookEvent): BillingRowKind {
   if (event.status === "duplicate") {
     return "internal";

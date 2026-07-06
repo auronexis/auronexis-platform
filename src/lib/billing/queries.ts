@@ -1,6 +1,7 @@
 import { buildBillingOverview } from "@/lib/billing/types";
 import type { BillingDashboardData, BillingOverview } from "@/lib/billing/types";
 import { listActiveDiscountPreviews } from "@/lib/billing/discounts";
+import { filterCustomerFacingInvoices } from "@/lib/billing/hygiene";
 import { listCustomerInvoices } from "@/lib/billing/invoices";
 import { listProrationPreviews } from "@/lib/billing/proration";
 import { getCurrentUsageSummary } from "@/lib/billing/usage";
@@ -106,7 +107,7 @@ export async function getBillingDashboardData(
     overview,
     usage,
     limits: usage.metrics.filter((metric) => metric.limit !== null),
-    invoices,
+    invoices: filterCustomerFacingInvoices(invoices),
     discounts,
     prorationPreviews,
     forecastStatus,

@@ -52,7 +52,7 @@ export function PricingCard({
         "group relative flex h-full flex-col rounded-2xl border border-border bg-surface p-8 shadow-sm",
         focusRing,
         isRecommended ? "border-primary/30 shadow-md ring-1 ring-primary/15" : "",
-        isCurrent && "border-success/40 ring-1 ring-success/15",
+        isCurrent && "border-success/50 bg-success/[0.03] ring-2 ring-success/20",
       )}
     >
       <div className="mb-6 flex flex-wrap items-center gap-2">
@@ -62,7 +62,7 @@ export function PricingCard({
           </span>
         ) : null}
         {isCurrent ? (
-          <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-semibold text-success ring-1 ring-inset ring-success/20">
+          <span className="rounded-full bg-success/15 px-3 py-1 text-xs font-bold text-success ring-2 ring-success/30">
             Current Plan
           </span>
         ) : null}

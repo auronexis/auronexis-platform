@@ -1,5 +1,9 @@
 import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import type { StripeBillingUiStatus } from "@/lib/billing/types";
+import {
+  isCheckoutBlockedByPaymentState,
+  PENDING_PAYMENT_CHECKOUT_MESSAGE,
+} from "@/lib/billing/checkout-guards";
+import type { BillingOverview, CustomerInvoiceView, StripeBillingUiStatus } from "@/lib/billing/types";
 
 export function getPricingButtonDisabledReasons(input: {
   planKey: PlanKey;
@@ -7,9 +11,13 @@ export function getPricingButtonDisabledReasons(input: {
   isUsable: boolean;
   hasPaymentProblem?: boolean;
   isPaymentPending?: boolean;
+  hasOpenUnpaidInvoice?: boolean;
+  overview?: BillingOverview;
+  invoices?: CustomerInvoiceView[];
   canManage: boolean;
   isLoading: boolean;
   isCurrent: boolean;
+  isDowngrade: boolean;
   seatBlockMessage: string | null;
   stripeStatus: StripeBillingUiStatus;
 }): string[] {
@@ -27,12 +35,30 @@ export function getPricingButtonDisabledReasons(input: {
     reasons.push("This is your organization's current plan.");
   }
 
-  if (input.hasPaymentProblem) {
-    reasons.push("Complete or update your payment before changing plans.");
+  const paymentBlocked =
+    input.overview && input.invoices
+      ? isCheckoutBlockedByPaymentState({
+          overview: input.overview,
+          invoices: input.invoices,
+        })
+      : Boolean(
+          input.hasPaymentProblem || input.isPaymentPending || input.hasOpenUnpaidInvoice,
+        );
+
+  if (paymentBlocked) {
+    reasons.push(PENDING_PAYMENT_CHECKOUT_MESSAGE);
   }
 
-  if (input.isPaymentPending) {
-    reasons.push("Your billing status is payment pending. Complete payment before changing plans.");
+  if (input.isUsable && input.isDowngrade && !input.isCurrent && !input.stripeStatus.portalAvailable) {
+    reasons.push("Use the billing portal to downgrade — portal is currently unavailable.");
+  }
+
+  if (input.isUsable && input.currentPlanKey && !input.isCurrent && !input.isDowngrade) {
+    const target = getPlanByKey(input.planKey);
+    const current = getPlanByKey(input.currentPlanKey);
+    if (target.order <= current.order) {
+      reasons.push("Use the billing portal to manage your current subscription.");
+    }
   }
 
   if (input.isLoading) {
@@ -94,4 +120,15 @@ export function getPlanCheckoutHint(
 
 export function getPlanDisplayName(planKey: PlanKey): string {
   return getPlanByKey(planKey).name;
+}
+
+export function getPricingPaymentBlockMessage(input: {
+  overview: BillingOverview;
+  invoices: CustomerInvoiceView[];
+}): string | null {
+  if (!isCheckoutBlockedByPaymentState(input)) {
+    return null;
+  }
+
+  return PENDING_PAYMENT_CHECKOUT_MESSAGE;
 }

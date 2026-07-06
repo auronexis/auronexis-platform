@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { PricingCard } from "@/components/pricing/pricing-card";
-import { createCheckoutSessionAction } from "@/lib/billing/actions";
+import { createCheckoutSessionAction, createPortalSessionAction } from "@/lib/billing/actions";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
+import { hasOpenUnpaidInvoice } from "@/lib/billing/checkout-guards";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import {
   resolvePlanActionLabel,
@@ -12,6 +13,7 @@ import {
 } from "@/lib/billing/plans";
 import {
   getPricingButtonDisabledReasons,
+  getPricingPaymentBlockMessage,
   getPricingUnavailableMessage,
   isPricingButtonDisabled,
 } from "@/lib/diagnostics/pricing-reasons";
@@ -26,10 +28,13 @@ export type PricingSelectionContext = {
   isUsable: boolean;
   hasPaymentProblem: boolean;
   isPaymentPending: boolean;
+  hasOpenUnpaidInvoice: boolean;
   latestOpenInvoiceUrl: string | null;
   canManage: boolean;
   usedSeats: number;
   usedClients: number;
+  overview: BillingOverview;
+  invoices: CustomerInvoiceView[];
 };
 
 export function buildPricingSelectionContext(input: {
@@ -46,10 +51,13 @@ export function buildPricingSelectionContext(input: {
     isUsable: input.overview.isUsable,
     hasPaymentProblem: input.overview.hasPaymentProblem,
     isPaymentPending: input.overview.isPaymentPending,
+    hasOpenUnpaidInvoice: hasOpenUnpaidInvoice(input.invoices),
     latestOpenInvoiceUrl: latestOpen?.hostedInvoiceUrl ?? null,
     canManage: input.canManage,
     usedSeats: input.usedSeats,
     usedClients: input.usedClients,
+    overview: input.overview,
+    invoices: input.invoices,
   };
 }
 
@@ -64,7 +72,12 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
   const [pendingPlanKey, setPendingPlanKey] = useState<PlanKey | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isPortalPending, startPortalTransition] = useTransition();
   const unavailableMessage = getPricingUnavailableMessage(stripeStatus);
+  const paymentBlockMessage = getPricingPaymentBlockMessage({
+    overview: selection.overview,
+    invoices: selection.invoices,
+  });
 
   const selectPlan = (planKey: PlanKey) => {
     if (planKey === "enterprise") {
@@ -82,16 +95,25 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
     });
   };
 
+  const openPortal = () => {
+    setError(null);
+    startPortalTransition(async () => {
+      const result = await createPortalSessionAction();
+      if (result?.error) {
+        setError(sanitizeBillingCustomerError(new Error(result.error), "Unable to open billing portal."));
+      }
+    });
+  };
+
   return (
     <div className="space-y-6">
       {unavailableMessage ? (
         <FormAlert variant="warning">{unavailableMessage}</FormAlert>
       ) : null}
 
-      {selection.hasPaymentProblem || selection.isPaymentPending ? (
+      {paymentBlockMessage ? (
         <FormAlert variant="warning">
-          Your billing status is payment pending or needs attention. Complete payment before
-          changing plans.
+          {paymentBlockMessage}
           {selection.latestOpenInvoiceUrl ? (
             <>
               {" "}
@@ -105,6 +127,19 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
               </a>
             </>
           ) : null}
+          {selection.canManage && stripeStatus.portalAvailable ? (
+            <>
+              {" "}
+              <button
+                type="button"
+                className="font-medium underline"
+                onClick={openPortal}
+                disabled={isPortalPending}
+              >
+                Open billing portal
+              </button>
+            </>
+          ) : null}
         </FormAlert>
       ) : null}
 
@@ -116,6 +151,7 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
             selection.isUsable,
           );
           const isCurrent = action === "current";
+          const isDowngrade = action === "downgrade";
           const seatBlock = getPricingPlanBlockReason(
             plan.key,
             selection.usedSeats,
@@ -127,9 +163,13 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
             isUsable: selection.isUsable,
             hasPaymentProblem: selection.hasPaymentProblem,
             isPaymentPending: selection.isPaymentPending,
+            hasOpenUnpaidInvoice: selection.hasOpenUnpaidInvoice,
+            overview: selection.overview,
+            invoices: selection.invoices,
             canManage: selection.canManage,
             isLoading: isPending && pendingPlanKey === plan.key,
             isCurrent,
+            isDowngrade,
             seatBlockMessage: seatBlock.blocked ? seatBlock.message : null,
             stripeStatus,
           });
@@ -140,14 +180,23 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
               plan={plan}
               action={action}
               isCurrent={isCurrent}
-              isLoading={isPending && pendingPlanKey === plan.key}
+              isLoading={
+                (isPending && pendingPlanKey === plan.key) ||
+                (isPortalPending && isDowngrade)
+              }
               canManage={selection.canManage}
               seatBlockMessage={seatBlock.blocked ? seatBlock.message : null}
               disabledReasons={disabledReasons}
               isDisabled={isPricingButtonDisabled(plan.key, disabledReasons)}
               stripeStatus={stripeStatus}
               enterpriseContactHref={enterpriseContactHref}
-              onSelect={() => selectPlan(plan.key)}
+              onSelect={() => {
+                if (isDowngrade && selection.isUsable && stripeStatus.portalAvailable) {
+                  openPortal();
+                  return;
+                }
+                selectPlan(plan.key);
+              }}
             />
           );
         })}

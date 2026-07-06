@@ -41,5 +41,13 @@ export function sanitizeBillingCustomerError(error: unknown, fallback: string): 
     return error.message;
   }
 
+  if (
+    error.message.includes("pending payment") ||
+    error.message.includes("billing portal to downgrade") ||
+    error.message.includes("current plan")
+  ) {
+    return error.message;
+  }
+
   return fallback;
 }

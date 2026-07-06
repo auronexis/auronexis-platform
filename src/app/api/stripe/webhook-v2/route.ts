@@ -17,9 +17,8 @@ function logStripeWebhookV2(input: {
   eventType?: string;
   note?: string;
 }): void {
-  console.log("stripe webhook v2", {
-    hasSecret: !!process.env[WEBHOOK_ENV_KEY],
-    secretPrefix: process.env[WEBHOOK_ENV_KEY]?.slice(0, 8),
+  console.info("[stripe][webhook-v2]", {
+    configured: !!process.env[WEBHOOK_ENV_KEY]?.trim(),
     hasSignature: input.hasSignature,
     eventType: input.eventType ?? null,
     note: input.note ?? null,
@@ -54,10 +53,8 @@ export async function POST(request: Request): Promise<Response> {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid webhook signature.";
-    console.error("[stripe] webhook v2 constructEvent failed", {
+    console.error("[stripe][webhook-v2] constructEvent failed", {
       message,
-      hasSecret: !!process.env[WEBHOOK_ENV_KEY],
-      secretPrefix: process.env[WEBHOOK_ENV_KEY]?.slice(0, 8),
       hasSignature: true,
     });
     return NextResponse.json({ error: message }, { status: 400 });
@@ -72,6 +69,7 @@ export async function POST(request: Request): Promise<Response> {
   const idempotency = await ensureStripeIdempotency(event);
 
   if (idempotency.status === "duplicate") {
+    console.info("[stripe][webhook-v2]", { eventType: event.type, status: "duplicate" });
     return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
   }
 
@@ -84,10 +82,16 @@ export async function POST(request: Request): Promise<Response> {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Webhook handler failed.";
-    console.error("[stripe] webhook v2 handler failed:", message);
+    console.error("[stripe][webhook-v2]", { eventType: event.type, status: "failed", message });
     await markStripeEventFailed(event.id, event.type, message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Webhook handler failed." }, { status: 500 });
   }
+
+  console.info("[stripe][webhook-v2]", {
+    eventType: event.type,
+    status: "processed",
+    retried: idempotency.status === "retry",
+  });
 
   return NextResponse.json(
     {

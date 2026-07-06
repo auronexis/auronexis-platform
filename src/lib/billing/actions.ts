@@ -10,6 +10,8 @@ import { requireSession } from "@/lib/auth/session";
 
 import { createCheckoutSessionWithDiscount } from "@/lib/billing/checkout";
 
+import { assertCheckoutAllowed } from "@/lib/billing/checkout-guards.server";
+
 import { openCustomerPortal } from "@/lib/billing/customer-portal";
 
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
@@ -94,6 +96,7 @@ export async function createCheckoutSessionAction(
   try {
 
     assertPlanCheckoutReady(parsed.data);
+    await assertCheckoutAllowed(session, parsed.data);
 
     checkoutUrl = await createCheckoutSessionWithDiscount({
 

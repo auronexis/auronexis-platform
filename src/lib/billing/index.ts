@@ -61,8 +61,19 @@ export {
   getSubscriptionHygieneLabel,
   getInvoiceHygieneLabel,
   maskStripeId,
+  filterCustomerFacingInvoices,
 } from "./hygiene";
 export type { BillingHygieneFlag, BillingRowKind } from "./hygiene";
+export {
+  assertCheckoutAllowed,
+} from "./checkout-guards.server";
+export {
+  evaluateCheckoutGuard,
+  hasOpenUnpaidInvoice,
+  isCheckoutBlockedByPaymentState,
+  PENDING_PAYMENT_CHECKOUT_MESSAGE,
+} from "./checkout-guards";
+export type { CheckoutGuardResult } from "./checkout-guards";
 export {
   assertUsageWithinLimit,
   checkUsageLimit,
