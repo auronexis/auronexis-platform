@@ -24,6 +24,25 @@ async function resolveOrganizationId(
   return null;
 }
 
+function getInvoiceCustomerId(invoice: Stripe.Invoice): string | null {
+  return typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id ?? null;
+}
+
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const parentSubscription = invoice.parent?.subscription_details?.subscription;
+  if (typeof parentSubscription === "string") return parentSubscription;
+  if (parentSubscription?.id) return parentSubscription.id;
+
+  const legacyInvoice = invoice as Stripe.Invoice & {
+    subscription?: string | Stripe.Subscription | null;
+  };
+
+  if (typeof legacyInvoice.subscription === "string") return legacyInvoice.subscription;
+  if (legacyInvoice.subscription?.id) return legacyInvoice.subscription.id;
+
+  return null;
+}
+
 async function recordBillingActivity(input: {
   organizationId: string;
   action: string;
@@ -82,9 +101,7 @@ async function handleCheckoutSessionCompleted(
       : session.subscription?.id ?? null;
 
   const stripe = getStripeClient();
-  const subscription = subscriptionId
-    ? await stripe.subscriptions.retrieve(subscriptionId)
-    : null;
+  const subscription = subscriptionId ? await stripe.subscriptions.retrieve(subscriptionId) : null;
 
   await recordBillingActivity({
     organizationId,
@@ -145,43 +162,6 @@ async function handleSubscriptionUpsert(
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   });
-
-  if (eventType === "customer.subscription.updated") {
-    await recordBillingActivity({
-      organizationId,
-      action: "subscription_updated",
-      title: "Subscription updated",
-      description: `Subscription status changed to ${subscription.status}.`,
-      metadata: {
-        stripeSubscriptionId: subscription.id,
-        status: subscription.status,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      },
-    });
-
-    if (subscription.status === "canceled") {
-      await notifyOwnersAndAdmins(organizationId, {
-        type: "subscription_cancelled",
-        title: "Subscription cancelled",
-        message: "Your organization subscription has been cancelled.",
-      });
-    }
-  }
-
-  if (subscription.status === "trialing" && subscription.trial_end) {
-    const trialEndsAt = new Date(subscription.trial_end * 1000);
-    const daysRemaining = Math.ceil(
-      (trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-    );
-
-    if (daysRemaining <= 3 && daysRemaining >= 0) {
-      await notifyOwnersAndAdmins(organizationId, {
-        type: "subscription_trial_ending",
-        title: "Trial ending soon",
-        message: `Your trial ends in ${daysRemaining} day(s). Add a payment method to continue service.`,
-      });
-    }
-  }
 }
 
 async function handleSubscriptionDeleted(
@@ -195,10 +175,7 @@ async function handleSubscriptionDeleted(
       : subscription.customer?.id ?? null,
   );
 
-  if (!organizationId) {
-    console.error("[stripe] subscription.deleted missing organization_id");
-    return;
-  }
+  if (!organizationId) return;
 
   await markOrganizationSubscriptionCancelled(organizationId);
   await syncOrganizationPlan(organizationId, "canceled");
@@ -215,9 +192,7 @@ async function handleSubscriptionDeleted(
     action: "subscription_cancelled",
     title: "Subscription cancelled",
     description: "The organization subscription was cancelled in Stripe.",
-    metadata: {
-      stripeSubscriptionId: subscription.id,
-    },
+    metadata: { stripeSubscriptionId: subscription.id },
   });
 
   await notifyOwnersAndAdmins(organizationId, {
@@ -229,30 +204,35 @@ async function handleSubscriptionDeleted(
 
 async function syncInvoiceWithSubscription(
   invoice: Stripe.Invoice,
-): Promise<{ organizationId: string; subscriptionId: string } | null> {
-  const subscriptionRef = invoice.parent?.subscription_details?.subscription;
-  const subscriptionId =
-    typeof subscriptionRef === "string" ? subscriptionRef : subscriptionRef?.id ?? null;
-
-  if (!subscriptionId) return null;
-
+): Promise<{ organizationId: string; subscriptionId: string | null } | null> {
   const stripe = getStripeClient();
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscriptionId = getInvoiceSubscriptionId(invoice);
+  const customerId = getInvoiceCustomerId(invoice);
 
-  const organizationId = await resolveOrganizationId(
-    resolveOrganizationIdFromMetadata(subscription.metadata),
-    typeof subscription.customer === "string"
-      ? subscription.customer
-      : subscription.customer?.id ?? null,
-  );
+  if (subscriptionId) {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
+    const organizationId = await resolveOrganizationId(
+      resolveOrganizationIdFromMetadata(subscription.metadata),
+      typeof subscription.customer === "string"
+        ? subscription.customer
+        : subscription.customer?.id ?? customerId,
+    );
+
+    if (!organizationId) return null;
+
+    await upsertOrganizationSubscription(mapStripeSubscription(organizationId, subscription));
+    await syncOrganizationPlan(organizationId, subscription.status);
+    await syncCustomerInvoiceFromStripe(organizationId, invoice);
+
+    return { organizationId, subscriptionId };
+  }
+
+  const organizationId = await resolveOrganizationId(null, customerId);
   if (!organizationId) return null;
 
-  await upsertOrganizationSubscription(mapStripeSubscription(organizationId, subscription));
-  await syncOrganizationPlan(organizationId, subscription.status);
   await syncCustomerInvoiceFromStripe(organizationId, invoice);
-
-  return { organizationId, subscriptionId };
+  return { organizationId, subscriptionId: null };
 }
 
 async function handleInvoiceFinalized(
@@ -340,7 +320,6 @@ async function handleInvoicePaymentFailed(
   });
 }
 
-/** Process a verified Stripe webhook event. Returns false for unsupported event types. */
 export async function handleStripeWebhookEvent(event: Stripe.Event): Promise<boolean> {
   const stripeEventId = event.id;
 
@@ -365,10 +344,12 @@ export async function handleStripeWebhookEvent(event: Stripe.Event): Promise<boo
       await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, stripeEventId);
       return true;
 
+    case "invoice.created":
     case "invoice.finalized":
       await handleInvoiceFinalized(event.data.object as Stripe.Invoice, stripeEventId);
       return true;
 
+    case "invoice.paid":
     case "invoice.payment_succeeded":
       await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice, stripeEventId);
       return true;
