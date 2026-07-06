@@ -19,14 +19,8 @@ async function resolveOrganizationId(
   organizationId: string | null,
   stripeCustomerId: string | null,
 ): Promise<string | null> {
-  if (organizationId) {
-    return organizationId;
-  }
-
-  if (stripeCustomerId) {
-    return getOrganizationIdByStripeCustomerId(stripeCustomerId);
-  }
-
+  if (organizationId) return organizationId;
+  if (stripeCustomerId) return getOrganizationIdByStripeCustomerId(stripeCustomerId);
   return null;
 }
 
@@ -80,10 +74,7 @@ async function handleCheckoutSessionCompleted(
   stripeEventId: string,
 ): Promise<void> {
   const organizationId = await applyCheckoutSessionToOrganization(session);
-
-  if (!organizationId) {
-    return;
-  }
+  if (!organizationId) return;
 
   const subscriptionId =
     typeof session.subscription === "string"
@@ -236,20 +227,18 @@ async function handleSubscriptionDeleted(
   });
 }
 
-async function handleInvoicePaymentSucceeded(
+async function syncInvoiceWithSubscription(
   invoice: Stripe.Invoice,
-  stripeEventId: string,
-): Promise<void> {
+): Promise<{ organizationId: string; subscriptionId: string } | null> {
   const subscriptionRef = invoice.parent?.subscription_details?.subscription;
   const subscriptionId =
     typeof subscriptionRef === "string" ? subscriptionRef : subscriptionRef?.id ?? null;
 
-  if (!subscriptionId) {
-    return;
-  }
+  if (!subscriptionId) return null;
 
   const stripe = getStripeClient();
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
   const organizationId = await resolveOrganizationId(
     resolveOrganizationIdFromMetadata(subscription.metadata),
     typeof subscription.customer === "string"
@@ -257,33 +246,56 @@ async function handleInvoicePaymentSucceeded(
       : subscription.customer?.id ?? null,
   );
 
-  if (!organizationId) {
-    return;
-  }
+  if (!organizationId) return null;
 
   await upsertOrganizationSubscription(mapStripeSubscription(organizationId, subscription));
   await syncOrganizationPlan(organizationId, subscription.status);
   await syncCustomerInvoiceFromStripe(organizationId, invoice);
 
+  return { organizationId, subscriptionId };
+}
+
+async function handleInvoiceFinalized(
+  invoice: Stripe.Invoice,
+  stripeEventId: string,
+): Promise<void> {
+  const result = await syncInvoiceWithSubscription(invoice);
+  if (!result) return;
+
+  await recordBillingEvent({
+    organizationId: result.organizationId,
+    eventType: "invoice_finalized",
+    stripeEventId,
+    payload: { invoiceId: invoice.id, amountDue: invoice.amount_due },
+  });
+}
+
+async function handleInvoicePaymentSucceeded(
+  invoice: Stripe.Invoice,
+  stripeEventId: string,
+): Promise<void> {
+  const result = await syncInvoiceWithSubscription(invoice);
+  if (!result) return;
+
   await recordBillingActivity({
-    organizationId,
+    organizationId: result.organizationId,
     action: "subscription_payment_succeeded",
     title: "Subscription payment succeeded",
     description: "A subscription invoice was paid successfully.",
     metadata: {
-      stripeSubscriptionId: subscriptionId,
+      stripeSubscriptionId: result.subscriptionId,
       invoiceId: invoice.id,
     },
   });
 
   await recordBillingEvent({
-    organizationId,
+    organizationId: result.organizationId,
     eventType: "invoice_paid",
     stripeEventId,
     payload: { invoiceId: invoice.id, amountPaid: invoice.amount_paid },
   });
 
-  await notifyOwnersAndAdmins(organizationId, {
+  await notifyOwnersAndAdmins(result.organizationId, {
     type: "invoice_paid",
     title: "Invoice paid",
     message: "Your subscription invoice was paid successfully.",
@@ -294,56 +306,34 @@ async function handleInvoicePaymentFailed(
   invoice: Stripe.Invoice,
   stripeEventId: string,
 ): Promise<void> {
-  const subscriptionRef = invoice.parent?.subscription_details?.subscription;
-  const subscriptionId =
-    typeof subscriptionRef === "string" ? subscriptionRef : subscriptionRef?.id ?? null;
-
-  if (!subscriptionId) {
-    return;
-  }
-
-  const stripe = getStripeClient();
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  const organizationId = await resolveOrganizationId(
-    resolveOrganizationIdFromMetadata(subscription.metadata),
-    typeof subscription.customer === "string"
-      ? subscription.customer
-      : subscription.customer?.id ?? null,
-  );
-
-  if (!organizationId) {
-    return;
-  }
-
-  await upsertOrganizationSubscription(mapStripeSubscription(organizationId, subscription));
-  await syncOrganizationPlan(organizationId, subscription.status);
-  await syncCustomerInvoiceFromStripe(organizationId, invoice);
+  const result = await syncInvoiceWithSubscription(invoice);
+  if (!result) return;
 
   await recordBillingActivity({
-    organizationId,
+    organizationId: result.organizationId,
     action: "subscription_payment_failed",
     title: "Subscription payment failed",
     description: "A subscription invoice payment failed.",
     metadata: {
-      stripeSubscriptionId: subscriptionId,
+      stripeSubscriptionId: result.subscriptionId,
       invoiceId: invoice.id,
     },
   });
 
   await recordBillingEvent({
-    organizationId,
+    organizationId: result.organizationId,
     eventType: "invoice_failed",
     stripeEventId,
     payload: { invoiceId: invoice.id, amountDue: invoice.amount_due },
   });
 
-  await notifyOwnersAndAdmins(organizationId, {
+  await notifyOwnersAndAdmins(result.organizationId, {
     type: "subscription_payment_failed",
     title: "Payment failed",
     message: "Your subscription payment failed. Update your payment method in the billing portal.",
   });
 
-  await notifyOwnersAndAdmins(organizationId, {
+  await notifyOwnersAndAdmins(result.organizationId, {
     type: "invoice_failed",
     title: "Invoice payment failed",
     message: "An invoice payment failed. Review billing in the customer portal.",
@@ -361,6 +351,7 @@ export async function handleStripeWebhookEvent(event: Stripe.Event): Promise<boo
         stripeEventId,
       );
       return true;
+
     case "customer.subscription.created":
     case "customer.subscription.updated":
       await handleSubscriptionUpsert(
@@ -369,15 +360,23 @@ export async function handleStripeWebhookEvent(event: Stripe.Event): Promise<boo
         stripeEventId,
       );
       return true;
+
     case "customer.subscription.deleted":
       await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, stripeEventId);
       return true;
+
+    case "invoice.finalized":
+      await handleInvoiceFinalized(event.data.object as Stripe.Invoice, stripeEventId);
+      return true;
+
     case "invoice.payment_succeeded":
       await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice, stripeEventId);
       return true;
+
     case "invoice.payment_failed":
       await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice, stripeEventId);
       return true;
+
     default:
       return false;
   }
