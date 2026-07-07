@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { PricingGrid, buildPricingSelectionContext } from "@/components/pricing/pricing-grid";
+import { PricingGrid } from "@/components/pricing/pricing-grid";
 import { PricingHero } from "@/components/pricing/pricing-hero";
 import { getPublicSelfServePlans } from "@/lib/billing/plans";
 import { getPlansPageBillingState } from "@/lib/billing/queries";
-import { buildBillingOverview } from "@/lib/billing/types";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
 import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
 import { requireSession } from "@/lib/auth/session";
@@ -11,6 +10,14 @@ import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getClientLimitUsageForSession } from "@/lib/plans/queries";
 import { getOrganizationSeatUsageFromSession } from "@/lib/seats/queries";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
+import {
+  buildPricingSelectionContext,
+  createFallbackPricingSelection,
+} from "@/lib/pricing/selection-context";
+import {
+  FALLBACK_STRIPE_BILLING_UI_STATUS,
+  normalizeStripeBillingUiStatus,
+} from "@/lib/pricing/safe-stripe-status";
 
 export const metadata: Metadata = {
   title: "Plans & Pricing",
@@ -20,10 +27,21 @@ export const metadata: Metadata = {
 export default async function WorkspacePlansPage() {
   await requireModuleAccess("pricing");
   const session = await requireSession();
+  const canManage = canManageOrganizationSettings(session);
 
   let billingState;
   let seatUsage = { used: 0 };
   let clientUsage = { used: 0 };
+  let stripeStatus = FALLBACK_STRIPE_BILLING_UI_STATUS;
+  const enterpriseContactHref = resolveEnterpriseContactHref(session.role);
+
+  try {
+    stripeStatus = normalizeStripeBillingUiStatus(getStripeBillingUiStatus());
+  } catch (error) {
+    console.warn("[plans] stripe status unavailable — using fallback flags", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
 
   try {
     [billingState, seatUsage, clientUsage] = await Promise.all([
@@ -52,7 +70,7 @@ export default async function WorkspacePlansPage() {
     });
 
     billingState = {
-      overview: buildBillingOverview(null, session.organization.plan, null, null),
+      overview: createFallbackPricingSelection(canManage).overview,
       invoices: [],
       resolvedPlanKey: null,
       currentPlanKey: null,
@@ -61,9 +79,6 @@ export default async function WorkspacePlansPage() {
     };
   }
 
-  const canManage = canManageOrganizationSettings(session);
-  const stripeStatus = getStripeBillingUiStatus();
-  const enterpriseContactHref = resolveEnterpriseContactHref(session.role);
   const selection = buildPricingSelectionContext({
     overview: billingState.overview,
     invoices: billingState.invoices,

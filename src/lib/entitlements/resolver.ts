@@ -7,8 +7,8 @@ import {
 } from "@/lib/billing/plans.server";
 import {
   getOrganizationSubscription,
-  selectPreferredSubscriptionRow,
 } from "@/lib/billing/queries";
+import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 import { isSubscriptionUsable, normalizeSubscriptionStatus } from "@/lib/billing/status";
 import { getEffectiveLimits } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";

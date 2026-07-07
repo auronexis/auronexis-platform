@@ -86,7 +86,7 @@ export function getPricingButtonDisabledReasons(input: {
     reasons.push(input.seatBlockMessage);
   }
 
-  if (!input.stripeStatus.planCheckoutReady[input.planKey]) {
+  if (!input.stripeStatus?.planCheckoutReady?.[input.planKey]) {
     if (!input.stripeStatus.checkoutAvailable) {
       reasons.push("Billing is currently unavailable.");
     } else {
@@ -108,8 +108,8 @@ export function isPricingButtonDisabled(
   return reasons.length > 0;
 }
 
-export function getPricingUnavailableMessage(stripeStatus: StripeBillingUiStatus): string | null {
-  if (stripeStatus.checkoutAvailable) {
+export function getPricingUnavailableMessage(stripeStatus: StripeBillingUiStatus | null | undefined): string | null {
+  if (stripeStatus?.checkoutAvailable) {
     return null;
   }
 
@@ -118,17 +118,17 @@ export function getPricingUnavailableMessage(stripeStatus: StripeBillingUiStatus
 
 export function getPlanCheckoutHint(
   planKey: PlanKey,
-  stripeStatus: StripeBillingUiStatus,
+  stripeStatus: StripeBillingUiStatus | null | undefined,
 ): string | null {
   if (planKey === "enterprise") {
     return null;
   }
 
-  if (stripeStatus.planCheckoutReady[planKey]) {
+  if (stripeStatus?.planCheckoutReady?.[planKey]) {
     return null;
   }
 
-  if (!stripeStatus.checkoutAvailable) {
+  if (!stripeStatus?.checkoutAvailable) {
     return "Billing is currently unavailable.";
   }
 
@@ -140,10 +140,17 @@ export function getPlanDisplayName(planKey: PlanKey | string | null | undefined)
 }
 
 export function getPricingPaymentBlockMessage(input: {
-  overview: BillingOverview;
-  invoices: CustomerInvoiceView[];
+  overview?: BillingOverview | null;
+  invoices?: CustomerInvoiceView[] | null;
 }): string | null {
-  if (!isCheckoutBlockedByPaymentState(input)) {
+  if (!input.overview) {
+    return null;
+  }
+
+  if (!isCheckoutBlockedByPaymentState({
+    overview: input.overview,
+    invoices: Array.isArray(input.invoices) ? input.invoices : [],
+  })) {
     return null;
   }
 

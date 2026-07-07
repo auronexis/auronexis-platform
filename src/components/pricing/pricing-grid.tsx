@@ -4,11 +4,9 @@ import { useState, useTransition } from "react";
 import { PricingCard } from "@/components/pricing/pricing-card";
 import { createCheckoutSessionAction, createPortalSessionAction } from "@/lib/billing/actions";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
-import { hasOpenUnpaidInvoice } from "@/lib/billing/checkout-guards";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import {
   resolvePlanActionLabel,
-  safeGetPlanByKey,
   type PlanKey,
   type SubscriptionPlanDefinition,
 } from "@/lib/billing/plans";
@@ -19,66 +17,13 @@ import {
   isPricingButtonDisabled,
 } from "@/lib/diagnostics/pricing-reasons";
 import { getPricingPlanBlockReason } from "@/lib/plans/features";
+import type { PricingSelectionContext } from "@/lib/pricing/selection-context";
+import { createFallbackPricingSelection } from "@/lib/pricing/selection-context";
+import { normalizeStripeBillingUiStatus } from "@/lib/pricing/safe-stripe-status";
 import { FormAlert } from "@/components/ui/form-alert";
-import type { BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
-import { findLatestOpenInvoice } from "@/lib/billing/status";
 
-export type PricingSelectionContext = {
-  currentPlanKey: PlanKey | null;
-  currentPlan: SubscriptionPlanDefinition | null;
-  currentPlanName: string | null;
-  /** True when subscription is active or trialing (current plan badge). */
-  isUsable: boolean;
-  isCurrentPlan: boolean;
-  hasPaymentProblem: boolean;
-  isPaymentPending: boolean;
-  hasOpenUnpaidInvoice: boolean;
-  latestOpenInvoiceUrl: string | null;
-  canManage: boolean;
-  usedSeats: number;
-  usedClients: number;
-  overview: BillingOverview;
-  invoices: CustomerInvoiceView[];
-};
-
-export function buildPricingSelectionContext(input: {
-  overview: BillingOverview;
-  invoices: CustomerInvoiceView[];
-  canManage: boolean;
-  usedSeats: number;
-  usedClients: number;
-  currentPlanKey?: PlanKey | null;
-  currentPlan?: SubscriptionPlanDefinition | null;
-  currentPlanName?: string | null;
-}): PricingSelectionContext {
-  const latestOpen = findLatestOpenInvoice(input.invoices);
-  const currentPlanKey =
-    input.currentPlanKey !== undefined ? input.currentPlanKey : input.overview.currentPlanKey;
-  const currentPlan =
-    input.currentPlan !== undefined
-      ? input.currentPlan
-      : currentPlanKey
-        ? safeGetPlanByKey(currentPlanKey)
-        : null;
-  const isUsable = input.overview.isUsable;
-
-  return {
-    currentPlanKey,
-    currentPlan,
-    currentPlanName: input.currentPlanName ?? currentPlan?.name ?? input.overview.planLabel ?? null,
-    isUsable,
-    isCurrentPlan: false,
-    hasPaymentProblem: input.overview.hasPaymentProblem,
-    isPaymentPending: input.overview.isPaymentPending,
-    hasOpenUnpaidInvoice: hasOpenUnpaidInvoice(input.invoices),
-    latestOpenInvoiceUrl: latestOpen?.hostedInvoiceUrl ?? null,
-    canManage: input.canManage,
-    usedSeats: input.usedSeats,
-    usedClients: input.usedClients,
-    overview: input.overview,
-    invoices: input.invoices,
-  };
-}
+export type { PricingSelectionContext } from "@/lib/pricing/selection-context";
+export { buildPricingSelectionContext, createFallbackPricingSelection } from "@/lib/pricing/selection-context";
 
 type PricingGridProps = {
   plans: SubscriptionPlanDefinition[];
@@ -92,10 +37,13 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isPortalPending, startPortalTransition] = useTransition();
-  const unavailableMessage = getPricingUnavailableMessage(stripeStatus);
+  const safeStripeStatus = normalizeStripeBillingUiStatus(stripeStatus);
+  const safeSelection = selection ?? createFallbackPricingSelection();
+  const safePlans = Array.isArray(plans) ? plans : [];
+  const unavailableMessage = getPricingUnavailableMessage(safeStripeStatus);
   const paymentBlockMessage = getPricingPaymentBlockMessage({
-    overview: selection.overview,
-    invoices: selection.invoices,
+    overview: safeSelection.overview,
+    invoices: safeSelection.invoices ?? [],
   });
 
   const selectPlan = (planKey: PlanKey) => {
@@ -133,11 +81,11 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
       {paymentBlockMessage ? (
         <FormAlert variant="warning">
           {paymentBlockMessage}
-          {selection.latestOpenInvoiceUrl ? (
+          {safeSelection.latestOpenInvoiceUrl ? (
             <>
               {" "}
               <a
-                href={selection.latestOpenInvoiceUrl}
+                href={safeSelection.latestOpenInvoiceUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium underline"
@@ -146,7 +94,7 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
               </a>
             </>
           ) : null}
-          {selection.canManage && stripeStatus.portalAvailable ? (
+          {safeSelection.canManage && safeStripeStatus.portalAvailable ? (
             <>
               {" "}
               <button
@@ -163,34 +111,34 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {plans.map((plan) => {
+        {safePlans.map((plan) => {
           const action = resolvePlanActionLabel(
             plan.key,
-            selection.currentPlanKey,
-            selection.isUsable,
+            safeSelection.currentPlanKey,
+            safeSelection.isUsable,
           );
-          const isCurrent = selection.isUsable && action === "current";
+          const isCurrent = safeSelection.isUsable && action === "current";
           const isDowngrade = action === "downgrade";
           const seatBlock = getPricingPlanBlockReason(
             plan.key,
-            selection.usedSeats,
-            selection.usedClients,
+            safeSelection.usedSeats,
+            safeSelection.usedClients,
           );
           const disabledReasons = getPricingButtonDisabledReasons({
             planKey: plan.key,
-            currentPlanKey: selection.currentPlanKey,
-            isUsable: selection.isUsable,
-            hasPaymentProblem: selection.hasPaymentProblem,
-            isPaymentPending: selection.isPaymentPending,
-            hasOpenUnpaidInvoice: selection.hasOpenUnpaidInvoice,
-            overview: selection.overview,
-            invoices: selection.invoices,
-            canManage: selection.canManage,
+            currentPlanKey: safeSelection.currentPlanKey,
+            isUsable: safeSelection.isUsable,
+            hasPaymentProblem: safeSelection.hasPaymentProblem,
+            isPaymentPending: safeSelection.isPaymentPending,
+            hasOpenUnpaidInvoice: safeSelection.hasOpenUnpaidInvoice,
+            overview: safeSelection.overview,
+            invoices: safeSelection.invoices ?? [],
+            canManage: safeSelection.canManage,
             isLoading: isPending && pendingPlanKey === plan.key,
             isCurrent,
             isDowngrade,
             seatBlockMessage: seatBlock.blocked ? seatBlock.message : null,
-            stripeStatus,
+            stripeStatus: safeStripeStatus,
           });
 
           return (
@@ -203,14 +151,14 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
                 (isPending && pendingPlanKey === plan.key) ||
                 (isPortalPending && isDowngrade)
               }
-              canManage={selection.canManage}
+              canManage={safeSelection.canManage}
               seatBlockMessage={seatBlock.blocked ? seatBlock.message : null}
               disabledReasons={disabledReasons}
               isDisabled={isPricingButtonDisabled(plan.key, disabledReasons)}
-              stripeStatus={stripeStatus}
+              stripeStatus={safeStripeStatus}
               enterpriseContactHref={enterpriseContactHref}
               onSelect={() => {
-                if (isDowngrade && selection.isUsable && stripeStatus.portalAvailable) {
+                if (isDowngrade && safeSelection.isUsable && safeStripeStatus.portalAvailable) {
                   openPortal();
                   return;
                 }

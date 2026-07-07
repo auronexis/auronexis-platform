@@ -10,6 +10,7 @@ import {
 import { getPlanCheckoutHint } from "@/lib/diagnostics/pricing-reasons";
 import { getPricingHighlights } from "@/lib/plans/features";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
+import { normalizeStripeBillingUiStatus } from "@/lib/pricing/safe-stripe-status";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
@@ -44,7 +45,8 @@ export function PricingCard({
   const isEnterprise = plan.key === "enterprise";
   const pricingHighlights = getPricingHighlights(plan.key);
   const buttonDisabled = isDisabled || isLoading;
-  const checkoutHint = getPlanCheckoutHint(plan.key, stripeStatus);
+  const safeStripeStatus = normalizeStripeBillingUiStatus(stripeStatus);
+  const checkoutHint = getPlanCheckoutHint(plan.key, safeStripeStatus);
 
   return (
     <article
@@ -114,7 +116,7 @@ export function PricingCard({
               ))}
             </ul>
           ) : null}
-          {!stripeStatus.planCheckoutReady[plan.key] &&
+          {!safeStripeStatus.planCheckoutReady[plan.key] &&
           checkoutHint &&
           !isEnterprise &&
           disabledReasons.length === 0 ? (

@@ -1,5 +1,6 @@
-import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import { getPlanByPriceId, getPlanKeyByPriceId } from "@/lib/billing/plans.server";
+import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import { getPlanByPriceId, safeGetPlanKeyByStripePriceId } from "@/lib/billing/plans.server";
+import { selectPreferredSubscriptionSummaryRow } from "@/lib/billing/subscription-selection";
 import { applyPlanOverride } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";
 import { getDefaultPlanKey,
@@ -39,7 +40,7 @@ export async function getOrganizationPlanContext(
       .from("organization_subscriptions")
       .select(SUBSCRIPTION_SELECT)
       .eq("organization_id", organizationId)
-      .maybeSingle(),
+      .order("updated_at", { ascending: false }),
     getPlanOverride(organizationId),
   ]);
 
@@ -47,7 +48,9 @@ export async function getOrganizationPlanContext(
     throw new Error(error.message);
   }
 
-  const subscription = data as { stripe_price_id: string | null; status: string } | null;
+  const subscription = selectPreferredSubscriptionSummaryRow(
+    (data ?? []) as Array<{ stripe_price_id: string | null; status: string }>,
+  );
   const subscriptionPriceId = subscription?.stripe_price_id ?? null;
   const subscriptionStatus = subscription?.status ?? null;
   const isActiveSubscription = Boolean(
@@ -59,7 +62,7 @@ export async function getOrganizationPlanContext(
   let mappedPlanKeyFromPriceId: PlanKey | null = null;
 
   if (isActiveSubscription && subscriptionPriceId) {
-    mappedPlanKeyFromPriceId = getPlanKeyByPriceId(subscriptionPriceId);
+    mappedPlanKeyFromPriceId = safeGetPlanKeyByStripePriceId(subscriptionPriceId);
     const plan = getPlanByPriceId(subscriptionPriceId);
 
     if (plan) {
@@ -83,12 +86,14 @@ export async function getOrganizationPlanContext(
   }
 
   const mergedFeatures = applyPlanOverride(basePlanKey, planOverride);
-  const plan = getPlanByKey(basePlanKey);
+  const plan = safeGetPlanByKey(basePlanKey) ?? safeGetPlanByKey(getDefaultPlanKey());
 
   return {
     organizationId,
     planKey: basePlanKey,
-    planLabel: planOverrideActive ? `${plan.name} (Enterprise override)` : plan.name,
+    planLabel: planOverrideActive
+      ? `${plan?.name ?? "Plan"} (Enterprise override)`
+      : (plan?.name ?? "Plan"),
     isActiveSubscription,
     features: mergedFeatures,
     planSource,
