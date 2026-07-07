@@ -60,15 +60,8 @@ export const filterTabInactive =
 /** Sidebar nav scroll region — invisible scrollbar, flex child scroll. */
 export const sidebarNavScroll = "min-h-0 flex-1 overflow-y-auto no-scrollbar";
 
-/** Grid anchor — reserves horizontal space for the xl+ fixed detail rail. */
-export const dashboardDetailRailAnchor = "hidden min-w-0 shrink-0 xl:block xl:w-[360px]";
+/** Detail overview rail column — in grid flow, stretches to row height (xl+). */
+export const dashboardDetailRailAside = "hidden min-w-0 xl:block";
 
-/**
- * Fixed overview rail shell (xl+). Left/top/width are set by DetailFixedRail to align
- * with the grid anchor — do not use sticky.
- */
-export const dashboardFixedDetailRail = "pointer-events-none hidden xl:block z-20";
-
-/** Inner overview card — scrolls only when content exceeds the viewport. */
-export const dashboardFixedDetailRailInner =
-  "pointer-events-auto h-fit w-full min-w-0 max-h-[calc(100vh-8rem)] overflow-y-auto overscroll-contain";
+/** Sticky pin inside #main-content scroll container — inner wrapper only. */
+export const dashboardDetailRailSticky = "xl:sticky xl:top-8 h-fit w-full min-w-0";
