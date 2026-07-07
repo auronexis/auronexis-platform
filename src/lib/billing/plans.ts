@@ -87,21 +87,25 @@ const PLAN_BY_KEY = new Map(SUBSCRIPTION_PLANS.map((plan) => [plan.key, plan]));
 
 export const PLAN_KEYS: PlanKey[] = SUBSCRIPTION_PLANS.map((plan) => plan.key);
 
-/** All subscription plans in display order (includes legacy/internal keys). */
-export function getAvailablePlans(): SubscriptionPlanDefinition[] {
-  return SUBSCRIPTION_PLANS.filter((plan) => plan.key !== "starter");
+/** Type guard for plan keys — safe for unknown runtime strings. */
+export function isPlanKey(value: string | null | undefined): value is PlanKey {
+  return typeof value === "string" && PLAN_BY_KEY.has(value as PlanKey);
 }
 
-/** Public self-serve plans for workspace pricing UI — excludes invite-only programs. */
-export function getPublicSelfServePlans(): SubscriptionPlanDefinition[] {
-  return SUBSCRIPTION_PLANS.filter((plan) =>
-    (PUBLIC_SELF_SERVE_PLAN_KEYS as readonly PlanKey[]).includes(plan.key),
-  );
+/** Look up a plan without throwing — returns null for unknown keys. */
+export function safeGetPlanByKey(
+  key: PlanKey | string | null | undefined,
+): SubscriptionPlanDefinition | null {
+  if (!isPlanKey(key)) {
+    return null;
+  }
+
+  return PLAN_BY_KEY.get(key) ?? null;
 }
 
 /** Look up a plan definition by key. */
 export function getPlanByKey(key: PlanKey): SubscriptionPlanDefinition {
-  const plan = PLAN_BY_KEY.get(key);
+  const plan = safeGetPlanByKey(key);
 
   if (!plan) {
     throw new Error(`Unknown subscription plan: ${key}`);
@@ -110,22 +114,26 @@ export function getPlanByKey(key: PlanKey): SubscriptionPlanDefinition {
   return plan;
 }
 
-/** Resolve the CTA label for a plan relative to the current subscription. */
+/** Resolve the CTA label for a plan relative to the current subscription. Never throws. */
 export function resolvePlanActionLabel(
   targetKey: PlanKey,
-  currentKey: PlanKey | null,
+  currentKey: PlanKey | string | null | undefined,
   isUsable: boolean,
 ): PlanActionLabel {
-  if (isUsable && currentKey === targetKey) {
-    return "current";
-  }
+  const target = safeGetPlanByKey(targetKey);
+  const current = safeGetPlanByKey(currentKey);
 
-  if (!isUsable || !currentKey) {
+  if (!target) {
     return "choose";
   }
 
-  const target = getPlanByKey(targetKey);
-  const current = getPlanByKey(currentKey);
+  if (isUsable && current && current.key === target.key) {
+    return "current";
+  }
+
+  if (!isUsable || !current) {
+    return "choose";
+  }
 
   if (target.order > current.order) {
     return "upgrade";
@@ -136,6 +144,18 @@ export function resolvePlanActionLabel(
   }
 
   return "choose";
+}
+
+/** All subscription plans in display order (includes legacy/internal keys). */
+export function getAvailablePlans(): SubscriptionPlanDefinition[] {
+  return SUBSCRIPTION_PLANS.filter((plan) => plan.key !== "starter");
+}
+
+/** Public self-serve plans for workspace pricing UI — excludes invite-only programs. */
+export function getPublicSelfServePlans(): SubscriptionPlanDefinition[] {
+  return SUBSCRIPTION_PLANS.filter((plan) =>
+    (PUBLIC_SELF_SERVE_PLAN_KEYS as readonly PlanKey[]).includes(plan.key),
+  );
 }
 
 export function formatPlanPrice(plan: SubscriptionPlanDefinition): string {

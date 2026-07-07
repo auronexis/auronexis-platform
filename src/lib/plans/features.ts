@@ -186,7 +186,7 @@ export function planMeetsMinimum(currentPlan: PlanKey, minimumPlan: PlanKey): bo
 
 /** Full feature matrix for a plan key. */
 export function getPlanFeatures(planKey: PlanKey): PlanFeatures {
-  return PLAN_FEATURES[planKey];
+  return PLAN_FEATURES[planKey] ?? PLAN_FEATURES[getDefaultPlanKey()];
 }
 
 /** Minimum plan required for a feature flag. */
@@ -283,6 +283,10 @@ export function getEnabledModuleLabels(features: PlanFeatures): string[] {
 
 export function getPricingHighlights(planKey: PlanKey): string[] {
   const features = getPlanFeatures(planKey);
+  if (!features) {
+    return [];
+  }
+
   const seatLimit = features.seats;
   const clientLabel = formatClientLimit(features.max_clients);
 

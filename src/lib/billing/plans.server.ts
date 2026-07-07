@@ -1,7 +1,7 @@
 import { getStripePriceIdFallback } from "@/lib/env";
 import {
   getAvailablePlans,
-  getPlanByKey,
+  safeGetPlanByKey,
   type PlanKey,
   type SubscriptionPlanDefinition,
 } from "@/lib/billing/plans";
@@ -12,6 +12,16 @@ const PLAN_PRICE_ENV_KEYS: Record<PlanKey, string> = {
   business: "STRIPE_BUSINESS_PRICE_ID",
   enterprise: "STRIPE_ENTERPRISE_PRICE_ID",
 };
+
+/** Mask Stripe price IDs for logs — never log full values. */
+export function maskStripePriceId(priceId: string): string {
+  const trimmed = priceId.trim();
+  if (trimmed.length <= 8) {
+    return "price_***";
+  }
+
+  return `${trimmed.slice(0, 8)}…`;
+}
 
 /** Resolve Stripe price ID for a plan — server-only. */
 export function getPlanPriceId(planKey: PlanKey): string {
@@ -33,6 +43,17 @@ export function getPlanPriceId(planKey: PlanKey): string {
 
 /** Look up plan definition from a Stripe price ID — server-only. */
 export function getPlanByPriceId(priceId: string): SubscriptionPlanDefinition | null {
+  return safeGetPlanByStripePriceId(priceId);
+}
+
+/** Resolve plan from Stripe price ID without throwing. */
+export function safeGetPlanByStripePriceId(
+  priceId: string | null | undefined,
+): SubscriptionPlanDefinition | null {
+  if (!priceId?.trim()) {
+    return null;
+  }
+
   const normalized = priceId.trim();
 
   for (const plan of getAvailablePlans()) {
@@ -40,14 +61,14 @@ export function getPlanByPriceId(priceId: string): SubscriptionPlanDefinition | 
     const configuredPriceId = process.env[envKey]?.trim();
 
     if (configuredPriceId && configuredPriceId === normalized) {
-      return getPlanByKey(plan.key);
+      return safeGetPlanByKey(plan.key);
     }
   }
 
   const fallback = getStripePriceIdFallback();
 
   if (fallback && fallback === normalized) {
-    return getPlanByKey("professional");
+    return safeGetPlanByKey("professional");
   }
 
   return null;
@@ -55,5 +76,9 @@ export function getPlanByPriceId(priceId: string): SubscriptionPlanDefinition | 
 
 /** Resolve plan key from Stripe price ID — server-only. */
 export function getPlanKeyByPriceId(priceId: string): PlanKey | null {
-  return getPlanByPriceId(priceId)?.key ?? null;
+  return safeGetPlanByStripePriceId(priceId)?.key ?? null;
+}
+
+export function safeGetPlanKeyByStripePriceId(priceId: string | null | undefined): PlanKey | null {
+  return safeGetPlanByStripePriceId(priceId)?.key ?? null;
 }

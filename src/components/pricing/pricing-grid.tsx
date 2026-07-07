@@ -8,6 +8,7 @@ import { hasOpenUnpaidInvoice } from "@/lib/billing/checkout-guards";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import {
   resolvePlanActionLabel,
+  safeGetPlanByKey,
   type PlanKey,
   type SubscriptionPlanDefinition,
 } from "@/lib/billing/plans";
@@ -24,8 +25,11 @@ import { findLatestOpenInvoice } from "@/lib/billing/status";
 
 export type PricingSelectionContext = {
   currentPlanKey: PlanKey | null;
+  currentPlan: SubscriptionPlanDefinition | null;
+  currentPlanName: string | null;
   /** True when subscription is active or trialing (current plan badge). */
   isUsable: boolean;
+  isCurrentPlan: boolean;
   hasPaymentProblem: boolean;
   isPaymentPending: boolean;
   hasOpenUnpaidInvoice: boolean;
@@ -43,12 +47,27 @@ export function buildPricingSelectionContext(input: {
   canManage: boolean;
   usedSeats: number;
   usedClients: number;
+  currentPlanKey?: PlanKey | null;
+  currentPlan?: SubscriptionPlanDefinition | null;
+  currentPlanName?: string | null;
 }): PricingSelectionContext {
   const latestOpen = findLatestOpenInvoice(input.invoices);
+  const currentPlanKey =
+    input.currentPlanKey !== undefined ? input.currentPlanKey : input.overview.currentPlanKey;
+  const currentPlan =
+    input.currentPlan !== undefined
+      ? input.currentPlan
+      : currentPlanKey
+        ? safeGetPlanByKey(currentPlanKey)
+        : null;
+  const isUsable = input.overview.isUsable;
 
   return {
-    currentPlanKey: input.overview.currentPlanKey,
-    isUsable: input.overview.isUsable,
+    currentPlanKey,
+    currentPlan,
+    currentPlanName: input.currentPlanName ?? currentPlan?.name ?? input.overview.planLabel ?? null,
+    isUsable,
+    isCurrentPlan: false,
     hasPaymentProblem: input.overview.hasPaymentProblem,
     isPaymentPending: input.overview.isPaymentPending,
     hasOpenUnpaidInvoice: hasOpenUnpaidInvoice(input.invoices),
@@ -150,7 +169,7 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
             selection.currentPlanKey,
             selection.isUsable,
           );
-          const isCurrent = action === "current";
+          const isCurrent = selection.isUsable && action === "current";
           const isDowngrade = action === "downgrade";
           const seatBlock = getPricingPlanBlockReason(
             plan.key,

@@ -1,13 +1,31 @@
-import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import {
   isCheckoutBlockedByPaymentState,
   PENDING_PAYMENT_CHECKOUT_MESSAGE,
 } from "@/lib/billing/checkout-guards";
 import type { BillingOverview, CustomerInvoiceView, StripeBillingUiStatus } from "@/lib/billing/types";
 
+function comparePlanOrder(
+  targetKey: PlanKey,
+  currentPlanKey: PlanKey | string | null | undefined,
+): "upgrade" | "downgrade" | "same" | "unknown" {
+  const target = safeGetPlanByKey(targetKey);
+  const current = safeGetPlanByKey(currentPlanKey);
+
+  if (!target || !current) {
+    return "unknown";
+  }
+
+  if (target.order === current.order) {
+    return "same";
+  }
+
+  return target.order > current.order ? "upgrade" : "downgrade";
+}
+
 export function getPricingButtonDisabledReasons(input: {
   planKey: PlanKey;
-  currentPlanKey: PlanKey | null;
+  currentPlanKey: PlanKey | string | null | undefined;
   isUsable: boolean;
   hasPaymentProblem?: boolean;
   isPaymentPending?: boolean;
@@ -54,14 +72,9 @@ export function getPricingButtonDisabledReasons(input: {
   }
 
   if (input.isUsable && input.currentPlanKey && !input.isCurrent && !input.isDowngrade) {
-    try {
-      const target = getPlanByKey(input.planKey);
-      const current = getPlanByKey(input.currentPlanKey);
-      if (target.order <= current.order) {
-        reasons.push("Use the billing portal to manage your current subscription.");
-      }
-    } catch {
-      reasons.push("Unable to compare plans for this subscription.");
+    const comparison = comparePlanOrder(input.planKey, input.currentPlanKey);
+    if (comparison === "same" || comparison === "downgrade") {
+      reasons.push("Use the billing portal to manage your current subscription.");
     }
   }
 
@@ -122,8 +135,8 @@ export function getPlanCheckoutHint(
   return "Checkout temporarily unavailable.";
 }
 
-export function getPlanDisplayName(planKey: PlanKey): string {
-  return getPlanByKey(planKey).name;
+export function getPlanDisplayName(planKey: PlanKey | string | null | undefined): string {
+  return safeGetPlanByKey(planKey)?.name ?? "Plan";
 }
 
 export function getPricingPaymentBlockMessage(input: {

@@ -1,4 +1,4 @@
-import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import type { BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
 
 export const PENDING_PAYMENT_CHECKOUT_MESSAGE =
@@ -24,7 +24,7 @@ export function isCheckoutBlockedByPaymentState(input: {
   );
 }
 
-/** Server and client-safe checkout guard evaluation. */
+/** Server and client-safe checkout guard evaluation. Never throws. */
 export function evaluateCheckoutGuard(input: {
   overview: BillingOverview;
   invoices: CustomerInvoiceView[];
@@ -38,27 +38,24 @@ export function evaluateCheckoutGuard(input: {
   }
 
   if (input.overview.isUsable && input.overview.currentPlanKey) {
-    try {
-      const target = getPlanByKey(input.targetPlanKey);
-      const current = getPlanByKey(input.overview.currentPlanKey);
+    const target = safeGetPlanByKey(input.targetPlanKey);
+    const current = safeGetPlanByKey(input.overview.currentPlanKey);
 
-      if (target.key === current.key) {
-        return {
-          allowed: false,
-          reason: "This is your organization's current plan.",
-        };
-      }
+    if (!target || !current) {
+      return { allowed: true, reason: null };
+    }
 
-      if (target.order <= current.order) {
-        return {
-          allowed: false,
-          reason: "Use the billing portal to downgrade or manage your current subscription.",
-        };
-      }
-    } catch {
+    if (target.key === current.key) {
       return {
         allowed: false,
-        reason: "Unable to start checkout for this subscription state.",
+        reason: "This is your organization's current plan.",
+      };
+    }
+
+    if (target.order <= current.order) {
+      return {
+        allowed: false,
+        reason: "Use the billing portal to downgrade or manage your current subscription.",
       };
     }
   }

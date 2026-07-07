@@ -1,8 +1,14 @@
 import "server-only";
 
-import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import { getPlanKeyByPriceId } from "@/lib/billing/plans.server";
-import { getOrganizationSubscription } from "@/lib/billing/queries";
+import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import {
+  maskStripePriceId,
+  safeGetPlanKeyByStripePriceId,
+} from "@/lib/billing/plans.server";
+import {
+  getOrganizationSubscription,
+  selectPreferredSubscriptionRow,
+} from "@/lib/billing/queries";
 import { isSubscriptionUsable, normalizeSubscriptionStatus } from "@/lib/billing/status";
 import { getEffectiveLimits } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";
@@ -39,15 +45,13 @@ async function loadOrganizationSubscription(
     .from("organization_subscriptions")
     .select(SUBSCRIPTION_SELECT)
     .eq("organization_id", organizationId)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order("updated_at", { ascending: false });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return (data as OrganizationSubscription | null) ?? null;
+  return selectPreferredSubscriptionRow((data ?? []) as OrganizationSubscription[]);
 }
 
 function resolveMappedPlanKey(
@@ -57,7 +61,13 @@ function resolveMappedPlanKey(
   let planKey: PlanKey | null = null;
 
   if (subscription?.stripe_price_id) {
-    planKey = getPlanKeyByPriceId(subscription.stripe_price_id);
+    planKey = safeGetPlanKeyByStripePriceId(subscription.stripe_price_id);
+
+    if (!planKey) {
+      console.warn("[entitlements] Unmapped stripe_price_id", {
+        maskedPriceId: maskStripePriceId(subscription.stripe_price_id),
+      });
+    }
   }
 
   const devOverride = getDevForcePlanOverride();
@@ -100,7 +110,7 @@ export async function resolveOrganizationEntitlements(
     subscriptionReceived,
     status,
     normalizedStatus,
-    stripePriceId,
+    stripePriceId: stripePriceId ? maskStripePriceId(stripePriceId) : null,
     mappedPlanKey,
     activeAccess,
     fallbackPath,
@@ -112,7 +122,9 @@ export async function resolveOrganizationEntitlements(
     return {
       planKey: null,
       resolvedPlanKey: mappedPlanKey,
-      planLabel: mappedPlanKey ? getPlanByKey(mappedPlanKey).name : "No active subscription",
+      planLabel: mappedPlanKey
+        ? (safeGetPlanByKey(mappedPlanKey)?.name ?? "No active subscription")
+        : "No active subscription",
       isPaidAccess: false,
       subscriptionStatus: status,
       fallbackPath,
@@ -127,7 +139,7 @@ export async function resolveOrganizationEntitlements(
   return {
     planKey,
     resolvedPlanKey: mappedPlanKey ?? planKey,
-    planLabel: getPlanByKey(planKey).name,
+    planLabel: safeGetPlanByKey(planKey)?.name ?? "Plan",
     isPaidAccess: true,
     subscriptionStatus: status,
     fallbackPath,

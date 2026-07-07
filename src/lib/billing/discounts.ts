@@ -1,6 +1,7 @@
 import "server-only";
 
-import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import { getDefaultPlanKey } from "@/lib/plans/features";
+import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import { BILLING_PROMO_MESSAGES } from "@/lib/billing/messages";
 import type { DiscountPreview, ValidatedDiscount } from "@/lib/billing/types";
 import { normalizeDiscountCode, validateDiscountCodeFormat } from "@/lib/billing/validation";
@@ -66,7 +67,10 @@ function applyDiscount(planPriceCents: number, row: DiscountRow): number {
 
 export async function listActiveDiscountPreviews(planKey: PlanKey): Promise<DiscountPreview[]> {
   const admin = createAdminClient();
-  const plan = getPlanByKey(planKey);
+  const plan = safeGetPlanByKey(planKey) ?? safeGetPlanByKey(getDefaultPlanKey());
+  if (!plan) {
+    return [];
+  }
   const planPriceCents = plan.priceMonthly * 100;
   const now = new Date().toISOString();
 
@@ -102,7 +106,10 @@ export async function validateDiscountCode(
   }
 
   const admin = createAdminClient();
-  const plan = getPlanByKey(planKey);
+  const plan = safeGetPlanByKey(planKey) ?? safeGetPlanByKey(getDefaultPlanKey());
+  if (!plan) {
+    return { valid: false, message: BILLING_PROMO_MESSAGES.INVALID };
+  }
   const planPriceCents = plan.priceMonthly * 100;
 
   const { data, error } = await admin
