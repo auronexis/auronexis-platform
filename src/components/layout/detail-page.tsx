@@ -6,7 +6,13 @@ import { Icon } from "@/components/ui/icon";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import type { AuroraModule } from "@/lib/ui/aurora";
 import { cn } from "@/lib/utils/cn";
-import { dashboardStickyRail, focusRing, linkText, transitionInteractive } from "@/lib/ui/tokens";
+import {
+  dashboardStickyRail,
+  dashboardStickyRailScrollCap,
+  focusRing,
+  linkText,
+  transitionInteractive,
+} from "@/lib/ui/tokens";
 
 type DetailPageHeaderProps = {
   module: AuroraModule;
@@ -80,7 +86,9 @@ export function DetailPageLayout({ children, rail, className }: DetailPageLayout
       )}
     >
       <div className="order-2 min-w-0 space-y-6 lg:order-1">{children}</div>
-      <aside className={cn("order-1 space-y-6 lg:order-2", dashboardStickyRail)}>{rail}</aside>
+      <aside className={cn("order-1 lg:order-2", dashboardStickyRail)}>
+        <div className={dashboardStickyRailScrollCap}>{rail}</div>
+      </aside>
     </div>
   );
 }
