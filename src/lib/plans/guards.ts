@@ -1,5 +1,6 @@
 import { recordActivityEvent } from "@/lib/activity/record";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
+import { canCreateClient as canCreateClientEntitlement } from "@/lib/entitlements/checks";
 import {
   getFeatureUpgradeMessage,
   getMinimumPlanForFeature,
@@ -20,10 +21,6 @@ import type { SessionContext } from "@/lib/tenancy/context";
 
 const PLAN_LIMIT_ACTIVITY_COOLDOWN_MS = 60 * 60 * 1000;
 const PLAN_LIMIT_NOTIFICATION_COOLDOWN_MS = 24 * 60 * 60 * 1000;
-
-function buildClientLimitMessage(limit: number): string {
-  return `Your plan allows up to ${limit} client${limit === 1 ? "" : "s"}. Upgrade to add more.`;
-}
 
 async function hasRecentPlanLimitActivity(organizationId: string): Promise<boolean> {
   const admin = createAdminClient();
@@ -168,8 +165,8 @@ export async function assertCanUseFeature(
 
 /** Whether the organization can create another non-archived client. */
 export async function canCreateClient(organizationId: string): Promise<boolean> {
-  const usage = await getClientLimitUsage(organizationId);
-  return usage.limit === null || usage.used < usage.limit;
+  const check = await canCreateClientEntitlement({ organizationId });
+  return check.allowed;
 }
 
 /** Assert client creation is allowed — records activity/notification when blocked. */
@@ -177,40 +174,32 @@ export async function assertCanCreateClient(
   organizationId: string,
   actorUserId: string | null,
 ): Promise<PlanLimitCheckResult> {
+  const check = await canCreateClientEntitlement({ organizationId });
+
+  if (check.allowed) {
+    return { allowed: true };
+  }
+
   const [usage, plan] = await Promise.all([
     getClientLimitUsage(organizationId),
     getOrganizationPlanContext(organizationId),
   ]);
 
-  if (usage.limit === null || usage.used < usage.limit) {
-    return { allowed: true };
-  }
-
-  const message = buildClientLimitMessage(usage.limit);
-
-  await recordPlanLimitReachedSideEffects(organizationId, actorUserId, message, {
+  await recordPlanLimitReachedSideEffects(organizationId, actorUserId, check.message, {
     limitType: "max_clients",
     limit: usage.limit,
     used: usage.used,
     planKey: plan.planKey,
   });
 
-  return { allowed: false, message };
+  return { allowed: false, message: check.message };
 }
 
 export async function getClientCreateCheckForSession(
   session: SessionContext,
 ): Promise<PlanLimitCheckResult> {
-  const usage = await getClientLimitUsage(session.organization.id);
-
-  if (usage.limit === null || usage.used < usage.limit) {
-    return { allowed: true };
-  }
-
-  return {
-    allowed: false,
-    message: buildClientLimitMessage(usage.limit),
-  };
+  const check = await canCreateClientEntitlement(session);
+  return check.allowed ? { allowed: true } : { allowed: false, message: check.message };
 }
 
 /** Load plan features for navigation filtering. */

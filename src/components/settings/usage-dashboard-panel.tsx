@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import type { UsageDashboardData } from "@/lib/billing/types";
+import type { EntitlementsUsageSummary } from "@/lib/entitlements/types";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
+import { LinkButton } from "@/components/ui/link-button";
 import { cn } from "@/lib/utils/cn";
 
 type UsageDashboardPanelProps = {
   data: UsageDashboardData;
+  entitlements: EntitlementsUsageSummary;
 };
 
 function UsageBar({ percent }: { percent: number | null }) {
@@ -24,9 +27,94 @@ function UsageBar({ percent }: { percent: number | null }) {
   );
 }
 
-export function UsageDashboardPanel({ data }: UsageDashboardPanelProps) {
+export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelProps) {
+  const { entitlements: resolved } = entitlements;
+
   return (
     <div className="space-y-8">
+      <PageSurface>
+        <PageSurfaceHeading
+          title="Plan entitlements"
+          description="Limits and features for your current subscription. Enforcement is applied server-side."
+        />
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+          <span className="rounded-full border border-border/70 px-3 py-1 font-medium text-foreground">
+            Plan: {resolved.planLabel}
+          </span>
+          <span
+            className={cn(
+              "rounded-full border px-3 py-1 font-medium",
+              resolved.isPaidAccess
+                ? "border-success/25 bg-success/10 text-success"
+                : "border-warning/25 bg-warning/10 text-warning",
+            )}
+          >
+            {resolved.isPaidAccess ? "Active subscription" : "Limited access"}
+          </span>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {entitlements.usage.map((metric) => (
+            <div key={metric.key} className="rounded-xl border border-border/70 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium capitalize text-foreground">{metric.label}s</p>
+                  <p className="mt-1 text-2xl font-semibold text-foreground">
+                    {metric.used.toLocaleString()}
+                    {metric.limit !== null ? (
+                      <span className="text-sm font-normal text-muted">
+                        {" "}
+                        / {metric.limit.toLocaleString()}
+                      </span>
+                    ) : (
+                      <span className="text-sm font-normal text-muted"> / Unlimited</span>
+                    )}
+                  </p>
+                </div>
+                {metric.atLimit ? (
+                  <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs font-semibold text-danger">
+                    Limit
+                  </span>
+                ) : metric.approachingLimit ? (
+                  <span className="rounded-full bg-warning/10 px-2 py-0.5 text-xs font-semibold text-warning">
+                    Near limit
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-4">
+                <UsageBar percent={metric.percentUsed} />
+              </div>
+              {metric.remaining !== null ? (
+                <p className="mt-2 text-xs text-muted">{metric.remaining.toLocaleString()} remaining</p>
+              ) : (
+                <p className="mt-2 text-xs text-muted">Unlimited on your plan</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6">
+          <p className="text-sm font-medium text-foreground">Included features</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {entitlements.featureLabels.map((label) => (
+              <li
+                key={label}
+                className="rounded-full border border-border/70 bg-muted/5 px-3 py-1 text-xs text-muted"
+              >
+                {label}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {entitlements.hasLimitWarning ? (
+          <div className="mt-6 rounded-xl border border-warning/30 bg-warning/5 p-4 text-sm text-foreground">
+            <p>You are nearing or have reached a plan limit.</p>
+            <FormFooterUpgrade href={entitlements.upgradeHref} />
+          </div>
+        ) : null}
+      </PageSurface>
+
       <PageSurface>
         <PageSurfaceHeading
           title="Current month"
@@ -68,6 +156,14 @@ export function UsageDashboardPanel({ data }: UsageDashboardPanelProps) {
               ) : (
                 <p className="mt-2 text-xs text-muted">Unlimited on your plan</p>
               )}
+              {metric.atLimit ? (
+                <p className="mt-3 text-xs text-muted">
+                  You have reached the {metric.label.toLowerCase()} limit for your current plan.{" "}
+                  <Link href="/settings/plans" className="font-medium text-primary hover:underline">
+                    Upgrade plan
+                  </Link>
+                </p>
+              ) : null}
             </div>
           ))}
         </div>
@@ -135,6 +231,16 @@ export function UsageDashboardPanel({ data }: UsageDashboardPanelProps) {
           ))}
         </div>
       </PageSurface>
+    </div>
+  );
+}
+
+function FormFooterUpgrade({ href }: { href: "/settings/plans" }) {
+  return (
+    <div className="mt-3">
+      <LinkButton href={href} variant="primary" size="sm">
+        Upgrade plan
+      </LinkButton>
     </div>
   );
 }

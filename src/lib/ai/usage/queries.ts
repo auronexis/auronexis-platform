@@ -2,11 +2,13 @@ import "server-only";
 
 import {
   AI_PLAN_RESTRICTED_MESSAGE,
-  AI_RATE_LIMIT_MESSAGE,
   AIUserError,
 } from "@/lib/ai/errors";
 import type { PlanKey } from "@/lib/billing/plans";
 import { getAIUsageLimit, getStartOfCurrentMonthUtc } from "@/lib/ai/usage/limits";
+import { formatLimitReachedMessage } from "@/lib/entitlements/messages";
+import { resolveOrganizationEntitlements } from "@/lib/entitlements/resolver";
+import { isUnlimited } from "@/lib/entitlements/definitions";
 import type { AIUsageSummary } from "@/lib/ai/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -122,17 +124,27 @@ export async function getAIUsageSummaryForSession(
 
 export async function assertWithinAIUsageLimit(
   organizationId: string,
-  planKey: PlanKey,
+  _planKey: PlanKey,
 ): Promise<void> {
-  const limit = getAIUsageLimit(planKey);
+  const entitlements = await resolveOrganizationEntitlements(organizationId);
+
+  if (!entitlements.isPaidAccess) {
+    throw new AIUserError(AI_PLAN_RESTRICTED_MESSAGE, "plan_restricted");
+  }
+
+  const limit = entitlements.aiCreditsPerMonth;
 
   if (limit === 0) {
     throw new AIUserError(AI_PLAN_RESTRICTED_MESSAGE, "plan_restricted");
   }
 
+  if (isUnlimited(limit)) {
+    return;
+  }
+
   const used = await getOrganizationAIMonthlyUsageCount(organizationId);
 
   if (used >= limit) {
-    throw new AIUserError(AI_RATE_LIMIT_MESSAGE, "rate_limit");
+    throw new AIUserError(formatLimitReachedMessage("aiCreditsPerMonth"), "rate_limit");
   }
 }

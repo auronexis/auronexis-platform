@@ -5,7 +5,7 @@ import { createApiKey, listApiKeys, revokeApiKey } from "@/lib/api/keys/reposito
 import type { ApiKeyCreateResult, ApiKeyType, ApiKeyView, ApiScope } from "@/lib/api/types";
 import type { ApiKeyMode } from "@/lib/api/keys/hash";
 import { validateApiScopes } from "@/lib/api/auth/scopes";
-import { checkPlanFeatureForSession } from "@/lib/plans/guards";
+import { requireFeatureAccess } from "@/lib/entitlements/checks";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import { createClient } from "@/lib/supabase/server";
 import { createWebhookEndpointAction as createWebhookEndpointInternal } from "@/lib/webhooks/actions";
@@ -15,10 +15,7 @@ type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 async function ensureApiAccess() {
   const session = await requireSession();
-  const access = await checkPlanFeatureForSession(session, "future_api_webhooks");
-  if (!access.allowed) {
-    throw new Error(access.message ?? "Enterprise plan required for Public API.");
-  }
+  await requireFeatureAccess("api", session);
   if (!canManageOrganizationSettings(session)) {
     throw new Error("Only organization owners and admins can manage API keys.");
   }

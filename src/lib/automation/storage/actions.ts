@@ -12,12 +12,14 @@ import {
   updateWorkflow,
 } from "@/lib/automation/storage/repository";
 import { requireSession } from "@/lib/auth/session";
+import { requireFeatureAccess } from "@/lib/entitlements/checks";
 import { checkPlanFeatureForSession } from "@/lib/plans/guards";
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 async function ensureAutomationBuilderAccess() {
   const session = await requireSession();
+  await requireFeatureAccess("automations", session);
   const access = await checkPlanFeatureForSession(session, "ai_automation_builder");
   if (!access.allowed) {
     throw new Error(access.message);

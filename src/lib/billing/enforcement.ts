@@ -178,3 +178,6 @@ export function getMinimumPlanForLimitIncrease(
 ): PlanKey | null {
   return getSuggestedUpgradePlan(currentPlan, targetMetric);
 }
+
+// TODO(entitlements): Wire assertUsageWithinLimit at portal user creation, connector sync jobs,
+// and email send mutations once those paths expose stable server entry points.

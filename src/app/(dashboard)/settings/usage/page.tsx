@@ -3,6 +3,7 @@ import Link from "next/link";
 import { UsageDashboardPanel } from "@/components/settings/usage-dashboard-panel";
 import { PageHeader } from "@/components/layout/page-header";
 import { getUsageDashboardData } from "@/lib/billing/usage";
+import { getEntitlementsUsageSummary } from "@/lib/entitlements/checks";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 
@@ -13,7 +14,10 @@ export const metadata: Metadata = {
 export default async function UsageSettingsPage() {
   await requireModuleAccess("settings");
   const session = await requireSession();
-  const data = await getUsageDashboardData(session);
+  const [data, entitlementsSummary] = await Promise.all([
+    getUsageDashboardData(session),
+    getEntitlementsUsageSummary(session),
+  ]);
 
   return (
     <>
@@ -40,7 +44,7 @@ export default async function UsageSettingsPage() {
         <span>Usage</span>
       </div>
 
-      <UsageDashboardPanel data={data} />
+      <UsageDashboardPanel data={data} entitlements={entitlementsSummary} />
     </>
   );
 }

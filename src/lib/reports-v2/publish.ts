@@ -1,5 +1,6 @@
 import { recordActivityEvent } from "@/lib/activity/record";
 import { dispatchAutomation } from "@/lib/automation";
+import { canGenerateReport } from "@/lib/entitlements/checks";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -30,6 +31,11 @@ export async function generateReportV2(
 
     if (report.status !== "draft") {
       return { data: null, error: "Only draft reports can be generated." };
+    }
+
+    const reportLimitCheck = await canGenerateReport(session);
+    if (!reportLimitCheck.allowed) {
+      return { data: null, error: reportLimitCheck.message };
     }
 
     const generated = await generateReport({

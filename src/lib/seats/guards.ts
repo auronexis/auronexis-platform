@@ -1,8 +1,8 @@
 import { recordActivityEvent } from "@/lib/activity/record";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
+import { canInviteSeat } from "@/lib/entitlements/checks";
 import {
   getOrganizationSeatUsage,
-  getOrganizationSeatUsageForSession,
 } from "@/lib/seats/queries";
 import type { SeatInviteCheckResult } from "@/lib/seats/types";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -10,10 +10,6 @@ import type { SessionContext } from "@/lib/tenancy/context";
 
 const SEAT_LIMIT_ACTIVITY_COOLDOWN_MS = 60 * 60 * 1000;
 const SEAT_LIMIT_NOTIFICATION_COOLDOWN_MS = 24 * 60 * 60 * 1000;
-
-function buildInviteBlockedMessage(limit: number): string {
-  return `Your current plan includes ${limit} seat${limit === 1 ? "" : "s"}. Upgrade to invite more team members.`;
-}
 
 async function hasRecentSeatLimitActivity(organizationId: string): Promise<boolean> {
   const admin = createAdminClient();
@@ -89,8 +85,8 @@ async function recordSeatLimitReachedSideEffects(
 
 /** Whether the organization can create another team invitation. */
 export async function canInviteTeamMember(organizationId: string): Promise<boolean> {
-  const usage = await getOrganizationSeatUsage(organizationId);
-  return usage.used < usage.limit;
+  const check = await canInviteSeat({ organizationId });
+  return check.allowed;
 }
 
 /** Assert invite is allowed — records activity/notification when blocked. */
@@ -98,11 +94,13 @@ export async function assertCanInviteTeamMember(
   organizationId: string,
   actorUserId: string | null,
 ): Promise<SeatInviteCheckResult> {
-  const usage = await getOrganizationSeatUsage(organizationId);
+  const check = await canInviteSeat({ organizationId });
 
-  if (usage.used < usage.limit) {
+  if (check.allowed) {
     return { allowed: true };
   }
+
+  const usage = await getOrganizationSeatUsage(organizationId);
 
   await recordSeatLimitReachedSideEffects(
     organizationId,
@@ -113,7 +111,7 @@ export async function assertCanInviteTeamMember(
 
   return {
     allowed: false,
-    message: buildInviteBlockedMessage(usage.limit),
+    message: check.message,
   };
 }
 
@@ -144,14 +142,6 @@ export async function canAcceptTeamInvite(organizationId: string): Promise<SeatI
 export async function getInviteSeatCheckForSession(
   session: SessionContext,
 ): Promise<SeatInviteCheckResult> {
-  const usage = await getOrganizationSeatUsageForSession(session);
-
-  if (usage.used < usage.limit) {
-    return { allowed: true };
-  }
-
-  return {
-    allowed: false,
-    message: buildInviteBlockedMessage(usage.limit),
-  };
+  const check = await canInviteSeat(session);
+  return check.allowed ? { allowed: true } : { allowed: false, message: check.message };
 }
