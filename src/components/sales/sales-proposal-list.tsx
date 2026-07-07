@@ -1,12 +1,22 @@
 import Link from "next/link";
+import { FileSignature } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 import type { SalesProposal } from "@/types/database";
 
 export function SalesProposalList({ proposals }: { proposals: SalesProposal[] }) {
   if (proposals.length === 0) {
     return (
-      <p className="text-sm text-muted">
-        No proposals yet. Generate one from a qualified lead to send pilot agreement and pricing.
-      </p>
+      <EmptyState
+        icon={FileSignature}
+        title="No proposals yet"
+        description="Generate a proposal from a qualified lead to send pilot agreements, pricing, and founding customer terms."
+        action={
+          <Link href="/sales/leads">
+            <Button size="sm">Review leads</Button>
+          </Link>
+        }
+      />
     );
   }
 

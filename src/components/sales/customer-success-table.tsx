@@ -1,7 +1,9 @@
 import type { CustomerSuccessRecord } from "@/types/database";
-import { PILOT_ONBOARDING_CHECKLIST } from "@/lib/sales/customer-success";
-import { updateCustomerSuccessForm } from "@/lib/sales/actions";
+import Link from "next/link";
+import { HeartHandshake } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { updateCustomerSuccessForm } from "@/lib/sales/actions";
 
 type CustomerSuccessTableProps = {
   records: CustomerSuccessRecord[];
@@ -11,17 +13,16 @@ type CustomerSuccessTableProps = {
 export function CustomerSuccessTable({ records, canManage }: CustomerSuccessTableProps) {
   if (records.length === 0) {
     return (
-      <section className="aurora-surface p-6">
-        <h2 className="text-base font-semibold text-foreground">Customer success</h2>
-        <p className="mt-2 text-sm text-muted">
-          No customer success records yet. Enroll founding customers to track onboarding and renewal health.
-        </p>
-        <ul className="mt-4 space-y-1 text-sm text-muted">
-          {PILOT_ONBOARDING_CHECKLIST.map((item) => (
-            <li key={item}>• {item}</li>
-          ))}
-        </ul>
-      </section>
+      <EmptyState
+        icon={HeartHandshake}
+        title="No customer success records yet"
+        description="Enroll founding customers to track onboarding milestones, renewal health, and pilot outcomes."
+        action={
+          <Link href="/sales/onboarding">
+            <Button size="sm">Open onboarding</Button>
+          </Link>
+        }
+      />
     );
   }
 

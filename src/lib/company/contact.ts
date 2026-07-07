@@ -104,10 +104,21 @@ export const FOOTER_LINKS = [
   { label: "Pilot Program", href: MARKETING_ROUTES.pilotProgram },
 ] as const;
 
+/** Public documentation topic pages included in sitemap. */
+export const PUBLIC_DOC_ROUTES = [
+  "/docs/getting-started",
+  "/docs/api",
+  "/docs/security",
+  "/docs/compliance",
+  "/docs/clients",
+  "/docs/reports",
+] as const;
+
 export const PUBLIC_SITEMAP_ROUTES = [
   ...Object.values(MARKETING_ROUTES),
   ...Object.values(LEGAL_ROUTES),
   "/docs",
+  ...PUBLIC_DOC_ROUTES,
   "/login",
   "/signup",
 ] as const;

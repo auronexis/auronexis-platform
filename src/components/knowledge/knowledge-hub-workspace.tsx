@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useState, useTransition } from "react";
-import { Search } from "lucide-react";
+import {
+  BookOpen,
+  FileText,
+  Layers,
+  Lightbulb,
+  ScrollText,
+  ShieldAlert,
+  ShieldCheck,
+  Search,
+} from "lucide-react";
 import { KnowledgeHealthCard } from "@/components/knowledge/knowledge-health-card";
 import { AIErrorAlert } from "@/components/ai/ai-error-alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   answerKnowledgeQuestionServerAction,
   generateKnowledgeArticleServerAction,
@@ -49,6 +59,56 @@ const TAB_LABELS: Record<HubTab, string> = {
   templates: "Templates",
   playbooks: "Operational playbooks",
   learnings: "Recent learnings",
+};
+
+const TAB_EMPTY: Record<
+  HubTab,
+  { icon: typeof BookOpen; title: string; description: string; href?: string; cta?: string }
+> = {
+  articles: {
+    icon: BookOpen,
+    title: "No knowledge articles yet",
+    description:
+      "Articles are generated from resolved incidents, risks, and reports. Resolve operational items or use AI generation to build organizational memory.",
+  },
+  incidents: {
+    icon: ShieldAlert,
+    title: "No resolved incidents in memory",
+    description: "Close and document incidents to capture learnings for your team and future playbooks.",
+    href: "/incidents",
+    cta: "View incidents",
+  },
+  risks: {
+    icon: ShieldCheck,
+    title: "No resolved risks in memory",
+    description: "Mitigate and close risks to enrich your knowledge base with proven remediation steps.",
+    href: "/risks",
+    cta: "View risks",
+  },
+  reports: {
+    icon: FileText,
+    title: "No published reports yet",
+    description: "Publish client reports to preserve executive summaries and delivery history in memory.",
+    href: "/reports",
+    cta: "View reports",
+  },
+  templates: {
+    icon: ScrollText,
+    title: "No report templates yet",
+    description: "Create templates to standardize delivery and feed consistent knowledge into your workspace.",
+    href: "/reports/templates",
+    cta: "Manage templates",
+  },
+  playbooks: {
+    icon: Layers,
+    title: "No operational playbooks yet",
+    description: "Generate playbooks from resolved incidents or build them manually for repeatable response workflows.",
+  },
+  learnings: {
+    icon: Lightbulb,
+    title: "No recent learnings captured",
+    description: "Learnings appear as your team resolves incidents, updates risks, and publishes reports.",
+  },
 };
 
 export function KnowledgeHubWorkspace({
@@ -363,10 +423,20 @@ function TabContent({
   onGenerateArticle?: (sourceId: string) => void;
 }) {
   if (items.length === 0) {
+    const empty = TAB_EMPTY[tab];
     return (
-      <p className="text-sm text-muted" role="status">
-        No verified {TAB_LABELS[tab].toLowerCase()} in organizational memory yet.
-      </p>
+      <EmptyState
+        icon={empty.icon}
+        title={empty.title}
+        description={empty.description}
+        action={
+          empty.href && empty.cta ? (
+            <Link href={empty.href}>
+              <Button size="sm">{empty.cta}</Button>
+            </Link>
+          ) : undefined
+        }
+      />
     );
   }
 

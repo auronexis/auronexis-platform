@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Mail } from "lucide-react";
 import type { SalesLeadActivity } from "@/types/database";
 import { formatDistanceToNow } from "@/lib/utils/date";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 export function RecentOutreachList({
   activities,
@@ -12,7 +15,21 @@ export function RecentOutreachList({
       <h2 className="text-base font-semibold text-foreground">Recent outreach</h2>
       <p className="mt-1 text-sm text-muted">Latest email, call, and meeting activity.</p>
       {activities.length === 0 ? (
-        <p className="mt-5 text-sm text-muted">No outreach logged yet.</p>
+        <div className="mt-4">
+          <EmptyState
+            icon={Mail}
+            title="No outreach logged yet"
+            description="Log calls, emails, and meetings on lead records to track follow-ups and pipeline momentum."
+            action={
+              <Link href="/sales/leads">
+                <Button size="sm" variant="secondary">
+                  Open leads
+                </Button>
+              </Link>
+            }
+            className="min-h-[10rem] py-8"
+          />
+        </div>
       ) : (
         <ul className="mt-5 space-y-3">
           {activities.map((activity) => (

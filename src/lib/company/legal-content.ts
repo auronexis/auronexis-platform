@@ -21,19 +21,27 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
   imprint: {
     title: "Imprint",
     description: "Legal disclosure and company information.",
-    lastUpdated: "June 2025",
+    lastUpdated: "July 2026",
     sections: [
       {
         heading: "Service provider",
-        body: `${COMPANY_NAME} provides the Auroranexis operations platform for agencies and service providers. Contact: ${SUPPORT_EMAIL}.`,
+        body: `${COMPANY_NAME} operates the Auroranexis platform — a B2B SaaS Operations Command Center for agencies, MSPs, and service providers.`,
       },
       {
-        heading: "Support",
-        body: `Product support and general inquiries: ${SUPPORT_EMAIL}. Sales and partnerships: ${SALES_EMAIL}. Security reports: ${SECURITY_EMAIL}.`,
+        heading: "Contact",
+        body: `General inquiries and product support: ${SUPPORT_EMAIL}. Sales and partnerships: ${SALES_EMAIL}. Security reports: ${SECURITY_EMAIL}.`,
+      },
+      {
+        heading: "Legal and regulatory",
+        body: "Registered company details, VAT identification, and trade register information are provided to customers, partners, and authorities upon request. Contact legal@auroranexis.com for imprint requests in German (Impressum) or English.",
       },
       {
         heading: "Responsible for content",
-        body: `${COMPANY_NAME} — content on this platform is provided for operational use by registered workspace members and authorized portal users.`,
+        body: `${COMPANY_NAME} — platform content is provided for operational use by registered workspace members and authorized client portal users. External marketing pages describe product capabilities and do not constitute operational advice.`,
+      },
+      {
+        heading: "Dispute resolution",
+        body: "The European Commission provides a platform for online dispute resolution (ODR): https://ec.europa.eu/consumers/odr. We are not obliged or willing to participate in dispute resolution proceedings before a consumer arbitration board unless required by law.",
       },
     ],
   },
@@ -154,24 +162,36 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
   },
   dataProcessingAgreement: {
     title: "Data Processing Agreement",
-    description: "Outline of data processing terms for business customers (Germany/EU).",
-    lastUpdated: "June 2026",
+    description: "Data processing terms for business customers (Germany/EU).",
+    lastUpdated: "July 2026",
     sections: [
       {
         heading: "Roles",
-        body: "Customer acts as controller for client and operational data entered into the workspace. Auroranexis acts as processor when handling that data on the customer's instructions.",
+        body: "Customer acts as controller for client and operational data entered into the workspace. Auroranexis acts as processor when handling that data on the customer's documented instructions.",
       },
       {
-        heading: "Processing purpose",
-        body: "Processing is limited to providing the Auroranexis platform, support, billing, security monitoring, and optional AI features enabled by the customer.",
+        heading: "Processing purpose and instructions",
+        body: "Processing is limited to providing the Auroranexis platform, customer support, billing, security monitoring, audit logging, and optional AI features explicitly enabled by the customer. We process personal data only as instructed by the customer agreement and applicable law.",
+      },
+      {
+        heading: "Security measures",
+        body: "We implement administrative, technical, and organizational measures including encryption in transit, role-based access controls, tenant isolation, audit trails, and vulnerability management. Details are described in our Security Policy.",
       },
       {
         heading: "Sub-processors and transfers",
-        body: "Sub-processors are listed in our Sub-processors page. Transfers outside the EEA, if any, use appropriate safeguards such as Standard Contractual Clauses.",
+        body: "Sub-processors are listed on our Sub-processors page. Material changes are communicated to workspace administrators with reasonable notice. Transfers outside the EEA, if any, use appropriate safeguards such as Standard Contractual Clauses.",
+      },
+      {
+        heading: "Data subject requests and breach notification",
+        body: "We assist customers in responding to data subject requests where required. We notify customers without undue delay after becoming aware of a personal data breach affecting customer data, in line with applicable law and the signed agreement.",
+      },
+      {
+        heading: "Retention and deletion",
+        body: "Customer data is retained for the subscription term and deleted or returned according to the agreement and customer offboarding instructions, subject to legal retention obligations.",
       },
       {
         heading: "Execution",
-        body: `Enterprise and pilot customers may request a countersigned DPA via ${SALES_EMAIL}. This page is an outline only and does not replace a signed agreement.`,
+        body: `Enterprise and pilot customers may request a countersigned DPA via ${SALES_EMAIL}. This page summarizes standard processing terms and does not replace a signed Data Processing Agreement.`,
       },
     ],
   },

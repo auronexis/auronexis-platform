@@ -1,16 +1,19 @@
 "use client";
 
 import { Fragment, useState } from "react";
+import Link from "next/link";
+import { TrendingUp } from "lucide-react";
 import { ClientFinancialForm } from "@/components/profitability/client-financial-form";
 import { ClientHealthBadge } from "@/components/profitability/client-health-badge";
 import { ClickableRow } from "@/components/ui/clickable-row";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { rowInteractiveClass } from "@/components/ui/interactive-surface";
 import {
   AuroraDataTable,
   AuroraTable,
   AuroraTableBody,
   AuroraTableCell,
-  AuroraTableEmpty,
   AuroraTableHead,
   AuroraTableHeaderCell,
   AuroraTableRow,
@@ -29,9 +32,15 @@ export function ProfitabilityTable({ rows, canEdit }: ProfitabilityTableProps) {
 
   if (rows.length === 0) {
     return (
-      <AuroraTableEmpty
-        title="No active clients"
-        description="Add clients to start tracking operational profitability across your portfolio."
+      <EmptyState
+        icon={TrendingUp}
+        title="No profitability data yet"
+        description="Add clients and enter revenue and cost figures to track margins and portfolio health."
+        action={
+          <Link href="/clients/new">
+            <Button size="sm">Add client</Button>
+          </Link>
+        }
       />
     );
   }

@@ -21,6 +21,9 @@ export const metadata: Metadata = createMarketingMetadata({
   path: "/status",
 });
 
+/** Live probes require runtime env — skip static prerender at build time. */
+export const dynamic = "force-dynamic";
+
 type StatusComponent = {
   name: string;
   status: StatusLevel;

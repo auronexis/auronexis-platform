@@ -4,9 +4,14 @@ import { SignUpForm } from "@/components/auth/signup-form";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
 import { getSession } from "@/lib/auth/session";
 
-export const metadata: Metadata = {
+import { createMarketingMetadata } from "@/lib/marketing/seo";
+
+export const metadata: Metadata = createMarketingMetadata({
   title: "Create account",
-};
+  description: "Create your Auroranexis agency workspace.",
+  path: "/signup",
+  noIndex: true,
+});
 
 export default async function SignUpPage() {
   const session = await getSession();

@@ -8,9 +8,14 @@ import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { AUTH_MESSAGES } from "@/lib/auth/messages";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
+import { createMarketingMetadata } from "@/lib/marketing/seo";
+
+export const metadata: Metadata = createMarketingMetadata({
   title: "Reset password",
-};
+  description: "Choose a new password for your Auroranexis account.",
+  path: "/reset-password",
+  noIndex: true,
+});
 
 type ResetPasswordPageProps = {
   searchParams: Promise<{ code?: string; error?: string; error_description?: string }>;

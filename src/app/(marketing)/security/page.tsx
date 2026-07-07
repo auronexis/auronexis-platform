@@ -40,6 +40,14 @@ export default function SecurityPage() {
           <Link href={MARKETING_ROUTES.compliance} className="font-medium text-primary hover:underline">
             compliance readiness
           </Link>
+          ,{" "}
+          <Link href={MARKETING_ROUTES.status} className="font-medium text-primary hover:underline">
+            platform status
+          </Link>
+          , and{" "}
+          <Link href="/docs/api" className="font-medium text-primary hover:underline">
+            API documentation
+          </Link>
           .
         </p>
       </MarketingSection>

@@ -8,21 +8,27 @@ export default function NotFound() {
         <p className="text-sm font-semibold uppercase tracking-wider text-muted">404</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Page not found</h1>
         <p className="text-sm text-muted">
-          The page you requested does not exist or may have moved.
+          The page you requested does not exist, may have moved, or requires a signed-in workspace.
         </p>
       </div>
       <div className="flex flex-wrap gap-3">
         <Link
-          href="/dashboard"
+          href="/"
           className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35"
         >
-          Return to dashboard
+          Back home
         </Link>
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-flex h-10 items-center rounded-md border border-border bg-surface px-4 text-sm font-medium text-foreground hover:bg-muted/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35"
         >
-          Back home
+          Go to dashboard
+        </Link>
+        <Link
+          href="/support"
+          className="inline-flex h-10 items-center rounded-md border border-border bg-surface px-4 text-sm font-medium text-foreground hover:bg-muted/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35"
+        >
+          Get support
         </Link>
       </div>
       <p className="text-sm text-muted">

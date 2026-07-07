@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { Users } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 import type { SalesLeadWithMeta } from "@/lib/sales/queries";
 import { getLeadSourceLabel, getPipelineStageLabel } from "@/lib/sales/pipeline-stages";
 
@@ -15,7 +18,18 @@ export function SalesLeadTable({
   showScores?: boolean;
 }) {
   if (leads.length === 0) {
-    return <p className="text-sm text-muted">No leads yet. Inbound forms will appear here.</p>;
+    return (
+      <EmptyState
+        icon={Users}
+        title="No leads yet"
+        description="Inbound forms, pilot requests, and manually added leads appear here. Qualify leads and move them through your pipeline."
+        action={
+          <Link href="/sales/leads">
+            <Button size="sm">View leads</Button>
+          </Link>
+        }
+      />
+    );
   }
 
   return (
