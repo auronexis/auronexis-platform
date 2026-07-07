@@ -40,9 +40,12 @@ export type PlanEntitlements = {
 
 export type ResolvedEntitlements = PlanEntitlements & {
   planKey: PlanKey | null;
+  /** Plan mapped from Stripe price id — for display even when access is limited. */
+  resolvedPlanKey: PlanKey | null;
   planLabel: string;
   isPaidAccess: boolean;
   subscriptionStatus: string | null;
+  fallbackPath: "paid_plan" | "minimal_access" | "starter_default";
 };
 
 export type EntitlementCheckResult =

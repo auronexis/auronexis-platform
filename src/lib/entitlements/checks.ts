@@ -46,6 +46,17 @@ function resolveOrganizationId(input: SessionOrOrg): string {
   return "organizationId" in input ? input.organizationId : input.organization.id;
 }
 
+function resolveSession(input: SessionOrOrg): SessionContext | undefined {
+  return "organizationId" in input ? undefined : input;
+}
+
+async function resolveEntitlements(input: SessionOrOrg): Promise<ResolvedEntitlements> {
+  const organizationId = resolveOrganizationId(input);
+  return resolveOrganizationEntitlements(organizationId, {
+    session: resolveSession(input),
+  });
+}
+
 async function countReportsThisMonth(organizationId: string): Promise<number> {
   const admin = createAdminClient();
   const since = getStartOfCurrentMonthUtc();
@@ -171,8 +182,8 @@ async function assertLimitHeadroom(
 }
 
 export async function canCreateClient(input: SessionOrOrg): Promise<EntitlementCheckResult> {
+  const entitlements = await resolveEntitlements(input);
   const organizationId = resolveOrganizationId(input);
-  const entitlements = await resolveOrganizationEntitlements(organizationId);
 
   const paid = assertPaidAccess(entitlements);
   if (!paid.allowed) {
@@ -191,8 +202,8 @@ export async function canCreateClient(input: SessionOrOrg): Promise<EntitlementC
 }
 
 export async function canInviteSeat(input: SessionOrOrg): Promise<EntitlementCheckResult> {
+  const entitlements = await resolveEntitlements(input);
   const organizationId = resolveOrganizationId(input);
-  const entitlements = await resolveOrganizationEntitlements(organizationId);
 
   const paid = assertPaidAccess(entitlements);
   if (!paid.allowed) {
@@ -203,8 +214,8 @@ export async function canInviteSeat(input: SessionOrOrg): Promise<EntitlementChe
 }
 
 export async function canGenerateReport(input: SessionOrOrg): Promise<EntitlementCheckResult> {
+  const entitlements = await resolveEntitlements(input);
   const organizationId = resolveOrganizationId(input);
-  const entitlements = await resolveOrganizationEntitlements(organizationId);
 
   const paid = assertPaidAccess(entitlements);
   if (!paid.allowed) {
@@ -224,7 +235,9 @@ export async function requireFeatureAccess(
   session?: SessionContext,
 ): Promise<void> {
   const activeSession = session ?? (await requireSession());
-  const entitlements = await resolveOrganizationEntitlements(activeSession.organization.id);
+  const entitlements = await resolveOrganizationEntitlements(activeSession.organization.id, {
+    session: activeSession,
+  });
   const check = assertFeature(entitlements, feature);
 
   if (!check.allowed) {
@@ -238,7 +251,9 @@ export async function requireLimitAvailable(
 ): Promise<void> {
   const activeSession = session ?? (await requireSession());
   const organizationId = activeSession.organization.id;
-  const entitlements = await resolveOrganizationEntitlements(organizationId);
+  const entitlements = await resolveOrganizationEntitlements(organizationId, {
+    session: activeSession,
+  });
 
   const paid = assertPaidAccess(entitlements);
   if (!paid.allowed) {
@@ -253,7 +268,9 @@ export async function requireLimitAvailable(
 
 export async function requirePaidEntitlementAccess(session?: SessionContext): Promise<ResolvedEntitlements> {
   const activeSession = session ?? (await requireSession());
-  const entitlements = await resolveOrganizationEntitlements(activeSession.organization.id);
+  const entitlements = await resolveOrganizationEntitlements(activeSession.organization.id, {
+    session: activeSession,
+  });
   const paid = assertPaidAccess(entitlements);
 
   if (!paid.allowed) {
@@ -266,7 +283,7 @@ export async function requirePaidEntitlementAccess(session?: SessionContext): Pr
 export async function getEntitlementsUsageSummary(
   session: SessionContext,
 ): Promise<EntitlementsUsageSummary> {
-  const entitlements = await resolveOrganizationEntitlements(session.organization.id);
+  const entitlements = await resolveOrganizationEntitlements(session.organization.id, { session });
   const organizationId = session.organization.id;
 
   const [clients, seats, reports, aiCredits] = await Promise.all([
@@ -291,7 +308,9 @@ export async function getEntitlementsUsageSummary(
       ...entitlements,
       planLabel: entitlements.isPaidAccess
         ? entitlements.planLabel
-        : getBillingStatusLabel(entitlements.subscriptionStatus),
+        : entitlements.resolvedPlanKey
+          ? `${entitlements.planLabel} · ${getBillingStatusLabel(entitlements.subscriptionStatus)}`
+          : getBillingStatusLabel(entitlements.subscriptionStatus),
     },
     usage,
     featureLabels,
@@ -302,8 +321,9 @@ export async function getEntitlementsUsageSummary(
 
 export async function resolveEntitlementsForOrganization(
   organizationId: string,
+  session?: SessionContext,
 ): Promise<ResolvedEntitlements> {
-  return resolveOrganizationEntitlements(organizationId);
+  return resolveOrganizationEntitlements(organizationId, { session });
 }
 
 export type { PlanEntitlements, ResolvedEntitlements, PlanKey };

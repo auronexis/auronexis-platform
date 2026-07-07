@@ -38,20 +38,27 @@ export function evaluateCheckoutGuard(input: {
   }
 
   if (input.overview.isUsable && input.overview.currentPlanKey) {
-    const target = getPlanByKey(input.targetPlanKey);
-    const current = getPlanByKey(input.overview.currentPlanKey);
+    try {
+      const target = getPlanByKey(input.targetPlanKey);
+      const current = getPlanByKey(input.overview.currentPlanKey);
 
-    if (target.key === current.key) {
+      if (target.key === current.key) {
+        return {
+          allowed: false,
+          reason: "This is your organization's current plan.",
+        };
+      }
+
+      if (target.order <= current.order) {
+        return {
+          allowed: false,
+          reason: "Use the billing portal to downgrade or manage your current subscription.",
+        };
+      }
+    } catch {
       return {
         allowed: false,
-        reason: "This is your organization's current plan.",
-      };
-    }
-
-    if (target.order <= current.order) {
-      return {
-        allowed: false,
-        reason: "Use the billing portal to downgrade or manage your current subscription.",
+        reason: "Unable to start checkout for this subscription state.",
       };
     }
   }

@@ -54,10 +54,14 @@ export function getPricingButtonDisabledReasons(input: {
   }
 
   if (input.isUsable && input.currentPlanKey && !input.isCurrent && !input.isDowngrade) {
-    const target = getPlanByKey(input.planKey);
-    const current = getPlanByKey(input.currentPlanKey);
-    if (target.order <= current.order) {
-      reasons.push("Use the billing portal to manage your current subscription.");
+    try {
+      const target = getPlanByKey(input.planKey);
+      const current = getPlanByKey(input.currentPlanKey);
+      if (target.order <= current.order) {
+        reasons.push("Use the billing portal to manage your current subscription.");
+      }
+    } catch {
+      reasons.push("Unable to compare plans for this subscription.");
     }
   }
 

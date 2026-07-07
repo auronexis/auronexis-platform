@@ -41,6 +41,9 @@ export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelP
           <span className="rounded-full border border-border/70 px-3 py-1 font-medium text-foreground">
             Plan: {resolved.planLabel}
           </span>
+          <span className="rounded-full border border-border/70 px-3 py-1 font-medium text-muted">
+            Status: {resolved.subscriptionStatus ?? "none"}
+          </span>
           <span
             className={cn(
               "rounded-full border px-3 py-1 font-medium",

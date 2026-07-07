@@ -1,8 +1,9 @@
 import "server-only";
 
 import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import { getPlanByPriceId } from "@/lib/billing/plans.server";
-import { isSubscriptionUsable } from "@/lib/billing/status";
+import { getPlanKeyByPriceId } from "@/lib/billing/plans.server";
+import { getOrganizationSubscription } from "@/lib/billing/queries";
+import { isSubscriptionUsable, normalizeSubscriptionStatus } from "@/lib/billing/status";
 import { getEffectiveLimits } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";
 import {
@@ -13,64 +14,123 @@ import type { ResolvedEntitlements } from "@/lib/entitlements/types";
 import { getDefaultPlanKey } from "@/lib/plans/features";
 import { getDevForcePlanOverride } from "@/lib/plans/dev-override";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { SessionContext } from "@/lib/tenancy/context";
+import type { OrganizationSubscription } from "@/types/database";
 
-/** Resolve live entitlements from subscription state — never from organizations.plan alone. */
-export async function resolveOrganizationEntitlements(
+const SUBSCRIPTION_SELECT =
+  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
+
+export type EntitlementFallbackPath = "paid_plan" | "minimal_access" | "starter_default";
+
+type ResolveOrganizationEntitlementsOptions = {
+  session?: SessionContext;
+};
+
+async function loadOrganizationSubscription(
   organizationId: string,
-): Promise<ResolvedEntitlements> {
-  const admin = createAdminClient();
+  session?: SessionContext,
+): Promise<OrganizationSubscription | null> {
+  if (session && session.organization.id === organizationId) {
+    return getOrganizationSubscription(session);
+  }
 
-  const [{ data, error }, planOverride] = await Promise.all([
-    admin
-      .from("organization_subscriptions")
-      .select("stripe_price_id, status")
-      .eq("organization_id", organizationId)
-      .maybeSingle(),
-    getPlanOverride(organizationId),
-  ]);
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("organization_subscriptions")
+    .select(SUBSCRIPTION_SELECT)
+    .eq("organization_id", organizationId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
 
-  const subscription = data as { stripe_price_id: string | null; status: string | null } | null;
-  const subscriptionStatus = subscription?.status ?? null;
-  const isPaidAccess = isSubscriptionUsable(subscriptionStatus);
+  return (data as OrganizationSubscription | null) ?? null;
+}
 
-  if (!isPaidAccess) {
-    return {
-      planKey: null,
-      planLabel: "No active subscription",
-      isPaidAccess: false,
-      subscriptionStatus,
-      ...MINIMAL_ENTITLEMENTS,
-    };
-  }
-
-  let planKey: PlanKey = getDefaultPlanKey();
+function resolveMappedPlanKey(
+  subscription: OrganizationSubscription | null,
+  planOverride: Awaited<ReturnType<typeof getPlanOverride>>,
+): PlanKey | null {
+  let planKey: PlanKey | null = null;
 
   if (subscription?.stripe_price_id) {
-    const mapped = getPlanByPriceId(subscription.stripe_price_id);
-    if (mapped) {
-      planKey = mapped.key;
-    }
+    planKey = getPlanKeyByPriceId(subscription.stripe_price_id);
   }
 
   const devOverride = getDevForcePlanOverride();
   if (devOverride) {
-    planKey = devOverride;
-  } else if (planOverride?.status === "active") {
-    planKey = planOverride.plan;
+    return devOverride;
   }
 
+  if (planOverride?.status === "active") {
+    return planOverride.plan;
+  }
+
+  return planKey;
+}
+
+/** Resolve live entitlements from subscription state — never from organizations.plan alone. */
+export async function resolveOrganizationEntitlements(
+  organizationId: string,
+  options?: ResolveOrganizationEntitlementsOptions,
+): Promise<ResolvedEntitlements> {
+  const [subscription, planOverride] = await Promise.all([
+    loadOrganizationSubscription(organizationId, options?.session),
+    getPlanOverride(organizationId),
+  ]);
+
+  const subscriptionReceived = Boolean(subscription);
+  const status = subscription?.status ?? null;
+  const stripePriceId = subscription?.stripe_price_id ?? null;
+  const normalizedStatus = normalizeSubscriptionStatus(status);
+  const activeAccess = isSubscriptionUsable(status);
+  const mappedPlanKey = resolveMappedPlanKey(subscription, planOverride);
+
+  let fallbackPath: EntitlementFallbackPath = "minimal_access";
+
+  if (activeAccess) {
+    fallbackPath = mappedPlanKey ? "paid_plan" : "starter_default";
+  }
+
+  console.log("[entitlements][resolve]", {
+    organizationId,
+    subscriptionReceived,
+    status,
+    normalizedStatus,
+    stripePriceId,
+    mappedPlanKey,
+    activeAccess,
+    fallbackPath,
+    cancelAtPeriodEnd: subscription?.cancel_at_period_end ?? false,
+    source: options?.session ? "session" : "admin",
+  });
+
+  if (!activeAccess) {
+    return {
+      planKey: null,
+      resolvedPlanKey: mappedPlanKey,
+      planLabel: mappedPlanKey ? getPlanByKey(mappedPlanKey).name : "No active subscription",
+      isPaidAccess: false,
+      subscriptionStatus: status,
+      fallbackPath,
+      ...MINIMAL_ENTITLEMENTS,
+    };
+  }
+
+  const planKey = mappedPlanKey ?? getDefaultPlanKey();
   const base = getEntitlementsForPlan(planKey);
   const effectiveLimits = getEffectiveLimits(planKey, planOverride);
 
   return {
     planKey,
+    resolvedPlanKey: mappedPlanKey ?? planKey,
     planLabel: getPlanByKey(planKey).name,
     isPaidAccess: true,
-    subscriptionStatus,
+    subscriptionStatus: status,
+    fallbackPath,
     maxClients: effectiveLimits.maxClients ?? base.maxClients,
     maxSeats: effectiveLimits.seats ?? base.maxSeats,
     maxReportsPerMonth: base.maxReportsPerMonth,
