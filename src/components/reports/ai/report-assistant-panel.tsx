@@ -17,7 +17,6 @@ import {
   type ReportAIStyleMode,
 } from "@/lib/ai/types";
 import { cn } from "@/lib/utils/cn";
-import { dashboardStickyRailWide } from "@/lib/ui/tokens";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 import { useReportAI } from "@/components/reports/ai/report-ai-provider";
 import { ReportAIUpgradeCard, ReportAIUsageCard } from "@/components/reports/ai/report-ai-usage-card";
@@ -146,7 +145,7 @@ export function ReportAssistantPanel({
           "max-h-[calc(100vh-7rem)]",
           panelOpen
             ? "fixed inset-y-0 right-0 z-50 w-[min(100vw,28rem)] max-w-md border-l shadow-2xl xl:relative xl:inset-auto xl:z-auto xl:flex xl:w-full xl:max-w-none xl:rounded-2xl xl:border xl:shadow-sm"
-            : cn("hidden xl:flex xl:w-full", dashboardStickyRailWide),
+            : "hidden xl:flex xl:w-full xl:self-start",
         )}
       >
         <ReportAssistantPanelBody

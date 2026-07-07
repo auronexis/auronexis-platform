@@ -1,18 +1,13 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { DetailFixedRail } from "@/components/layout/detail-fixed-rail";
 import { PageHeader } from "@/components/layout/page-header";
 import { Icon } from "@/components/ui/icon";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import type { AuroraModule } from "@/lib/ui/aurora";
 import { cn } from "@/lib/utils/cn";
-import {
-  dashboardDetailRailAside,
-  dashboardStickyRail,
-  focusRing,
-  linkText,
-  transitionInteractive,
-} from "@/lib/ui/tokens";
+import { focusRing, linkText, transitionInteractive } from "@/lib/ui/tokens";
 
 type DetailPageHeaderProps = {
   module: AuroraModule;
@@ -72,7 +67,7 @@ type DetailPageLayoutProps = {
   className?: string;
 };
 
-/** Two-column detail workspace — rail stacks above main on mobile. */
+/** Two-column detail workspace — fixed overview rail on xl+, stacked on mobile. */
 export function DetailPageLayout({ children, rail, className }: DetailPageLayoutProps) {
   if (!rail) {
     return <div className={cn("space-y-6", className)}>{children}</div>;
@@ -85,10 +80,8 @@ export function DetailPageLayout({ children, rail, className }: DetailPageLayout
         className,
       )}
     >
-      <div className="min-w-0 space-y-6">{children}</div>
-      <aside className={dashboardDetailRailAside}>
-        <div className={dashboardStickyRail}>{rail}</div>
-      </aside>
+      <div className="order-2 min-w-0 space-y-6 xl:order-1">{children}</div>
+      <DetailFixedRail className="order-1 xl:order-2">{rail}</DetailFixedRail>
     </div>
   );
 }
