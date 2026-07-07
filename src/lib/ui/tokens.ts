@@ -64,4 +64,4 @@ export const sidebarNavScroll = "min-h-0 flex-1 overflow-y-auto no-scrollbar";
 export const dashboardDetailRailAside = "hidden min-w-0 xl:block";
 
 /** Sticky pin inside #main-content scroll container — inner wrapper only. */
-export const dashboardDetailRailSticky = "xl:sticky xl:top-8 h-fit w-full min-w-0";
+export const dashboardDetailRailSticky = "xl:sticky xl:top-4 h-fit w-full min-w-0";
