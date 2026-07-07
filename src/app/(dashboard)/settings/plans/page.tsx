@@ -3,6 +3,7 @@ import { PricingGrid } from "@/components/pricing/pricing-grid";
 import { PricingHero } from "@/components/pricing/pricing-hero";
 import { getPublicSelfServePlans } from "@/lib/billing/plans";
 import { getPlansPageBillingState } from "@/lib/billing/queries";
+import { resolveCheckoutBlockState } from "@/lib/billing/checkout-block";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
 import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
 import { requireSession } from "@/lib/auth/session";
@@ -76,6 +77,11 @@ export default async function WorkspacePlansPage() {
       currentPlanKey: null,
       currentPlan: null,
       currentPlanName: null,
+      checkoutBlock: resolveCheckoutBlockState({
+        overview: createFallbackPricingSelection(canManage).overview,
+        invoices: [],
+      }),
+      ignoredStripeInvoiceIds: new Set<string>(),
     };
   }
 
@@ -88,6 +94,7 @@ export default async function WorkspacePlansPage() {
     currentPlanKey: billingState.currentPlanKey,
     currentPlan: billingState.currentPlan,
     currentPlanName: billingState.currentPlanName,
+    ignoredStripeInvoiceIds: billingState.ignoredStripeInvoiceIds,
   });
 
   return (
@@ -98,6 +105,8 @@ export default async function WorkspacePlansPage() {
         selection={selection}
         stripeStatus={stripeStatus}
         enterpriseContactHref={enterpriseContactHref}
+        checkoutBlock={billingState.checkoutBlock}
+        canManage={canManage}
       />
     </div>
   );

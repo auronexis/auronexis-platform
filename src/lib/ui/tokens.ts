@@ -59,3 +59,11 @@ export const filterTabInactive =
 
 /** Sidebar nav scroll region — invisible scrollbar, flex child scroll. */
 export const sidebarNavScroll = "min-h-0 flex-1 overflow-y-auto no-scrollbar";
+
+/** Sticky side rail inside dashboard main scroll region — lg+ two-column detail layouts. */
+export const dashboardStickyRail =
+  "min-w-0 self-start lg:sticky lg:top-8 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain";
+
+/** Sticky side rail for xl+ dashboard grids (reports assistant, dashboard asides). */
+export const dashboardStickyRailWide =
+  "min-w-0 self-start xl:sticky xl:top-8 xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto xl:overscroll-contain";

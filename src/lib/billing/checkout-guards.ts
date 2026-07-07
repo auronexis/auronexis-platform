@@ -1,27 +1,46 @@
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import {
+  resolveCheckoutBlockState,
+  type CheckoutBlockState,
+} from "@/lib/billing/checkout-block";
 import type { BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
 
 export const PENDING_PAYMENT_CHECKOUT_MESSAGE =
   "You already have a pending payment. Open invoice or billing portal.";
+
+export { OPEN_INVOICE_CHECKOUT_BLOCK_MESSAGE } from "@/lib/billing/checkout-block";
 
 export type CheckoutGuardResult = {
   allowed: boolean;
   reason: string | null;
 };
 
-export function hasOpenUnpaidInvoice(invoices: CustomerInvoiceView[]): boolean {
-  return invoices.some((invoice) => invoice.status === "open" && invoice.amountPaid === 0);
+export function hasOpenUnpaidInvoice(
+  invoices: CustomerInvoiceView[],
+  ignoredStripeInvoiceIds?: ReadonlySet<string>,
+): boolean {
+  return invoices.some(
+    (invoice) =>
+      invoice.status === "open" &&
+      invoice.amountPaid === 0 &&
+      !ignoredStripeInvoiceIds?.has(invoice.stripeInvoiceId),
+  );
 }
 
 export function isCheckoutBlockedByPaymentState(input: {
   overview: BillingOverview;
   invoices: CustomerInvoiceView[];
+  ignoredStripeInvoiceIds?: ReadonlySet<string>;
 }): boolean {
-  return (
-    input.overview.hasPaymentProblem ||
-    input.overview.isPaymentPending ||
-    hasOpenUnpaidInvoice(input.invoices)
-  );
+  return resolveCheckoutBlockState(input).blocked;
+}
+
+export function getCheckoutBlockState(input: {
+  overview: BillingOverview;
+  invoices: CustomerInvoiceView[];
+  ignoredStripeInvoiceIds?: ReadonlySet<string>;
+}): CheckoutBlockState {
+  return resolveCheckoutBlockState(input);
 }
 
 /** Server and client-safe checkout guard evaluation. Never throws. */
@@ -29,11 +48,13 @@ export function evaluateCheckoutGuard(input: {
   overview: BillingOverview;
   invoices: CustomerInvoiceView[];
   targetPlanKey: PlanKey;
+  ignoredStripeInvoiceIds?: ReadonlySet<string>;
 }): CheckoutGuardResult {
   if (isCheckoutBlockedByPaymentState(input)) {
+    const block = getCheckoutBlockState(input);
     return {
       allowed: false,
-      reason: PENDING_PAYMENT_CHECKOUT_MESSAGE,
+      reason: block.bannerMessage ?? block.message ?? PENDING_PAYMENT_CHECKOUT_MESSAGE,
     };
   }
 

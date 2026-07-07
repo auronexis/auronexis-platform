@@ -41,6 +41,24 @@ const sizeStyles: Record<ButtonSize, string> = {
   lg: "h-11 gap-2 rounded-lg px-5 text-sm",
 };
 
+const disabledBase =
+  "disabled:pointer-events-none disabled:cursor-not-allowed disabled:shadow-none";
+
+const disabledVariantStyles: Record<ButtonVariant, string> = {
+  primary:
+    "disabled:bg-primary/55 disabled:text-primary-foreground disabled:opacity-100 disabled:hover:bg-primary/55",
+  secondary:
+    "disabled:bg-secondary/50 disabled:text-secondary-foreground/90 disabled:opacity-100 disabled:hover:bg-secondary/50",
+  ghost:
+    "disabled:bg-transparent disabled:text-muted disabled:opacity-100 disabled:hover:bg-transparent",
+  outline:
+    "disabled:border-border disabled:bg-surface/90 disabled:text-muted disabled:opacity-100 disabled:hover:bg-surface/90",
+  danger:
+    "disabled:bg-danger/50 disabled:text-danger-foreground disabled:opacity-100 disabled:hover:bg-danger/50",
+  success:
+    "disabled:bg-success/50 disabled:text-success-foreground disabled:opacity-100 disabled:hover:bg-success/50",
+};
+
 export function Button({
   className,
   variant = "primary",
@@ -64,7 +82,8 @@ export function Button({
         transitionInteractive,
         focusRing,
         pressable,
-        "disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none disabled:saturate-75",
+        disabledBase,
+        disabledVariantStyles[variant],
         variantStyles[variant],
         sizeStyles[size],
         className,

@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import type { AuroraModule } from "@/lib/ui/aurora";
 import { cn } from "@/lib/utils/cn";
-import { focusRing, linkText, transitionInteractive } from "@/lib/ui/tokens";
+import { dashboardStickyRail, focusRing, linkText, transitionInteractive } from "@/lib/ui/tokens";
 
 type DetailPageHeaderProps = {
   module: AuroraModule;
@@ -75,14 +75,12 @@ export function DetailPageLayout({ children, rail, className }: DetailPageLayout
   return (
     <div
       className={cn(
-        "grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]",
+        "grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]",
         className,
       )}
     >
       <div className="order-2 min-w-0 space-y-6 lg:order-1">{children}</div>
-      <aside className="order-1 min-w-0 space-y-6 lg:order-2 lg:sticky lg:top-24 lg:self-start">
-        {rail}
-      </aside>
+      <aside className={cn("order-1 space-y-6 lg:order-2", dashboardStickyRail)}>{rail}</aside>
     </div>
   );
 }
@@ -159,7 +157,9 @@ type DetailKpiGridProps = {
 
 export function DetailKpiGrid({ children, className }: DetailKpiGridProps) {
   return (
-    <div className={cn("mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5", className)}>{children}</div>
+    <div className={cn("mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", className)}>
+      {children}
+    </div>
   );
 }
 

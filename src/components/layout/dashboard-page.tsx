@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { dashboardStickyRailWide } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils/cn";
 
 type DashboardPageProps = {
@@ -46,7 +47,7 @@ type DashboardPageAsideProps = {
 
 export function DashboardPageAside({ children, className }: DashboardPageAsideProps) {
   return (
-    <aside className={cn("min-w-0 space-y-6 xl:sticky xl:top-24 xl:self-start", className)}>
+    <aside className={cn("space-y-6", dashboardStickyRailWide, className)}>
       {children}
     </aside>
   );

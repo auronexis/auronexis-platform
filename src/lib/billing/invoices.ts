@@ -132,6 +132,36 @@ export async function recordBillingEvent(input: BillingEventRecord): Promise<voi
   }
 }
 
+const IGNORED_INVOICE_EVENT = "billing_maintenance.invoice_ignored";
+
+/** Stripe invoice IDs marked ignored by admins for checkout diagnostics. */
+export async function listIgnoredStripeInvoiceIds(organizationId: string): Promise<Set<string>> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("billing_events")
+    .select("payload")
+    .eq("organization_id", organizationId)
+    .eq("event_type", IGNORED_INVOICE_EVENT)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    console.warn("[billing] ignored invoice lookup failed:", error.message);
+    return new Set();
+  }
+
+  const ignored = new Set<string>();
+
+  for (const row of (data ?? []) as Array<{ payload: Record<string, unknown> | null }>) {
+    const stripeInvoiceId = row.payload?.stripeInvoiceId;
+    if (typeof stripeInvoiceId === "string" && stripeInvoiceId.trim()) {
+      ignored.add(stripeInvoiceId.trim());
+    }
+  }
+
+  return ignored;
+}
+
 export async function countCustomerInvoices(organizationId: string): Promise<number> {
   const admin = createAdminClient();
   const { count, error } = await admin

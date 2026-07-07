@@ -1,5 +1,7 @@
 import { buildBillingOverview } from "@/lib/billing/types";
 import type { BillingDashboardData, BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
+import { resolveCheckoutBlockState, type CheckoutBlockState } from "@/lib/billing/checkout-block";
+import { listIgnoredStripeInvoiceIds } from "@/lib/billing/invoices";
 import { listActiveDiscountPreviews } from "@/lib/billing/discounts";
 import { filterCustomerFacingInvoices } from "@/lib/billing/hygiene";
 import { listCustomerInvoices } from "@/lib/billing/invoices";
@@ -123,6 +125,12 @@ export async function getBillingDashboardData(
   const reached = usage.metrics.filter((metric) => metric.atLimit).length;
   const forecastStatus =
     reached > 0 ? "critical" : approaching > 0 ? "warning" : "healthy";
+  const ignoredStripeInvoiceIds = await listIgnoredStripeInvoiceIds(session.organization.id);
+  const checkoutBlock = resolveCheckoutBlockState({
+    overview,
+    invoices: filterCustomerFacingInvoices(invoices),
+    ignoredStripeInvoiceIds,
+  });
 
   return {
     overview,
@@ -132,6 +140,7 @@ export async function getBillingDashboardData(
     discounts,
     prorationPreviews,
     forecastStatus,
+    checkoutBlock,
   };
 }
 
@@ -142,14 +151,14 @@ export type PlansPageBillingState = {
   currentPlanKey: PlanKey | null;
   currentPlan: ReturnType<typeof safeGetPlanByKey>;
   currentPlanName: string | null;
+  checkoutBlock: CheckoutBlockState;
+  ignoredStripeInvoiceIds: ReadonlySet<string>;
 };
 
 /** Billing state for /settings/plans — same subscription source as diagnostics, never throws. */
 export async function getPlansPageBillingState(
   session: SessionContext,
 ): Promise<PlansPageBillingState> {
-  const fallbackOverview = buildBillingOverview(null, "starter", null, null);
-
   try {
     let subscription: OrganizationSubscription | null = null;
 
@@ -199,6 +208,13 @@ export async function getPlansPageBillingState(
     const currentPlanName = currentPlan?.name ?? overview.planLabel ?? null;
 
     let invoices: CustomerInvoiceView[] = [];
+    let ignoredStripeInvoiceIds = new Set<string>();
+
+    try {
+      ignoredStripeInvoiceIds = await listIgnoredStripeInvoiceIds(session.organization.id);
+    } catch {
+      ignoredStripeInvoiceIds = new Set();
+    }
 
     try {
       invoices = filterCustomerFacingInvoices(await listCustomerInvoices(session));
@@ -207,6 +223,12 @@ export async function getPlansPageBillingState(
         message: error instanceof Error ? error.message : String(error),
       });
     }
+
+    const checkoutBlock = resolveCheckoutBlockState({
+      overview,
+      invoices,
+      ignoredStripeInvoiceIds,
+    });
 
     console.log("[plans][debug]", {
       organizationId: session.organization.id,
@@ -230,6 +252,8 @@ export async function getPlansPageBillingState(
       currentPlanKey: overview.isUsable ? currentPlanKey : null,
       currentPlan,
       currentPlanName,
+      checkoutBlock,
+      ignoredStripeInvoiceIds,
     };
   } catch (error) {
     console.error("[plans] getPlansPageBillingState failed — returning fallback billing state", {
@@ -237,6 +261,7 @@ export async function getPlansPageBillingState(
       message: error instanceof Error ? error.message : String(error),
     });
 
+    const fallbackOverview = buildBillingOverview(null, "starter", null, null);
     return {
       overview: fallbackOverview,
       invoices: [],
@@ -244,6 +269,11 @@ export async function getPlansPageBillingState(
       currentPlanKey: null,
       currentPlan: null,
       currentPlanName: null,
+      checkoutBlock: resolveCheckoutBlockState({
+        overview: fallbackOverview,
+        invoices: [],
+      }),
+      ignoredStripeInvoiceIds: new Set<string>(),
     };
   }
 }

@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { CheckoutBlockBanner } from "@/components/billing/checkout-block-banner";
 import { PricingCard } from "@/components/pricing/pricing-card";
-import { createCheckoutSessionAction, createPortalSessionAction } from "@/lib/billing/actions";
+import {
+  createCheckoutSessionAction,
+  createPortalSessionAction,
+} from "@/lib/billing/actions";
+import type { CheckoutBlockState } from "@/lib/billing/checkout-block";
+import { resolveCheckoutBlockState } from "@/lib/billing/checkout-block";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import {
@@ -12,7 +18,6 @@ import {
 } from "@/lib/billing/plans";
 import {
   getPricingButtonDisabledReasons,
-  getPricingPaymentBlockMessage,
   getPricingUnavailableMessage,
   isPricingButtonDisabled,
 } from "@/lib/diagnostics/pricing-reasons";
@@ -30,9 +35,18 @@ type PricingGridProps = {
   selection: PricingSelectionContext;
   stripeStatus: StripeBillingUiStatus;
   enterpriseContactHref: string;
+  checkoutBlock?: CheckoutBlockState;
+  canManage?: boolean;
 };
 
-export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactHref }: PricingGridProps) {
+export function PricingGrid({
+  plans,
+  selection,
+  stripeStatus,
+  enterpriseContactHref,
+  checkoutBlock,
+  canManage = false,
+}: PricingGridProps) {
   const [pendingPlanKey, setPendingPlanKey] = useState<PlanKey | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -41,10 +55,12 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
   const safeSelection = selection ?? createFallbackPricingSelection();
   const safePlans = Array.isArray(plans) ? plans : [];
   const unavailableMessage = getPricingUnavailableMessage(safeStripeStatus);
-  const paymentBlockMessage = getPricingPaymentBlockMessage({
-    overview: safeSelection.overview,
-    invoices: safeSelection.invoices ?? [],
-  });
+  const resolvedCheckoutBlock =
+    checkoutBlock ??
+    resolveCheckoutBlockState({
+      overview: safeSelection.overview,
+      invoices: safeSelection.invoices ?? [],
+    });
 
   const selectPlan = (planKey: PlanKey) => {
     if (planKey === "enterprise") {
@@ -78,36 +94,14 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
         <FormAlert variant="warning">{unavailableMessage}</FormAlert>
       ) : null}
 
-      {paymentBlockMessage ? (
-        <FormAlert variant="warning">
-          {paymentBlockMessage}
-          {safeSelection.latestOpenInvoiceUrl ? (
-            <>
-              {" "}
-              <a
-                href={safeSelection.latestOpenInvoiceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium underline"
-              >
-                Open invoice
-              </a>
-            </>
-          ) : null}
-          {safeSelection.canManage && safeStripeStatus.portalAvailable ? (
-            <>
-              {" "}
-              <button
-                type="button"
-                className="font-medium underline"
-                onClick={openPortal}
-                disabled={isPortalPending}
-              >
-                Open billing portal
-              </button>
-            </>
-          ) : null}
-        </FormAlert>
+      {resolvedCheckoutBlock.blocked ? (
+        <CheckoutBlockBanner
+          checkoutBlock={resolvedCheckoutBlock}
+          canManage={canManage || safeSelection.canManage}
+          portalAvailable={safeStripeStatus.portalAvailable}
+          onOpenPortal={openPortal}
+          isPortalPending={isPortalPending}
+        />
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
@@ -133,6 +127,7 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
             hasOpenUnpaidInvoice: safeSelection.hasOpenUnpaidInvoice,
             overview: safeSelection.overview,
             invoices: safeSelection.invoices ?? [],
+            checkoutBlock: resolvedCheckoutBlock,
             canManage: safeSelection.canManage,
             isLoading: isPending && pendingPlanKey === plan.key,
             isCurrent,
@@ -153,6 +148,11 @@ export function PricingGrid({ plans, selection, stripeStatus, enterpriseContactH
               }
               canManage={safeSelection.canManage}
               seatBlockMessage={seatBlock.blocked ? seatBlock.message : null}
+              blockedCheckoutMessage={
+                resolvedCheckoutBlock.blocked && plan.key !== "enterprise"
+                  ? (resolvedCheckoutBlock.bannerMessage ?? resolvedCheckoutBlock.message)
+                  : null
+              }
               disabledReasons={disabledReasons}
               isDisabled={isPricingButtonDisabled(plan.key, disabledReasons)}
               stripeStatus={safeStripeStatus}

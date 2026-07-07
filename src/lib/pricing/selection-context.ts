@@ -56,6 +56,7 @@ export function buildPricingSelectionContext(input: {
   currentPlanKey?: PlanKey | null;
   currentPlan?: SubscriptionPlanDefinition | null;
   currentPlanName?: string | null;
+  ignoredStripeInvoiceIds?: ReadonlySet<string>;
 }): PricingSelectionContext {
   try {
     const invoices = Array.isArray(input.invoices) ? input.invoices : [];
@@ -79,7 +80,7 @@ export function buildPricingSelectionContext(input: {
       isCurrentPlan: false,
       hasPaymentProblem: Boolean(input.overview?.hasPaymentProblem),
       isPaymentPending: Boolean(input.overview?.isPaymentPending),
-      hasOpenUnpaidInvoice: hasOpenUnpaidInvoice(invoices),
+      hasOpenUnpaidInvoice: hasOpenUnpaidInvoice(invoices, input.ignoredStripeInvoiceIds),
       latestOpenInvoiceUrl: latestOpen?.hostedInvoiceUrl ?? null,
       canManage: input.canManage,
       usedSeats: input.usedSeats ?? 0,

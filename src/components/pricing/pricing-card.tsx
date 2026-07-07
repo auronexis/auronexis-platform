@@ -21,6 +21,7 @@ type PricingCardProps = {
   isLoading: boolean;
   canManage: boolean;
   seatBlockMessage?: string | null;
+  blockedCheckoutMessage?: string | null;
   disabledReasons?: string[];
   isDisabled?: boolean;
   stripeStatus: StripeBillingUiStatus;
@@ -35,6 +36,7 @@ export function PricingCard({
   isLoading,
   canManage,
   seatBlockMessage,
+  blockedCheckoutMessage,
   disabledReasons = [],
   isDisabled = false,
   stripeStatus,
@@ -47,6 +49,9 @@ export function PricingCard({
   const buttonDisabled = isDisabled || isLoading;
   const safeStripeStatus = normalizeStripeBillingUiStatus(stripeStatus);
   const checkoutHint = getPlanCheckoutHint(plan.key, safeStripeStatus);
+  const supplementalReasons = disabledReasons.filter(
+    (reason) => !blockedCheckoutMessage || reason !== blockedCheckoutMessage,
+  );
 
   return (
     <article
@@ -105,13 +110,18 @@ export function PricingCard({
       ) : null}
 
       {canManage ? (
-        <>
+        <div className="mt-auto space-y-3">
           {seatBlockMessage ? (
-            <p className="mb-3 text-sm text-warning">{seatBlockMessage}</p>
+            <p className="text-sm text-warning">{seatBlockMessage}</p>
           ) : null}
-          {buttonDisabled && disabledReasons.length > 0 ? (
-            <ul className="mb-3 space-y-1 text-sm text-muted">
-              {disabledReasons.map((reason) => (
+          {buttonDisabled && blockedCheckoutMessage ? (
+            <p className="rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-sm leading-relaxed text-foreground">
+              {blockedCheckoutMessage}
+            </p>
+          ) : null}
+          {buttonDisabled && supplementalReasons.length > 0 ? (
+            <ul className="space-y-1 text-sm text-muted">
+              {supplementalReasons.map((reason) => (
                 <li key={reason}>• {reason}</li>
               ))}
             </ul>
@@ -120,17 +130,17 @@ export function PricingCard({
           checkoutHint &&
           !isEnterprise &&
           disabledReasons.length === 0 ? (
-            <p className="mb-3 text-sm text-muted">{checkoutHint}</p>
+            <p className="text-sm text-muted">{checkoutHint}</p>
           ) : null}
           {isEnterprise ? (
-            <LinkButton href={enterpriseContactHref} className="w-full" variant="secondary">
+            <LinkButton href={enterpriseContactHref} className="w-full" variant="outline">
               Contact Sales
             </LinkButton>
           ) : (
             <Button
               type="button"
-              className="w-full"
-              variant={isCurrent ? "secondary" : isRecommended ? "primary" : "secondary"}
+              className={cn("w-full", isCurrent && "border-success/30 text-success hover:text-success")}
+              variant={isCurrent ? "outline" : "primary"}
               disabled={buttonDisabled}
               loading={isLoading}
               loadingText="Redirecting…"
@@ -139,7 +149,7 @@ export function PricingCard({
               {getPlanActionButtonLabel(action)}
             </Button>
           )}
-        </>
+        </div>
       ) : (
         <p className="text-center text-sm text-muted">
           {isCurrent

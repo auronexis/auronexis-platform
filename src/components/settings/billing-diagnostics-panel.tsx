@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { BillingMaintenanceActions } from "@/components/settings/billing-maintenance-actions";
+import { BillingDiagnosticsCheckoutBanner } from "@/components/settings/billing-diagnostics-checkout-banner";
 import { FormAlert } from "@/components/ui/form-alert";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import {
@@ -13,6 +15,7 @@ import {
   maskStripeId,
   type BillingHygieneFlag,
 } from "@/lib/billing/hygiene";
+import type { CleanupRecommendation } from "@/lib/billing/cleanup-recommendations";
 import { formatBillingDateTime } from "@/lib/billing/types";
 import { cn } from "@/lib/utils/cn";
 
@@ -108,6 +111,49 @@ function RowKindBadge({ kind }: { kind: string }) {
   );
 }
 
+function HealthBadge({ health }: { health: "healthy" | "needs_attention" }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex rounded-full border px-3 py-1 text-xs font-semibold",
+        health === "healthy"
+          ? "border-success/25 bg-success/10 text-success"
+          : "border-warning/25 bg-warning/10 text-warning",
+      )}
+    >
+      {health === "healthy" ? "Healthy" : "Needs attention"}
+    </span>
+  );
+}
+
+function RecommendationList({ recommendations }: { recommendations: CleanupRecommendation[] }) {
+  if (recommendations.length === 0) {
+    return <p className="text-sm text-muted">No cleanup recommendations — billing state looks clean.</p>;
+  }
+
+  return (
+    <ul className="space-y-3">
+      {recommendations.map((item) => (
+        <li
+          key={`${item.code}-${item.entityId ?? item.stripeId ?? "global"}`}
+          className="rounded-lg border border-border/70 bg-muted/5 px-4 py-3 text-sm"
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold text-foreground">{item.title}</span>
+            <RowKindBadge kind={item.severity === "danger" ? "inconsistent" : item.severity === "warning" ? "demo" : "internal"} />
+          </div>
+          <p className="mt-1 text-muted">{item.message}</p>
+          {item.suggestedAction ? (
+            <p className="mt-2 text-xs text-muted">
+              Suggested action: {item.suggestedAction}
+            </p>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) {
   const subscription = data.subscription;
   const subscriptionKind = classifySubscriptionRow(subscription, {
@@ -118,13 +164,65 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
   return (
     <div className="space-y-6">
       <FormAlert variant="warning">
-        Internal billing diagnostics only. No records are deleted automatically. Customer-facing billing
-        remains on{" "}
+        Internal billing maintenance and diagnostics only. No records are deleted automatically.
+        Stripe remains the source of truth. Customer-facing billing remains on{" "}
         <Link href="/settings/billing" className="font-medium underline">
           Subscription &amp; Billing
         </Link>
         .
       </FormAlert>
+
+      <DiagnosticsSection
+        title="Production state"
+        description="Whether this workspace can safely start new checkout and what is blocking it."
+      >
+        <dl>
+          <Row label="Status" value={<HealthBadge health={data.productionHealth} />} />
+          <Row
+            label="Checkout blocked"
+            value={data.checkoutBlock.blocked ? "Yes" : "No"}
+          />
+          <Row
+            label="Blocking reason"
+            value={data.checkoutBlock.message ?? "None"}
+          />
+          <Row
+            label="Blocking invoice"
+            value={
+              data.checkoutBlock.blockingInvoiceStripeId
+                ? maskStripeId(data.checkoutBlock.blockingInvoiceStripeId)
+                : "—"
+            }
+          />
+          <Row
+            label="Ignored invoices (diagnostic)"
+            value={
+              data.ignoredStripeInvoiceIds.length > 0
+                ? data.ignoredStripeInvoiceIds.map((id) => maskStripeId(id)).join(", ")
+                : "None"
+            }
+          />
+        </dl>
+        {data.checkoutBlock.blocked ? (
+          <div className="mt-4">
+            <BillingDiagnosticsCheckoutBanner checkoutBlock={data.checkoutBlock} />
+          </div>
+        ) : null}
+      </DiagnosticsSection>
+
+      <DiagnosticsSection
+        title="Cleanup recommendations"
+        description="Read-only guidance for separating active billing from stale checkout remnants."
+      >
+        <RecommendationList recommendations={data.cleanupRecommendations} />
+      </DiagnosticsSection>
+
+      <DiagnosticsSection
+        title="Billing maintenance"
+        description="Explicit owner/admin actions — each requires a button click and writes a billing_events audit row."
+      >
+        <BillingMaintenanceActions recommendations={data.cleanupRecommendations} />
+      </DiagnosticsSection>
 
       <DiagnosticsSection
         title="Workspace"
@@ -148,7 +246,7 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
 
       <DiagnosticsSection
         title="organization_subscriptions"
-        description="Current subscription row synced from Stripe webhooks and checkout."
+        description={`Preferred subscription row synced from Stripe. ${data.allSubscriptions.length} row(s) found for this workspace.`}
       >
         {subscription ? (
           <dl>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { CheckoutBlockBanner } from "@/components/billing/checkout-block-banner";
 import { InvoiceCenterPanel } from "@/components/settings/invoice-center-panel";
 import { PlanUsageSummary } from "@/components/plans/plan-usage-summary";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,10 @@ import {
   createPortalSessionAction,
   validateDiscountCodeAction,
 } from "@/lib/billing/actions";
-import { PENDING_PAYMENT_CHECKOUT_MESSAGE } from "@/lib/billing/checkout-guards";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import {
   billingStatusToneToBadge,
   canOpenBillingPortal,
-  findLatestOpenInvoice,
   getBillingStatusTone,
   getPaymentSummaryTone,
 } from "@/lib/billing/status";
@@ -151,7 +150,6 @@ export function BillingSettingsPanel({
     stripeCustomerId: overview.subscription?.stripe_customer_id,
   });
   const showPromotions = canManage && !enterpriseAutoOpen;
-  const latestOpenInvoice = findLatestOpenInvoice(dashboard.invoices);
   const usingStarterFallback =
     planUsage.plan.planSource === "starter_fallback" ||
     planUsage.plan.planSource === "unmapped_price_id";
@@ -219,43 +217,46 @@ export function BillingSettingsPanel({
           autoOpen={enterpriseAutoOpen}
         />
       ) : null}
-      {overview.isUsable ? null : overview.hasPaymentProblem || overview.isPaymentPending ? (
-        <FormAlert variant="warning">
-          {PENDING_PAYMENT_CHECKOUT_MESSAGE}
-          {latestOpenInvoice?.hostedInvoiceUrl ? (
-            <>
-              {" "}
-              <a
-                href={latestOpenInvoice.hostedInvoiceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium underline"
-              >
-                Open invoice
-              </a>
-            </>
-          ) : null}
-          {showPortal ? (
-            <>
-              {" "}
-              <button
-                type="button"
-                className="font-medium underline"
-                onClick={runPortal}
-                disabled={isPortalPending}
-              >
-                Open Billing Portal
-              </button>
-            </>
-          ) : null}
-        </FormAlert>
-      ) : overview.isInactive || usingStarterFallback ? (
+      {overview.isUsable ? null : overview.isInactive || usingStarterFallback ? (
         <FormAlert variant="warning">
           No active subscription is linked to this workspace.{" "}
           <Link href="/settings/plans" className="font-medium underline">
             Choose a plan
           </Link>
         </FormAlert>
+      ) : null}
+      {dashboard.checkoutBlock.blocked ? (
+        <PageSurface>
+          <PageSurfaceHeading
+            title="Checkout blocked"
+            description="New plan checkout stays disabled until this billing state is resolved."
+          />
+          <CheckoutBlockBanner
+            checkoutBlock={dashboard.checkoutBlock}
+            canManage={canManage}
+            portalAvailable={stripeStatus.portalAvailable}
+            onOpenPortal={runPortal}
+            isPortalPending={isPortalPending}
+            showBackToBilling={false}
+          />
+          {dashboard.checkoutBlock.blockingInvoiceStripeId ? (
+            <p className="mt-3 text-sm text-muted">
+              Blocking invoice:{" "}
+              <code className="font-mono text-xs">
+                {dashboard.checkoutBlock.blockingInvoiceStripeId}
+              </code>
+            </p>
+          ) : null}
+          {canManage ? (
+            <p className="mt-2 text-sm text-muted">
+              Owner/admin cleanup tools are in{" "}
+              <Link href="/settings/billing/diagnostics" className="font-medium text-primary hover:underline">
+                Billing diagnostics
+              </Link>
+              .
+            </p>
+          ) : null}
+        </PageSurface>
       ) : null}
       {dashboard.forecastStatus !== "healthy" && !enterpriseAutoOpen ? (
         <FormAlert variant={dashboard.forecastStatus === "critical" ? "warning" : "warning"}>

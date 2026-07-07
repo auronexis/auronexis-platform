@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { PlanKey } from "@/lib/billing/plans";
-import { listCustomerInvoices } from "@/lib/billing/invoices";
+import { listCustomerInvoices, listIgnoredStripeInvoiceIds } from "@/lib/billing/invoices";
 import { getBillingOverview } from "@/lib/billing/queries";
 import type { SessionContext } from "@/lib/tenancy/context";
 import { evaluateCheckoutGuard } from "@/lib/billing/checkout-guards";
@@ -11,15 +11,17 @@ export async function assertCheckoutAllowed(
   session: SessionContext,
   targetPlanKey: PlanKey,
 ): Promise<void> {
-  const [overview, invoices] = await Promise.all([
+  const [overview, invoices, ignoredStripeInvoiceIds] = await Promise.all([
     getBillingOverview(session),
     listCustomerInvoices(session, 24),
+    listIgnoredStripeInvoiceIds(session.organization.id),
   ]);
 
   const result = evaluateCheckoutGuard({
     overview,
     invoices,
     targetPlanKey,
+    ignoredStripeInvoiceIds,
   });
 
   if (!result.allowed) {

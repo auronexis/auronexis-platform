@@ -1,5 +1,6 @@
 import type { OrganizationSubscription } from "@/types/database";
 import type { PlanKey } from "@/lib/billing/plans";
+import type { CheckoutBlockState } from "@/lib/billing/checkout-block";
 import {
   getBillingStatusLabel,
   getPaymentSummaryLabel,
@@ -76,6 +77,7 @@ export type BillingDashboardData = {
   discounts: DiscountPreview[];
   prorationPreviews: ProrationPreview[];
   forecastStatus: "healthy" | "warning" | "critical";
+  checkoutBlock: CheckoutBlockState;
 };
 
 export type CustomerInvoiceView = {

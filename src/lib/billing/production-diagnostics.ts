@@ -1,6 +1,11 @@
 import "server-only";
 
 import {
+  collectCleanupRecommendations,
+  countCleanupRecommendationSeverity,
+  type CleanupRecommendation,
+} from "@/lib/billing/cleanup-recommendations";
+import {
   classifyInvoiceRow,
   collectBillingSanityWarnings,
   collectSubscriptionHygieneFlags,
@@ -11,11 +16,19 @@ import {
   type BillingHygieneFlag,
   type BillingWebhookEventDiagnosticView,
 } from "@/lib/billing/hygiene";
+import {
+  resolveBillingProductionHealth,
+  resolveCheckoutBlockState,
+  type BillingProductionHealth,
+  type CheckoutBlockState,
+} from "@/lib/billing/checkout-block";
+import { listIgnoredStripeInvoiceIds } from "@/lib/billing/invoices";
 import { getBillingOverview } from "@/lib/billing/queries";
 import type { CustomerInvoiceView } from "@/lib/billing/types";
-import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import { getPlanKeyByPriceId } from "@/lib/billing/plans.server";
+import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import { safeGetPlanKeyByStripePriceId } from "@/lib/billing/plans.server";
 import { listCustomerInvoices } from "@/lib/billing/invoices";
+import { listAllOrganizationSubscriptions } from "@/lib/billing/maintenance";
 import { isDevForcePlanConfigured } from "@/lib/plans/dev-override";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -32,6 +45,7 @@ export type BillingProductionDiagnostics = {
   organizationId: string;
   organizationName: string;
   subscription: OrganizationSubscription | null;
+  allSubscriptions: OrganizationSubscription[];
   resolvedPlanKey: PlanKey | null;
   resolvedPlanLabel: string | null;
   hasStripeCustomerId: boolean;
@@ -41,6 +55,10 @@ export type BillingProductionDiagnostics = {
   billingEvents: BillingEventDiagnosticView[];
   hygieneFlags: BillingHygieneFlag[];
   sanityWarnings: BillingHygieneFlag[];
+  checkoutBlock: CheckoutBlockState;
+  productionHealth: BillingProductionHealth;
+  cleanupRecommendations: CleanupRecommendation[];
+  ignoredStripeInvoiceIds: string[];
 };
 
 async function listBillingEventsForOrganization(
@@ -118,23 +136,27 @@ function mapInvoiceDiagnostics(invoices: CustomerInvoiceView[]): BillingInvoiceD
   }));
 }
 
-/** Owner/admin billing production diagnostics — no secrets, no deletes. */
+/** Owner/admin billing production diagnostics — no secrets, no automatic deletes. */
 export async function getBillingProductionDiagnostics(
   session: SessionContext,
 ): Promise<BillingProductionDiagnostics> {
   const organizationId = session.organization.id;
 
-  const [overview, invoices, billingEventRows] = await Promise.all([
+  const [overview, invoices, billingEventRows, allSubscriptions, ignoredSet] = await Promise.all([
     getBillingOverview(session),
     listCustomerInvoices(session, LIST_LIMIT),
     listBillingEventsForOrganization(organizationId, LIST_LIMIT),
+    listAllOrganizationSubscriptions(organizationId),
+    listIgnoredStripeInvoiceIds(organizationId),
   ]);
 
   const subscription = overview.subscription;
   const resolvedPlanKey = subscription?.stripe_price_id
-    ? getPlanKeyByPriceId(subscription.stripe_price_id)
+    ? safeGetPlanKeyByStripePriceId(subscription.stripe_price_id)
     : overview.currentPlanKey;
-  const resolvedPlanLabel = resolvedPlanKey ? getPlanByKey(resolvedPlanKey).name : null;
+  const resolvedPlanLabel = resolvedPlanKey
+    ? (safeGetPlanByKey(resolvedPlanKey)?.name ?? null)
+    : null;
 
   const relatedStripeEventIds = billingEventRows
     .map((event) => event.stripe_event_id)
@@ -162,10 +184,34 @@ export async function getBillingProductionDiagnostics(
     webhookEvents: webhookRows,
   });
 
+  const checkoutBlock = resolveCheckoutBlockState({
+    overview,
+    invoices,
+    ignoredStripeInvoiceIds: ignoredSet,
+  });
+
+  const cleanupRecommendations = collectCleanupRecommendations({
+    subscription,
+    allSubscriptions,
+    invoices,
+    billingEvents: billingEventRows,
+    checkoutBlock,
+    mappedPlanKey: resolvedPlanKey,
+    devPlanOverride,
+  });
+
+  const severityCounts = countCleanupRecommendationSeverity(cleanupRecommendations);
+  const productionHealth = resolveBillingProductionHealth({
+    checkoutBlock,
+    recommendationCount: severityCounts.total,
+    dangerRecommendationCount: severityCounts.danger,
+  });
+
   return {
     organizationId,
     organizationName: session.organization.name,
     subscription,
+    allSubscriptions,
     resolvedPlanKey,
     resolvedPlanLabel,
     hasStripeCustomerId: Boolean(subscription?.stripe_customer_id),
@@ -175,5 +221,9 @@ export async function getBillingProductionDiagnostics(
     billingEvents,
     hygieneFlags,
     sanityWarnings,
+    checkoutBlock,
+    productionHealth,
+    cleanupRecommendations,
+    ignoredStripeInvoiceIds: Array.from(ignoredSet),
   };
 }

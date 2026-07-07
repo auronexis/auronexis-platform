@@ -1,6 +1,7 @@
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import type { CheckoutBlockState } from "@/lib/billing/checkout-block";
 import {
-  isCheckoutBlockedByPaymentState,
+  getCheckoutBlockState,
   PENDING_PAYMENT_CHECKOUT_MESSAGE,
 } from "@/lib/billing/checkout-guards";
 import type { BillingOverview, CustomerInvoiceView, StripeBillingUiStatus } from "@/lib/billing/types";
@@ -32,6 +33,8 @@ export function getPricingButtonDisabledReasons(input: {
   hasOpenUnpaidInvoice?: boolean;
   overview?: BillingOverview;
   invoices?: CustomerInvoiceView[];
+  checkoutBlock?: CheckoutBlockState;
+  ignoredStripeInvoiceIds?: ReadonlySet<string>;
   canManage: boolean;
   isLoading: boolean;
   isCurrent: boolean;
@@ -53,18 +56,29 @@ export function getPricingButtonDisabledReasons(input: {
     reasons.push("This is your organization's current plan.");
   }
 
-  const paymentBlocked =
-    input.overview && input.invoices
-      ? isCheckoutBlockedByPaymentState({
+  const paymentBlocked = input.checkoutBlock
+    ? input.checkoutBlock.blocked
+    : input.overview && input.invoices
+      ? getCheckoutBlockState({
           overview: input.overview,
           invoices: input.invoices,
-        })
+          ignoredStripeInvoiceIds: input.ignoredStripeInvoiceIds,
+        }).blocked
       : Boolean(
           input.hasPaymentProblem || input.isPaymentPending || input.hasOpenUnpaidInvoice,
         );
 
   if (paymentBlocked) {
-    reasons.push(PENDING_PAYMENT_CHECKOUT_MESSAGE);
+    const block =
+      input.checkoutBlock ??
+      (input.overview && input.invoices
+        ? getCheckoutBlockState({
+            overview: input.overview,
+            invoices: input.invoices,
+            ignoredStripeInvoiceIds: input.ignoredStripeInvoiceIds,
+          })
+        : null);
+    reasons.push(block?.bannerMessage ?? block?.message ?? PENDING_PAYMENT_CHECKOUT_MESSAGE);
   }
 
   if (input.isUsable && input.isDowngrade && !input.isCurrent && !input.stripeStatus.portalAvailable) {
@@ -142,17 +156,24 @@ export function getPlanDisplayName(planKey: PlanKey | string | null | undefined)
 export function getPricingPaymentBlockMessage(input: {
   overview?: BillingOverview | null;
   invoices?: CustomerInvoiceView[] | null;
+  checkoutBlock?: CheckoutBlockState | null;
+  ignoredStripeInvoiceIds?: ReadonlySet<string>;
 }): string | null {
+  if (input.checkoutBlock) {
+    return input.checkoutBlock.bannerMessage ?? input.checkoutBlock.message;
+  }
+
   if (!input.overview) {
     return null;
   }
 
-  if (!isCheckoutBlockedByPaymentState({
+  const block = getCheckoutBlockState({
     overview: input.overview,
     invoices: Array.isArray(input.invoices) ? input.invoices : [],
-  })) {
-    return null;
-  }
+    ignoredStripeInvoiceIds: input.ignoredStripeInvoiceIds,
+  });
 
-  return PENDING_PAYMENT_CHECKOUT_MESSAGE;
+  return block.bannerMessage ?? block.message;
 }
+
+export { OPEN_INVOICE_CHECKOUT_BLOCK_MESSAGE } from "@/lib/billing/checkout-block";
