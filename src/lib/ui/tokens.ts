@@ -62,21 +62,21 @@ export const sidebarNavScroll = "min-h-0 flex-1 overflow-y-auto no-scrollbar";
 
 /**
  * Sticky side rail inside #main-content scroll region (lg+ detail layouts).
- * Position only — never combine max-height/overflow on this element (causes false scrollbars).
+ * OUTER layer — positioning only. Never add max-height or overflow here.
  */
 export const dashboardStickyRail = "min-w-0 self-start lg:sticky lg:top-8";
 
 /**
- * Inner wrapper for detail metadata rails.
- * max-height caps tall content; overflow-y-auto only activates when content exceeds the cap.
- * 6rem = topbar (4rem) + sticky inset (top-8 / 2rem) inside the main scrollport.
+ * INNER layer — overflow fallback only (wrap inside the sticky aside).
+ * h-fit keeps the box content-sized so overflow-y-auto never creates a false scrollbar.
+ * Scrollbar appears only when content height exceeds max-h.
  */
 export const dashboardStickyRailScrollCap =
-  "min-h-0 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:overscroll-contain";
+  "h-fit w-full min-w-0 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:overscroll-contain";
 
 /** Sticky side rail for xl+ dashboard grids (reports assistant, dashboard asides). */
 export const dashboardStickyRailWide = "min-w-0 self-start xl:sticky xl:top-8";
 
-/** Inner scroll cap for xl+ dashboard asides — same rules as detail rails. */
+/** INNER overflow fallback for xl+ dashboard asides. */
 export const dashboardStickyRailWideScrollCap =
-  "min-h-0 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto xl:overscroll-contain";
+  "h-fit w-full min-w-0 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto xl:overscroll-contain";

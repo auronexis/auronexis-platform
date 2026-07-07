@@ -22,7 +22,7 @@ export function DashboardPageGrid({ children, className }: DashboardPageGridProp
   return (
     <div
       className={cn(
-        "grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]",
+        "grid min-w-0 items-start grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]",
         className,
       )}
     >

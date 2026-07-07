@@ -81,7 +81,7 @@ export function DetailPageLayout({ children, rail, className }: DetailPageLayout
   return (
     <div
       className={cn(
-        "grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]",
+        "grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]",
         className,
       )}
     >
