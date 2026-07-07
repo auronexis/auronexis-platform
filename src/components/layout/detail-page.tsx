@@ -7,8 +7,8 @@ import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import type { AuroraModule } from "@/lib/ui/aurora";
 import { cn } from "@/lib/utils/cn";
 import {
+  dashboardDetailRailAside,
   dashboardStickyRail,
-  dashboardStickyRailScrollCap,
   focusRing,
   linkText,
   transitionInteractive,
@@ -81,13 +81,13 @@ export function DetailPageLayout({ children, rail, className }: DetailPageLayout
   return (
     <div
       className={cn(
-        "grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]",
+        "grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]",
         className,
       )}
     >
-      <div className="order-2 min-w-0 space-y-6 lg:order-1">{children}</div>
-      <aside className={cn("order-1 lg:order-2", dashboardStickyRail)}>
-        <div className={dashboardStickyRailScrollCap}>{rail}</div>
+      <div className="min-w-0 space-y-6">{children}</div>
+      <aside className={dashboardDetailRailAside}>
+        <div className={dashboardStickyRail}>{rail}</div>
       </aside>
     </div>
   );
@@ -135,7 +135,7 @@ export function DetailMetadataRail({
   className,
 }: DetailMetadataRailProps) {
   return (
-    <PageSurface className={cn("space-y-4", className)}>
+    <PageSurface className={cn("h-fit space-y-4", className)}>
       <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">{title}</h2>
       <dl className="space-y-4">{children}</dl>
       {footer ? <div className="border-t border-border/70 pt-4">{footer}</div> : null}

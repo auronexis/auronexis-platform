@@ -60,23 +60,14 @@ export const filterTabInactive =
 /** Sidebar nav scroll region — invisible scrollbar, flex child scroll. */
 export const sidebarNavScroll = "min-h-0 flex-1 overflow-y-auto no-scrollbar";
 
-/**
- * Sticky side rail inside #main-content scroll region (lg+ detail layouts).
- * OUTER layer — positioning only. Never add max-height or overflow here.
- */
-export const dashboardStickyRail = "min-w-0 self-start lg:sticky lg:top-8";
+/** Detail rail column — stretches to full grid row height (required for sticky). */
+export const dashboardDetailRailAside = "hidden min-w-0 xl:block";
 
 /**
- * INNER layer — overflow fallback only (wrap inside the sticky aside).
- * h-fit keeps the box content-sized so overflow-y-auto never creates a false scrollbar.
- * Scrollbar appears only when content height exceeds max-h.
+ * Sticky pin inside #main-content (xl+). Apply on an inner wrapper — the aside
+ * must stretch to the grid row height; never put sticky + self-start on the aside.
  */
-export const dashboardStickyRailScrollCap =
-  "h-fit w-full min-w-0 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:overscroll-contain";
+export const dashboardStickyRail = "sticky top-6 h-fit w-full min-w-0 lg:top-8";
 
 /** Sticky side rail for xl+ dashboard grids (reports assistant, dashboard asides). */
-export const dashboardStickyRailWide = "min-w-0 self-start xl:sticky xl:top-8";
-
-/** INNER overflow fallback for xl+ dashboard asides. */
-export const dashboardStickyRailWideScrollCap =
-  "h-fit w-full min-w-0 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto xl:overscroll-contain";
+export const dashboardStickyRailWide = dashboardStickyRail;

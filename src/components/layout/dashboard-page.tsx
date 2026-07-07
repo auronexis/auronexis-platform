@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { dashboardStickyRailWide, dashboardStickyRailWideScrollCap } from "@/lib/ui/tokens";
+import { dashboardDetailRailAside, dashboardStickyRailWide } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils/cn";
 
 type DashboardPageProps = {
@@ -22,7 +22,7 @@ export function DashboardPageGrid({ children, className }: DashboardPageGridProp
   return (
     <div
       className={cn(
-        "grid min-w-0 items-start grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]",
+        "grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]",
         className,
       )}
     >
@@ -47,8 +47,8 @@ type DashboardPageAsideProps = {
 
 export function DashboardPageAside({ children, className }: DashboardPageAsideProps) {
   return (
-    <aside className={cn(dashboardStickyRailWide, className)}>
-      <div className={cn("space-y-6", dashboardStickyRailWideScrollCap)}>{children}</div>
+    <aside className={cn(dashboardDetailRailAside, className)}>
+      <div className={cn("space-y-6", dashboardStickyRailWide)}>{children}</div>
     </aside>
   );
 }
