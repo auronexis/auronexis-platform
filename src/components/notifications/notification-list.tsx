@@ -5,6 +5,7 @@ import { useTransition } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useToast } from "@/components/ui/toast";
 import { markNotificationRead } from "@/lib/notifications/actions";
 import {
   formatNotificationTimestamp,
@@ -59,6 +60,7 @@ type NotificationListItemProps = {
 
 function NotificationListItem({ notification, compact }: NotificationListItemProps) {
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
   const isUnread = !notification.read_at;
   const href = getNotificationHref(notification.entity_type, notification.entity_id);
 
@@ -68,7 +70,10 @@ function NotificationListItem({ notification, compact }: NotificationListItemPro
     }
 
     startTransition(async () => {
-      await markNotificationRead(notification.id);
+      const result = await markNotificationRead(notification.id);
+      if (result.error) {
+        toast({ title: result.error, variant: "error" });
+      }
     });
   }
 

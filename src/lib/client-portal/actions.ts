@@ -6,8 +6,8 @@ import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
 import { requireSession } from "@/lib/auth/session";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManagePortalUsers } from "@/lib/client-portal/guards";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
@@ -109,7 +109,7 @@ export async function createPortalUserAction(
   const session = await requireSession();
 
   if (!canManagePortalUsers(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   const parsed = createPortalUserSchema.safeParse({
@@ -209,7 +209,7 @@ export async function disablePortalUserAction(
   const session = await requireSession();
 
   if (!canManagePortalUsers(session)) {
-    throw new AuthorizationError();
+    throw new Error(ACTION_DENIED_MESSAGE);
   }
 
   const supabase = await createClient();

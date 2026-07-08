@@ -230,17 +230,6 @@ export async function getPlansPageBillingState(
       ignoredStripeInvoiceIds,
     });
 
-    console.log("[plans][debug]", {
-      organizationId: session.organization.id,
-      subscriptionStatus: rawStatus,
-      stripePriceId: stripePriceId ? maskStripePriceId(stripePriceId) : null,
-      resolvedPlanKey,
-      currentPlanKey,
-      hasCurrentPlan: Boolean(currentPlan),
-      invoicesCount: invoices.length,
-      source: "settings/plans",
-    });
-
     return {
       overview: {
         ...overview,

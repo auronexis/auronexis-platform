@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { recordComplianceAudit } from "@/lib/compliance/audit";
 import { invalidateComplianceCache } from "@/lib/compliance/cache";
 import { exportAuditData, exportEvidenceBundle } from "@/lib/compliance/export";
@@ -10,7 +11,6 @@ import { createGdprRequest, updateGdprRequestStatus } from "@/lib/compliance/gdp
 import { createSecurityIncident, updateSecurityIncidentStatus } from "@/lib/compliance/incidents";
 import { recordConsent } from "@/lib/compliance/consent";
 import type { AuditExportFormat, GdprRequestStatus, GdprRequestType, SecurityIncidentSeverity, SecurityIncidentStatus } from "@/lib/compliance/types";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export type ComplianceActionState = {
@@ -22,8 +22,10 @@ export type ComplianceActionState = {
 
 function requireOwnerAdmin(session: Awaited<ReturnType<typeof requireSession>>) {
   if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
+
+  return null;
 }
 
 const gdprSchema = z.object({
@@ -37,7 +39,10 @@ export async function createGdprRequestAction(
   formData: FormData,
 ): Promise<ComplianceActionState> {
   const session = await requireSession();
-  requireOwnerAdmin(session);
+  const denied = requireOwnerAdmin(session);
+  if (denied) {
+    return denied;
+  }
 
   const parsed = gdprSchema.safeParse({
     requestType: formData.get("requestType"),
@@ -75,7 +80,10 @@ export async function updateGdprRequestStatusAction(input: {
   status: GdprRequestStatus;
 }): Promise<ComplianceActionState> {
   const session = await requireSession();
-  requireOwnerAdmin(session);
+  const denied = requireOwnerAdmin(session);
+  if (denied) {
+    return denied;
+  }
 
   await updateGdprRequestStatus({
     organizationId: session.organization.id,
@@ -93,7 +101,10 @@ export async function createSecurityIncidentAction(
   formData: FormData,
 ): Promise<ComplianceActionState> {
   const session = await requireSession();
-  requireOwnerAdmin(session);
+  const denied = requireOwnerAdmin(session);
+  if (denied) {
+    return denied;
+  }
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -129,7 +140,10 @@ export async function updateSecurityIncidentStatusAction(input: {
   status: SecurityIncidentStatus;
 }): Promise<ComplianceActionState> {
   const session = await requireSession();
-  requireOwnerAdmin(session);
+  const denied = requireOwnerAdmin(session);
+  if (denied) {
+    return denied;
+  }
 
   await updateSecurityIncidentStatus({
     organizationId: session.organization.id,
@@ -147,7 +161,10 @@ export async function recordConsentAction(
   formData: FormData,
 ): Promise<ComplianceActionState> {
   const session = await requireSession();
-  requireOwnerAdmin(session);
+  const denied = requireOwnerAdmin(session);
+  if (denied) {
+    return denied;
+  }
 
   const subjectEmail = String(formData.get("subjectEmail") ?? "").trim();
   const consentType = String(formData.get("consentType") ?? "").trim();
@@ -182,7 +199,10 @@ export async function exportAuditAction(input: {
   severity?: string;
 }): Promise<ComplianceActionState> {
   const session = await requireSession();
-  requireOwnerAdmin(session);
+  const denied = requireOwnerAdmin(session);
+  if (denied) {
+    return denied;
+  }
 
   const result = await exportAuditData({
     session,
@@ -203,7 +223,10 @@ export async function exportAuditAction(input: {
 
 export async function exportEvidenceAction(): Promise<ComplianceActionState> {
   const session = await requireSession();
-  requireOwnerAdmin(session);
+  const denied = requireOwnerAdmin(session);
+  if (denied) {
+    return denied;
+  }
 
   const result = await exportEvidenceBundle(session);
   return {

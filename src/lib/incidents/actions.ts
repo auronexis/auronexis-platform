@@ -13,7 +13,12 @@ import {
   markSlaRespondedForIncident,
 } from "@/lib/sla/actions";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature, requireFeature } from "@/lib/plans/guards";
+import {
+  checkPlanFeatureSafe,
+  requireModulePermissionSafe,
+} from "@/lib/action-errors";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
+import { requireFeature } from "@/lib/plans/guards";
 import {
   canEditIncident,
   canManageIncidentLifecycle,
@@ -21,7 +26,6 @@ import {
 import { getIncidentById } from "@/lib/incidents/queries";
 import { STAFF_INCIDENT_STATUSES } from "@/lib/incidents/types";
 import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
-import { AuthorizationError, requirePermission } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, IncidentStatus } from "@/types/database";
 
@@ -170,10 +174,12 @@ async function resolveIncidentRiskLink(
   return { risk_id: riskId, client_risk_id: null };
 }
 
-function assertStaffStatusAllowed(status: IncidentStatus): void {
+function staffStatusError(status: IncidentStatus): { error: string } | null {
   if (!STAFF_INCIDENT_STATUSES.includes(status)) {
-    throw new AuthorizationError("You cannot set this incident status.");
+    return { error: "You cannot set this incident status." };
   }
+
+  return null;
 }
 
 function toIsoTimestamp(value: string): string {
@@ -186,7 +192,10 @@ export async function createIncidentAction(
   formData: FormData,
 ): Promise<IncidentActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "incidents", "create");
+  const permError = requireModulePermissionSafe(session.role, "incidents", "create");
+  if (permError) {
+    return permError;
+  }
 
   const planCheck = await requireFeature(session.organization.id, "incidents");
   if (!planCheck.allowed) {
@@ -207,7 +216,10 @@ export async function createIncidentAction(
   }
 
   if (session.role === "staff") {
-    assertStaffStatusAllowed(parsed.data.status);
+    const statusError = staffStatusError(parsed.data.status);
+    if (statusError) {
+      return statusError;
+    }
   }
 
   if (!(await verifyClientInOrg(session.organization.id, parsed.data.clientId))) {
@@ -333,7 +345,10 @@ export async function updateIncidentAction(
   formData: FormData,
 ): Promise<IncidentActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "incidents", "update");
+  const permError = requireModulePermissionSafe(session.role, "incidents", "update");
+  if (permError) {
+    return permError;
+  }
 
   const planCheck = await requireFeature(session.organization.id, "incidents");
   if (!planCheck.allowed) {
@@ -347,7 +362,7 @@ export async function updateIncidentAction(
   }
 
   if (!canEditIncident(session, existing)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   const parsed = parseIncidentForm(formData);
@@ -363,10 +378,13 @@ export async function updateIncidentAction(
   let assignedUserId = existing.assigned_user_id;
 
   if (session.role === "staff") {
-    assertStaffStatusAllowed(parsed.data.status);
+    const statusError = staffStatusError(parsed.data.status);
+    if (statusError) {
+      return statusError;
+    }
 
     if (parsed.data.assignedUserId && parsed.data.assignedUserId !== session.user.id) {
-      throw new AuthorizationError();
+      return { error: ACTION_DENIED_MESSAGE };
     }
   } else {
     assignedUserId = parsed.data.assignedUserId ?? existing.assigned_user_id;
@@ -379,7 +397,7 @@ export async function updateIncidentAction(
       (parsed.data.status === "resolved" || parsed.data.status === "archived") &&
       !canManageIncidentLifecycle(session)
     ) {
-      throw new AuthorizationError();
+      return { error: ACTION_DENIED_MESSAGE };
     }
   }
 
@@ -542,10 +560,13 @@ export async function resolveIncidentAction(
   const session = await requireSession();
 
   if (!canManageIncidentLifecycle(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "incidents");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "incidents");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getIncidentById(session, incidentId);
 
@@ -635,10 +656,13 @@ export async function archiveIncidentAction(incidentId: string): Promise<void> {
   const session = await requireSession();
 
   if (!canManageIncidentLifecycle(session)) {
-    throw new AuthorizationError();
+    throw new Error(ACTION_DENIED_MESSAGE);
   }
 
-  await assertCanUseFeature(session.organization.id, "incidents");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "incidents");
+  if (planError) {
+    throw new Error(planError.error);
+  }
 
   const existing = await getIncidentById(session, incidentId);
 

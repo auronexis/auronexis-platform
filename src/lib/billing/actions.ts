@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { requireSession } from "@/lib/auth/session";
 
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { createCheckoutSessionWithDiscount } from "@/lib/billing/checkout";
 
 import { assertCheckoutAllowed } from "@/lib/billing/checkout-guards.server";
@@ -28,8 +29,6 @@ import { assertPlanCheckoutReady } from "@/lib/billing/stripe-config";
 import type { PlanKey } from "@/lib/billing/plans";
 
 import { getDefaultPlanKey } from "@/lib/plans/features";
-
-import { AuthorizationError } from "@/lib/rbac/guards";
 
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
@@ -65,7 +64,7 @@ export async function createCheckoutSessionAction(
 
   if (!canManageOrganizationSettings(session)) {
 
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
 
   }
 
@@ -140,7 +139,7 @@ export async function createPortalSessionAction(): Promise<BillingActionState> {
 
   if (!canManageOrganizationSettings(session)) {
 
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
 
   }
 
@@ -184,7 +183,7 @@ export async function validateDiscountCodeAction(
 
   if (!canManageOrganizationSettings(session)) {
 
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
 
   }
 
@@ -230,7 +229,7 @@ export async function previewProrationAction(
 
   if (!canManageOrganizationSettings(session)) {
 
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
 
   }
 

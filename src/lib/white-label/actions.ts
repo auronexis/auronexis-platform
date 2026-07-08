@@ -5,9 +5,9 @@ import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { normalizeHexColor } from "@/lib/branding/defaults";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature } from "@/lib/plans/guards";
+import { checkPlanFeatureSafe } from "@/lib/action-errors";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import { assetFieldForKind, uploadWhiteLabelAsset } from "@/lib/white-label/assets";
 import { invalidateWhiteLabelCache } from "@/lib/white-label/cache";
@@ -19,7 +19,12 @@ import {
   isValidHttpsUrl,
   sanitizeCustomCss,
 } from "@/lib/white-label/validation";
+import type { SessionContext } from "@/lib/tenancy/context";
 import type { Database } from "@/types/database";
+
+type WhiteLabelAccess =
+  | { ok: true; session: SessionContext }
+  | { ok: false; error: string };
 
 type WhiteLabelInsert = Database["public"]["Tables"]["white_label_settings"]["Insert"];
 type WhiteLabelUpdate = Database["public"]["Tables"]["white_label_settings"]["Update"];
@@ -59,13 +64,18 @@ const settingsSchema = z.object({
   pdfFooter: z.string().trim().optional().nullable(),
 });
 
-async function ensureAccess() {
+async function ensureAccess(): Promise<WhiteLabelAccess> {
   const session = await requireSession();
   if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+    return { ok: false, error: ACTION_DENIED_MESSAGE };
   }
-  await assertCanUseFeature(session.organization.id, "white_label");
-  return session;
+
+  const planError = await checkPlanFeatureSafe(session.organization.id, "white_label");
+  if (planError) {
+    return { ok: false, error: planError.error };
+  }
+
+  return { ok: true, session };
 }
 
 function emptyToNull(value: string | null | undefined): string | null {
@@ -79,7 +89,11 @@ export async function saveWhiteLabelSettingsAction(
   formData: FormData,
 ): Promise<WhiteLabelActionState> {
   try {
-    const session = await ensureAccess();
+    const access = await ensureAccess();
+    if (!access.ok) {
+      return { error: access.error };
+    }
+    const session = access.session;
     const parsed = settingsSchema.safeParse({
       companyName: formData.get("companyName"),
       platformName: formData.get("platformName"),
@@ -203,7 +217,11 @@ export async function saveWhiteLabelSettingsAction(
 
 export async function publishWhiteLabelSettingsAction(): Promise<WhiteLabelActionState> {
   try {
-    const session = await ensureAccess();
+    const access = await ensureAccess();
+    if (!access.ok) {
+      return { error: access.error };
+    }
+    const session = access.session;
     const supabase = await createClient();
     const { error } = await supabase
       .from("white_label_settings")
@@ -233,7 +251,11 @@ export async function publishWhiteLabelSettingsAction(): Promise<WhiteLabelActio
 
 export async function resetWhiteLabelSettingsAction(): Promise<WhiteLabelActionState> {
   try {
-    const session = await ensureAccess();
+    const access = await ensureAccess();
+    if (!access.ok) {
+      return { error: access.error };
+    }
+    const session = access.session;
     const supabase = await createClient();
     await supabase.from("white_label_settings").delete().eq("organization_id", session.organization.id);
     invalidateWhiteLabelCache(session.organization.id);
@@ -251,7 +273,11 @@ export async function uploadWhiteLabelAssetAction(input: {
   base64Data: string;
 }): Promise<WhiteLabelActionState> {
   try {
-    const session = await ensureAccess();
+    const access = await ensureAccess();
+    if (!access.ok) {
+      return { error: access.error };
+    }
+    const session = access.session;
     const bytes = Buffer.from(input.base64Data, "base64");
     const uploaded = await uploadWhiteLabelAsset({
       organizationId: session.organization.id,

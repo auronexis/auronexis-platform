@@ -6,18 +6,16 @@ import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { dispatchAutomation } from "@/lib/automation";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature } from "@/lib/plans/guards";
+import { checkPlanFeatureSafe } from "@/lib/action-errors";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManageReportSchedules } from "@/lib/report-schedules/guards";
 import { getReportScheduleRecordById } from "@/lib/report-schedules/queries";
-import {
-  applyReportTemplate,
-} from "@/lib/report-templates/types";
-import { getReportTemplateRecordById } from "@/lib/report-templates/queries";
 import {
   calculateNextRunAt,
   getReportingPeriodForFrequency,
 } from "@/lib/report-schedules/schedule";
-import { AuthorizationError } from "@/lib/rbac/guards";
+import { getReportTemplateRecordById } from "@/lib/report-templates/queries";
+import { applyReportTemplate } from "@/lib/report-templates/types";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, ReportScheduleFrequency } from "@/types/database";
 
@@ -156,10 +154,13 @@ export async function createReportScheduleAction(
   const session = await requireSession();
 
   if (!canManageReportSchedules(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "report_scheduling");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "report_scheduling");
+  if (planError) {
+    return planError;
+  }
 
   const parsed = parseScheduleForm(formData);
 
@@ -217,10 +218,13 @@ export async function updateReportScheduleAction(
   const session = await requireSession();
 
   if (!canManageReportSchedules(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "report_scheduling");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "report_scheduling");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getReportScheduleRecordById(session, scheduleId);
 
@@ -278,10 +282,13 @@ export async function setReportScheduleActiveAction(
   const session = await requireSession();
 
   if (!canManageReportSchedules(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "report_scheduling");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "report_scheduling");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getReportScheduleRecordById(session, scheduleId);
 
@@ -314,10 +321,13 @@ export async function generateReportDraftAction(scheduleId: string): Promise<voi
   const session = await requireSession();
 
   if (!canManageReportSchedules(session)) {
-    throw new AuthorizationError();
+    throw new Error(ACTION_DENIED_MESSAGE);
   }
 
-  await assertCanUseFeature(session.organization.id, "report_scheduling");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "report_scheduling");
+  if (planError) {
+    throw new Error(planError.error);
+  }
 
   const schedule = await getReportScheduleRecordById(session, scheduleId);
 

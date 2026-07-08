@@ -42,7 +42,7 @@ type AuroraTableHeadProps = HTMLAttributes<HTMLTableSectionElement>;
 export function AuroraTableHead({ className, children, ...props }: AuroraTableHeadProps) {
   return (
     <thead className={cn(auroraTableHead, "divide-y divide-border/70", className)} {...props}>
-      {children}
+      {omitWhitespaceTextNodes(children)}
     </thead>
   );
 }

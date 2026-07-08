@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { requireModulePermissionSafe } from "@/lib/action-errors";
 import { requireSession } from "@/lib/auth/session";
-import { requirePermission } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { SalesPipelineStage, ProspectSegment, LeadSourceRegion, AgencyType } from "@/types/database";
 import { PIPELINE_STAGES } from "@/lib/sales/pipeline-stages";
@@ -62,7 +62,8 @@ function parseOptionalNumber(value?: string): number | null {
 
 export async function updateSalesLead(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "update");
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
 
   const parsed = updateLeadSchema.safeParse({
     leadId: formData.get("leadId"),
@@ -158,7 +159,8 @@ export async function updateSalesLead(_prev: SalesActionState, formData: FormDat
 
 export async function scheduleLeadFollowup(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "update");
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
 
   const leadId = formData.get("leadId")?.toString();
   const subject = formData.get("subject")?.toString() ?? "Follow-up reminder";
@@ -206,7 +208,10 @@ export async function scheduleLeadFollowup(_prev: SalesActionState, formData: Fo
 
 export async function runLeadAutomationScan(): Promise<void> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "manage");
+  const permError = requireModulePermissionSafe(session.role, "sales", "manage");
+  if (permError) {
+    return;
+  }
 
   const supabase = await createClient();
   const { data: leads, error } = await supabase
@@ -256,7 +261,8 @@ export async function updateCustomerSuccess(
   formData: FormData,
 ): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "update");
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
 
   const recordId = formData.get("recordId")?.toString();
   const milestonesCompleted = Number(formData.get("milestonesCompleted") ?? 0);
@@ -292,7 +298,8 @@ export async function updateCustomerSuccess(
 
 export async function addSalesLeadNote(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "update");
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
 
   const parsed = noteSchema.safeParse({
     leadId: formData.get("leadId"),
@@ -324,7 +331,8 @@ export async function addSalesLeadNote(_prev: SalesActionState, formData: FormDa
 
 export async function enrollFoundingCustomer(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "manage");
+  const permError = requireModulePermissionSafe(session.role, "sales", "manage");
+  if (permError) return permError;
 
   const leadId = formData.get("leadId")?.toString();
   if (!leadId) {
@@ -369,7 +377,8 @@ export async function enrollFoundingCustomer(_prev: SalesActionState, formData: 
 
 export async function createSalesProposal(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "update");
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
 
   const leadId = formData.get("leadId")?.toString();
   if (!leadId) return { error: "Lead is required." };
@@ -416,7 +425,8 @@ export async function updateCustomerOnboarding(
   formData: FormData,
 ): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "update");
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
 
   const recordId = formData.get("recordId")?.toString();
   const checklistCompleted = Number(formData.get("checklistCompleted") ?? 0);
@@ -455,7 +465,8 @@ export async function updateCustomerOnboarding(
 
 export async function startCustomerOnboarding(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "manage");
+  const permError = requireModulePermissionSafe(session.role, "sales", "manage");
+  if (permError) return permError;
 
   const leadId = formData.get("leadId")?.toString();
   if (!leadId) return { error: "Lead is required." };
@@ -483,7 +494,8 @@ export async function seedTop100AgenciesAction(
   _prev: SalesActionState = {},
 ): Promise<SalesActionState> {
   const session = await requireSession();
-  requirePermission(session.role, "sales", "manage");
+  const permError = requireModulePermissionSafe(session.role, "sales", "manage");
+  if (permError) return permError;
 
   const supabase = await createClient();
   const orgId = session.organization.id;

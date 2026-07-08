@@ -10,20 +10,6 @@ import { handleStripeWebhookEvent } from "@/lib/stripe/webhooks";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function logStripeWebhookEnv(input: {
-  hasSignature: boolean;
-  bodyLength: number;
-  note?: string;
-}): void {
-  console.log("stripe webhook env loaded", {
-    hasSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
-    secretPrefix: process.env.STRIPE_WEBHOOK_SECRET?.slice(0, 8),
-    hasSignature: input.hasSignature,
-    bodyLength: input.bodyLength,
-    note: input.note ?? null,
-  });
-}
-
 function logConstructEventFailure(
   message: string,
   input: { hasSignature: boolean; bodyLength: number },
@@ -31,7 +17,6 @@ function logConstructEventFailure(
   console.error("[stripe] constructEvent failed", {
     message,
     hasSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
-    secretPrefix: process.env.STRIPE_WEBHOOK_SECRET?.slice(0, 8),
     hasSignature: input.hasSignature,
     bodyLength: input.bodyLength,
   });
@@ -46,12 +31,6 @@ export async function POST(request: Request): Promise<Response> {
 
   const body = await request.text();
   const signature = request.headers.get("stripe-signature");
-
-  logStripeWebhookEnv({
-    hasSignature: !!signature,
-    bodyLength: body.length,
-    note: "incoming request",
-  });
 
   if (!signature) {
     return NextResponse.json({ error: "Missing Stripe signature" }, { status: 400 });
@@ -72,15 +51,6 @@ export async function POST(request: Request): Promise<Response> {
     });
     return NextResponse.json({ error: message }, { status: 400 });
   }
-
-  console.log("stripe webhook env loaded", {
-    hasSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
-    secretPrefix: process.env.STRIPE_WEBHOOK_SECRET?.slice(0, 8),
-    hasSignature: true,
-    bodyLength: body.length,
-    eventType: event.type,
-    note: "signature verified",
-  });
 
   const idempotency = await ensureStripeIdempotency(event);
 

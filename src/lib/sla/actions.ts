@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { requireSession } from "@/lib/auth/session";
+import { checkPlanFeatureSafe } from "@/lib/action-errors";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
-import { assertCanUseFeature, checkPlanFeature } from "@/lib/plans/guards";
+import { checkPlanFeature } from "@/lib/plans/guards";
 import { AuthorizationError } from "@/lib/rbac/guards";
 import { canManageSlaPolicies } from "@/lib/team/guards";
 import { recordSLAActivity } from "@/lib/sla/activity";
@@ -95,7 +96,10 @@ export async function createSlaPolicyAction(
     return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "sla_tracking");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "sla_tracking");
+  if (planError) {
+    return planError;
+  }
 
   const parsed = parseSlaPolicyForm(formData);
 
@@ -155,7 +159,10 @@ export async function updateSlaPolicyAction(
     return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "sla_tracking");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "sla_tracking");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getSlaPolicyById(session, policyId);
 
@@ -214,7 +221,10 @@ export async function deleteSlaPolicyAction(policyId: string): Promise<SlaPolicy
     return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "sla_tracking");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "sla_tracking");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getSlaPolicyById(session, policyId);
 
@@ -258,7 +268,10 @@ export async function setDefaultSlaPolicyAction(policyId: string): Promise<SlaPo
     return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "sla_tracking");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "sla_tracking");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getSlaPolicyById(session, policyId);
 

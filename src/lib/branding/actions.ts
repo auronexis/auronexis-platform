@@ -6,9 +6,9 @@ import { recordActivityEvent } from "@/lib/activity/record";
 import { normalizeHexColor } from "@/lib/branding/defaults";
 import { getOrganizationBrandingRecord } from "@/lib/branding/queries";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature } from "@/lib/plans/guards";
+import { checkPlanFeatureSafe } from "@/lib/action-errors";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -57,10 +57,13 @@ export async function upsertOrganizationBrandingAction(
   const session = await requireSession();
 
   if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "white_label");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "white_label");
+  if (planError) {
+    return planError;
+  }
 
   const parsed = brandingSchema.safeParse({
     companyName: formData.get("companyName"),

@@ -7,7 +7,7 @@ import { recordActivityEvent } from "@/lib/activity/record";
 import { dispatchAutomation } from "@/lib/automation";
 import { fireWorkflowEngine } from "@/lib/automation/engine-v2/dispatch-hook";
 import { requireSession } from "@/lib/auth/session";
-import { assertPermissionSafe } from "@/lib/authorization/guards";
+import { assertPermissionSafe, ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import {
   canEditReport,
   canManageReportLifecycle,
@@ -15,7 +15,6 @@ import {
 } from "@/lib/reports/guards";
 import { getReportById } from "@/lib/reports/queries";
 import { EDITABLE_REPORT_STATUSES, STAFF_REPORT_STATUSES } from "@/lib/reports/types";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, ReportStatus } from "@/types/database";
 
@@ -98,10 +97,12 @@ async function verifyUserInOrg(
   return Boolean(data as { id: string } | null);
 }
 
-function assertEditableStatusAllowed(status: ReportStatus): void {
+function editableStatusError(status: ReportStatus): { error: string } | null {
   if (!EDITABLE_REPORT_STATUSES.includes(status)) {
-    throw new AuthorizationError("Use lifecycle actions to change report status.");
+    return { error: "Use lifecycle actions to change report status." };
   }
+
+  return null;
 }
 
 function buildReportPayload(parsed: z.infer<typeof reportFieldsSchema>) {
@@ -144,10 +145,13 @@ export async function createReportAction(
 
   if (session.role === "staff") {
     if (!STAFF_REPORT_STATUSES.includes(parsed.data.status)) {
-      throw new AuthorizationError("You cannot set this report status.");
+      return { error: "You cannot set this report status." };
     }
   } else {
-    assertEditableStatusAllowed(parsed.data.status);
+    const statusError = editableStatusError(parsed.data.status);
+    if (statusError) {
+      return statusError;
+    }
   }
 
   if (!(await verifyClientInOrg(session.organization.id, parsed.data.clientId))) {
@@ -232,7 +236,7 @@ export async function updateReportAction(
   }
 
   if (!canEditReport(session, existing)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
   const parsed = parseReportForm(formData);
@@ -249,14 +253,17 @@ export async function updateReportAction(
 
   if (session.role === "staff") {
     if (!STAFF_REPORT_STATUSES.includes(parsed.data.status)) {
-      throw new AuthorizationError("You cannot set this report status.");
+      return { error: "You cannot set this report status." };
     }
 
     if (parsed.data.assignedUserId && parsed.data.assignedUserId !== session.user.id) {
-      throw new AuthorizationError();
+      return { error: ACTION_DENIED_MESSAGE };
     }
   } else {
-    assertEditableStatusAllowed(parsed.data.status);
+    const statusError = editableStatusError(parsed.data.status);
+    if (statusError) {
+      return statusError;
+    }
     assignedUserId = parsed.data.assignedUserId ?? existing.assigned_user_id;
 
     if (!(await verifyUserInOrg(session.organization.id, assignedUserId))) {
@@ -333,7 +340,7 @@ export async function markReportSentAction(reportId: string): Promise<void> {
   const session = await requireSession();
 
   if (!canManageReportLifecycle(session)) {
-    throw new AuthorizationError();
+    throw new Error(ACTION_DENIED_MESSAGE);
   }
 
   const existing = await getReportById(session, reportId);
@@ -382,7 +389,7 @@ export async function archiveReportAction(reportId: string): Promise<void> {
   const session = await requireSession();
 
   if (!canManageReportLifecycle(session)) {
-    throw new AuthorizationError();
+    throw new Error(ACTION_DENIED_MESSAGE);
   }
 
   const existing = await getReportById(session, reportId);

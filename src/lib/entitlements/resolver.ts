@@ -9,7 +9,7 @@ import {
   getOrganizationSubscription,
 } from "@/lib/billing/queries";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
-import { isSubscriptionUsable, normalizeSubscriptionStatus } from "@/lib/billing/status";
+import { isSubscriptionUsable } from "@/lib/billing/status";
 import { getEffectiveLimits } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";
 import {
@@ -92,10 +92,7 @@ export async function resolveOrganizationEntitlements(
     getPlanOverride(organizationId),
   ]);
 
-  const subscriptionReceived = Boolean(subscription);
   const status = subscription?.status ?? null;
-  const stripePriceId = subscription?.stripe_price_id ?? null;
-  const normalizedStatus = normalizeSubscriptionStatus(status);
   const activeAccess = isSubscriptionUsable(status);
   const mappedPlanKey = resolveMappedPlanKey(subscription, planOverride);
 
@@ -104,19 +101,6 @@ export async function resolveOrganizationEntitlements(
   if (activeAccess) {
     fallbackPath = mappedPlanKey ? "paid_plan" : "starter_default";
   }
-
-  console.log("[entitlements][resolve]", {
-    organizationId,
-    subscriptionReceived,
-    status,
-    normalizedStatus,
-    stripePriceId: stripePriceId ? maskStripePriceId(stripePriceId) : null,
-    mappedPlanKey,
-    activeAccess,
-    fallbackPath,
-    cancelAtPeriodEnd: subscription?.cancel_at_period_end ?? false,
-    source: options?.session ? "session" : "admin",
-  });
 
   if (!activeAccess) {
     return {

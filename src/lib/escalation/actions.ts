@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature } from "@/lib/plans/guards";
+import { checkPlanFeatureSafe } from "@/lib/action-errors";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { getEscalationRuleById } from "@/lib/escalation/queries";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
@@ -79,10 +79,13 @@ export async function createEscalationRuleAction(
   const session = await requireSession();
 
   if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "escalation_rules");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "escalation_rules");
+  if (planError) {
+    return planError;
+  }
 
   const parsed = parseEscalationRuleForm(formData);
 
@@ -131,10 +134,13 @@ export async function updateEscalationRuleAction(
   const session = await requireSession();
 
   if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "escalation_rules");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "escalation_rules");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getEscalationRuleById(session, ruleId);
 
@@ -183,10 +189,13 @@ export async function deleteEscalationRuleAction(ruleId: string): Promise<Escala
   const session = await requireSession();
 
   if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "escalation_rules");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "escalation_rules");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getEscalationRuleById(session, ruleId);
 
@@ -229,10 +238,13 @@ export async function toggleEscalationRuleAction(
   const session = await requireSession();
 
   if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "escalation_rules");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "escalation_rules");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getEscalationRuleById(session, ruleId);
 

@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature } from "@/lib/plans/guards";
+import { checkPlanFeatureSafe } from "@/lib/action-errors";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManageReportTemplates } from "@/lib/report-templates/guards";
 import { getReportTemplateById } from "@/lib/report-templates/queries";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -85,10 +85,13 @@ export async function createReportTemplateAction(
   const session = await requireSession();
 
   if (!canManageReportTemplates(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "report_templates");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "report_templates");
+  if (planError) {
+    return planError;
+  }
 
   const parsed = parseTemplateForm(formData);
 
@@ -140,10 +143,13 @@ export async function updateReportTemplateAction(
   const session = await requireSession();
 
   if (!canManageReportTemplates(session)) {
-    throw new AuthorizationError();
+    return { error: ACTION_DENIED_MESSAGE };
   }
 
-  await assertCanUseFeature(session.organization.id, "report_templates");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "report_templates");
+  if (planError) {
+    return planError;
+  }
 
   const existing = await getReportTemplateById(session, templateId);
 
@@ -191,10 +197,13 @@ export async function deleteReportTemplateAction(templateId: string): Promise<vo
   const session = await requireSession();
 
   if (!canManageReportTemplates(session)) {
-    throw new AuthorizationError();
+    throw new Error(ACTION_DENIED_MESSAGE);
   }
 
-  await assertCanUseFeature(session.organization.id, "report_templates");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "report_templates");
+  if (planError) {
+    throw new Error(planError.error);
+  }
 
   const existing = await getReportTemplateById(session, templateId);
 
@@ -233,10 +242,13 @@ export async function setDefaultReportTemplateAction(templateId: string): Promis
   const session = await requireSession();
 
   if (!canManageReportTemplates(session)) {
-    throw new AuthorizationError();
+    throw new Error(ACTION_DENIED_MESSAGE);
   }
 
-  await assertCanUseFeature(session.organization.id, "report_templates");
+  const planError = await checkPlanFeatureSafe(session.organization.id, "report_templates");
+  if (planError) {
+    throw new Error(planError.error);
+  }
 
   const existing = await getReportTemplateById(session, templateId);
 

@@ -3,11 +3,13 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormAlert } from "@/components/ui/form-alert";
 import {
   updateClientFinancialAction,
   upsertClientFinancialAction,
   type ClientFinancialActionState,
 } from "@/lib/profitability/actions";
+import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
 import type { ClientProfitabilityRow } from "@/lib/profitability/types";
 
 type ClientFinancialFormProps = {
@@ -21,6 +23,8 @@ export function ClientFinancialForm({ row }: ClientFinancialFormProps) {
     ? updateClientFinancialAction.bind(null, row.financialId, row.clientId)
     : upsertClientFinancialAction.bind(null, row.clientId);
   const [state, formAction, isPending] = useActionState(action, initialState);
+
+  useFormActionFeedback(state, isPending, { successMessage: "Financials saved" });
 
   return (
     <form action={formAction} className="space-y-3 rounded-md border border-border bg-muted/10 p-4">
@@ -59,12 +63,8 @@ export function ClientFinancialForm({ row }: ClientFinancialFormProps) {
         />
       </div>
 
-      {state.error ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-critical">{state.error}</p>
-      ) : null}
-      {state.success ? (
-        <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-success">{state.success}</p>
-      ) : null}
+      {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
+      {state.success ? <FormAlert variant="success">{state.success}</FormAlert> : null}
 
       <Button type="submit" disabled={isPending}>
         {isPending ? "Saving…" : "Save financials"}
