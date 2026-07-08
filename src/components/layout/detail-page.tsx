@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils/cn";
 import {
   dashboardDetailRailAside,
   dashboardDetailRailSticky,
+  detailSectionScrollMargin,
   focusRing,
   linkText,
   transitionInteractive,
@@ -122,7 +123,7 @@ export function DetailSection({
   id,
 }: DetailSectionProps) {
   return (
-    <PageSurface padding={padding} className={cn(id && "scroll-mt-28", className)} id={id}>
+    <PageSurface padding={padding} className={cn(id && detailSectionScrollMargin, className)} id={id}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <PageSurfaceHeading title={title} description={description} className="mb-0" />
         {action}
@@ -179,7 +180,7 @@ export function DetailKpiGrid({ children, className, id }: DetailKpiGridProps) {
   return (
     <div
       id={id}
-      className={cn("mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", id && "scroll-mt-28", className)}
+      className={cn("mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", id && detailSectionScrollMargin, className)}
     >
       {children}
     </div>

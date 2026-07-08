@@ -18,7 +18,8 @@ const CLIENT_SECTIONS: SecondaryNavItem[] = [
 ];
 
 const OBSERVER_THRESHOLDS = [0, 0.1, 0.25, 0.5, 0.75, 1] as const;
-const OBSERVER_ROOT_MARGIN = "-52px 0px -45% 0px";
+const OBSERVER_ROOT_MARGIN = "-112px 0px -45% 0px";
+const SECTION_SCROLL_OFFSET_PX = 112;
 
 type ClientSecondaryNavProps = {
   className?: string;
@@ -32,6 +33,20 @@ function getMainScrollContainer(): HTMLElement | null {
 export function ClientSecondaryNav({ className }: ClientSecondaryNavProps) {
   const [activeId, setActiveId] = useState<string>(CLIENT_SECTIONS[0].id);
   const visibilityRef = useRef<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    const main = getMainScrollContainer();
+    if (!main) {
+      return;
+    }
+
+    const previousScrollPaddingTop = main.style.scrollPaddingTop;
+    main.style.scrollPaddingTop = `${SECTION_SCROLL_OFFSET_PX}px`;
+
+    return () => {
+      main.style.scrollPaddingTop = previousScrollPaddingTop;
+    };
+  }, []);
 
   useEffect(() => {
     const main = getMainScrollContainer();
@@ -90,12 +105,19 @@ export function ClientSecondaryNav({ className }: ClientSecondaryNavProps) {
 
   const scrollToSection = useCallback((id: string) => {
     const target = document.getElementById(id);
-    if (!target) {
+    const main = getMainScrollContainer();
+    if (!target || !main) {
       return;
     }
 
     setActiveId(id);
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const mainRect = main.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const nextTop =
+      main.scrollTop + (targetRect.top - mainRect.top) - SECTION_SCROLL_OFFSET_PX;
+
+    main.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" });
   }, []);
 
   return (
