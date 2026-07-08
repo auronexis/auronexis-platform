@@ -19,6 +19,13 @@ import { DashboardHealthEngine } from "@/components/health/dashboard-health-engi
 import { DashboardReportsOverview } from "@/components/reports/dashboard-reports-overview";
 import { DashboardRisksOverview } from "@/components/risks/dashboard-risks-overview";
 import { CommandCenterHero } from "@/components/dashboard/command-center-hero";
+import { CustomerSuccessCenterPanel } from "@/components/dashboard/customer-success-center";
+import { ExecutiveBriefEmptyState, ExecutiveBriefPanel } from "@/components/dashboard/executive-brief";
+import { ExecutiveInsightsPanel } from "@/components/dashboard/executive-insights-panel";
+import { HealthTrendsPanel } from "@/components/dashboard/health-trends-panel";
+import { PortfolioHealthDistributionPanel } from "@/components/dashboard/portfolio-health-distribution";
+import { PriorityClientsPanel } from "@/components/dashboard/priority-clients-panel";
+import { SmartTimelinePanel } from "@/components/dashboard/smart-timeline-panel";
 import { DashboardActivityTimeline } from "@/components/dashboard/dashboard-activity-timeline";
 import { DashboardBusinessUpgradeCard } from "@/components/dashboard/dashboard-business-upgrade-card";
 import { DashboardCriticalAlerts } from "@/components/dashboard/dashboard-critical-alerts";
@@ -52,6 +59,7 @@ import { getKnowledgeHubData } from "@/lib/ai/knowledge/get-hub";
 import { getOperationalIntelligence } from "@/lib/ai/insights/get-intelligence";
 import { getClientSuccessPortfolio } from "@/lib/ai/client-success/get-analysis";
 import { getDashboardData } from "@/lib/dashboard/queries";
+import { getExecutiveIntelligence } from "@/lib/intelligence/queries";
 import {
   buildSmartRecommendations,
   buildWorkspaceProgress,
@@ -79,6 +87,7 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const session = await requireSession();
   const data = await getDashboardData(session);
+  const executiveIntelligence = await getExecutiveIntelligence(session, data);
   const aiAccess = await checkPlanFeatureForSession(session, "ai_report_assistant");
   const successAccess = await checkPlanFeatureForSession(session, "ai_client_analysis");
   const operationalAiAccess = await checkPlanFeatureForSession(session, "ai_risk_assistant");
@@ -190,6 +199,85 @@ export default async function DashboardPage() {
         data={data}
         workspaceHealth={intelligence?.workspaceHealth ?? null}
       />
+
+      <section aria-label="Executive intelligence" className="space-y-4">
+        <SectionTitle>Executive intelligence</SectionTitle>
+
+        {executiveIntelligence.hasClients ? (
+          <ExecutiveBriefPanel brief={executiveIntelligence.brief} />
+        ) : (
+          <ExecutiveBriefEmptyState />
+        )}
+
+        <div className="grid gap-4 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <DashboardPanel
+              title="Priority clients"
+              description="Top accounts ranked by deterministic operational priority."
+              className="min-h-[320px]"
+              variant="glass"
+            >
+              <PriorityClientsPanel clients={executiveIntelligence.priorityClients} />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-5">
+            <DashboardPanel
+              title="Portfolio health"
+              description="Distribution across healthy, watch, risk, and critical bands."
+              className="min-h-[320px]"
+            >
+              <PortfolioHealthDistributionPanel distribution={executiveIntelligence.portfolioHealth} />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-12">
+            <DashboardPanel
+              title="Executive insights"
+              description="Rule-based signals for leadership action across the portfolio."
+              className="min-h-[280px]"
+              variant="glass"
+            >
+              <ExecutiveInsightsPanel insights={executiveIntelligence.insights} />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-12">
+            <DashboardPanel
+              title="Customer Success Center"
+              description="Categorized accounts linked to existing workspace workflows."
+              className="min-h-[280px]"
+            >
+              <CustomerSuccessCenterPanel categories={executiveIntelligence.successCategories} />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-12">
+            <DashboardPanel
+              title="Health trends"
+              description="Portfolio health movement across 7, 30, and 90-day windows."
+              className="min-h-[280px]"
+            >
+              <HealthTrendsPanel trends={executiveIntelligence.healthTrends} />
+            </DashboardPanel>
+          </div>
+
+          <div className="lg:col-span-12">
+            <DashboardPanel
+              title="Smart timeline"
+              description="Recent executive events across reports, risks, incidents, and health."
+              action={
+                <Link href="/activity" className={cn(linkText, "text-xs")}>
+                  View all
+                </Link>
+              }
+              className="min-h-[360px]"
+            >
+              <SmartTimelinePanel events={executiveIntelligence.timeline} />
+            </DashboardPanel>
+          </div>
+        </div>
+      </section>
 
       <section aria-label="Workspace guidance" className="space-y-4">
         <SectionTitle>Get started</SectionTitle>
