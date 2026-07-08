@@ -105,6 +105,11 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
           `Data subjects may have rights of access, rectification, erasure, restriction, portability, and objection, and the right to lodge a complaint with a supervisory authority. Workspace administrators can manage GDPR requests in the Compliance center where available. Contact us at ${COMPANY_CONTACT.legalEmail}. We respond within statutory timeframes.`,
       },
       {
+        heading: "Analytics and consent",
+        body:
+          "On the public website, optional analytics tools (such as Plausible, Microsoft Clarity, or PostHog where configured) load only if you grant analytics consent. Marketing conversion tools (such as GA4 where explicitly enabled) load only if you grant marketing consent. You can change preferences via the cookie banner or footer link. Inside the authenticated application, operational logging and security monitoring may occur separately as described in this policy and our Security Policy.",
+      },
+      {
         heading: "Security",
         body:
           "We implement technical and organizational measures described in our Security Policy, including encryption in transit, access controls, tenant isolation, and audit logging.",
@@ -278,14 +283,24 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
           "Appearance and UI preferences (such as theme or compact layout) may be stored in localStorage on your device. This data stays on your device and is not used for tracking.",
       },
       {
-        heading: "Analytics",
+        heading: "Analytics (where enabled)",
         body:
-          "Where PostHog or similar analytics is configured in your deployment, analytics cookies or local storage entries may be used to understand product usage in aggregated form. You may control non-essential analytics through browser settings or deployment configuration where available.",
+          "If analytics consent is granted, we may load privacy-aware analytics tools configured for the public website — such as Plausible Analytics (cookieless/privacy-oriented usage measurement), Microsoft Clarity (session insights), or PostHog (product analytics). These tools load only after you accept analytics cookies in the consent banner. If not configured or not consented, they do not run.",
+      },
+      {
+        heading: "Marketing measurement (where enabled)",
+        body:
+          "If marketing consent is granted and explicitly configured, Google Analytics 4 (GA4) or similar conversion tools may be used to measure signup and pricing funnel performance. GA4 is not enabled by default.",
+      },
+      {
+        heading: "Consent management",
+        body:
+          "Non-essential cookies and scripts remain off until you choose Accept all or enable categories in Cookie preferences. You can reopen preferences at any time from the footer or this policy. Essential cookies cannot be disabled while using authenticated features.",
       },
       {
         heading: "Legal basis",
         body:
-          "Essential cookies are used based on legitimate interests and contractual necessity (Art. 6(1)(b) and (1)(f) GDPR). Optional analytics, where used, relies on consent or legitimate interests as applicable and documented in your deployment.",
+          "Essential cookies are used based on legitimate interests and contractual necessity (Art. 6(1)(b) and (1)(f) GDPR). Optional analytics and marketing tools, where enabled, rely on your consent (Art. 6(1)(a) GDPR) via the consent banner.",
       },
       {
         heading: "Contact",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { PLATFORM_NAME } from "@/lib/branding/defaults";
 import { COMPANY_SEO } from "@/lib/company/company-seo";
+import { getSiteVerificationMetadata } from "@/lib/seo/metadata";
 
 function resolveMetadataBase(): URL {
   const raw = process.env.NEXT_PUBLIC_APP_URL?.trim();
@@ -16,6 +17,7 @@ const metadataBase = resolveMetadataBase();
 
 export const PLATFORM_METADATA: Metadata = {
   metadataBase,
+  ...getSiteVerificationMetadata(),
   title: {
     default: PLATFORM_NAME,
     template: `%s | ${PLATFORM_NAME}`,

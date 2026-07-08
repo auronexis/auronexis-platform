@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DocPageLayout } from "@/components/docs/doc-page-layout";
 import { getAllDocSlugs, getDocPage } from "@/lib/docs/registry";
+import { createPageMetadata } from "@/lib/seo";
 
 type DocTopicPageProps = {
   params: Promise<{ slug: string }>;
@@ -19,10 +20,11 @@ export async function generateMetadata({ params }: DocTopicPageProps): Promise<M
     return { title: "Documentation" };
   }
 
-  return {
+  return createPageMetadata({
     title: doc.title,
     description: doc.description,
-  };
+    path: `/docs/${slug}`,
+  });
 }
 
 export default async function DocTopicPage({ params }: DocTopicPageProps) {

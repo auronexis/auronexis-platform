@@ -7,14 +7,16 @@ import { PublicAppLink } from "@/components/marketing/public-app-link";
 import { COMPANY_NAME, DOCS_URL, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { DOCS_HUB_DOC, DOC_HUB_CARDS } from "@/lib/docs/registry";
+import { createPageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils/cn";
 import { getAuroraModule, auroraSurfaceInteractive } from "@/lib/ui/aurora";
 import { focusRing } from "@/lib/ui/tokens";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Documentation",
-  description: `${COMPANY_NAME} product documentation`,
-};
+  description: `${COMPANY_NAME} product documentation hub for agencies and operations teams.`,
+  path: "/docs",
+});
 
 const HUB_ICONS = {
   "getting-started": BookOpen,

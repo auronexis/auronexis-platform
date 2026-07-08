@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { AuthAwareMarketingLink } from "@/components/marketing/auth-aware-marketing-link";
 import { NewsletterSignupForm } from "@/components/marketing/newsletter-signup-form";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
@@ -19,6 +20,7 @@ export const metadata: Metadata = createMarketingMetadata({
 export default function PublicPricingPage() {
   return (
     <MarketingShell>
+      <ConversionTracker event="pricing_viewed" />
       <MarketingHero
         eyebrow="Pricing"
         title="Professional, Business, and Enterprise"

@@ -15,6 +15,7 @@ import {
 } from "@/lib/company/contact";
 
 import { AdaptiveBrandLogo, BrandLogo } from "@/components/branding/brand-logo";
+import { CookiePreferencesButton } from "@/components/consent/cookie-preferences-modal";
 import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
 
 import { cn } from "@/lib/utils/cn";
@@ -194,7 +195,10 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
             <p>© {year} {COMPANY_NAME}</p>
 
-            <p>Version {APP_VERSION}</p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <CookiePreferencesButton className="text-primary-foreground/60 hover:text-white" />
+              <p>Version {APP_VERSION}</p>
+            </div>
 
           </div>
 

@@ -60,6 +60,63 @@ export default async function MarketingHomePage() {
         secondaryLabel="Documentation"
       />
 
+      <MarketingSection
+        id="what-is-auroranexis"
+        eyebrow="Product"
+        title="What is Auroranexis?"
+        description={COMPANY_SEO.defaultDescription}
+      >
+        <div className="grid max-w-4xl gap-6 md:grid-cols-2">
+          <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">B2B SaaS platform</h3>
+            <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
+              Auroranexis is a multi-tenant operations platform for agencies and MSPs managing many clients —
+              not a generic CRM or project tool.
+            </p>
+          </article>
+          <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">Client intelligence</h3>
+            <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
+              Combine health signals, risks, incidents, SLA performance, and reporting in one command center.
+            </p>
+          </article>
+          <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">Executive insights</h3>
+            <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
+              Give delivery leaders portfolio visibility and client-ready reports without manual spreadsheet work.
+            </p>
+          </article>
+          <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">Who it is for</h3>
+            <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
+              AI automation agencies, MSPs, IT consultancies, and service providers running recurring client operations.
+            </p>
+          </article>
+        </div>
+        <ul className="mt-8 flex flex-wrap gap-3 text-sm">
+          <li>
+            <Link href="/solutions/customer-health-score" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Customer health score
+            </Link>
+          </li>
+          <li>
+            <Link href="/solutions/risk-management" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Risk management
+            </Link>
+          </li>
+          <li>
+            <Link href="/solutions/ai-reporting" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              AI reporting
+            </Link>
+          </li>
+          <li>
+            <Link href={MARKETING_ROUTES.pricing} className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Pricing
+            </Link>
+          </li>
+        </ul>
+      </MarketingSection>
+
       <MarketingSection eyebrow="Platform" title="Built for agency operations" description="Everything your team needs to run client operations from one command center.">
         <MarketingCardGrid items={FEATURES} />
       </MarketingSection>

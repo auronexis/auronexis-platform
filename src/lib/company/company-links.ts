@@ -33,6 +33,23 @@ export const MARKETING_ROUTES = {
   support: "/support",
 } as const;
 
+export const SOLUTION_ROUTES = {
+  customerHealthScore: "/solutions/customer-health-score",
+  riskManagement: "/solutions/risk-management",
+  incidentManagement: "/solutions/incident-management",
+  slaManagement: "/solutions/sla-management",
+  executiveDashboard: "/solutions/executive-dashboard",
+  aiReporting: "/solutions/ai-reporting",
+} as const;
+
+export const TEMPLATE_ROUTES = {
+  customerHealthScore: "/templates/customer-health-score",
+  riskRegister: "/templates/risk-register",
+  incidentResponse: "/templates/incident-response",
+  slaPolicy: "/templates/sla-policy",
+  executiveReport: "/templates/executive-report",
+} as const;
+
 export const LEGAL_ROUTES = {
   imprint: "/imprint",
   privacy: "/privacy",
@@ -121,8 +138,9 @@ export const PUBLIC_DOC_ROUTES = [
 export const PUBLIC_SITEMAP_ROUTES = [
   ...Object.values(MARKETING_ROUTES),
   ...Object.values(LEGAL_ROUTES),
+  ...Object.values(SOLUTION_ROUTES),
+  ...Object.values(TEMPLATE_ROUTES),
   "/docs",
+  "/docs/release-notes",
   ...PUBLIC_DOC_ROUTES,
-  "/login",
-  "/signup",
 ] as const;

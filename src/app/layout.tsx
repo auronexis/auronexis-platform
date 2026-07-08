@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { PostHogProvider } from "@/components/observability/posthog-provider";
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
+import { CookieConsentBanner } from "@/components/consent/cookie-consent-banner";
 import { PLATFORM_METADATA } from "@/lib/branding/metadata";
 import "./globals.css";
 
@@ -26,7 +27,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <PostHogProvider>{children}</PostHogProvider>
+        <AnalyticsProvider>
+          {children}
+          <CookieConsentBanner />
+        </AnalyticsProvider>
       </body>
     </html>
   );

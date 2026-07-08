@@ -59,7 +59,9 @@ export function isMarketingPublicPath(pathname: string): boolean {
     pathname === "/sitemap.xml" ||
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||
-    pathname.startsWith("/invite/")
+    pathname.startsWith("/invite/") ||
+    pathname.startsWith("/solutions/") ||
+    pathname.startsWith("/templates/")
   ) {
     return true;
   }

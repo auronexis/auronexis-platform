@@ -15,7 +15,9 @@ export {
   PRODUCTION_DOMAINS,
   PUBLIC_DOC_ROUTES,
   PUBLIC_SITEMAP_ROUTES,
+  SOLUTION_ROUTES,
   STATUS_URL,
+  TEMPLATE_ROUTES,
 } from "@/lib/company/company-links";
 
 export {
