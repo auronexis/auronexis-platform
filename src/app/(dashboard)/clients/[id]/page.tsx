@@ -243,13 +243,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </DetailKpiStat>
       </DetailKpiGrid>
 
-      <div className="mb-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="min-w-0">
-          <ClientSecondaryNav />
-        </div>
-      </div>
-
-      <DetailPageLayout rail={metadataRail}>
+      <DetailPageLayout rail={metadataRail} secondaryNav={<ClientSecondaryNav />}>
         <DetailSection
           id="client-summary"
           title="Client summary"
