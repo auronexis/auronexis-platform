@@ -6,7 +6,8 @@ import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { requireSession } from "@/lib/auth/session";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
-import { assertCanUseFeature } from "@/lib/plans/guards";
+import { assertCanUseFeature, checkPlanFeature } from "@/lib/plans/guards";
+import { AuthorizationError } from "@/lib/rbac/guards";
 import { canManageSlaPolicies } from "@/lib/team/guards";
 import { recordSLAActivity } from "@/lib/sla/activity";
 import { dispatchWebhookEvent } from "@/lib/webhooks/events";
@@ -303,52 +304,66 @@ export async function assignClientSlaPolicyAction(
   _prevState: SlaPolicyActionState,
   formData: FormData,
 ): Promise<SlaPolicyActionState> {
-  const session = await requireSession();
+  try {
+    const session = await requireSession();
 
-  if (!canManageSlaPolicies(session)) {
-    return { error: ACTION_DENIED_MESSAGE };
-  }
-
-  await assertCanUseFeature(session.organization.id, "sla_tracking");
-
-  const policyIdRaw = formData.get("slaPolicyId");
-  const slaPolicyId =
-    typeof policyIdRaw === "string" && policyIdRaw.trim().length > 0 ? policyIdRaw.trim() : null;
-
-  if (slaPolicyId) {
-    const policy = await getSlaPolicyById(session, slaPolicyId);
-
-    if (!policy) {
-      return { error: "SLA policy not found." };
+    if (!canManageSlaPolicies(session)) {
+      return { error: ACTION_DENIED_MESSAGE };
     }
+
+    const slaAccess = await checkPlanFeature(session.organization.id, "sla_tracking");
+    if (!slaAccess.allowed) {
+      return { error: "SLA assignment is available on the Business plan." };
+    }
+
+    const policyIdRaw = formData.get("slaPolicyId");
+    const slaPolicyId =
+      typeof policyIdRaw === "string" && policyIdRaw.trim().length > 0 ? policyIdRaw.trim() : null;
+
+    if (slaPolicyId) {
+      const policy = await getSlaPolicyById(session, slaPolicyId);
+
+      if (!policy) {
+        return { error: "SLA policy not found." };
+      }
+    }
+
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("clients")
+      .update({ sla_policy_id: slaPolicyId } as never)
+      .eq("id", clientId)
+      .eq("organization_id", session.organization.id);
+
+    if (error) {
+      return { error: "Unable to update client SLA policy." };
+    }
+
+    await recordActivityEvent({
+      organizationId: session.organization.id,
+      actorUserId: session.user.id,
+      entityType: "client",
+      entityId: clientId,
+      eventType: "sla.updated",
+      action: "client_sla_policy_updated",
+      title: "Client SLA policy updated",
+      metadata: { clientId, slaPolicyId },
+    });
+
+    revalidatePath(`/clients/${clientId}`);
+    revalidatePath("/dashboard");
+
+    return { success: "Client SLA policy saved." };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return {
+        error: error.message || "SLA assignment is available on the Business plan.",
+      };
+    }
+
+    console.error("[sla] assignClientSlaPolicyAction failed:", error);
+    return { error: "Unable to save SLA assignment." };
   }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("clients")
-    .update({ sla_policy_id: slaPolicyId } as never)
-    .eq("id", clientId)
-    .eq("organization_id", session.organization.id);
-
-  if (error) {
-    return { error: "Unable to update client SLA policy." };
-  }
-
-  await recordActivityEvent({
-    organizationId: session.organization.id,
-    actorUserId: session.user.id,
-    entityType: "client",
-    entityId: clientId,
-    eventType: "sla.updated",
-    action: "client_sla_policy_updated",
-    title: "Client SLA policy updated",
-    metadata: { clientId, slaPolicyId },
-  });
-
-  revalidatePath(`/clients/${clientId}`);
-  revalidatePath("/dashboard");
-
-  return { success: "Client SLA policy saved." };
 }
 
 type AssignSlaToIncidentInput = {

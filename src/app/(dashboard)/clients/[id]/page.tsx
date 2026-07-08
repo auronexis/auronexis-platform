@@ -70,6 +70,7 @@ import { listSlaPolicies, getClientSlaAssignment } from "@/lib/sla/queries";
 import { getClientSLA } from "@/lib/sla/summary";
 import { getClientMonitoringSummary } from "@/lib/monitoring/summary";
 import { canManageSlaPolicies } from "@/lib/team/guards";
+import { checkPlanFeatureForSession } from "@/lib/plans/guards";
 import { linkText } from "@/lib/ui/tokens";
 import type { IncidentSeverity, IncidentStatus } from "@/types/database";
 
@@ -111,6 +112,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   const { id } = await params;
   const canManagePortal = canManagePortalUsers(session);
   const canManageSla = canManageSlaPolicies(session);
+  const slaTrackingAccess = await checkPlanFeatureForSession(session, "sla_tracking");
   const canEdit = sessionHasPermission(session, "clients.write");
 
   const [client, overview, portalUsers, slaPolicies, orgUsers, recentReportsResult, clientRisks, riskScoreSummary] =
@@ -434,6 +436,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             assignment={slaAssignment}
             policies={slaPolicies}
             readOnly={!canManageSla}
+            canAssignSla={slaTrackingAccess.allowed}
+            slaUpgradeMessage="SLA assignment is available on the Business plan."
           />
         </DetailSection>
 
