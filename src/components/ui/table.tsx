@@ -1,4 +1,5 @@
 import type { HTMLAttributes, ReactNode, TdHTMLAttributes, ThHTMLAttributes } from "react";
+import { Children } from "react";
 import { motionEmptyEnter } from "@/lib/ui/motion";
 import { cn } from "@/lib/utils/cn";
 import {
@@ -8,6 +9,13 @@ import {
   auroraTableRow,
   auroraTableShell,
 } from "@/lib/ui/aurora";
+
+/** Remove JSX whitespace text nodes — invalid inside tbody/tr/table sections. */
+export function omitWhitespaceTextNodes(children: ReactNode): ReactNode[] {
+  return Children.toArray(children).filter(
+    (child) => !(typeof child === "string" && child.trim() === ""),
+  );
+}
 
 type AuroraDataTableProps = HTMLAttributes<HTMLDivElement>;
 
@@ -44,7 +52,7 @@ type AuroraTableBodyProps = HTMLAttributes<HTMLTableSectionElement>;
 export function AuroraTableBody({ className, children, ...props }: AuroraTableBodyProps) {
   return (
     <tbody className={cn("divide-y divide-border/60 bg-surface", className)} {...props}>
-      {children}
+      {omitWhitespaceTextNodes(children)}
     </tbody>
   );
 }
@@ -68,7 +76,7 @@ export function AuroraTableRow({
       data-selected={selected ? "true" : undefined}
       {...props}
     >
-      {children}
+      {omitWhitespaceTextNodes(children)}
     </tr>
   );
 }

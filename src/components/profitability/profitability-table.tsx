@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import { ClientFinancialForm } from "@/components/profitability/client-financial-form";
@@ -22,6 +22,7 @@ import { linkText } from "@/lib/ui/tokens";
 import type { ClientProfitabilityRow } from "@/lib/profitability/types";
 import { formatCurrency, formatMargin } from "@/lib/profitability/types";
 import { cn } from "@/lib/utils/cn";
+
 type ProfitabilityTableProps = {
   rows: ClientProfitabilityRow[];
   canEdit: boolean;
@@ -67,16 +68,18 @@ export function ProfitabilityTable({ rows, canEdit }: ProfitabilityTableProps) {
           </tr>
         </AuroraTableHead>
         <AuroraTableBody>
-          {rows.map((row) => (
-            <Fragment key={row.clientId}>
+          {rows.flatMap((row) => {
+            const tableRows = [
               <ClickableRow
+                key={row.clientId}
                 href={`/clients/${row.clientId}`}
                 ariaLabel={`Open client ${row.clientName}`}
                 selected={editingClientId === row.clientId}
               >
                 <AuroraTableCell className="whitespace-nowrap">
                   <span className="font-semibold text-foreground">{row.clientName}</span>
-                </AuroraTableCell>                <AuroraTableCell className="whitespace-nowrap text-muted">
+                </AuroraTableCell>
+                <AuroraTableCell className="whitespace-nowrap text-muted">
                   {formatCurrency(row.monthlyRevenue)}
                 </AuroraTableCell>
                 <AuroraTableCell className="whitespace-nowrap text-muted">
@@ -108,15 +111,21 @@ export function ProfitabilityTable({ rows, canEdit }: ProfitabilityTableProps) {
                     </button>
                   </AuroraTableCell>
                 ) : null}
-              </ClickableRow>              {canEdit && editingClientId === row.clientId ? (
-                <AuroraTableRow interactive={false}>
+              </ClickableRow>,
+            ];
+
+            if (canEdit && editingClientId === row.clientId) {
+              tableRows.push(
+                <AuroraTableRow key={`${row.clientId}-edit`} interactive={false}>
                   <AuroraTableCell colSpan={7} className="bg-muted/5">
                     <ClientFinancialForm row={row} />
                   </AuroraTableCell>
-                </AuroraTableRow>
-              ) : null}
-            </Fragment>
-          ))}
+                </AuroraTableRow>,
+              );
+            }
+
+            return tableRows;
+          })}
         </AuroraTableBody>
       </AuroraTable>
     </AuroraDataTable>

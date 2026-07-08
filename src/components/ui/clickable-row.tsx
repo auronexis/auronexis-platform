@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { KeyboardEvent, MouseEvent, ReactNode, TableHTMLAttributes } from "react";
 import { auroraTableRow } from "@/lib/ui/aurora";
+import { omitWhitespaceTextNodes } from "@/components/ui/table";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 import { ROW_INTERACTIVE_ATTR } from "@/components/ui/interactive-surface";
@@ -63,7 +64,7 @@ export function ClickableRow({
       onKeyDown={handleKeyDown}
       {...props}
     >
-      {children}
+      {omitWhitespaceTextNodes(children)}
     </tr>
   );
 }
