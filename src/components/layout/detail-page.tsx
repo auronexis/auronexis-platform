@@ -69,13 +69,19 @@ export function DetailPageHeader({
 type DetailPageLayoutProps = {
   children: ReactNode;
   rail?: ReactNode;
+  secondaryNav?: ReactNode;
   className?: string;
 };
 
 /** Two-column detail workspace — sticky overview rail in grid flow (xl+). */
-export function DetailPageLayout({ children, rail, className }: DetailPageLayoutProps) {
+export function DetailPageLayout({ children, rail, secondaryNav, className }: DetailPageLayoutProps) {
   if (!rail) {
-    return <div className={cn("space-y-6", className)}>{children}</div>;
+    return (
+      <div className={cn("space-y-6", className)}>
+        {secondaryNav}
+        {children}
+      </div>
+    );
   }
 
   return (
@@ -85,7 +91,10 @@ export function DetailPageLayout({ children, rail, className }: DetailPageLayout
         className,
       )}
     >
-      <div className="min-w-0 space-y-6">{children}</div>
+      <div className="min-w-0">
+        {secondaryNav}
+        <div className="space-y-6">{children}</div>
+      </div>
       <aside className={dashboardDetailRailAside}>
         <div className={dashboardDetailRailSticky}>{rail}</div>
       </aside>

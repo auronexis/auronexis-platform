@@ -67,6 +67,10 @@ export const dashboardDetailRailAside = "hidden min-w-0 xl:block";
 export const dashboardDetailRailSticky =
   "xl:sticky xl:top-0 xl:-mt-8 h-fit w-full min-w-0";
 
-/** Sticky in-page section nav for client detail — lives in main scroll container. */
-export const clientDetailSectionNavSticky =
-  "sticky top-0 z-20 mb-6 border-b border-border/70 bg-background";
+/** Secondary navigation bar — sticky sub-nav in dashboard scroll container. */
+export const secondaryNavBarSticky =
+  "sticky top-0 z-10 mb-6 border-b border-border/70 bg-background";
+
+/** Secondary navigation tab trigger — underline indicator, GitHub-style. */
+export const secondaryNavTab =
+  "relative whitespace-nowrap border-b-2 px-3 py-2.5 text-xs font-medium sm:px-4 sm:text-sm";

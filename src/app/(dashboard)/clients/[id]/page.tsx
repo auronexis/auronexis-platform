@@ -7,7 +7,7 @@ import { PredictiveIntelligenceSection } from "@/components/predictive/predictiv
 import { ClientKnowledgeSection } from "@/components/knowledge/client-knowledge-section";
 import { ClientHealthCard } from "@/components/health/client-health-card";
 import { ClientHealthHistory } from "@/components/health/client-health-history";
-import { ClientDetailSectionNav } from "@/components/clients/client-detail-section-nav";
+import { ClientSecondaryNav } from "@/components/clients/client-secondary-nav";
 import { ClientHealthScoreWithTooltip } from "@/components/clients/client-health-score-with-tooltip";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { ClientForm } from "@/components/clients/client-form";
@@ -243,9 +243,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </DetailKpiStat>
       </DetailKpiGrid>
 
-      <DetailPageLayout rail={metadataRail}>
-        <ClientDetailSectionNav />
-
+      <DetailPageLayout rail={metadataRail} secondaryNav={<ClientSecondaryNav />}>
         <DetailSection
           id="client-summary"
           title="Client summary"
