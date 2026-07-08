@@ -199,8 +199,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         }
       />
 
-      <ClientDetailSectionNav />
-
       <DetailKpiGrid id="client-kpis">
         <DetailKpiStat label="Client health">
           <ClientHealthBadge health={profitability?.health ?? "watch"} />
@@ -246,6 +244,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       </DetailKpiGrid>
 
       <DetailPageLayout rail={metadataRail}>
+        <ClientDetailSectionNav />
+
         <DetailSection
           id="client-summary"
           title="Client summary"

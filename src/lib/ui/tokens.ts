@@ -66,3 +66,7 @@ export const dashboardDetailRailAside = "hidden min-w-0 xl:block";
 /** Sticky pin inside #main-content scroll container — inner wrapper only. */
 export const dashboardDetailRailSticky =
   "xl:sticky xl:top-0 xl:-mt-8 h-fit w-full min-w-0";
+
+/** Sticky in-page section nav for client detail — lives in main scroll container. */
+export const clientDetailSectionNavSticky =
+  "sticky top-0 z-20 mb-6 border-b border-border/70 bg-background";

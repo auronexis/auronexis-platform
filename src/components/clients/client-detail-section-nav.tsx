@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils/cn";
-import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
+import { clientDetailSectionNavSticky, focusRing, transitionInteractive } from "@/lib/ui/tokens";
 
 const SECTIONS = [
   { id: "client-summary", label: "Overview" },
@@ -14,6 +14,8 @@ const SECTIONS = [
   { id: "client-kpis", label: "Profitability" },
   { id: "client-settings", label: "Settings" },
 ] as const;
+
+const STICKY_NAV_OFFSET_PX = 56;
 
 type ClientDetailSectionNavProps = {
   className?: string;
@@ -35,7 +37,7 @@ export function ClientDetailSectionNav({ className }: ClientDetailSectionNavProp
 
     const updateActive = () => {
       const rootTop = main ? main.getBoundingClientRect().top : 0;
-      const threshold = rootTop + 120;
+      const threshold = rootTop + STICKY_NAV_OFFSET_PX;
       let current = sections[0]?.id ?? SECTIONS[0].id;
 
       for (const section of sections) {
@@ -59,45 +61,47 @@ export function ClientDetailSectionNav({ className }: ClientDetailSectionNavProp
 
   const scrollTo = useCallback((id: string) => {
     const target = document.getElementById(id);
-    if (!target) {
+    const main = document.getElementById("main-content");
+    if (!target || !main) {
       return;
     }
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const mainRect = main.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const nextTop = main.scrollTop + (targetRect.top - mainRect.top) - STICKY_NAV_OFFSET_PX;
+
+    main.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" });
     setActiveId(id);
   }, []);
 
   return (
-    <nav
-      aria-label="Client sections"
-      className={cn(
-        "sticky top-0 z-10 -mx-1 mb-6 overflow-x-auto border-b border-border/70 bg-background/95 pb-px backdrop-blur-sm",
-        className,
-      )}
-    >
-      <ul className="flex min-w-max gap-1 px-1 py-2">
-        {SECTIONS.map((section) => {
-          const isActive = activeId === section.id;
-          return (
-            <li key={section.id}>
-              <button
-                type="button"
-                onClick={() => scrollTo(section.id)}
-                aria-current={isActive ? "true" : undefined}
-                className={cn(
-                  "rounded-lg px-3 py-1.5 text-xs font-medium sm:text-sm",
-                  transitionInteractive,
-                  focusRing,
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted hover:bg-muted/10 hover:text-foreground",
-                )}
-              >
-                {section.label}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+    <nav aria-label="Client sections" className={cn(clientDetailSectionNavSticky, className)}>
+      <div className="overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <ul className="flex min-w-max gap-1 py-2">
+          {SECTIONS.map((section) => {
+            const isActive = activeId === section.id;
+            return (
+              <li key={section.id}>
+                <button
+                  type="button"
+                  onClick={() => scrollTo(section.id)}
+                  aria-current={isActive ? "true" : undefined}
+                  className={cn(
+                    "rounded-lg px-3 py-1.5 text-xs font-medium sm:text-sm",
+                    transitionInteractive,
+                    focusRing,
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted hover:bg-muted/10 hover:text-foreground",
+                  )}
+                >
+                  {section.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </nav>
   );
 }
