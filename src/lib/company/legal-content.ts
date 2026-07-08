@@ -1,4 +1,20 @@
-import { COMPANY_NAME, SALES_EMAIL, SECURITY_EMAIL, SUPPORT_EMAIL } from "@/lib/company/contact";
+import {
+  COMPANY_NAME,
+  LEGAL_ADDRESS_BLOCK,
+  LEGAL_BUSINESS_FORM,
+  LEGAL_CITY,
+  LEGAL_COMPANY_NAME,
+  LEGAL_COUNTRY,
+  LEGAL_EMAIL,
+  LEGAL_OWNER,
+  LEGAL_PHONE,
+  LEGAL_POSTAL_CODE,
+  LEGAL_STREET,
+  LEGAL_VAT_ID,
+  SALES_EMAIL,
+  SECURITY_EMAIL,
+  SUPPORT_EMAIL,
+} from "@/lib/company/contact";
 
 export type LegalPageKey =
   | "imprint"
@@ -17,200 +33,455 @@ export type LegalPageContent = {
   sections: Array<{ heading: string; body: string }>;
 };
 
+const LAST_UPDATED = "July 2026";
+
 export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
   imprint: {
-    title: "Imprint",
-    description: "Legal disclosure and company information.",
-    lastUpdated: "July 2026",
+    title: "Impressum",
+    description:
+      "Anbieterkennzeichnung gemäß § 5 DDG (Digitale-Dienste-Gesetz) für die Auroranexis-Plattform.",
+    lastUpdated: LAST_UPDATED,
     sections: [
       {
-        heading: "Service provider",
-        body: `${COMPANY_NAME} operates the Auroranexis platform — a B2B SaaS Operations Command Center for agencies, MSPs, and service providers.`,
+        heading: "Diensteanbieter",
+        body: `${LEGAL_COMPANY_NAME}\nInhaber: ${LEGAL_OWNER}\nRechtsform: ${LEGAL_BUSINESS_FORM}\n\n${LEGAL_STREET}\n${LEGAL_POSTAL_CODE} ${LEGAL_CITY}\n${LEGAL_COUNTRY}`,
       },
       {
-        heading: "Contact",
-        body: `General inquiries and product support: ${SUPPORT_EMAIL}. Sales and partnerships: ${SALES_EMAIL}. Security reports: ${SECURITY_EMAIL}.`,
+        heading: "Kontakt",
+        body: `Telefon: ${LEGAL_PHONE}\nE-Mail (Support): ${SUPPORT_EMAIL}\nE-Mail (Rechtliches / Datenschutz): ${LEGAL_EMAIL}`,
       },
       {
-        heading: "Legal and regulatory",
-        body: "Registered company details, VAT identification, and trade register information are provided to customers, partners, and authorities upon request. Contact legal@auroranexis.com for imprint requests in German (Impressum) or English.",
+        heading: "Umsatzsteuer-Identifikationsnummer",
+        body: `USt-IdNr. gemäß § 27a UStG: ${LEGAL_VAT_ID}`,
       },
       {
-        heading: "Responsible for content",
-        body: `${COMPANY_NAME} — platform content is provided for operational use by registered workspace members and authorized client portal users. External marketing pages describe product capabilities and do not constitute operational advice.`,
+        heading: "Plattform",
+        body: `${LEGAL_COMPANY_NAME} betreibt die B2B-SaaS-Plattform „${COMPANY_NAME}“ — ein Operations Command Center für Agenturen, MSPs und Dienstleister. Verträge werden ausschließlich mit Unternehmern im Sinne des § 14 BGB geschlossen.`,
       },
       {
-        heading: "Dispute resolution",
-        body: "The European Commission provides a platform for online dispute resolution (ODR): https://ec.europa.eu/consumers/odr. We are not obliged or willing to participate in dispute resolution proceedings before a consumer arbitration board unless required by law.",
+        heading: "Verantwortlich für den Inhalt",
+        body: `Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV (Medienstaatsvertrag):\n${LEGAL_OWNER}\n${LEGAL_STREET}, ${LEGAL_POSTAL_CODE} ${LEGAL_CITY}, ${LEGAL_COUNTRY}`,
+      },
+      {
+        heading: "EU-Streitbeilegung",
+        body:
+          "Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: https://ec.europa.eu/consumers/odr. Wir sind nicht verpflichtet und grundsätzlich nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen, da unsere Leistungen ausschließlich an Unternehmer gerichtet sind.",
+      },
+      {
+        heading: "Haftung für Inhalte und Links",
+        body:
+          "Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Eine Verpflichtung zur Überwachung übermittelter oder gespeicherter fremder Informationen besteht nicht. Bei Bekanntwerden von Rechtsverletzungen entfernen wir derartige Inhalte unverzüglich. Externe Links wurden zum Zeitpunkt der Verlinkung geprüft; für fremde Inhalte übernehmen wir keine Gewähr.",
       },
     ],
   },
   privacy: {
     title: "Privacy Policy",
-    description: "How we collect, use, and protect personal data.",
-    lastUpdated: "June 2025",
+    description:
+      "How Auroranexis AI Solutions processes personal data when you use the Auroranexis B2B SaaS platform.",
+    lastUpdated: LAST_UPDATED,
     sections: [
       {
-        heading: "Overview",
-        body: `${COMPANY_NAME} processes personal data to provide the Auroranexis SaaS platform, customer support, billing, and security operations. This policy applies to workspace users and client portal users.`,
+        heading: "Controller",
+        body: `${LEGAL_COMPANY_NAME}\nInhaber: ${LEGAL_OWNER}\n${LEGAL_ADDRESS_BLOCK}\n\nPrivacy and legal inquiries: ${LEGAL_EMAIL}\nSupport: ${SUPPORT_EMAIL}`,
       },
       {
-        heading: "Data we process",
-        body: "Account data (name, email, organization), operational data you enter (clients, reports, risks, incidents), usage and audit logs, billing identifiers via Stripe, and connector tokens stored encrypted at rest.",
+        heading: "Scope",
+        body: `This Privacy Policy applies to workspace users, invited team members, and authorized client portal users of the ${COMPANY_NAME} platform. Our services are offered exclusively to business customers (entrepreneurs within the meaning of § 14 BGB). This policy describes processing under the GDPR and applicable German data protection law.`,
+      },
+      {
+        heading: "Categories of data processed",
+        body:
+          "We process: account and profile data (name, email, role, organization); operational data you enter (clients, reports, risks, incidents, knowledge, automation configurations); usage, audit, and security logs; billing and subscription identifiers processed via Stripe; connector and integration tokens (stored encrypted); support communications; and, where enabled, inputs/outputs for AI-assisted features.",
+      },
+      {
+        heading: "Purposes and legal bases",
+        body:
+          "Processing occurs to provide the SaaS contract (Art. 6(1)(b) GDPR), for billing and account administration (Art. 6(1)(b) and (1)(f) GDPR), for security and fraud prevention (Art. 6(1)(f) GDPR), for compliance with legal obligations (Art. 6(1)(c) GDPR), and — where applicable — based on your consent for optional analytics or marketing (Art. 6(1)(a) GDPR). Where you act as controller for your clients' data, we process on your instructions as processor (see our DPA).",
+      },
+      {
+        heading: "Retention",
+        body:
+          "We retain personal data for the duration of the subscription and as required for support, billing records, security logs, and legal retention obligations. Deletion or return of customer data follows contract termination and your offboarding instructions, subject to statutory retention periods.",
+      },
+      {
+        heading: "Sub-processors and transfers",
+        body:
+          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, Stripe, Resend, and optional AI providers when enabled). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
       },
       {
         heading: "Your rights",
-        body: "Depending on your jurisdiction you may request access, correction, export, or deletion. Workspace administrators can manage GDPR requests in the Compliance center. Contact privacy@auroranexis.com or use in-app GDPR tooling.",
+        body:
+          "Data subjects may have rights of access, rectification, erasure, restriction, portability, and objection, and the right to lodge a complaint with a supervisory authority. Workspace administrators can manage GDPR requests in the Compliance center where available. Contact us at " +
+          LEGAL_EMAIL +
+          ". We respond within statutory timeframes.",
       },
       {
-        heading: "Sub-processors",
-        body: "We use Supabase (database and auth), Vercel (hosting), Stripe (billing), Resend (email delivery), and optional OpenAI (AI features when enabled). A current sub-processor list is available on request.",
+        heading: "Security",
+        body:
+          "We implement technical and organizational measures described in our Security Policy, including encryption in transit, access controls, tenant isolation, and audit logging.",
+      },
+      {
+        heading: "Contact",
+        body: `Data protection inquiries: ${LEGAL_EMAIL}. Product support: ${SUPPORT_EMAIL}. Security reports: ${SECURITY_EMAIL}.`,
       },
     ],
   },
   terms: {
-    title: "Terms of Service",
-    description: "Terms governing use of the Auroranexis platform.",
-    lastUpdated: "June 2025",
+    title: "Terms of Service (AGB)",
+    description:
+      "General Terms and Conditions for business use of the Auroranexis B2B SaaS platform operated by Auroranexis AI Solutions.",
+    lastUpdated: LAST_UPDATED,
     sections: [
       {
-        heading: "Acceptance",
-        body: `By creating an account or using ${COMPANY_NAME}, you agree to these Terms on behalf of yourself and your organization.`,
+        heading: "1. Scope",
+        body: `These General Terms and Conditions ("Terms", "AGB") govern the use of the ${COMPANY_NAME} platform and related services provided by ${LEGAL_COMPANY_NAME}, Inhaber: ${LEGAL_OWNER}, ${LEGAL_STREET}, ${LEGAL_POSTAL_CODE} ${LEGAL_CITY}, ${LEGAL_COUNTRY} ("Provider", "we", "us"). They apply to all contracts between the Provider and the customer organization ("Customer", "you"). Conflicting or deviating terms of the Customer apply only if expressly accepted in writing.`,
       },
       {
-        heading: "Service",
-        body: "Auroranexis provides a multi-tenant operations workspace including reporting, risk and incident tracking, automation, integrations, and optional AI-assisted features subject to your subscription plan.",
+        heading: "2. Provider",
+        body: `${LEGAL_ADDRESS_BLOCK}\nTelephone: ${LEGAL_PHONE}\nSupport: ${SUPPORT_EMAIL}\nLegal: ${LEGAL_EMAIL}\nVAT ID: ${LEGAL_VAT_ID}`,
       },
       {
-        heading: "Acceptable use",
-        body: "You must not misuse the platform, attempt unauthorized access, upload malicious content, or use the service in violation of applicable law. You are responsible for data you store and share with your clients via the portal.",
+        heading: "3. B2B-only customers",
+        body:
+          "The platform and all services are offered exclusively to entrepreneurs within the meaning of § 14 BGB (German Civil Code). Contracts with consumers within the meaning of § 13 BGB are excluded. By registering, purchasing, or using the platform, you confirm that you act in a business capacity and that authorized signatories have authority to bind your organization. We may request reasonable evidence of business status.",
       },
       {
-        heading: "Billing",
-        body: "Paid plans are billed via Stripe. Fees, renewal, and cancellation terms are shown at checkout and in your billing settings. Pilot discounts apply only for the agreed pilot period.",
+        heading: "4. Contract formation",
+        body:
+          "A contract is formed when you complete registration and accept these Terms, or when you purchase a paid plan and payment is successfully initiated. Order confirmations, workspace provisioning, or access credentials constitute acceptance. Individual quotes, pilot agreements, or enterprise order forms prevail over these Terms where they expressly deviate.",
       },
       {
-        heading: "Limitation of liability",
-        body: "The service is provided as-is during pilot and early access periods. Liability is limited to the extent permitted by applicable law. Contact legal@auroranexis.com for enterprise agreements.",
+        heading: "5. User accounts and workspace",
+        body:
+          "Each Customer receives an organization workspace. You are responsible for accurate registration data, safeguarding credentials, assigning roles appropriately, and all activity under your accounts. You must notify us promptly of unauthorized access. We may require multi-factor authentication or additional verification for security.",
+      },
+      {
+        heading: "6. Services and availability",
+        body: `${COMPANY_NAME} provides a multi-tenant B2B operations platform including client management, reporting, risk and incident tracking, knowledge base, automation, monitoring, integrations, billing management, and optional AI-assisted analytics, subject to your subscription plan and feature entitlements. We strive for high availability but do not guarantee uninterrupted or error-free operation. Maintenance windows, updates, and third-party outages may affect availability. Status information may be published on our status page where available.`,
+      },
+      {
+        heading: "7. AI, analytics, and decision-support",
+        body:
+          "The platform may generate health scores, executive insights, forecasts, risk analyses, recommendations, reports, and dashboard intelligence. All such outputs are decision-support tools only. They may depend on the quality, completeness, and timeliness of data you provide. We do not guarantee accuracy, completeness, business success, revenue increase, legal compliance, or elimination of operational risk. You remain solely responsible for business, legal, tax, financial, medical, and compliance decisions. Verify important outputs before relying on them. AI features may be plan-gated and subject to usage limits.",
+      },
+      {
+        heading: "8. Customer obligations",
+        body:
+          "You must: (a) comply with applicable law; (b) ensure you have a valid legal basis to process personal data you upload; (c) configure access controls appropriately; (d) maintain accurate billing and contact information; (e) use the platform only within subscription limits; (f) not expose credentials or API keys; and (g) inform your end users and client portal users of your own privacy obligations where required.",
+      },
+      {
+        heading: "9. Acceptable use",
+        body:
+          "Use of the platform is subject to our Acceptable Use Policy, incorporated by reference. Violations may result in suspension or termination.",
+      },
+      {
+        heading: "10. Subscription plans",
+        body:
+          "Features, usage limits, and entitlements depend on the plan selected. Plan descriptions on the pricing page and in your workspace settings are authoritative. Enterprise or pilot arrangements may include custom limits documented separately.",
+      },
+      {
+        heading: "11. Prices, payment, invoices, and taxes",
+        body:
+          "Prices are shown at checkout and in billing settings, plus applicable taxes (including VAT where required). Invoices are issued electronically. Payment is processed through Stripe or other payment processors we designate. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
+      },
+      {
+        heading: "12. Upgrades, downgrades, and renewal",
+        body:
+          "Upgrades take effect according to the workflow shown in billing settings and Stripe checkout. Downgrades may take effect at the next billing period unless otherwise stated at checkout. Subscriptions renew automatically for the selected billing interval unless cancelled before the renewal date. The customer portal and billing settings are the primary source for managing subscriptions where available.",
+      },
+      {
+        heading: "13. Cancellation and termination",
+        body:
+          "You may cancel future renewals via billing settings or the Stripe customer portal where available. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
+      },
+      {
+        heading: "14. Refunds and withdrawal rights",
+        body:
+          "Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply because services are directed exclusively at entrepreneurs. Paid subscription fees are generally non-refundable once the billing period has started, except where mandatory law requires otherwise or the Provider expressly agrees in writing (e.g., duplicate charge or material service unavailability attributable to us). If the platform is materially unavailable due to our responsibility, contact " +
+          SUPPORT_EMAIL +
+          " for review; we may grant credits or refunds where legally required or commercially reasonable. Cancellation prevents future renewals only.",
+      },
+      {
+        heading: "15. Data protection and DPA",
+        body:
+          "Personal data is processed as described in our Privacy Policy. Where you process personal data of your clients or staff in the workspace, you are typically the controller and we act as processor. Our Data Processing Agreement (DPA) applies and may be supplemented by a signed addendum for enterprise customers. Contact " +
+          LEGAL_EMAIL +
+          " for DPA requests.",
+      },
+      {
+        heading: "16. Confidentiality",
+        body:
+          "Each party will treat non-public information of the other party as confidential and use it only to perform the contract, except where disclosure is required by law or to professional advisers bound by confidentiality.",
+      },
+      {
+        heading: "17. Intellectual property",
+        body:
+          "We retain all rights in the platform, software, documentation, branding, and underlying technology. You receive a non-exclusive, non-transferable right to use the platform during the subscription term within agreed limits. You retain ownership of data you upload. You grant us the rights necessary to host, process, back up, and display your data to provide the services.",
+      },
+      {
+        heading: "18. Third-party services",
+        body:
+          "The platform integrates third-party services (e.g., Stripe, Supabase, Vercel, connectors, optional AI providers). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
+      },
+      {
+        heading: "19. Service changes",
+        body:
+          "We may develop the platform, add or modify features, or adjust non-material documentation. Material adverse changes to core functionality for paid plans will be communicated with reasonable notice where practicable. Continued use after the effective date constitutes acceptance unless termination rights apply under mandatory law.",
+      },
+      {
+        heading: "20. Suspension",
+        body:
+          "We may suspend access temporarily for maintenance, security incidents, suspected misuse, non-payment after notice, or legal compliance. We will use reasonable efforts to notify workspace owners in advance where possible, except where immediate action is required.",
+      },
+      {
+        heading: "21. Warranty and service defects",
+        body:
+          "For entrepreneurs, statutory warranty rights are limited as permitted by law. We provide the platform in accordance with the service description for the selected plan. Non-material defects, browser compatibility issues caused by unsupported configurations, or problems arising from customer systems, integrations, or data quality do not constitute a defect if the core service remains usable. Remedies for valid defects are repair or replacement (re-performance) where reasonable, or termination and refund of prepaid fees for the unused portion where mandatory law requires.",
+      },
+      {
+        heading: "22. Limitation of liability",
+        body:
+          "We are liable without limitation for intent (Vorsatz) and gross negligence (grosse Fahrlässigkeit), for injury to life, body, or health, under the Produkthaftungsgesetz (Product Liability Act), and for mandatory statutory liability. For simple negligence (einfache Fahrlässigkeit), we are liable only for breach of essential contractual obligations (Kardinalpflichten), limited to foreseeable, typical contract damage. We are not liable — where legally permissible — for indirect damage, lost profits, loss of data, business interruption, reputational harm, or consequential damages. We are not liable for customer misuse, incorrect or incomplete customer data, reliance on non-binding AI or analytics output, third-party service failures, unavailable integrations, force majeure, or unauthorized access caused by your failure to secure credentials. Nothing in these Terms excludes liability that cannot be excluded under German law.",
+      },
+      {
+        heading: "23. Force majeure",
+        body:
+          "Neither party is liable for failure or delay due to events beyond reasonable control, including natural disasters, war, terrorism, labor disputes, government actions, widespread internet or cloud outages, or failures of third-party infrastructure not caused by the affected party's negligence.",
+      },
+      {
+        heading: "24. Export control and sanctions",
+        body:
+          "You must comply with applicable export control, sanctions, and trade restrictions (including EU, German, US, and UK regimes where applicable). You may not use the platform if prohibited by sanctions law or if you are on restricted party lists. You are responsible for ensuring lawful use in your jurisdiction.",
+      },
+      {
+        heading: "25. International customers",
+        body:
+          "Business customers may access the platform from Germany, the EU/EEA, the UK, Switzerland, the USA, and other countries. You are responsible for ensuring your use complies with mandatory laws applicable to you. These Terms are governed by German law to the extent legally permissible; mandatory consumer or employment protections of other jurisdictions do not apply because services are B2B-only.",
+      },
+      {
+        heading: "26. Governing law",
+        body:
+          "These Terms and all contractual relationships are governed by the laws of the Federal Republic of Germany, excluding the UN Convention on Contracts for the International Sale of Goods (CISG). Mandatory statutory provisions that cannot be derogated from remain unaffected.",
+      },
+      {
+        heading: "27. Jurisdiction",
+        body:
+          "If the Customer is a merchant (Kaufmann), a legal entity under public law, or a special fund under public law, the exclusive place of jurisdiction for all disputes arising from or in connection with these Terms is — where legally permissible — the courts at the Provider's registered business location in " +
+          LEGAL_CITY +
+          ", Germany. We may also bring claims at the Customer's general place of jurisdiction where permitted by law.",
+      },
+      {
+        heading: "28. Severability and contact",
+        body:
+          "If any provision is invalid or unenforceable, the remaining provisions remain in effect; the invalid provision shall be replaced by a valid one closest to the economic intent. Contract language: English; German translations may be provided for convenience. Legal inquiries: " +
+          LEGAL_EMAIL +
+          ". Support: " +
+          SUPPORT_EMAIL +
+          ". Sales and enterprise agreements: " +
+          SALES_EMAIL +
+          ".",
       },
     ],
   },
   cookies: {
     title: "Cookie Policy",
-    description: "Cookies and similar technologies used on Auroranexis.",
-    lastUpdated: "June 2025",
+    description:
+      "Information about cookies and similar technologies used on the Auroranexis platform.",
+    lastUpdated: LAST_UPDATED,
     sections: [
       {
-        heading: "Essential cookies",
-        body: "We use session cookies for authentication (Supabase Auth) and security. These are required for the application to function.",
+        heading: "Controller",
+        body: `${LEGAL_COMPANY_NAME}, ${LEGAL_STREET}, ${LEGAL_POSTAL_CODE} ${LEGAL_CITY}, ${LEGAL_COUNTRY}. Contact: ${LEGAL_EMAIL}`,
+      },
+      {
+        heading: "Essential cookies and storage",
+        body:
+          "We use session cookies and similar technologies required for authentication (Supabase Auth), security, CSRF protection, and core application functionality. These cannot be disabled while using the logged-in platform.",
       },
       {
         heading: "Preferences",
-        body: "Appearance preferences (theme, compact mode) may be stored in localStorage on your device.",
+        body:
+          "Appearance and UI preferences (such as theme or compact layout) may be stored in localStorage on your device. This data stays on your device and is not used for tracking.",
       },
       {
         heading: "Analytics",
-        body: "When enabled, PostHog may set analytics cookies to understand product usage. You can disable analytics by not configuring PostHog in your deployment or by browser controls where applicable.",
+        body:
+          "Where PostHog or similar analytics is configured in your deployment, analytics cookies or local storage entries may be used to understand product usage in aggregated form. You may control non-essential analytics through browser settings or deployment configuration where available.",
+      },
+      {
+        heading: "Legal basis",
+        body:
+          "Essential cookies are used based on legitimate interests and contractual necessity (Art. 6(1)(b) and (1)(f) GDPR). Optional analytics, where used, relies on consent or legitimate interests as applicable and documented in your deployment.",
       },
       {
         heading: "Contact",
-        body: `Questions about cookies: ${SUPPORT_EMAIL}.`,
+        body: `Cookie and privacy questions: ${LEGAL_EMAIL}. Product support: ${SUPPORT_EMAIL}.`,
       },
     ],
   },
   securityPolicy: {
     title: "Security Policy",
-    description: "Security practices and responsible disclosure for Auroranexis.",
-    lastUpdated: "June 2026",
+    description:
+      "Security practices and responsible disclosure for the Auroranexis platform operated by Auroranexis AI Solutions.",
+    lastUpdated: LAST_UPDATED,
     sections: [
       {
         heading: "Scope",
-        body: `${COMPANY_NAME} maintains administrative, technical, and organizational measures appropriate for a B2B SaaS platform processing customer operational data.`,
+        body: `${LEGAL_COMPANY_NAME} (${LEGAL_CITY}, ${LEGAL_COUNTRY}) maintains administrative, technical, and organizational measures appropriate for a B2B SaaS platform processing customer operational data.`,
       },
       {
-        heading: "Encryption and access",
-        body: "Data is encrypted in transit via TLS. Access to production systems is restricted to authorized personnel with role-based controls and audit logging.",
+        heading: "Encryption and access control",
+        body:
+          "Data is encrypted in transit using TLS. Access to production systems is limited to authorized personnel on a need-to-know basis with role-based controls, authentication requirements, and audit logging. Customer workspaces are logically isolated.",
+      },
+      {
+        heading: "Monitoring and incident response",
+        body:
+          "We monitor for security events and maintain procedures to investigate and respond to incidents. Customers are notified of personal data breaches affecting their data without undue delay where required by law and contract.",
       },
       {
         heading: "Vulnerability reporting",
-        body: `Report security issues to ${SECURITY_EMAIL}. We aim to acknowledge reports within 5 business days. Do not perform destructive testing without written approval.`,
+        body: `Report security vulnerabilities to ${SECURITY_EMAIL}. Provide sufficient detail to reproduce the issue. Do not perform destructive testing, social engineering, or physical attacks without prior written authorization. We aim to acknowledge reports within five business days.`,
       },
       {
-        heading: "Certifications",
-        body: "We describe readiness for frameworks such as SOC 2 and ISO 27001 and align with ISO 27001 principles where applicable. We do not claim certifications unless explicitly published in a current attestation.",
+        heading: "Certifications and attestations",
+        body:
+          "We align with recognized security frameworks and describe readiness for standards such as ISO 27001 where applicable. We do not claim formal certifications unless explicitly published in a current, valid attestation document.",
+      },
+      {
+        heading: "Contact",
+        body: `Security: ${SECURITY_EMAIL}. Legal: ${LEGAL_EMAIL}. Support: ${SUPPORT_EMAIL}.`,
       },
     ],
   },
   subprocessors: {
     title: "Sub-processors",
-    description: "Third-party processors used to deliver the Auroranexis platform.",
-    lastUpdated: "June 2026",
+    description:
+      "Third-party processors engaged by Auroranexis AI Solutions to deliver the Auroranexis platform.",
+    lastUpdated: LAST_UPDATED,
     sections: [
       {
-        heading: "Current sub-processors",
-        body: "Supabase (database, authentication, storage — EU-capable regions), Vercel (application hosting), Stripe (billing), Resend (transactional email), optional OpenAI (AI features when enabled by customer).",
+        heading: "Overview",
+        body: `${LEGAL_COMPANY_NAME} uses sub-processors to provide hosting, authentication, billing, email delivery, and optional AI features. This list is provided for transparency under GDPR Article 28.`,
       },
       {
-        heading: "Updates",
-        body: "Material changes to sub-processors will be communicated to workspace administrators with reasonable notice. Enterprise customers may request a DPA addendum.",
+        heading: "Current sub-processors",
+        body:
+          "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nStripe — payment processing and subscription billing.\nResend — transactional email delivery.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
+      },
+      {
+        heading: "International transfers",
+        body:
+          "Where sub-processors process data outside the EEA, we rely on appropriate safeguards such as Standard Contractual Clauses and supplementary measures where required.",
+      },
+      {
+        heading: "Changes",
+        body:
+          "Material changes to sub-processors are communicated to workspace administrators with reasonable notice. Enterprise customers may request notification procedures or DPA addenda via " +
+          LEGAL_EMAIL +
+          ".",
       },
       {
         heading: "Contact",
-        body: `Sub-processor inquiries: ${SUPPORT_EMAIL}.`,
+        body: `Sub-processor and DPA inquiries: ${LEGAL_EMAIL}. Support: ${SUPPORT_EMAIL}.`,
       },
     ],
   },
   dataProcessingAgreement: {
     title: "Data Processing Agreement",
-    description: "Data processing terms for business customers (Germany/EU).",
-    lastUpdated: "July 2026",
+    description:
+      "Standard data processing terms for business customers under GDPR Article 28.",
+    lastUpdated: LAST_UPDATED,
     sections: [
       {
-        heading: "Roles",
-        body: "Customer acts as controller for client and operational data entered into the workspace. Auroranexis acts as processor when handling that data on the customer's documented instructions.",
+        heading: "Parties",
+        body: `Processor: ${LEGAL_COMPANY_NAME}, Inhaber: ${LEGAL_OWNER}, ${LEGAL_ADDRESS_BLOCK} ("Processor"). Customer: the organization entering into the ${COMPANY_NAME} subscription ("Controller" for customer-uploaded personal data).`,
       },
       {
-        heading: "Processing purpose and instructions",
-        body: "Processing is limited to providing the Auroranexis platform, customer support, billing, security monitoring, audit logging, and optional AI features explicitly enabled by the customer. We process personal data only as instructed by the customer agreement and applicable law.",
+        heading: "Subject matter and duration",
+        body:
+          "Processing relates to personal data uploaded or generated in the Auroranexis workspace for the duration of the subscription and any agreed retention period thereafter.",
       },
       {
-        heading: "Security measures",
-        body: "We implement administrative, technical, and organizational measures including encryption in transit, role-based access controls, tenant isolation, audit trails, and vulnerability management. Details are described in our Security Policy.",
+        heading: "Nature and purpose",
+        body:
+          "Processing is limited to providing the Auroranexis platform, customer support, billing, security monitoring, audit logging, backups, and optional AI features enabled by the Controller. Processing occurs only on documented instructions of the Controller, these Terms, and applicable law.",
       },
       {
-        heading: "Sub-processors and transfers",
-        body: "Sub-processors are listed on our Sub-processors page. Material changes are communicated to workspace administrators with reasonable notice. Transfers outside the EEA, if any, use appropriate safeguards such as Standard Contractual Clauses.",
+        heading: "Categories of data and subjects",
+        body:
+          "Depending on Controller use: employee and contact data, client data, operational records, portal user data, logs, and communication content. Data subjects may include Controller staff, Controller clients, and authorized portal users.",
       },
       {
-        heading: "Data subject requests and breach notification",
-        body: "We assist customers in responding to data subject requests where required. We notify customers without undue delay after becoming aware of a personal data breach affecting customer data, in line with applicable law and the signed agreement.",
+        heading: "Processor obligations",
+        body:
+          "The Processor implements appropriate technical and organizational measures (see Security Policy), ensures confidentiality of personnel, assists with data subject requests where required, notifies the Controller of personal data breaches without undue delay, and deletes or returns data upon termination subject to legal retention.",
       },
       {
-        heading: "Retention and deletion",
-        body: "Customer data is retained for the subscription term and deleted or returned according to the agreement and customer offboarding instructions, subject to legal retention obligations.",
+        heading: "Sub-processors",
+        body:
+          "The Controller authorizes engagement of sub-processors listed on our Sub-processors page. Material changes are notified with reasonable notice. The Processor remains responsible for sub-processor performance under Article 28(4) GDPR.",
+      },
+      {
+        heading: "International transfers",
+        body:
+          "Transfers outside the EEA use appropriate safeguards such as Standard Contractual Clauses. Details are available on request at " +
+          LEGAL_EMAIL +
+          ".",
+      },
+      {
+        heading: "Audits and documentation",
+        body:
+          "The Processor makes available information necessary to demonstrate compliance and allows audits upon reasonable notice, subject to confidentiality and security constraints, or provides third-party audit summaries where available.",
       },
       {
         heading: "Execution",
-        body: `Enterprise and pilot customers may request a countersigned DPA via ${SALES_EMAIL}. This page summarizes standard processing terms and does not replace a signed Data Processing Agreement.`,
+        body:
+          "This page summarizes standard processing terms incorporated into the Terms of Service. Enterprise customers may request a countersigned DPA addendum via " +
+          LEGAL_EMAIL +
+          " or " +
+          SALES_EMAIL +
+          ". This summary does not replace a individually negotiated signed agreement where required.",
       },
     ],
   },
   acceptableUse: {
     title: "Acceptable Use Policy",
-    description: "Rules for acceptable use of the Auroranexis platform.",
-    lastUpdated: "June 2026",
+    description:
+      "Rules governing lawful and secure use of the Auroranexis B2B SaaS platform.",
+    lastUpdated: LAST_UPDATED,
     sections: [
       {
-        heading: "Permitted use",
-        body: "Use the platform for lawful business operations, client reporting, automation, and integrations within your subscription limits.",
+        heading: "Scope",
+        body: `This Acceptable Use Policy applies to all users of the ${COMPANY_NAME} platform operated by ${LEGAL_COMPANY_NAME}. It supplements the Terms of Service and forms part of the contract.`,
       },
       {
-        heading: "Prohibited use",
-        body: "Do not attempt unauthorized access, distribute malware, scrape in violation of terms, resell access without agreement, or store unlawful content.",
+        heading: "Permitted use",
+        body:
+          "Use the platform for lawful business operations within your subscription plan: client operations management, reporting, risk and incident tracking, automation, integrations, monitoring, and authorized client portal access.",
+      },
+      {
+        heading: "Prohibited conduct",
+        body:
+          "You must not: violate applicable law or third-party rights; upload malware or malicious code; send spam or unsolicited bulk messages through the platform; attempt unauthorized access, credential stuffing, or security attacks; scrape or harvest data in violation of these Terms or applicable law; reverse engineer or decompile the platform except where mandatory law permits; circumvent plan limits, billing, metering, or security controls; resell or sublicense access without written agreement; upload unlawful personal data without a valid legal basis; use the platform for unlawful surveillance, discrimination, or harassment; process regulated high-risk data without required safeguards and legal basis; or use the platform where prohibited by sanctions or export control law.",
+      },
+      {
+        heading: "Integrations and API use",
+        body:
+          "API keys and webhooks must be kept confidential. Automated access must respect rate limits and documentation. Do not use the API to build a competing service or to exfiltrate data you are not authorized to access.",
       },
       {
         heading: "Enforcement",
-        body: `${COMPANY_NAME} may suspend accounts that violate this policy or applicable law. Report abuse to ${SECURITY_EMAIL}.`,
+        body:
+          "We may warn, restrict, suspend, or terminate access for violations, non-payment, or security risk. Serious violations may be reported to authorities. Report abuse to " +
+          SECURITY_EMAIL +
+          " or " +
+          LEGAL_EMAIL +
+          ".",
+      },
+      {
+        heading: "Contact",
+        body: `Acceptable use questions: ${LEGAL_EMAIL}. Security incidents: ${SECURITY_EMAIL}. Support: ${SUPPORT_EMAIL}.`,
       },
     ],
   },

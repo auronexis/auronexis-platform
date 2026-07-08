@@ -46,7 +46,9 @@ export function LegalLayout({ content, children, showNav = true }: LegalLayoutPr
           {content.sections.map((section) => (
             <section key={section.heading}>
               <h2 className="text-lg font-semibold text-white">{section.heading}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-primary-foreground/75">{section.body}</p>
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-primary-foreground/75">
+                {section.body}
+              </p>
             </section>
           ))}
           {children}

@@ -1,9 +1,24 @@
 /** Company contact and external URLs — single source for support, legal, and help links. */
 
+/** Product and marketing name. */
 export const COMPANY_NAME = "Auroranexis";
+
+/** Legal entity — use on Impressum, Terms, Privacy, and DPA. */
+export const LEGAL_COMPANY_NAME = "Auroranexis AI Solutions";
+export const LEGAL_OWNER = "István-Tamás Schneller";
+export const LEGAL_BUSINESS_FORM = "Einzelunternehmen";
+export const LEGAL_STREET = "Im Malerwinkel 4";
+export const LEGAL_POSTAL_CODE = "71566";
+export const LEGAL_CITY = "Althütte";
+export const LEGAL_COUNTRY = "Germany";
+export const LEGAL_PHONE = "+49 7183 4285291";
+export const LEGAL_VAT_ID = "DE449657077";
+
+export const LEGAL_ADDRESS_BLOCK = `${LEGAL_COMPANY_NAME}\nInhaber: ${LEGAL_OWNER}\n${LEGAL_STREET}\n${LEGAL_POSTAL_CODE} ${LEGAL_CITY}\n${LEGAL_COUNTRY}`;
 
 export const INFO_EMAIL = "info@auroranexis.com";
 export const SUPPORT_EMAIL = "support@auroranexis.com";
+export const LEGAL_EMAIL = "legal@auroranexis.com";
 export const SALES_EMAIL = "sales@auroranexis.com";
 export const SECURITY_EMAIL = "security@auroranexis.com";
 export const NO_REPLY_EMAIL = "no-reply@auroranexis.com";
