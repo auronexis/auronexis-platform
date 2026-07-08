@@ -69,10 +69,10 @@ export const dashboardDetailRailSticky =
 
 /** Secondary navigation bar — sticky sub-nav in dashboard scroll container. */
 export const secondaryNavBarSticky =
-  "sticky top-0 z-30 mb-6 border-b border-border/70 bg-background";
+  "sticky top-[-48px] z-30 mb-6 border-b border-border/70 bg-background";
 
 /** Scroll margin for in-page section anchors cleared by sticky secondary nav height. */
-export const detailSectionScrollMargin = "scroll-mt-16";
+export const detailSectionScrollMargin = "scroll-mt-[80px]";
 
 /** Secondary navigation tab trigger — underline indicator, GitHub-style. */
 export const secondaryNavTab =

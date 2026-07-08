@@ -18,8 +18,8 @@ const CLIENT_SECTIONS: SecondaryNavItem[] = [
 ];
 
 const OBSERVER_THRESHOLDS = [0, 0.1, 0.25, 0.5, 0.75, 1] as const;
-const OBSERVER_ROOT_MARGIN = "-64px 0px -45% 0px";
-const SECTION_SCROLL_OFFSET_PX = 64;
+const OBSERVER_ROOT_MARGIN = "-80px 0px -45% 0px";
+const SECTION_SCROLL_OFFSET_PX = 80;
 
 type ClientSecondaryNavProps = {
   className?: string;
