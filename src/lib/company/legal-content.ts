@@ -1,20 +1,14 @@
 import {
-  COMPANY_NAME,
-  LEGAL_ADDRESS_BLOCK,
-  LEGAL_BUSINESS_FORM,
-  LEGAL_CITY,
-  LEGAL_COMPANY_NAME,
-  LEGAL_COUNTRY,
-  LEGAL_EMAIL,
-  LEGAL_OWNER,
-  LEGAL_PHONE,
-  LEGAL_POSTAL_CODE,
-  LEGAL_STREET,
-  LEGAL_VAT_ID,
-  SALES_EMAIL,
-  SECURITY_EMAIL,
-  SUPPORT_EMAIL,
-} from "@/lib/company/contact";
+  COMPANY_CONTACT,
+  COMPANY_INFORMATION,
+  formatContentResponsibleLine,
+  formatLegalContactLine,
+  formatProviderInlineReference,
+  formatProviderShortReference,
+  formatSupportContactLine,
+  formatVatLine,
+  LEGAL_LAST_UPDATED,
+} from "@/lib/company";
 
 export type LegalPageKey =
   | "imprint"
@@ -30,63 +24,60 @@ export type LegalPageContent = {
   title: string;
   description: string;
   lastUpdated: string;
+  showCompanyCard?: boolean;
+  companyCardTitle?: string;
   sections: Array<{ heading: string; body: string }>;
 };
 
-const LAST_UPDATED = "July 2026";
+const { productName, legalName } = COMPANY_INFORMATION;
 
 export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
   imprint: {
-    title: "Impressum",
+    title: "Imprint (Legal Notice)",
     description:
-      "Anbieterkennzeichnung gemäß § 5 DDG (Digitale-Dienste-Gesetz) für die Auroranexis-Plattform.",
-    lastUpdated: LAST_UPDATED,
+      "Provider identification under § 5 DDG (Digitale-Dienste-Gesetz) for the Auroranexis platform.",
+    lastUpdated: LEGAL_LAST_UPDATED,
+    showCompanyCard: true,
+    companyCardTitle: "Provider identification",
     sections: [
       {
-        heading: "Diensteanbieter",
-        body: `${LEGAL_COMPANY_NAME}\nInhaber: ${LEGAL_OWNER}\nRechtsform: ${LEGAL_BUSINESS_FORM}\n\n${LEGAL_STREET}\n${LEGAL_POSTAL_CODE} ${LEGAL_CITY}\n${LEGAL_COUNTRY}`,
+        heading: "Platform",
+        body: `${legalName} operates the B2B SaaS platform “${productName}” for agencies, MSPs, and service providers. Contracts are offered exclusively to entrepreneurs within the meaning of § 14 BGB.`,
       },
       {
-        heading: "Kontakt",
-        body: `Telefon: ${LEGAL_PHONE}\nE-Mail (Support): ${SUPPORT_EMAIL}\nE-Mail (Rechtliches / Datenschutz): ${LEGAL_EMAIL}`,
+        heading: "VAT identification",
+        body: `${formatVatLine()} pursuant to § 27a UStG.`,
       },
       {
-        heading: "Umsatzsteuer-Identifikationsnummer",
-        body: `USt-IdNr. gemäß § 27a UStG: ${LEGAL_VAT_ID}`,
+        heading: "Responsible for content",
+        body: `Responsible for content under § 18 para. 2 MStV (Medienstaatsvertrag):\n${formatContentResponsibleLine()}`,
       },
       {
-        heading: "Plattform",
-        body: `${LEGAL_COMPANY_NAME} betreibt die B2B-SaaS-Plattform „${COMPANY_NAME}“ — ein Operations Command Center für Agenturen, MSPs und Dienstleister. Verträge werden ausschließlich mit Unternehmern im Sinne des § 14 BGB geschlossen.`,
-      },
-      {
-        heading: "Verantwortlich für den Inhalt",
-        body: `Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV (Medienstaatsvertrag):\n${LEGAL_OWNER}\n${LEGAL_STREET}, ${LEGAL_POSTAL_CODE} ${LEGAL_CITY}, ${LEGAL_COUNTRY}`,
-      },
-      {
-        heading: "EU-Streitbeilegung",
+        heading: "EU dispute resolution",
         body:
-          "Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: https://ec.europa.eu/consumers/odr. Wir sind nicht verpflichtet und grundsätzlich nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen, da unsere Leistungen ausschließlich an Unternehmer gerichtet sind.",
+          "The European Commission provides an online dispute resolution platform: https://ec.europa.eu/consumers/odr. We are not obliged and generally not willing to participate in dispute resolution proceedings before a consumer arbitration board because our services are directed exclusively at business customers.",
       },
       {
-        heading: "Haftung für Inhalte und Links",
+        heading: "Liability for content and links",
         body:
-          "Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Eine Verpflichtung zur Überwachung übermittelter oder gespeicherter fremder Informationen besteht nicht. Bei Bekanntwerden von Rechtsverletzungen entfernen wir derartige Inhalte unverzüglich. Externe Links wurden zum Zeitpunkt der Verlinkung geprüft; für fremde Inhalte übernehmen wir keine Gewähr.",
+          "As a service provider we are responsible for our own content on these pages under § 7 para. 1 DDG and general laws. We are not obliged to monitor transmitted or stored third-party information. Upon becoming aware of legal violations we remove such content promptly. External links were reviewed at the time of linking; we assume no liability for external content.",
+      },
+      {
+        heading: "Contact",
+        body: `${formatSupportContactLine()}\n${formatLegalContactLine()}\nPhone: ${COMPANY_CONTACT.phone}`,
       },
     ],
   },
   privacy: {
     title: "Privacy Policy",
-    description:
-      "How Auroranexis AI Solutions processes personal data when you use the Auroranexis B2B SaaS platform.",
-    lastUpdated: LAST_UPDATED,
+    description: `How ${legalName} processes personal data when you use the ${productName} B2B SaaS platform.`,
+    lastUpdated: LEGAL_LAST_UPDATED,
+    showCompanyCard: true,
+    companyCardTitle: "Data controller",
     sections: [
       {
-        heading: "Controller",
-        body: `${LEGAL_COMPANY_NAME}\nInhaber: ${LEGAL_OWNER}\n${LEGAL_ADDRESS_BLOCK}\n\nPrivacy and legal inquiries: ${LEGAL_EMAIL}\nSupport: ${SUPPORT_EMAIL}`,
-      },
-      {
         heading: "Scope",
-        body: `This Privacy Policy applies to workspace users, invited team members, and authorized client portal users of the ${COMPANY_NAME} platform. Our services are offered exclusively to business customers (entrepreneurs within the meaning of § 14 BGB). This policy describes processing under the GDPR and applicable German data protection law.`,
+        body: `This Privacy Policy applies to workspace users, invited team members, and authorized client portal users of the ${productName} platform. Our services are offered exclusively to business customers (entrepreneurs within the meaning of § 14 BGB). This policy describes processing under the GDPR and applicable German data protection law.`,
       },
       {
         heading: "Categories of data processed",
@@ -111,9 +102,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Your rights",
         body:
-          "Data subjects may have rights of access, rectification, erasure, restriction, portability, and objection, and the right to lodge a complaint with a supervisory authority. Workspace administrators can manage GDPR requests in the Compliance center where available. Contact us at " +
-          LEGAL_EMAIL +
-          ". We respond within statutory timeframes.",
+          `Data subjects may have rights of access, rectification, erasure, restriction, portability, and objection, and the right to lodge a complaint with a supervisory authority. Workspace administrators can manage GDPR requests in the Compliance center where available. Contact us at ${COMPANY_CONTACT.legalEmail}. We respond within statutory timeframes.`,
       },
       {
         heading: "Security",
@@ -122,23 +111,24 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "Contact",
-        body: `Data protection inquiries: ${LEGAL_EMAIL}. Product support: ${SUPPORT_EMAIL}. Security reports: ${SECURITY_EMAIL}.`,
+        body: `Data protection inquiries: ${COMPANY_CONTACT.legalEmail}. Product support: ${COMPANY_CONTACT.supportEmail}. Security reports: ${COMPANY_CONTACT.securityEmail}.`,
       },
     ],
   },
   terms: {
     title: "Terms of Service (AGB)",
-    description:
-      "General Terms and Conditions for business use of the Auroranexis B2B SaaS platform operated by Auroranexis AI Solutions.",
-    lastUpdated: LAST_UPDATED,
+    description: `General Terms and Conditions for business use of the ${productName} B2B SaaS platform operated by ${legalName}.`,
+    lastUpdated: LEGAL_LAST_UPDATED,
+    showCompanyCard: true,
+    companyCardTitle: "Provider",
     sections: [
       {
         heading: "1. Scope",
-        body: `These General Terms and Conditions ("Terms", "AGB") govern the use of the ${COMPANY_NAME} platform and related services provided by ${LEGAL_COMPANY_NAME}, Inhaber: ${LEGAL_OWNER}, ${LEGAL_STREET}, ${LEGAL_POSTAL_CODE} ${LEGAL_CITY}, ${LEGAL_COUNTRY} ("Provider", "we", "us"). They apply to all contracts between the Provider and the customer organization ("Customer", "you"). Conflicting or deviating terms of the Customer apply only if expressly accepted in writing.`,
+        body: `These General Terms and Conditions ("Terms", "AGB") govern the use of the ${productName} platform and related services provided by ${formatProviderInlineReference()} ("Provider", "we", "us"). They apply to all contracts between the Provider and the customer organization ("Customer", "you"). Conflicting or deviating terms of the Customer apply only if expressly accepted in writing.`,
       },
       {
         heading: "2. Provider",
-        body: `${LEGAL_ADDRESS_BLOCK}\nTelephone: ${LEGAL_PHONE}\nSupport: ${SUPPORT_EMAIL}\nLegal: ${LEGAL_EMAIL}\nVAT ID: ${LEGAL_VAT_ID}`,
+        body: "The Provider is identified in the company information section above.",
       },
       {
         heading: "3. B2B-only customers",
@@ -157,7 +147,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "6. Services and availability",
-        body: `${COMPANY_NAME} provides a multi-tenant B2B operations platform including client management, reporting, risk and incident tracking, knowledge base, automation, monitoring, integrations, billing management, and optional AI-assisted analytics, subject to your subscription plan and feature entitlements. We strive for high availability but do not guarantee uninterrupted or error-free operation. Maintenance windows, updates, and third-party outages may affect availability. Status information may be published on our status page where available.`,
+        body: `${productName} provides a multi-tenant B2B operations platform including client management, reporting, risk and incident tracking, knowledge base, automation, monitoring, integrations, billing management, and optional AI-assisted analytics, subject to your subscription plan and feature entitlements. We strive for high availability but do not guarantee uninterrupted or error-free operation. Maintenance windows, updates, and third-party outages may affect availability. Status information may be published on our status page where available.`,
       },
       {
         heading: "7. AI, analytics, and decision-support",
@@ -197,16 +187,12 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "14. Refunds and withdrawal rights",
         body:
-          "Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply because services are directed exclusively at entrepreneurs. Paid subscription fees are generally non-refundable once the billing period has started, except where mandatory law requires otherwise or the Provider expressly agrees in writing (e.g., duplicate charge or material service unavailability attributable to us). If the platform is materially unavailable due to our responsibility, contact " +
-          SUPPORT_EMAIL +
-          " for review; we may grant credits or refunds where legally required or commercially reasonable. Cancellation prevents future renewals only.",
+          `Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply because services are directed exclusively at entrepreneurs. Paid subscription fees are generally non-refundable once the billing period has started, except where mandatory law requires otherwise or the Provider expressly agrees in writing (e.g., duplicate charge or material service unavailability attributable to us). If the platform is materially unavailable due to our responsibility, contact ${COMPANY_CONTACT.supportEmail} for review; we may grant credits or refunds where legally required or commercially reasonable. Cancellation prevents future renewals only.`,
       },
       {
         heading: "15. Data protection and DPA",
         body:
-          "Personal data is processed as described in our Privacy Policy. Where you process personal data of your clients or staff in the workspace, you are typically the controller and we act as processor. Our Data Processing Agreement (DPA) applies and may be supplemented by a signed addendum for enterprise customers. Contact " +
-          LEGAL_EMAIL +
-          " for DPA requests.",
+          `Personal data is processed as described in our Privacy Policy. Where you process personal data of your clients or staff in the workspace, you are typically the controller and we act as processor. Our Data Processing Agreement (DPA) applies and may be supplemented by a signed addendum for enterprise customers. Contact ${COMPANY_CONTACT.legalEmail} for DPA requests.`,
       },
       {
         heading: "16. Confidentiality",
@@ -256,7 +242,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "25. International customers",
         body:
-          "Business customers may access the platform from Germany, the EU/EEA, the UK, Switzerland, the USA, and other countries. You are responsible for ensuring your use complies with mandatory laws applicable to you. These Terms are governed by German law to the extent legally permissible; mandatory consumer or employment protections of other jurisdictions do not apply because services are B2B-only.",
+          "Business customers may access the platform from Germany, the EU/EEA, the UK, Switzerland, the USA, and other countries. You are responsible for ensuring your use complies with mandatory laws applicable to you. These Terms are governed by German law to the extent legally permissible; mandatory protections of other jurisdictions that cannot be derogated from remain unaffected.",
       },
       {
         heading: "26. Governing law",
@@ -265,34 +251,22 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "27. Jurisdiction",
-        body:
-          "If the Customer is a merchant (Kaufmann), a legal entity under public law, or a special fund under public law, the exclusive place of jurisdiction for all disputes arising from or in connection with these Terms is — where legally permissible — the courts at the Provider's registered business location in " +
-          LEGAL_CITY +
-          ", Germany. We may also bring claims at the Customer's general place of jurisdiction where permitted by law.",
+        body: `If the Customer is a merchant (Kaufmann), a legal entity under public law, or a special fund under public law, the exclusive place of jurisdiction for all disputes arising from or in connection with these Terms is — where legally permissible — the courts at the Provider's registered business location in ${COMPANY_INFORMATION.city}, Germany. We may also bring claims at the Customer's general place of jurisdiction where permitted by law.`,
       },
       {
         heading: "28. Severability and contact",
         body:
-          "If any provision is invalid or unenforceable, the remaining provisions remain in effect; the invalid provision shall be replaced by a valid one closest to the economic intent. Contract language: English; German translations may be provided for convenience. Legal inquiries: " +
-          LEGAL_EMAIL +
-          ". Support: " +
-          SUPPORT_EMAIL +
-          ". Sales and enterprise agreements: " +
-          SALES_EMAIL +
-          ".",
+          `If any provision is invalid or unenforceable, the remaining provisions remain in effect; the invalid provision shall be replaced by a valid one closest to the economic intent. Contract language: English; German translations may be provided for convenience. Legal inquiries: ${COMPANY_CONTACT.legalEmail}. Support: ${COMPANY_CONTACT.supportEmail}. Sales and enterprise agreements: ${COMPANY_CONTACT.salesEmail}.`,
       },
     ],
   },
   cookies: {
     title: "Cookie Policy",
-    description:
-      "Information about cookies and similar technologies used on the Auroranexis platform.",
-    lastUpdated: LAST_UPDATED,
+    description: `Information about cookies and similar technologies used on the ${productName} platform.`,
+    lastUpdated: LEGAL_LAST_UPDATED,
+    showCompanyCard: true,
+    companyCardTitle: "Controller",
     sections: [
-      {
-        heading: "Controller",
-        body: `${LEGAL_COMPANY_NAME}, ${LEGAL_STREET}, ${LEGAL_POSTAL_CODE} ${LEGAL_CITY}, ${LEGAL_COUNTRY}. Contact: ${LEGAL_EMAIL}`,
-      },
       {
         heading: "Essential cookies and storage",
         body:
@@ -315,19 +289,18 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "Contact",
-        body: `Cookie and privacy questions: ${LEGAL_EMAIL}. Product support: ${SUPPORT_EMAIL}.`,
+        body: `Cookie and privacy questions: ${COMPANY_CONTACT.legalEmail}. Product support: ${COMPANY_CONTACT.supportEmail}.`,
       },
     ],
   },
   securityPolicy: {
     title: "Security Policy",
-    description:
-      "Security practices and responsible disclosure for the Auroranexis platform operated by Auroranexis AI Solutions.",
-    lastUpdated: LAST_UPDATED,
+    description: `Security practices and responsible disclosure for the ${productName} platform operated by ${legalName}.`,
+    lastUpdated: LEGAL_LAST_UPDATED,
     sections: [
       {
         heading: "Scope",
-        body: `${LEGAL_COMPANY_NAME} (${LEGAL_CITY}, ${LEGAL_COUNTRY}) maintains administrative, technical, and organizational measures appropriate for a B2B SaaS platform processing customer operational data.`,
+        body: `${formatProviderShortReference()} maintains administrative, technical, and organizational measures appropriate for a B2B SaaS platform processing customer operational data.`,
       },
       {
         heading: "Encryption and access control",
@@ -341,7 +314,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "Vulnerability reporting",
-        body: `Report security vulnerabilities to ${SECURITY_EMAIL}. Provide sufficient detail to reproduce the issue. Do not perform destructive testing, social engineering, or physical attacks without prior written authorization. We aim to acknowledge reports within five business days.`,
+        body: `Report security vulnerabilities to ${COMPANY_CONTACT.securityEmail}. Provide sufficient detail to reproduce the issue. Do not perform destructive testing, social engineering, or physical attacks without prior written authorization. We aim to acknowledge reports within five business days.`,
       },
       {
         heading: "Certifications and attestations",
@@ -350,19 +323,18 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "Contact",
-        body: `Security: ${SECURITY_EMAIL}. Legal: ${LEGAL_EMAIL}. Support: ${SUPPORT_EMAIL}.`,
+        body: `Security: ${COMPANY_CONTACT.securityEmail}. Legal: ${COMPANY_CONTACT.legalEmail}. Support: ${COMPANY_CONTACT.supportEmail}.`,
       },
     ],
   },
   subprocessors: {
     title: "Sub-processors",
-    description:
-      "Third-party processors engaged by Auroranexis AI Solutions to deliver the Auroranexis platform.",
-    lastUpdated: LAST_UPDATED,
+    description: `Third-party processors engaged by ${legalName} to deliver the ${productName} platform.`,
+    lastUpdated: LEGAL_LAST_UPDATED,
     sections: [
       {
         heading: "Overview",
-        body: `${LEGAL_COMPANY_NAME} uses sub-processors to provide hosting, authentication, billing, email delivery, and optional AI features. This list is provided for transparency under GDPR Article 28.`,
+        body: `${legalName} uses sub-processors to provide hosting, authentication, billing, email delivery, and optional AI features. This list is provided for transparency under GDPR Article 28.`,
       },
       {
         heading: "Current sub-processors",
@@ -377,25 +349,24 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Changes",
         body:
-          "Material changes to sub-processors are communicated to workspace administrators with reasonable notice. Enterprise customers may request notification procedures or DPA addenda via " +
-          LEGAL_EMAIL +
-          ".",
+          `Material changes to sub-processors are communicated to workspace administrators with reasonable notice. Enterprise customers may request notification procedures or DPA addenda via ${COMPANY_CONTACT.legalEmail}.`,
       },
       {
         heading: "Contact",
-        body: `Sub-processor and DPA inquiries: ${LEGAL_EMAIL}. Support: ${SUPPORT_EMAIL}.`,
+        body: `Sub-processor and DPA inquiries: ${COMPANY_CONTACT.legalEmail}. Support: ${COMPANY_CONTACT.supportEmail}.`,
       },
     ],
   },
   dataProcessingAgreement: {
     title: "Data Processing Agreement",
-    description:
-      "Standard data processing terms for business customers under GDPR Article 28.",
-    lastUpdated: LAST_UPDATED,
+    description: "Standard data processing terms for business customers under GDPR Article 28.",
+    lastUpdated: LEGAL_LAST_UPDATED,
+    showCompanyCard: true,
+    companyCardTitle: "Processor",
     sections: [
       {
         heading: "Parties",
-        body: `Processor: ${LEGAL_COMPANY_NAME}, Inhaber: ${LEGAL_OWNER}, ${LEGAL_ADDRESS_BLOCK} ("Processor"). Customer: the organization entering into the ${COMPANY_NAME} subscription ("Controller" for customer-uploaded personal data).`,
+        body: `The Processor is identified in the company information section above. The Customer is the organization entering into the ${productName} subscription and acts as controller for customer-uploaded personal data.`,
       },
       {
         heading: "Subject matter and duration",
@@ -425,9 +396,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "International transfers",
         body:
-          "Transfers outside the EEA use appropriate safeguards such as Standard Contractual Clauses. Details are available on request at " +
-          LEGAL_EMAIL +
-          ".",
+          `Transfers outside the EEA use appropriate safeguards such as Standard Contractual Clauses. Details are available on request at ${COMPANY_CONTACT.legalEmail}.`,
       },
       {
         heading: "Audits and documentation",
@@ -437,23 +406,18 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Execution",
         body:
-          "This page summarizes standard processing terms incorporated into the Terms of Service. Enterprise customers may request a countersigned DPA addendum via " +
-          LEGAL_EMAIL +
-          " or " +
-          SALES_EMAIL +
-          ". This summary does not replace a individually negotiated signed agreement where required.",
+          `This page summarizes standard processing terms incorporated into the Terms of Service. Enterprise customers may request a countersigned DPA addendum via ${COMPANY_CONTACT.legalEmail} or ${COMPANY_CONTACT.salesEmail}. This summary does not replace an individually negotiated signed agreement where required.`,
       },
     ],
   },
   acceptableUse: {
     title: "Acceptable Use Policy",
-    description:
-      "Rules governing lawful and secure use of the Auroranexis B2B SaaS platform.",
-    lastUpdated: LAST_UPDATED,
+    description: `Rules governing lawful and secure use of the ${productName} B2B SaaS platform.`,
+    lastUpdated: LEGAL_LAST_UPDATED,
     sections: [
       {
         heading: "Scope",
-        body: `This Acceptable Use Policy applies to all users of the ${COMPANY_NAME} platform operated by ${LEGAL_COMPANY_NAME}. It supplements the Terms of Service and forms part of the contract.`,
+        body: `This Acceptable Use Policy applies to all users of the ${productName} platform operated by ${legalName}. It supplements the Terms of Service and forms part of the contract.`,
       },
       {
         heading: "Permitted use",
@@ -463,7 +427,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Prohibited conduct",
         body:
-          "You must not: violate applicable law or third-party rights; upload malware or malicious code; send spam or unsolicited bulk messages through the platform; attempt unauthorized access, credential stuffing, or security attacks; scrape or harvest data in violation of these Terms or applicable law; reverse engineer or decompile the platform except where mandatory law permits; circumvent plan limits, billing, metering, or security controls; resell or sublicense access without written agreement; upload unlawful personal data without a valid legal basis; use the platform for unlawful surveillance, discrimination, or harassment; process regulated high-risk data without required safeguards and legal basis; or use the platform where prohibited by sanctions or export control law.",
+          "You must not: violate applicable law or third-party rights; upload malware or malicious code; send spam or unsolicited bulk messages through the platform; attempt unauthorized access, credential stuffing, or security attacks; scrape or harvest data in violation of these Terms or applicable law; reverse engineer or decompile the platform except where mandatory law permits; circumvent plan limits, billing, metering, or security controls; resell or sublicense access without written agreement; upload unlawful personal data without a valid legal basis; use the platform for unlawful surveillance, discrimination, or harassment; process regulated high-risk data without required safeguards and legal basis; violate export control or sanctions law; commit fraud; or bypass subscription or billing restrictions.",
       },
       {
         heading: "Integrations and API use",
@@ -473,15 +437,11 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Enforcement",
         body:
-          "We may warn, restrict, suspend, or terminate access for violations, non-payment, or security risk. Serious violations may be reported to authorities. Report abuse to " +
-          SECURITY_EMAIL +
-          " or " +
-          LEGAL_EMAIL +
-          ".",
+          `We may warn, restrict, suspend, or terminate access for violations, non-payment, or security risk. Serious violations may be reported to authorities. Report abuse to ${COMPANY_CONTACT.securityEmail} or ${COMPANY_CONTACT.legalEmail}.`,
       },
       {
         heading: "Contact",
-        body: `Acceptable use questions: ${LEGAL_EMAIL}. Security incidents: ${SECURITY_EMAIL}. Support: ${SUPPORT_EMAIL}.`,
+        body: `Acceptable use questions: ${COMPANY_CONTACT.legalEmail}. Security incidents: ${COMPANY_CONTACT.securityEmail}. Support: ${COMPANY_CONTACT.supportEmail}.`,
       },
     ],
   },

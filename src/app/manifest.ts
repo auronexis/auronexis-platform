@@ -1,14 +1,13 @@
 import type { MetadataRoute } from "next";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
-import { COMPANY_NAME } from "@/lib/company/contact";
 import { PLATFORM_NAME } from "@/lib/branding/defaults";
+import { COMPANY_NAME, COMPANY_SEO } from "@/lib/company";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: PLATFORM_NAME,
     short_name: COMPANY_NAME,
-    description:
-      "The Operations Command Center for AI Automation Agencies. Monitor clients. Detect risks. Prove value.",
+    description: COMPANY_SEO.defaultDescription,
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#071A3D",

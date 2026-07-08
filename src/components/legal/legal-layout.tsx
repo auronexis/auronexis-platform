@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { CompanyInformationCard } from "@/components/legal/company-information-card";
 import { LEGAL_NAV } from "@/lib/marketing/content";
 import type { LegalPageContent } from "@/lib/company/legal-content";
 import { cn } from "@/lib/utils/cn";
@@ -42,7 +43,14 @@ export function LegalLayout({ content, children, showNav = true }: LegalLayoutPr
           </nav>
         ) : null}
 
-        <div className="mt-8 space-y-8">
+        {content.showCompanyCard ? (
+          <CompanyInformationCard
+            className={showNav ? "mt-8" : undefined}
+            title={content.companyCardTitle ?? "Company information"}
+          />
+        ) : null}
+
+        <div className={cn("space-y-8", content.showCompanyCard || showNav ? "mt-8" : undefined)}>
           {content.sections.map((section) => (
             <section key={section.heading}>
               <h2 className="text-lg font-semibold text-white">{section.heading}</h2>

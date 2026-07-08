@@ -1,34 +1,39 @@
 import type { Metadata } from "next";
-import { COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
-
-const metadataBase = new URL(
-  process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://app.auroranexis.com",
-);
+import { COMPANY_CONTACT, COMPANY_SEO, getCanonicalUrl, getPageTitle } from "@/lib/company";
+import {
+  faqJsonLd,
+  organizationJsonLd,
+  pilotProgramJsonLd,
+  softwareApplicationJsonLd,
+  websiteJsonLd,
+} from "@/lib/company/company-schema";
 
 type MarketingMetadataInput = {
   title: string;
-  description: string;
+  description?: string;
   path: string;
   noIndex?: boolean;
 };
 
 export function createMarketingMetadata({
   title,
-  description,
+  description = COMPANY_SEO.defaultDescription,
   path,
   noIndex = false,
 }: MarketingMetadataInput): Metadata {
-  const url = new URL(path, metadataBase);
+  const url = getCanonicalUrl(path);
 
   return {
     title,
     description,
+    metadataBase: new URL(COMPANY_SEO.canonicalBaseUrl),
     alternates: { canonical: url.pathname },
     openGraph: {
-      type: "website",
-      siteName: COMPANY_NAME,
-      title: `${title} | ${COMPANY_NAME}`,
+      type: COMPANY_SEO.openGraph.type,
+      locale: COMPANY_SEO.openGraph.locale,
+      siteName: COMPANY_SEO.productName,
+      title: getPageTitle(title),
       description,
       url: url.toString(),
       images: [
@@ -36,13 +41,13 @@ export function createMarketingMetadata({
           url: BRANDING_ASSETS.openGraph,
           width: 1200,
           height: 630,
-          alt: `${COMPANY_NAME} — ${title}`,
+          alt: `${COMPANY_SEO.productName} — ${title}`,
         },
       ],
     },
     twitter: {
-      card: "summary_large_image",
-      title: `${title} | ${COMPANY_NAME}`,
+      card: COMPANY_SEO.twitter.card,
+      title: getPageTitle(title),
       description,
       images: [BRANDING_ASSETS.linkedinBanner],
     },
@@ -50,64 +55,7 @@ export function createMarketingMetadata({
   };
 }
 
-export function organizationJsonLd() {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: COMPANY_NAME,
-    url: metadataBase.toString(),
-    logo: new URL(BRANDING_ASSETS.approvedCompositeLogo, metadataBase).toString(),
-    email: SUPPORT_EMAIL,
-    sameAs: [],
-  };
-}
-
-export function softwareApplicationJsonLd() {
-  return {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: COMPANY_NAME,
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    offers: {
-      "@type": "Offer",
-      price: "149",
-      priceCurrency: "EUR",
-    },
-    description:
-      "Operations Command Center for AI automation agencies — monitor clients, detect risks, and prove value.",
-  };
-}
-
-export function faqJsonLd(items: ReadonlyArray<{ question: string; answer: string }>) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: items.map((item) => ({
-      "@type": "Question",
-      name: item.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.answer,
-      },
-    })),
-  };
-}
-
-export function pilotProgramJsonLd() {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Offer",
-    name: "Auroranexis Pilot Partner Program",
-    description: "Invite-only Pilot Partner program for qualified MSPs and agencies.",
-    category: "Pilot Program",
-    eligibleCustomerType: "Business",
-    seller: {
-      "@type": "Organization",
-      name: COMPANY_NAME,
-    },
-  };
-}
+export { faqJsonLd, organizationJsonLd, pilotProgramJsonLd, softwareApplicationJsonLd, websiteJsonLd };
 
 export function JsonLdScript({ data }: { data: Record<string, unknown> | Record<string, unknown>[] }) {
   return (
@@ -117,3 +65,6 @@ export function JsonLdScript({ data }: { data: Record<string, unknown> | Record<
     />
   );
 }
+
+/** Organization contact for metadata or support surfaces. */
+export const MARKETING_SUPPORT_EMAIL = COMPANY_CONTACT.supportEmail;

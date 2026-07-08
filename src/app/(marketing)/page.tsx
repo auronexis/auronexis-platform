@@ -18,21 +18,22 @@ import {
   INVITE_ONLY_PROGRAMS_NOTE,
   USE_CASES,
 } from "@/lib/marketing/content";
-import { MARKETING_ROUTES } from "@/lib/company/contact";
+import { MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company";
+import { COMPANY_SEO } from "@/lib/company/company-seo";
 import {
   JsonLdScript,
   createMarketingMetadata,
   faqJsonLd,
   organizationJsonLd,
   softwareApplicationJsonLd,
+  websiteJsonLd,
 } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
 export const metadata = createMarketingMetadata({
   title: "Operations Command Center",
-  description:
-    "Monitor clients. Detect risks. Prove value. Auroranexis is the operations platform for MSPs and automation agencies.",
+  description: COMPANY_SEO.defaultDescription,
   path: "/",
 });
 
@@ -44,7 +45,9 @@ export default async function MarketingHomePage() {
 
   return (
     <MarketingShell>
-      <JsonLdScript data={[organizationJsonLd(), softwareApplicationJsonLd(), faqJsonLd(FAQ_ITEMS)]} />
+      <JsonLdScript
+        data={[organizationJsonLd(), websiteJsonLd(), softwareApplicationJsonLd(), faqJsonLd(FAQ_ITEMS)]}
+      />
 
       <MarketingHero
         withBanner
@@ -75,7 +78,7 @@ export default async function MarketingHomePage() {
           {[
             "Encryption in transit and at rest",
             "Role-based access control and audit logs",
-            "Responsible disclosure via security@auroranexis.com",
+            `Responsible disclosure via ${SECURITY_EMAIL}`,
             "Aligned with ISO 27001 principles — no certification claimed",
           ].map((item) => (
             <li key={item} className="rounded-xl border border-border-subtle bg-surface-1 px-4 py-3 text-sm text-muted">

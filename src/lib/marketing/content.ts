@@ -100,7 +100,7 @@ export const SECURITY_HIGHLIGHTS = [
   "Role-based access control with organization-scoped permissions.",
   "Audit logging for sensitive actions and compliance workflows.",
   "EU-friendly data residency options via Supabase (Frankfurt region supported).",
-  "Security contact: security@auroranexis.com for responsible disclosure.",
+  `Security contact: ${SECURITY_EMAIL} for responsible disclosure.`,
 ] as const;
 
 export const COMPLIANCE_READINESS = [

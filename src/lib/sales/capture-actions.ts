@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { SALES_EMAIL } from "@/lib/company";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkPublicFormThrottle } from "@/lib/security/login-throttle";
 import { isTurnstileConfigured, verifyTurnstileFromForm } from "@/lib/security/turnstile";
@@ -42,7 +43,7 @@ type CaptureInput = {
 async function persistInboundLead(input: CaptureInput): Promise<{ ok: true; leadId: string } | { ok: false; error: string }> {
   const organizationId = await resolvePlatformSalesOrganizationId();
   if (!organizationId) {
-    return { ok: false, error: "Lead capture is temporarily unavailable. Please email sales@auroranexis.com." };
+    return { ok: false, error: `Lead capture is temporarily unavailable. Please email ${SALES_EMAIL}.` };
   }
 
   const inboxKey = input.inboxKey ?? defaultInboxForSource(input.source);
@@ -80,7 +81,7 @@ async function persistInboundLead(input: CaptureInput): Promise<{ ok: true; lead
 
   if (error || !data) {
     console.error("[sales] Lead insert failed:", error?.message);
-    return { ok: false, error: "Unable to save your submission. Please try again or email sales@auroranexis.com." };
+    return { ok: false, error: `Unable to save your submission. Please try again or email ${SALES_EMAIL}.` };
   }
 
   await admin.from("sales_lead_activities").insert({

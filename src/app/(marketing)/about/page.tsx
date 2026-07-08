@@ -5,16 +5,17 @@ import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import {
   COMPANY_NAME,
+  COMPANY_SEO,
   LEGAL_ROUTES,
   MARKETING_ROUTES,
   SALES_EMAIL,
   SUPPORT_EMAIL,
-} from "@/lib/company/contact";
+} from "@/lib/company";
 import { createMarketingMetadata } from "@/lib/marketing/seo";
 
 export const metadata: Metadata = createMarketingMetadata({
   title: "About",
-  description: `About ${COMPANY_NAME} — the Operations Command Center for AI automation agencies and service providers.`,
+  description: `About ${COMPANY_NAME} — ${COMPANY_SEO.defaultDescription}`,
   path: "/about",
 });
 

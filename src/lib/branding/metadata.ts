@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { PLATFORM_NAME } from "@/lib/branding/defaults";
-import { PRODUCTION_DOMAINS } from "@/lib/deployment/production-domains";
-
-const SITE_DESCRIPTION =
-  "The Operations Command Center for AI Automation Agencies. Monitor clients. Detect risks. Prove value.";
+import { COMPANY_SEO } from "@/lib/company/company-seo";
 
 function resolveMetadataBase(): URL {
   const raw = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (!raw || /localhost|127\.0\.0\.1|\.vercel\.app/i.test(raw)) {
-    return new URL(`https://${PRODUCTION_DOMAINS.app}`);
+    return new URL(COMPANY_SEO.canonicalBaseUrl);
   }
 
   return new URL(raw);
@@ -23,16 +20,16 @@ export const PLATFORM_METADATA: Metadata = {
     default: PLATFORM_NAME,
     template: `%s | ${PLATFORM_NAME}`,
   },
-  description: SITE_DESCRIPTION,
+  description: COMPANY_SEO.defaultDescription,
   icons: {
     icon: [{ url: BRANDING_ASSETS.favicon, type: "image/svg+xml" }],
     apple: [{ url: BRANDING_ASSETS.approvedCompositeLogo, type: "image/png" }],
   },
   openGraph: {
     type: "website",
-    siteName: PLATFORM_NAME,
+    siteName: COMPANY_SEO.productName,
     title: PLATFORM_NAME,
-    description: SITE_DESCRIPTION,
+    description: COMPANY_SEO.defaultDescription,
     images: [
       {
         url: BRANDING_ASSETS.openGraph,
@@ -45,7 +42,7 @@ export const PLATFORM_METADATA: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: PLATFORM_NAME,
-    description: SITE_DESCRIPTION,
+    description: COMPANY_SEO.defaultDescription,
     images: [BRANDING_ASSETS.linkedinBanner],
   },
 };

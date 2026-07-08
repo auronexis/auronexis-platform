@@ -13,13 +13,13 @@ export type BillingContactCardContent = {
 
 export const ENTERPRISE_CONTACT_CARD: BillingContactCardContent = {
   title: "Enterprise onboarding",
-  text: "Enterprise onboarding is handled manually. Contact sales@auroranexis.com and we will help you configure custom onboarding, seats, client limits, and billing.",
+  text: `Enterprise onboarding is handled manually. Contact ${SALES_EMAIL} and we will help you configure custom onboarding, seats, client limits, and billing.`,
   email: SALES_EMAIL,
 };
 
 export const SUPPORT_CONTACT_CARD: BillingContactCardContent = {
   title: "Contact support",
-  text: "Contact support@auroranexis.com for billing, workspace, or account support.",
+  text: `Contact ${SUPPORT_EMAIL} for billing, workspace, or account support.`,
   email: SUPPORT_EMAIL,
 };
 
