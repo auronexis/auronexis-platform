@@ -20,15 +20,21 @@ import { linkText } from "@/lib/ui/tokens";
 type ClientKnowledgeSectionProps = {
   clientId: string;
   clientName: string;
+  sectionId?: string;
 };
 
-export async function ClientKnowledgeSection({ clientId, clientName }: ClientKnowledgeSectionProps) {
+export async function ClientKnowledgeSection({
+  clientId,
+  clientName,
+  sectionId,
+}: ClientKnowledgeSectionProps) {
   const session = await requireSession();
   const access = await checkPlanFeatureForSession(session, "ai_knowledge_search");
 
   if (!access.allowed) {
     return (
       <DetailSection
+        id={sectionId}
         title="Historical knowledge"
         description="Organizational memory for this client — reports, incidents, risks, and playbooks."
       >
@@ -60,6 +66,7 @@ export async function ClientKnowledgeSection({ clientId, clientName }: ClientKno
 
   return (
     <DetailSection
+      id={sectionId}
       title="Historical knowledge"
       description="Previous reports, incidents, risks, lessons learned, and playbooks for this client."
       action={

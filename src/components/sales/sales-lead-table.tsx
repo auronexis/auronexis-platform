@@ -28,6 +28,13 @@ export function SalesLeadTable({
             <Button size="sm">View leads</Button>
           </Link>
         }
+        secondaryAction={
+          <Link href="/clients">
+            <Button size="sm" variant="outline">
+              View clients
+            </Button>
+          </Link>
+        }
       />
     );
   }

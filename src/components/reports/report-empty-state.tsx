@@ -1,17 +1,39 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { FileText } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 type ReportEmptyStateProps = {
   title: string;
   description: string;
   action?: ReactNode;
+  secondaryHref?: string;
+  secondaryLabel?: string;
 };
 
-export function ReportEmptyState({ title, description, action }: ReportEmptyStateProps) {
+export function ReportEmptyState({
+  title,
+  description,
+  action,
+  secondaryHref,
+  secondaryLabel,
+}: ReportEmptyStateProps) {
   return (
-    <div className="flex min-h-[12rem] flex-col items-center justify-center rounded-2xl border border-dashed border-border-subtle bg-muted/5 px-6 py-10 text-center">
-      <p className="text-base font-semibold text-foreground">{title}</p>
-      <p className="mt-2 max-w-md text-sm text-muted">{description}</p>
-      {action ? <div className="mt-6 flex justify-center">{action}</div> : null}
-    </div>
+    <EmptyState
+      icon={FileText}
+      title={title}
+      description={description}
+      action={action}
+      secondaryAction={
+        secondaryHref && secondaryLabel ? (
+          <Link href={secondaryHref}>
+            <Button size="sm" variant="outline">
+              {secondaryLabel}
+            </Button>
+          </Link>
+        ) : undefined
+      }
+    />
   );
 }

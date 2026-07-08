@@ -29,6 +29,7 @@ type ClientFormProps = {
   submitLabel: string;
   pendingLabel: string;
   disabled?: boolean;
+  successMessage?: string;
 };
 
 const initialState: ClientActionState = {};
@@ -42,11 +43,14 @@ export function ClientForm({
   submitLabel,
   pendingLabel,
   disabled = false,
+  successMessage,
 }: ClientFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialState);
   const defaultOwner = client?.owner_id ?? defaultOwnerId ?? orgUsers[0]?.id ?? "";
 
-  useFormActionFeedback(state, isPending, { successMessage: "Client updated" });
+  useFormActionFeedback(state, isPending, {
+    successMessage: successMessage ?? (client ? "Client updated" : "Client created"),
+  });
 
   return (
     <form action={formAction}>

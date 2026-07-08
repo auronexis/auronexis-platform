@@ -15,12 +15,15 @@ import {
 import {
   BarChart3,
   Bell,
+  BookOpen,
   CreditCard,
   FileText,
   Search,
   Settings,
+  ShieldAlert,
   UserPlus,
   Users,
+  AlertTriangle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
@@ -45,6 +48,13 @@ type QuickAction = {
 
 const QUICK_ACTIONS: QuickAction[] = [
   {
+    href: "/clients",
+    label: "Open clients",
+    description: "Browse and manage your client portfolio",
+    icon: Users,
+    keywords: "clients portfolio list",
+  },
+  {
     href: "/clients/new",
     label: "Create client",
     description: "Add a new client to your workspace",
@@ -52,11 +62,46 @@ const QUICK_ACTIONS: QuickAction[] = [
     keywords: "client new create",
   },
   {
+    href: "/reports",
+    label: "Open reports",
+    description: "Browse reports and templates",
+    icon: BarChart3,
+    keywords: "reports list templates",
+  },
+  {
     href: "/reports/new",
     label: "Create report",
     description: "Draft a new client report",
     icon: FileText,
     keywords: "report new create",
+  },
+  {
+    href: "/risks?tab=open",
+    label: "Open risks",
+    description: "Review and mitigate open client risks",
+    icon: ShieldAlert,
+    keywords: "risks open mitigate",
+  },
+  {
+    href: "/incidents",
+    label: "Open incidents",
+    description: "Triage operational failures and response queues",
+    icon: AlertTriangle,
+    keywords: "incidents command triage",
+  },
+  {
+    href: "/knowledge",
+    label: "Knowledge hub",
+    description: "Articles, playbooks, and organizational learnings",
+    icon: BookOpen,
+    keywords: "knowledge hub playbooks articles",
+  },
+  {
+    href: "/settings/billing",
+    label: "Open billing",
+    description: "Plans, invoices, and subscription management",
+    icon: CreditCard,
+    keywords: "billing subscription invoices payment",
   },
   {
     href: "/settings/plans",
@@ -85,13 +130,6 @@ const QUICK_ACTIONS: QuickAction[] = [
     description: "Manage members, roles, and invitations",
     icon: Users,
     keywords: "team members invite users",
-  },
-  {
-    href: "/reports",
-    label: "Open reports",
-    description: "Browse reports and templates",
-    icon: BarChart3,
-    keywords: "reports list templates",
   },
 ];
 

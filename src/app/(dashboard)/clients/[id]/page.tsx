@@ -7,8 +7,9 @@ import { PredictiveIntelligenceSection } from "@/components/predictive/predictiv
 import { ClientKnowledgeSection } from "@/components/knowledge/client-knowledge-section";
 import { ClientHealthCard } from "@/components/health/client-health-card";
 import { ClientHealthHistory } from "@/components/health/client-health-history";
+import { ClientDetailSectionNav } from "@/components/clients/client-detail-section-nav";
+import { ClientHealthScoreWithTooltip } from "@/components/clients/client-health-score-with-tooltip";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
-import { ClientHealthScore } from "@/components/clients/client-health-score";
 import { ClientForm } from "@/components/clients/client-form";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { IncidentStatusBadge } from "@/components/incidents/incident-status-badge";
@@ -169,7 +170,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       <DetailMetadataItem label="Email">{client.contact_email ?? "—"}</DetailMetadataItem>
       <DetailMetadataItem label="Owner">{ownerName}</DetailMetadataItem>
       <DetailMetadataItem label="Health score">
-        <ClientHealthScore score={client.health_score} />
+        <ClientHealthScoreWithTooltip score={client.health_score} />
       </DetailMetadataItem>
       <DetailMetadataItem label="Computed health">
         <ClientHealthBadge health={profitability?.health ?? "watch"} />
@@ -198,7 +199,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         }
       />
 
-      <DetailKpiGrid>
+      <ClientDetailSectionNav />
+
+      <DetailKpiGrid id="client-kpis">
         <DetailKpiStat label="Client health">
           <ClientHealthBadge health={profitability?.health ?? "watch"} />
         </DetailKpiStat>
@@ -243,7 +246,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       </DetailKpiGrid>
 
       <DetailPageLayout rail={metadataRail}>
-        <DetailSection title="Client summary" description="Core profile and contact details.">
+        <DetailSection
+          id="client-summary"
+          title="Client summary"
+          description="Core profile and contact details."
+        >
           <dl className="grid gap-4 sm:grid-cols-2">
             <DetailMetadataItem label="Client name">{client.name}</DetailMetadataItem>
             <DetailMetadataItem label="Status">
@@ -253,12 +260,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             <DetailMetadataItem label="Contact email">{client.contact_email ?? "—"}</DetailMetadataItem>
             <DetailMetadataItem label="Owner">{ownerName}</DetailMetadataItem>
             <DetailMetadataItem label="Health score">
-              <ClientHealthScore score={client.health_score} />
+              <ClientHealthScoreWithTooltip score={client.health_score} />
             </DetailMetadataItem>
           </dl>
         </DetailSection>
 
         <DetailSection
+          id="client-health"
           title="Health"
           description="Operational health score, trend, and contributing signals."
         >
@@ -276,9 +284,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
         <PredictiveIntelligenceSection clientId={client.id} />
 
-        <ClientKnowledgeSection clientId={client.id} clientName={client.name} />
+        <ClientKnowledgeSection clientId={client.id} clientName={client.name} sectionId="client-knowledge" />
 
         <DetailSection
+          id="client-reports"
           title="Recent reports"
           description="Generate, publish, and review report versions for this client."
           action={
@@ -323,6 +332,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </DetailSection>
 
         <DetailSection
+          id="client-risks"
           title="Client risks"
           description="Open risks detected or tracked for this client."
           action={
@@ -365,6 +375,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </DetailSection>
 
         <DetailSection
+          id="client-incidents"
           title="Open incidents"
           action={
             overview.openIncidentsTotal > 5 ? (
@@ -465,6 +476,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         {canEdit ? (
           <>
             <DetailSection
+              id="client-settings"
               title="Edit client"
               description="Update client profile and operational notes."
             >

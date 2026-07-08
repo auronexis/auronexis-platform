@@ -206,6 +206,7 @@ export default async function RisksPage({ searchParams }: RisksPageProps) {
       {risks.length === 0 ? (
         <RiskEmptyState
           title={`No ${tab} risks`}
+          description="Track client risks before they escalate into incidents."
           action={
             canCreate ? (
               <Link href="/risks/new">
@@ -213,6 +214,8 @@ export default async function RisksPage({ searchParams }: RisksPageProps) {
               </Link>
             ) : undefined
           }
+          secondaryHref="/incidents"
+          secondaryLabel="View incidents"
         />
       ) : view === "table" ? (
         <RiskList risks={risks} />

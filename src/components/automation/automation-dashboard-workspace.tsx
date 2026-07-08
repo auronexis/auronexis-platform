@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Workflow } from "lucide-react";
 import { useAutomationStore } from "@/components/automation/automation-store-provider";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { InteractiveSurface, LinkOverlay, rowInteractiveClass } from "@/components/ui/interactive-surface";
@@ -99,17 +101,25 @@ export function AutomationDashboardWorkspace({
       </section>
 
       {filtered.length === 0 ? (
-        <div className={cn(auroraSurface, "flex min-h-[12rem] flex-col items-center justify-center px-6 py-10 text-center")}>
-          <p className="text-base font-semibold text-foreground">No automations yet</p>
-          <p className="mt-2 max-w-md text-sm text-muted">
-            Create your first workflow with the visual builder or AI builder.
-          </p>
-          {canManage ? (
-            <Link href="/automation/new" className="mt-6 inline-block">
-              <Button variant="primary">Create automation</Button>
+        <EmptyState
+          icon={Workflow}
+          title="No automations yet"
+          description="Create your first workflow with the visual builder or AI-assisted automation."
+          action={
+            canManage ? (
+              <Link href="/automation/new">
+                <Button>Create automation</Button>
+              </Link>
+            ) : undefined
+          }
+          secondaryAction={
+            <Link href="/automation/integrations">
+              <Button size="sm" variant="outline">
+                View integrations
+              </Button>
             </Link>
-          ) : null}
-        </div>
+          }
+        />
       ) : (
         <ul className="grid gap-4">
           {filtered.map((automation) => (

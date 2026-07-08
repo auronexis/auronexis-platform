@@ -97,6 +97,8 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               <LinkButton href="/reports/new">Create report</LinkButton>
             ) : undefined
           }
+          secondaryHref="/reports/templates"
+          secondaryLabel="Browse templates"
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

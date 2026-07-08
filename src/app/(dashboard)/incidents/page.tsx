@@ -19,7 +19,9 @@ import { attachIncidentSlaInfo } from "@/lib/sla/queries";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import type { IncidentStatus } from "@/types/database";
+import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Incidents",
@@ -132,6 +134,13 @@ export default async function IncidentsPage({ searchParams }: IncidentsPageProps
                 allowedStatuses={allowedStatuses}
               />
             ) : undefined
+          }
+          secondaryAction={
+            <Link href="/risks?tab=open">
+              <Button size="sm" variant="outline">
+                Review risks
+              </Button>
+            </Link>
           }
         />
       ) : view === "table" ? (

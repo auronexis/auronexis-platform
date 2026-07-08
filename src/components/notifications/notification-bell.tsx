@@ -49,7 +49,10 @@ export async function NotificationBell({
           />
         </svg>
         {unreadCount > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-danger-foreground">
+          <span
+            className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-danger/30 bg-danger px-1 text-[10px] font-bold leading-none text-danger-foreground shadow-sm"
+            aria-hidden
+          >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         ) : null}
@@ -72,7 +75,8 @@ export async function NotificationBell({
           <NotificationList
             notifications={recent}
             compact
-            emptyMessage="You're all caught up."
+            emptyMessage="You're all caught up"
+            emptyDescription="New alerts for risks, incidents, and reports will appear here."
           />
         </div>
       </div>

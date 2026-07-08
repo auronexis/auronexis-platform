@@ -100,6 +100,7 @@ type DetailSectionProps = {
   children: ReactNode;
   className?: string;
   padding?: "none" | "md" | "lg";
+  id?: string;
 };
 
 export function DetailSection({
@@ -109,9 +110,10 @@ export function DetailSection({
   children,
   className,
   padding = "md",
+  id,
 }: DetailSectionProps) {
   return (
-    <PageSurface padding={padding} className={className}>
+    <PageSurface padding={padding} className={cn(id && "scroll-mt-28", className)} id={id}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <PageSurfaceHeading title={title} description={description} className="mb-0" />
         {action}
@@ -161,11 +163,15 @@ export function DetailMetadataItem({ label, children, className }: DetailMetadat
 type DetailKpiGridProps = {
   children: ReactNode;
   className?: string;
+  id?: string;
 };
 
-export function DetailKpiGrid({ children, className }: DetailKpiGridProps) {
+export function DetailKpiGrid({ children, className, id }: DetailKpiGridProps) {
   return (
-    <div className={cn("mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", className)}>
+    <div
+      id={id}
+      className={cn("mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", id && "scroll-mt-28", className)}
+    >
       {children}
     </div>
   );

@@ -37,6 +37,7 @@ type RiskFormProps = {
   submitLabel: string;
   pendingLabel: string;
   aiEnabled?: boolean;
+  successMessage?: string;
 };
 
 const initialState: RiskActionState = {};
@@ -52,6 +53,7 @@ export function RiskForm({
   submitLabel,
   pendingLabel,
   aiEnabled = false,
+  successMessage,
 }: RiskFormProps) {
   const operationalAI = useOptionalOperationalAI();
   const useAIFields = aiEnabled && operationalAI !== null;
@@ -59,7 +61,9 @@ export function RiskForm({
   const defaultStatus = risk?.status ?? allowedStatuses[0] ?? "open";
   const defaultOwner = risk?.owner_user_id ?? defaultOwnerUserId ?? orgUsers[0]?.id ?? "";
 
-  useFormActionFeedback(state, isPending, { successMessage: "Risk updated" });
+  useFormActionFeedback(state, isPending, {
+    successMessage: successMessage ?? (risk ? "Risk updated" : "Risk created"),
+  });
 
   const syncWorkspaceMeta = useCallback(
     (patch: {

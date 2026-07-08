@@ -41,6 +41,13 @@ export function ProfitabilityTable({ rows, canEdit }: ProfitabilityTableProps) {
             <Button size="sm">Add client</Button>
           </Link>
         }
+        secondaryAction={
+          <Link href="/profitability">
+            <Button size="sm" variant="outline">
+              View profitability
+            </Button>
+          </Link>
+        }
       />
     );
   }

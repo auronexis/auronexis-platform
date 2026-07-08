@@ -11,6 +11,7 @@ type EmptyStateProps = {
   title: string;
   description?: string;
   action?: ReactNode;
+  secondaryAction?: ReactNode;
   className?: string;
 };
 
@@ -19,6 +20,7 @@ export function EmptyState({
   title,
   description,
   action,
+  secondaryAction,
   className,
 }: EmptyStateProps) {
   return (
@@ -39,7 +41,12 @@ export function EmptyState({
       {description ? (
         <MutedText className="mx-auto mt-2 max-w-lg text-sm leading-relaxed">{description}</MutedText>
       ) : null}
-      {action ? <div className="mt-6 flex justify-center">{action}</div> : null}
+      {action || secondaryAction ? (
+        <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          {action ? <div className="flex justify-center">{action}</div> : null}
+          {secondaryAction ? <div className="flex justify-center">{secondaryAction}</div> : null}
+        </div>
+      ) : null}
     </Card>
   );
 }

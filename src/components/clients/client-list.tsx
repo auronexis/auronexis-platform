@@ -1,21 +1,22 @@
 import Link from "next/link";
+import { Users } from "lucide-react";
 import { ClientHealthBadge } from "@/components/health/client-health-badge";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { ClickableRow } from "@/components/ui/clickable-row";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   AuroraDataTable,
   AuroraTable,
   AuroraTableBody,
   AuroraTableCell,
-  AuroraTableEmpty,
   AuroraTableHead,
   AuroraTableHeaderCell,
 } from "@/components/ui/table";
 import type { ClientWithRelations } from "@/lib/clients/types";
 import type { ClientHealthSummary } from "@/lib/health/types";
 import { formatClientDate } from "@/lib/clients/types";
-import { Button } from "@/components/ui/button";
 
 type ClientListProps = {
   clients: ClientWithRelations[];
@@ -26,7 +27,8 @@ type ClientListProps = {
 export function ClientList({ clients, canManage, healthSummaries }: ClientListProps) {
   if (clients.length === 0) {
     return (
-      <AuroraTableEmpty
+      <EmptyState
+        icon={Users}
         title="No clients yet"
         description="Add a client to start monitoring operational health across your portfolio."
         action={
@@ -35,6 +37,13 @@ export function ClientList({ clients, canManage, healthSummaries }: ClientListPr
               <Button size="sm">Add client</Button>
             </Link>
           ) : undefined
+        }
+        secondaryAction={
+          <Link href="/dashboard">
+            <Button size="sm" variant="outline">
+              Back to dashboard
+            </Button>
+          </Link>
         }
       />
     );

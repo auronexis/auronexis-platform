@@ -56,6 +56,7 @@ type ReportFormProps = {
   pendingLabel: string;
   templates?: ReportTemplateOption[];
   aiEnabled?: boolean;
+  successMessage?: string;
 };
 
 const initialState: ReportActionState = {};
@@ -89,6 +90,7 @@ export function ReportForm({
   pendingLabel,
   templates = [],
   aiEnabled = false,
+  successMessage,
 }: ReportFormProps) {
   const reportAI = useOptionalReportAI();
   const useAIFields = aiEnabled && reportAI !== null;
@@ -143,7 +145,9 @@ export function ReportForm({
     return options;
   }, [templates]);
 
-  useFormActionFeedback(state, isPending, { successMessage: "Report updated" });
+  useFormActionFeedback(state, isPending, {
+    successMessage: successMessage ?? (report ? "Report updated" : "Report created"),
+  });
 
   const syncWorkspaceMeta = useCallback(
     (patch: {

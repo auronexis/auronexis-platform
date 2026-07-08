@@ -26,6 +26,8 @@ import { DashboardEscalationOverview } from "@/components/dashboard/dashboard-es
 import { DashboardMetricCard } from "@/components/dashboard/dashboard-panel";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
+import { SmartRecommendations } from "@/components/dashboard/smart-recommendations";
+import { WorkspaceProgress } from "@/components/dashboard/workspace-progress";
 import { DashboardSlaOverview } from "@/components/dashboard/dashboard-sla-overview";
 import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-monitoring-overview";
 import { DashboardIncidentAIOverview } from "@/components/incidents/ai/dashboard-incident-ai-overview";
@@ -50,6 +52,10 @@ import { getKnowledgeHubData } from "@/lib/ai/knowledge/get-hub";
 import { getOperationalIntelligence } from "@/lib/ai/insights/get-intelligence";
 import { getClientSuccessPortfolio } from "@/lib/ai/client-success/get-analysis";
 import { getDashboardData } from "@/lib/dashboard/queries";
+import {
+  buildSmartRecommendations,
+  buildWorkspaceProgress,
+} from "@/lib/dashboard/workspace-guidance";
 import { getIntegrationsDashboardSummary, getIntegrationRuntimeSummary } from "@/lib/integrations/queries";
 import { getPredictiveDashboardSummary } from "@/lib/predictive/cache";
 import { getComplianceDiagnosticsSnapshot } from "@/lib/compliance/diagnostics";
@@ -61,6 +67,8 @@ import {
   getRequiredPlanLabel,
 } from "@/lib/plans";
 import { formatCurrency, formatMargin } from "@/lib/profitability/types";
+import { getOrganizationPlanContextForSession } from "@/lib/plans/queries";
+import { listPendingInvitations, listTeamMembers } from "@/lib/team/queries";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -109,6 +117,22 @@ export default async function DashboardPage() {
     ? await getComplianceDiagnosticsSnapshot(session)
     : null;
   const platformStatus = canManageCompliance ? await getPlatformStatusSnapshot() : null;
+
+  const [teamMembers, pendingInvitations, planContext] = await Promise.all([
+    listTeamMembers(session).catch(() => []),
+    listPendingInvitations(session).catch(() => []),
+    getOrganizationPlanContextForSession(session).catch(() => null),
+  ]);
+
+  const guidanceInput = {
+    data,
+    teamMemberCount: teamMembers.length || 1,
+    pendingInvitationCount: pendingInvitations.length,
+    knowledgeHub,
+    planContext,
+  };
+  const workspaceProgress = buildWorkspaceProgress(guidanceInput);
+  const smartRecommendations = buildSmartRecommendations(guidanceInput);
 
   const operationalMetrics = [
     {
@@ -166,6 +190,21 @@ export default async function DashboardPage() {
         data={data}
         workspaceHealth={intelligence?.workspaceHealth ?? null}
       />
+
+      <section aria-label="Workspace guidance" className="space-y-4">
+        <SectionTitle>Get started</SectionTitle>
+        <div className="grid gap-4 lg:grid-cols-12">
+          <div className="lg:col-span-8">
+            <DashboardQuickActions />
+          </div>
+          <div className="lg:col-span-4">
+            <WorkspaceProgress items={workspaceProgress} />
+          </div>
+          <div className="lg:col-span-12">
+            <SmartRecommendations recommendations={smartRecommendations} />
+          </div>
+        </div>
+      </section>
 
       <section aria-label="Operational metrics" className="space-y-4">
         <SectionTitle>Operational metrics</SectionTitle>
@@ -236,12 +275,6 @@ export default async function DashboardPage() {
             trend="In progress"
             tone="info"
           />
-        </div>
-      </section>
-
-      <section aria-label="Quick actions">
-        <div className="max-w-md">
-          <DashboardQuickActions />
         </div>
       </section>
 
