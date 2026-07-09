@@ -1,6 +1,7 @@
 import "server-only";
 
 import { PRODUCTION_DOMAIN_LIST } from "@/lib/deployment/production-domains";
+import { isEmailConfigured } from "@/lib/env/email";
 
 export type VercelEnvironmentScope = "production" | "preview" | "development";
 
@@ -30,7 +31,7 @@ const STRIPE_ENV_KEYS = [
   "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
 ] as const;
 
-const MAIL_ENV_KEYS = ["RESEND_API_KEY", "RESEND_FROM_EMAIL"] as const;
+const MAIL_ENV_KEYS = ["EMAIL_PROVIDER", "RESEND_API_KEY", "RESEND_FROM_EMAIL", "EMAIL_FROM"] as const;
 
 const OAUTH_ENV_KEYS = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "INTEGRATION_SECRET_KEY"] as const;
 
@@ -58,7 +59,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
   const coreEnvReady = envPresent(CORE_ENV_KEYS) || isDev;
   const stripeEnvReady = envPresent(STRIPE_ENV_KEYS) || isDev;
   const oauthEnvReady = envPresent(OAUTH_ENV_KEYS) || isDev;
-  const mailEnvReady = envPresent(MAIL_ENV_KEYS) || isDev;
+  const mailEnvReady = isEmailConfigured() || isDev;
   const domainsDocumented = PRODUCTION_DOMAIN_LIST.length === 4;
   const vercelDetected = Boolean(process.env.VERCEL) || isDev;
 

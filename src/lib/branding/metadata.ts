@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { PLATFORM_NAME } from "@/lib/branding/defaults";
+import {
+  PLATFORM_BACKGROUND_COLOR,
+  PLATFORM_ICONS,
+  PLATFORM_THEME_COLOR,
+} from "@/lib/branding/icons";
 import { COMPANY_SEO } from "@/lib/company/company-seo";
 import { getSiteVerificationMetadata } from "@/lib/seo/metadata";
 
@@ -17,15 +21,38 @@ const metadataBase = resolveMetadataBase();
 
 export const PLATFORM_METADATA: Metadata = {
   metadataBase,
+  applicationName: PLATFORM_NAME,
   ...getSiteVerificationMetadata(),
   title: {
     default: PLATFORM_NAME,
     template: `%s | ${PLATFORM_NAME}`,
   },
   description: COMPANY_SEO.defaultDescription,
+  keywords: [
+    "B2B SaaS",
+    "client intelligence",
+    "risk management",
+    "incident management",
+    "SLA management",
+    "executive reporting",
+    "operations platform",
+  ],
   icons: {
-    icon: [{ url: BRANDING_ASSETS.favicon, type: "image/svg+xml" }],
-    apple: [{ url: BRANDING_ASSETS.approvedCompositeLogo, type: "image/png" }],
+    icon: [
+      { url: PLATFORM_ICONS.favicon, type: "image/svg+xml" },
+      { url: PLATFORM_ICONS.pwaIcon512, type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: PLATFORM_ICONS.appleTouchIcon, type: "image/svg+xml" }],
+    shortcut: [PLATFORM_ICONS.favicon],
+  },
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: PLATFORM_THEME_COLOR },
+    { media: "(prefers-color-scheme: dark)", color: PLATFORM_BACKGROUND_COLOR },
+  ],
+  appleWebApp: {
+    capable: true,
+    title: PLATFORM_NAME,
+    statusBarStyle: "black-translucent",
   },
   openGraph: {
     type: "website",
@@ -34,7 +61,7 @@ export const PLATFORM_METADATA: Metadata = {
     description: COMPANY_SEO.defaultDescription,
     images: [
       {
-        url: BRANDING_ASSETS.openGraph,
+        url: "/branding/opengraph-1200x630.png",
         width: 1200,
         height: 630,
         alt: `${PLATFORM_NAME} — Operations Command Center`,
@@ -45,6 +72,10 @@ export const PLATFORM_METADATA: Metadata = {
     card: "summary_large_image",
     title: PLATFORM_NAME,
     description: COMPANY_SEO.defaultDescription,
-    images: [BRANDING_ASSETS.linkedinBanner],
+    images: ["/branding/linkedin-banner.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };

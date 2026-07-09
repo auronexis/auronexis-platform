@@ -1,6 +1,7 @@
-import { Resend } from "resend";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
-import { getAppUrl, getResendApiKey, getResendFromEmail } from "@/lib/env";
+import { getAppUrl } from "@/lib/env";
+import { getDefaultFromEmail } from "@/lib/env/email";
+import { sendEmail } from "@/lib/email/provider";
 import {
   buildReportEmailHtml,
   buildReportEmailPlainText,
@@ -24,6 +25,8 @@ export type SendReportEmailInput = {
 export type SendReportEmailResult = {
   success: boolean;
   error?: string;
+  messageId?: string;
+  /** @deprecated Use messageId — kept for delivery record compatibility */
   resendMessageId?: string;
   subject?: string;
   plainText?: string;
@@ -60,7 +63,7 @@ export function buildReportEmailTemplateInput(
   };
 }
 
-/** Send a branded report email with PDF attachment via Resend. */
+/** Send a branded report email with PDF attachment via the configured provider. */
 export async function sendReportEmail(input: SendReportEmailInput): Promise<SendReportEmailResult> {
   const templateInput = buildReportEmailTemplateInput(input);
   const subject = buildReportEmailSubject(templateInput.clientName);
@@ -68,41 +71,36 @@ export async function sendReportEmail(input: SendReportEmailInput): Promise<Send
   const text = buildReportEmailPlainText(templateInput);
   const sender = resolveEmailSender(
     input.emailSettings,
-    getResendFromEmail(),
+    getDefaultFromEmail(),
     input.organizationName,
   );
-  const resend = new Resend(getResendApiKey());
 
-  try {
-    const { data, error } = await resend.emails.send({
-      from: sender.from,
-      to: input.recipientEmail,
-      replyTo: sender.replyTo,
-      subject,
-      html,
-      text,
-      attachments: [
-        {
-          filename: input.pdfFilename,
-          content: input.pdfBuffer,
-        },
-      ],
-    });
+  const result = await sendEmail({
+    from: sender.from,
+    to: input.recipientEmail,
+    replyTo: sender.replyTo,
+    subject,
+    html,
+    text,
+    attachments: [
+      {
+        filename: input.pdfFilename,
+        content: input.pdfBuffer,
+      },
+    ],
+  });
 
-    if (error) {
-      return { success: false, error: error.message, subject, plainText: text };
-    }
-
-    return {
-      success: true,
-      resendMessageId: data?.id,
-      subject,
-      plainText: text,
-    };
-  } catch (error) {
-    const messageText = error instanceof Error ? error.message : "Unable to send email.";
-    return { success: false, error: messageText, subject, plainText: text };
+  if (!result.success) {
+    return { success: false, error: result.error, subject, plainText: text };
   }
+
+  return {
+    success: true,
+    messageId: result.messageId,
+    resendMessageId: result.messageId,
+    subject,
+    plainText: text,
+  };
 }
 
 // Re-export for callers that only need subject building

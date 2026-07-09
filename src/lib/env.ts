@@ -1,3 +1,5 @@
+import { getDefaultFromEmail as resolveDefaultFromEmail } from "@/lib/env/email";
+
 /**
  * Application environment variables validated at runtime.
  * Server-only secrets must never be imported in client components.
@@ -32,12 +34,16 @@ export function getAppUrl(): string {
 
 /** Resend API key — server-only. */
 export function getResendApiKey(): string {
-  return requireEnv("RESEND_API_KEY");
+  const value = process.env.RESEND_API_KEY?.trim();
+  if (!value) {
+    throw new Error("Missing required environment variable: RESEND_API_KEY");
+  }
+  return value;
 }
 
-/** Verified sender address for Resend — server-only. */
+/** Verified sender address — server-only. Falls back to platform no-reply address. */
 export function getResendFromEmail(): string {
-  return requireEnv("RESEND_FROM_EMAIL");
+  return resolveDefaultFromEmail();
 }
 
 /** Stripe secret key — server-only. */

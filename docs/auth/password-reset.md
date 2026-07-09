@@ -24,6 +24,36 @@ Add these to **Supabase Dashboard → Authentication → URL Configuration → R
 
 Also ensure **Site URL** matches the app origin (`NEXT_PUBLIC_APP_URL`).
 
+## Production sender branding
+
+Auth emails (password reset, signup confirmation) are sent by **Supabase Auth**, not the application Resend integration.
+
+### Target production sender
+
+| Field | Value |
+|-------|-------|
+| From | `Auroranexis <no-reply@auroranexis.com>` |
+| Reply-to | `support@auroranexis.com` |
+
+### Supabase configuration
+
+1. **Project Settings → Auth → SMTP Settings**
+   - Enable custom SMTP (Resend SMTP, Postmark, or AWS SES SMTP endpoint)
+   - Sender email: `no-reply@auroranexis.com`
+   - Sender name: `Auroranexis`
+
+2. **Authentication → Email Templates**
+   - Reset Password: subject `Reset your Auroranexis password`
+   - Remove default Supabase footer/branding
+   - CTA: `Reset Password` using `{{ .ConfirmationURL }}`
+
+3. **DNS (required before switching)**
+   - SPF record including your SMTP provider
+   - DKIM records from Resend/Postmark/SES
+   - DMARC policy for `auroranexis.com`
+
+Application transactional email (report delivery, lead notifications) uses the provider abstraction in `src/lib/email/provider/`. Set `EMAIL_FROM=Auroranexis <no-reply@auroranexis.com>` in Vercel production.
+
 ## Email template (Supabase)
 
 Configure under **Authentication → Email Templates → Reset Password**.

@@ -1,7 +1,7 @@
 import "server-only";
 
-import { Resend } from "resend";
-import { getResendApiKey, getResendFromEmail } from "@/lib/env";
+import { getDefaultFromEmail } from "@/lib/env/email";
+import { sendEmail } from "@/lib/email/provider";
 import { getInboxEmail } from "@/lib/sales/pipeline-stages";
 import type { SalesInboxKey, SalesLeadSource } from "@/types/database";
 import { getLeadSourceLabel } from "@/lib/sales/pipeline-stages";
@@ -18,11 +18,10 @@ type LeadNotificationInput = {
 export async function sendLeadNotificationEmail(input: LeadNotificationInput): Promise<boolean> {
   try {
     const to = getInboxEmail(input.inboxKey);
-    const resend = new Resend(getResendApiKey());
-    const from = getResendFromEmail();
+    const from = getDefaultFromEmail();
     const sourceLabel = getLeadSourceLabel(input.source);
 
-    await resend.emails.send({
+    const result = await sendEmail({
       from,
       to,
       replyTo: input.contactEmail,
@@ -38,6 +37,11 @@ export async function sendLeadNotificationEmail(input: LeadNotificationInput): P
         .filter(Boolean)
         .join("\n"),
     });
+
+    if (!result.success) {
+      console.error("[sales] Lead notification email failed:", result.error);
+      return false;
+    }
 
     return true;
   } catch (error) {

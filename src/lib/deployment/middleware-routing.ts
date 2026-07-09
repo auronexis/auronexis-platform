@@ -22,8 +22,19 @@ export function isInboundWebhookRoute(pathname: string): boolean {
   );
 }
 
+/** Static assets and metadata routes that must never redirect to login. */
+export function isStaticPublicAssetPath(pathname: string): boolean {
+  return (
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/favicon.ico" ||
+    pathname === "/favicon.svg"
+  );
+}
+
 export function shouldBypassSessionMiddleware(pathname: string): boolean {
-  return isApiRoute(pathname);
+  return isApiRoute(pathname) || isStaticPublicAssetPath(pathname);
 }
 
 /**

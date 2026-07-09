@@ -8,6 +8,7 @@ import { getOrganizationEmailSettings } from "@/lib/email/organization-settings-
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
+import { getDefaultFromEmail } from "@/lib/env/email";
 
 export const metadata: Metadata = {
   title: "Email settings",
@@ -41,19 +42,15 @@ export default async function EmailSettingsPage() {
         <EmailSettingsForm
           settings={settings}
           organizationName={session.organization.name}
-          defaultFromEmail={getDefaultFromEmailForDisplay()}
+          defaultFromEmail={extractEmailAddress(getDefaultFromEmail())}
         />
       </div>
     </PlanFeatureGate>
   );
 }
 
-function getDefaultFromEmailForDisplay(): string {
-  const raw = process.env.RESEND_FROM_EMAIL;
-  if (!raw) {
-    return "reports@yourdomain.com";
-  }
-
-  const match = raw.match(/<([^>]+)>/);
-  return match?.[1]?.trim() ?? raw.trim();
+function extractEmailAddress(fromValue: string): string {
+  const match = fromValue.match(/<([^>]+)>/);
+  return match?.[1]?.trim() ?? fromValue.trim();
 }
+
