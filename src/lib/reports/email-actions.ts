@@ -4,12 +4,13 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { dispatchAutomation } from "@/lib/automation";
+import { checkPlanFeatureSafe, resolveActionError } from "@/lib/action-errors";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { getOrganizationBranding } from "@/lib/branding/queries";
 import { getOrganizationEmailSettings } from "@/lib/email/organization-settings-queries";
 import { buildReportEmailSubject, sendReportEmail } from "@/lib/email/send-report-email";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature } from "@/lib/plans/guards";
 import { canSendReportEmail, canSendReportEmailForStatus } from "@/lib/reports/guards";
 import {
   buildReportExportFilename,
@@ -21,7 +22,6 @@ import {
   getRelatedOpenRisks,
   getReportById,
 } from "@/lib/reports/queries";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -43,15 +43,19 @@ export async function sendReportByEmailAction(
   _prevState: SendReportEmailActionState,
   formData: FormData,
 ): Promise<SendReportEmailActionState> {
-  const session = await requireSession();
+  try {
+    const session = await requireSession();
 
-  if (!canSendReportEmail(session)) {
-    throw new AuthorizationError();
-  }
+    if (!canSendReportEmail(session)) {
+      return { error: ACTION_DENIED_MESSAGE };
+    }
 
-  await assertCanUseFeature(session.organization.id, "email_delivery");
+    const planError = await checkPlanFeatureSafe(session.organization.id, "email_delivery");
+    if (planError) {
+      return planError;
+    }
 
-  const parsed = emailSchema.safeParse({
+    const parsed = emailSchema.safeParse({
     recipientEmail: formData.get("recipientEmail"),
   });
 
@@ -66,7 +70,7 @@ export async function sendReportByEmailAction(
   }
 
   if (report.organization_id !== session.organization.id) {
-    throw new AuthorizationError();
+    return { error: "Report not found." };
   }
 
   if (!canSendReportEmailForStatus(report.status)) {
@@ -264,4 +268,7 @@ export async function sendReportByEmailAction(
   revalidatePath("/", "layout");
 
   return { success: `Report emailed to ${parsed.data.recipientEmail}.` };
+  } catch (error) {
+    return resolveActionError(error, "Unable to send report email.");
+  }
 }

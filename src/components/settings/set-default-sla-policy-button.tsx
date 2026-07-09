@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { setDefaultSlaPolicyAction } from "@/lib/sla/actions";
 
 type SetDefaultSlaPolicyButtonProps = {
@@ -16,6 +17,7 @@ export function SetDefaultSlaPolicyButton({
   isDefault,
 }: SetDefaultSlaPolicyButtonProps) {
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   if (isDefault) {
     return (
@@ -32,7 +34,14 @@ export function SetDefaultSlaPolicyButton({
       disabled={isPending}
       onClick={() => {
         startTransition(async () => {
-          await setDefaultSlaPolicyAction(policyId);
+          const result = await setDefaultSlaPolicyAction(policyId);
+          if (result.error) {
+            toast({ title: result.error, variant: "error" });
+            return;
+          }
+          if (result.success) {
+            toast({ title: result.success, variant: "success" });
+          }
         });
       }}
     >

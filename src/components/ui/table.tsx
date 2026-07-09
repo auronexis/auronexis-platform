@@ -1,5 +1,5 @@
 import type { HTMLAttributes, ReactNode, TdHTMLAttributes, ThHTMLAttributes } from "react";
-import { Children } from "react";
+import { Children, cloneElement, isValidElement } from "react";
 import { motionEmptyEnter } from "@/lib/ui/motion";
 import { cn } from "@/lib/utils/cn";
 import {
@@ -39,10 +39,20 @@ export function AuroraTable({ className, children, ...props }: AuroraTableProps)
 
 type AuroraTableHeadProps = HTMLAttributes<HTMLTableSectionElement>;
 
+/** Normalize thead children — strip whitespace inside header rows. */
+function normalizeTableHeadChildren(children: ReactNode): ReactNode {
+  return Children.map(children, (child) => {
+    if (isValidElement<{ children?: ReactNode }>(child) && child.type === "tr") {
+      return cloneElement(child, {}, omitWhitespaceTextNodes(child.props.children));
+    }
+    return omitWhitespaceTextNodes(child);
+  });
+}
+
 export function AuroraTableHead({ className, children, ...props }: AuroraTableHeadProps) {
   return (
     <thead className={cn(auroraTableHead, "divide-y divide-border/70", className)} {...props}>
-      {omitWhitespaceTextNodes(children)}
+      {normalizeTableHeadChildren(children)}
     </thead>
   );
 }

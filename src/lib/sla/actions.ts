@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { requireSession } from "@/lib/auth/session";
-import { checkPlanFeatureSafe } from "@/lib/action-errors";
+import { checkPlanFeatureSafe, resolveActionError } from "@/lib/action-errors";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { checkPlanFeature } from "@/lib/plans/guards";
 import { AuthorizationError } from "@/lib/rbac/guards";
@@ -66,7 +66,10 @@ function buildSlaPolicyPayload(parsed: z.infer<typeof slaPolicySchema>) {
   };
 }
 
-async function clearDefaultSlaPolicy(organizationId: string, exceptPolicyId?: string): Promise<void> {
+async function clearDefaultSlaPolicy(
+  organizationId: string,
+  exceptPolicyId?: string,
+): Promise<{ error: string } | null> {
   const supabase = await createClient();
   let query = supabase
     .from("sla_policies")
@@ -81,8 +84,10 @@ async function clearDefaultSlaPolicy(organizationId: string, exceptPolicyId?: st
   const { error } = await query;
 
   if (error) {
-    throw new Error(error.message);
+    return { error: "Unable to update default SLA policy." };
   }
+
+  return null;
 }
 
 /** Create an SLA policy — Owner/Admin only. */
@@ -262,26 +267,30 @@ export async function deleteSlaPolicyAction(policyId: string): Promise<SlaPolicy
 
 /** Set an SLA policy as the organization default — Owner/Admin only. */
 export async function setDefaultSlaPolicyAction(policyId: string): Promise<SlaPolicyActionState> {
-  const session = await requireSession();
+  try {
+    const session = await requireSession();
 
-  if (!canManageSlaPolicies(session)) {
-    return { error: ACTION_DENIED_MESSAGE };
-  }
+    if (!canManageSlaPolicies(session)) {
+      return { error: ACTION_DENIED_MESSAGE };
+    }
 
-  const planError = await checkPlanFeatureSafe(session.organization.id, "sla_tracking");
-  if (planError) {
-    return planError;
-  }
+    const planError = await checkPlanFeatureSafe(session.organization.id, "sla_tracking");
+    if (planError) {
+      return planError;
+    }
 
-  const existing = await getSlaPolicyById(session, policyId);
+    const existing = await getSlaPolicyById(session, policyId);
 
-  if (!existing) {
-    return { error: "SLA policy not found." };
-  }
+    if (!existing) {
+      return { error: "SLA policy not found." };
+    }
 
-  await clearDefaultSlaPolicy(session.organization.id, policyId);
+    const clearError = await clearDefaultSlaPolicy(session.organization.id, policyId);
+    if (clearError) {
+      return clearError;
+    }
 
-  const supabase = await createClient();
+    const supabase = await createClient();
   const { error } = await supabase
     .from("sla_policies")
     .update({ is_default: true } as never)
@@ -309,6 +318,9 @@ export async function setDefaultSlaPolicyAction(policyId: string): Promise<SlaPo
   revalidatePath("/clients");
 
   return { success: "Default SLA policy updated." };
+  } catch (error) {
+    return resolveActionError(error, "Unable to set default SLA policy.");
+  }
 }
 
 /** Assign an SLA policy to a client — Owner/Admin only. */

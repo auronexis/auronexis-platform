@@ -38,7 +38,11 @@ export function SignUpForm() {
         required
         placeholder="Minimum 8 characters"
       />
-      {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
+      {state.error ? (
+        <FormAlert variant="error">
+          <span aria-live="assertive">{state.error}</span>
+        </FormAlert>
+      ) : null}
       <TurnstileField className="pt-1" />
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? "Creating account…" : "Create account"}

@@ -7,7 +7,7 @@ import { RiskMetrics } from "@/components/risks/risk-metrics";
 import { RiskList } from "@/components/risks/risk-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { ArchiveFilterTabs } from "@/components/ui/archive-filter-tabs";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { sessionHasPermission } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
 import { canCreateRisk } from "@/lib/risks/guards";
@@ -109,13 +109,7 @@ export default async function RisksPage({ searchParams }: RisksPageProps) {
         module="risks"
         title="Risk Center"
         description="Score, prioritize, and mitigate client risks before they escalate."
-        action={
-          canCreate ? (
-            <Link href="/risks/new">
-              <Button>Add risk</Button>
-            </Link>
-          ) : undefined
-        }
+        action={canCreate ? <LinkButton href="/risks/new">Add risk</LinkButton> : undefined}
       />
 
       <section className="mb-8">
@@ -207,13 +201,7 @@ export default async function RisksPage({ searchParams }: RisksPageProps) {
         <RiskEmptyState
           title={`No ${tab} risks`}
           description="Track client risks before they escalate into incidents."
-          action={
-            canCreate ? (
-              <Link href="/risks/new">
-                <Button>Add risk</Button>
-              </Link>
-            ) : undefined
-          }
+          action={canCreate ? <LinkButton href="/risks/new">Add risk</LinkButton> : undefined}
           secondaryHref="/incidents"
           secondaryLabel="View incidents"
         />

@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { Users } from "lucide-react";
 import { ClientHealthBadge } from "@/components/health/client-health-badge";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { ClickableRow } from "@/components/ui/clickable-row";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   AuroraDataTable,
@@ -31,19 +30,11 @@ export function ClientList({ clients, canManage, healthSummaries }: ClientListPr
         icon={Users}
         title="No clients yet"
         description="Add a client to start monitoring operational health across your portfolio."
-        action={
-          canManage ? (
-            <Link href="/clients/new">
-              <Button size="sm">Add client</Button>
-            </Link>
-          ) : undefined
-        }
+        action={canManage ? <LinkButton href="/clients/new" size="sm">Add client</LinkButton> : undefined}
         secondaryAction={
-          <Link href="/dashboard">
-            <Button size="sm" variant="outline">
-              Back to dashboard
-            </Button>
-          </Link>
+          <LinkButton href="/dashboard" size="sm" variant="outline">
+            Back to dashboard
+          </LinkButton>
         }
       />
     );

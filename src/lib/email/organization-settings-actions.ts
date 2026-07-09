@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { checkPlanFeatureSafe, resolveActionError } from "@/lib/action-errors";
+import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
-import { assertCanUseFeature } from "@/lib/plans/guards";
 import { getOrganizationEmailSettings } from "@/lib/email/organization-settings-queries";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
-import { AuthorizationError } from "@/lib/rbac/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -39,15 +39,19 @@ export async function upsertOrganizationEmailSettingsAction(
   _prevState: EmailSettingsActionState,
   formData: FormData,
 ): Promise<EmailSettingsActionState> {
-  const session = await requireSession();
+  try {
+    const session = await requireSession();
 
-  if (!canManageOrganizationSettings(session)) {
-    throw new AuthorizationError();
-  }
+    if (!canManageOrganizationSettings(session)) {
+      return { error: ACTION_DENIED_MESSAGE };
+    }
 
-  await assertCanUseFeature(session.organization.id, "email_delivery");
+    const planError = await checkPlanFeatureSafe(session.organization.id, "email_delivery");
+    if (planError) {
+      return planError;
+    }
 
-  const parsed = emailSettingsSchema.safeParse({
+    const parsed = emailSettingsSchema.safeParse({
     fromName: formData.get("fromName"),
     fromEmail: formData.get("fromEmail"),
     replyTo: formData.get("replyTo"),
@@ -94,4 +98,7 @@ export async function upsertOrganizationEmailSettingsAction(
 
   revalidatePath("/settings/email");
   return { success: "Email settings saved." };
+  } catch (error) {
+    return resolveActionError(error, "Unable to save email settings.");
+  }
 }

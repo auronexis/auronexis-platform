@@ -24,14 +24,33 @@ export function CookiePreferencesModal({ open, onClose, onSaved }: CookiePrefere
     if (open) setPrefs(getConsentPreferences());
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-4 sm:items-center">
+    <div
+      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-4 sm:items-center"
+      onClick={onClose}
+      role="presentation"
+    >
       <div
         role="dialog"
+        aria-modal="true"
         aria-label="Cookie preferences"
         className="w-full max-w-lg rounded-2xl border border-border bg-surface p-6 shadow-xl"
+        onClick={(event) => event.stopPropagation()}
       >
         <h2 className="text-lg font-semibold text-foreground">Cookie preferences</h2>
         <p className="mt-2 text-sm text-muted">

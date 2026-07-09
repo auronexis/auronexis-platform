@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { acceptAllConsent, hasConsentDecision, rejectNonEssentialConsent } from "@/lib/consent/storage";
 import { LEGAL_ROUTES } from "@/lib/company";
@@ -11,10 +11,27 @@ import { CookiePreferencesModal } from "@/components/consent/cookie-preferences-
 export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
+  const rejectButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setVisible(!hasConsentDecision());
   }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+
+    rejectButtonRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        rejectNonEssentialConsent("banner");
+        setVisible(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -22,8 +39,9 @@ export function CookieConsentBanner() {
     <>
       <div
         role="dialog"
+        aria-modal="true"
         aria-label="Cookie consent"
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-surface/95 p-4 shadow-lg backdrop-blur sm:p-5"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-surface/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg backdrop-blur sm:p-5"
       >
         <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl text-sm leading-relaxed text-muted">
@@ -43,6 +61,7 @@ export function CookieConsentBanner() {
           </div>
           <div className="flex flex-wrap gap-2">
             <button
+              ref={rejectButtonRef}
               type="button"
               onClick={() => {
                 rejectNonEssentialConsent("banner");

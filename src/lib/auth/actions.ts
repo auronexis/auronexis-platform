@@ -28,7 +28,8 @@ export async function signIn(
   _prevState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  const parsed = loginSchema.safeParse({
+  try {
+    const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
@@ -64,6 +65,12 @@ export async function signIn(
     typeof redirectField === "string" ? redirectField : null,
   );
   redirect(redirectTo);
+  } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
+    return { error: "Unable to sign in right now. Please try again." };
+  }
 }
 /**
  * Register a new agency account.
@@ -73,7 +80,8 @@ export async function signUp(
   _prevState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  const parsed = signupSchema.safeParse({
+  try {
+    const parsed = signupSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
     fullName: formData.get("fullName"),
@@ -156,6 +164,12 @@ export async function signUp(
 
   revalidatePath("/", "layout");
   redirect("/dashboard");
+  } catch (error) {
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
+    return { error: "Unable to create account right now. Please try again." };
+  }
 }
 /** End the current session. */
 export async function signOut(): Promise<void> {

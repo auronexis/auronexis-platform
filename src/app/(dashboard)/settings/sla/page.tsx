@@ -6,7 +6,7 @@ import { SlaPolicyList } from "@/components/settings/sla-policy-list";
 import { SLAMetrics } from "@/components/sla/sla-metrics";
 import { SLAComplianceChart } from "@/components/sla/sla-compliance-chart";
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { listSlaPolicies } from "@/lib/sla/queries";
 import { getSLAMetrics } from "@/lib/sla/metrics";
 import { canManageSlaPolicies } from "@/lib/team/guards";
@@ -59,11 +59,7 @@ export default async function SlaSettingsPage() {
             <Link href="/settings" className="text-sm font-medium text-accent-blue hover:underline">
               Back to settings
             </Link>
-            {canManage ? (
-              <Link href="/settings/sla/new">
-                <Button>Create policy</Button>
-              </Link>
-            ) : null}
+            {canManage ? <LinkButton href="/settings/sla/new">Create policy</LinkButton> : null}
           </div>
         }
       />

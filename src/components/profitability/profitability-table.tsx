@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import { ClientFinancialForm } from "@/components/profitability/client-financial-form";
 import { ClientHealthBadge } from "@/components/profitability/client-health-badge";
 import { ClickableRow } from "@/components/ui/clickable-row";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { rowInteractiveClass } from "@/components/ui/interactive-surface";
 import {
@@ -37,17 +36,11 @@ export function ProfitabilityTable({ rows, canEdit }: ProfitabilityTableProps) {
         icon={TrendingUp}
         title="No profitability data yet"
         description="Add clients and enter revenue and cost figures to track margins and portfolio health."
-        action={
-          <Link href="/clients/new">
-            <Button size="sm">Add client</Button>
-          </Link>
-        }
+        action={<LinkButton href="/clients/new" size="sm">Add client</LinkButton>}
         secondaryAction={
-          <Link href="/profitability">
-            <Button size="sm" variant="outline">
-              View profitability
-            </Button>
-          </Link>
+          <LinkButton href="/profitability" size="sm" variant="outline">
+            View profitability
+          </LinkButton>
         }
       />
     );

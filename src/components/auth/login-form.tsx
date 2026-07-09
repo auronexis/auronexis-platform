@@ -94,7 +94,11 @@ export function LoginForm({ redirectTo, initialError, initialSuccess }: LoginFor
           </span>
         </FormAlert>
       ) : null}
-      {errorMessage ? <FormAlert variant="error">{errorMessage}</FormAlert> : null}
+      {errorMessage ? (
+        <FormAlert variant="error">
+          <span aria-live="assertive">{errorMessage}</span>
+        </FormAlert>
+      ) : null}
       <TurnstileField className="pt-1" />
       <button
         type="submit"

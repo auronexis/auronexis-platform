@@ -3,6 +3,7 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingCta } from "@/components/marketing/marketing-cta";
 import { MarketingFaq, MarketingSection } from "@/components/marketing/marketing-sections";
+import { MARKETING_ROUTES } from "@/lib/company";
 import { JsonLdScript, breadcrumbJsonLd, faqJsonLd } from "@/lib/marketing/seo";
 import type { SolutionPageContent } from "@/lib/seo/landing-content";
 import { cn } from "@/lib/utils/cn";
@@ -19,7 +20,7 @@ export function SolutionPageView({ content }: SolutionPageViewProps) {
         data={[
           breadcrumbJsonLd([
             { name: "Home", path: "/" },
-            { name: "Solutions", path: "/solutions/customer-health-score" },
+            { name: "Solutions", path: MARKETING_ROUTES.features },
             { name: content.title, path: content.path },
           ]),
           faqJsonLd(content.faq),
