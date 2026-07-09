@@ -15,6 +15,7 @@ import type {
   SalesLead,
   SalesLeadActivity,
   SalesLeadReminder,
+  SalesLeadSource,
   SalesPipelineStage,
   SalesProposal,
 } from "@/types/database";
@@ -46,12 +47,17 @@ export type SalesLeadWithMeta = SalesLead & {
 };
 
 export type PipelineDashboardMetrics = {
+  totalLeads: number;
+  qualifiedLeads: number;
+  openFollowups: number;
+  pipelineValue: number;
+  wonValue: number;
+  conversionRate: number;
   leads: number;
   pilots: number;
   meetings: number;
   opportunities: number;
   mrrPipeline: number;
-  conversionRate: number;
   closedWon: number;
   closedLost: number;
   foundingProgram: ReturnType<typeof buildFoundingProgramStatus>;
@@ -65,7 +71,12 @@ function mapLead(row: SalesLead, ownerName: string | null): SalesLeadWithMeta {
 
 export async function listSalesLeads(
   session: SessionContext,
-  options?: { stage?: SalesPipelineStage; inbox?: SalesInboxKey; limit?: number },
+  options?: {
+    stage?: SalesPipelineStage;
+    inbox?: SalesInboxKey;
+    source?: SalesLeadSource;
+    limit?: number;
+  },
 ): Promise<SalesLeadWithMeta[]> {
   const supabase = await createClient();
   let query = supabase
@@ -79,6 +90,9 @@ export async function listSalesLeads(
   }
   if (options?.inbox) {
     query = query.eq("inbox_key", options.inbox);
+  }
+  if (options?.source) {
+    query = query.eq("lead_source", options.source);
   }
   if (options?.limit) {
     query = query.limit(options.limit);
@@ -152,20 +166,63 @@ export async function listLeadActivities(session: SessionContext, leadId: string
   }
 }
 
+export async function listLeadReminders(
+  session: SessionContext,
+  leadId: string,
+): Promise<SalesLeadReminder[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("sales_lead_reminders")
+      .select("*")
+      .eq("organization_id", session.organization.id)
+      .eq("lead_id", leadId)
+      .order("due_at", { ascending: true });
+
+    if (error) {
+      return [];
+    }
+
+    return (data ?? []) as SalesLeadReminder[];
+  } catch {
+    return [];
+  }
+}
+
+export async function countOpenFollowups(session: SessionContext): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { count, error } = await supabase
+      .from("sales_lead_reminders")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", session.organization.id)
+      .is("completed_at", null);
+
+    if (error) {
+      return 0;
+    }
+
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 export async function getPipelineDashboardMetrics(session: SessionContext): Promise<PipelineDashboardMetrics> {
   try {
     const supabase = await createClient();
     const orgId = session.organization.id;
 
-    const [{ data: leads }, { count: foundingCount }] = await Promise.all([
-      supabase.from("sales_leads").select("pipeline_stage, mrr_estimate, inbox_key").eq("organization_id", orgId),
+    const [{ data: leads }, { count: foundingCount }, openFollowups] = await Promise.all([
+      supabase.from("sales_leads").select("pipeline_stage, mrr_estimate, lead_value, inbox_key").eq("organization_id", orgId),
       supabase
         .from("founding_program_enrollments")
         .select("id", { count: "exact", head: true })
         .eq("organization_id", orgId),
+      countOpenFollowups(session),
     ]);
 
-  const rows = (leads ?? []) as Pick<SalesLead, "pipeline_stage" | "mrr_estimate" | "inbox_key">[];
+  const rows = (leads ?? []) as Pick<SalesLead, "pipeline_stage" | "mrr_estimate" | "lead_value" | "inbox_key">[];
   const stageCounts = Object.fromEntries(
     [
       "pilot_lead",
@@ -194,19 +251,35 @@ export async function getPipelineDashboardMetrics(session: SessionContext): Prom
   const activeRows = rows.filter((row) =>
     ACTIVE_PIPELINE_STAGES.includes(row.pipeline_stage as SalesPipelineStage),
   );
-  const mrrPipeline = activeRows.reduce((sum, row) => sum + Number(row.mrr_estimate ?? 0), 0);
+  const mrrPipeline = activeRows.reduce(
+    (sum, row) => sum + Number(row.lead_value ?? row.mrr_estimate ?? 0),
+    0,
+  );
+  const wonRows = rows.filter((row) => row.pipeline_stage === CLOSED_WON_STAGE);
+  const wonValue = wonRows.reduce(
+    (sum, row) => sum + Number(row.lead_value ?? row.mrr_estimate ?? 0),
+    0,
+  );
   const closedWon = stageCounts[CLOSED_WON_STAGE];
   const closedLost = stageCounts[CLOSED_LOST_STAGE];
   const totalClosed = closedWon + closedLost;
   const conversionRate = totalClosed > 0 ? Math.round((closedWon / totalClosed) * 100) : 0;
+  const totalLeads = rows.length;
+  const qualifiedLeads =
+    stageCounts.qualified + stageCounts.proposal_sent + stageCounts.negotiation;
 
   return {
+    totalLeads,
+    qualifiedLeads,
+    openFollowups,
+    pipelineValue: mrrPipeline,
+    wonValue,
+    conversionRate,
     leads: stageCounts.pilot_lead,
     pilots: stageCounts.pilot_application,
     meetings: stageCounts.discovery_call,
     opportunities: stageCounts.qualified + stageCounts.proposal_sent + stageCounts.negotiation,
     mrrPipeline,
-    conversionRate,
     closedWon,
     closedLost,
     foundingProgram: buildFoundingProgramStatus(foundingCount ?? 0),
@@ -215,12 +288,17 @@ export async function getPipelineDashboardMetrics(session: SessionContext): Prom
   };
   } catch {
     return {
+      totalLeads: 0,
+      qualifiedLeads: 0,
+      openFollowups: 0,
+      pipelineValue: 0,
+      wonValue: 0,
+      conversionRate: 0,
       leads: 0,
       pilots: 0,
       meetings: 0,
       opportunities: 0,
       mrrPipeline: 0,
-      conversionRate: 0,
       closedWon: 0,
       closedLost: 0,
       foundingProgram: buildFoundingProgramStatus(0),

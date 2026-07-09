@@ -37,7 +37,7 @@ export function AcceptInviteForm({
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="token" value={token} />
-        <Input name="fullName" label="Full name" required placeholder="Jane Smith" />
+        <Input name="fullName" label="Full name" required placeholder="Jane Smith" autoComplete="name" />
         <Input
           name="password"
           type="password"

@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SalesLeadDetail } from "@/components/sales/sales-lead-detail";
-import { getSalesLead, listLeadActivities } from "@/lib/sales/queries";
+import { getSalesLead, listLeadActivities, listLeadReminders } from "@/lib/sales/queries";
+import { listTeamMembers } from "@/lib/team/queries";
 import { requireSession } from "@/lib/auth/session";
 import { canAccessModule } from "@/lib/rbac/permissions";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
@@ -20,9 +21,11 @@ export default async function SalesLeadDetailPage({ params }: LeadDetailPageProp
   await requireModuleAccess("sales");
   const session = await requireSession();
   const { id } = await params;
-  const [lead, activities] = await Promise.all([
+  const [lead, activities, reminders, teamMembers] = await Promise.all([
     getSalesLead(session, id),
     listLeadActivities(session, id),
+    listLeadReminders(session, id),
+    listTeamMembers(session),
   ]);
 
   if (!lead) {
@@ -37,7 +40,13 @@ export default async function SalesLeadDetailPage({ params }: LeadDetailPageProp
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Back to leads
       </Link>
-      <SalesLeadDetail lead={lead} activities={activities} canManage={canManage} />
+      <SalesLeadDetail
+        lead={lead}
+        activities={activities}
+        reminders={reminders}
+        teamMembers={teamMembers}
+        canManage={canManage}
+      />
     </>
   );
 }

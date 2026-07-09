@@ -11,23 +11,29 @@ type MetricCard = {
 };
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export function PipelineMetricCards({ metrics }: { metrics: PipelineDashboardMetrics }) {
   const cards: MetricCard[] = [
-    { label: "Leads", value: String(metrics.leads), href: "/sales/leads?stage=pilot_lead" },
-    { label: "Pilots", value: String(metrics.pilots), href: "/sales/leads?stage=pilot_application" },
-    { label: "Meetings", value: String(metrics.meetings), href: "/sales/leads?stage=discovery_call" },
-    { label: "Opportunities", value: String(metrics.opportunities), href: "/sales/leads" },
-    { label: "MRR Pipeline", value: formatCurrency(metrics.mrrPipeline) },
+    { label: "Total leads", value: String(metrics.totalLeads), href: "/sales/leads" },
+    {
+      label: "Qualified",
+      value: String(metrics.qualifiedLeads),
+      href: "/sales/leads?stage=qualified",
+    },
+    { label: "Open follow-ups", value: String(metrics.openFollowups), href: "/sales/leads" },
+    { label: "Pipeline value", value: formatCurrency(metrics.pipelineValue) },
+    { label: "Won value", value: formatCurrency(metrics.wonValue), href: "/sales/leads?stage=won" },
     { label: "Conversion", value: `${metrics.conversionRate}%` },
-    { label: "Closed Won", value: String(metrics.closedWon), href: "/sales/leads?stage=won" },
-    { label: "Closed Lost", value: String(metrics.closedLost), href: "/sales/leads?stage=lost" },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {cards.map((card) => {
         const content = (
           <>

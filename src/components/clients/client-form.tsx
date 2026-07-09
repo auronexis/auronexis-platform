@@ -110,6 +110,7 @@ export function ClientForm({
             <Input
               name="contactName"
               label="Contact name"
+              autoComplete="name"
               defaultValue={client?.contact_name ?? ""}
               placeholder="Jane Smith"
               disabled={disabled}
@@ -118,6 +119,7 @@ export function ClientForm({
               name="contactEmail"
               type="email"
               label="Contact email"
+              autoComplete="email"
               defaultValue={client?.contact_email ?? ""}
               placeholder="jane@acme.com"
               disabled={disabled}

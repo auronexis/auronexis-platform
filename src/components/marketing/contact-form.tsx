@@ -33,6 +33,7 @@ export function ContactForm({ className }: ContactFormProps) {
           <input
             required
             name="name"
+            autoComplete="name"
             className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm"
           />
         </label>
@@ -42,6 +43,7 @@ export function ContactForm({ className }: ContactFormProps) {
             required
             type="email"
             name="email"
+            autoComplete="email"
             className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm"
           />
         </label>
@@ -50,6 +52,7 @@ export function ContactForm({ className }: ContactFormProps) {
         <span className="mb-1 block font-medium text-foreground">Company</span>
         <input
           name="company"
+          autoComplete="organization"
           className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm"
         />
       </label>

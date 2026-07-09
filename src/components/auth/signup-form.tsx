@@ -15,12 +15,13 @@ export function SignUpForm() {
 
   return (
     <form action={formAction} className="space-y-4">
-      <Input name="fullName" label="Full name" required placeholder="Jane Smith" />
+      <Input name="fullName" label="Full name" required placeholder="Jane Smith" autoComplete="name" />
       <Input
         name="organizationName"
         label="Agency name"
         required
         placeholder="Acme Automation"
+        autoComplete="organization"
       />
       <Input
         name="email"

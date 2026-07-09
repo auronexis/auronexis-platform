@@ -25,20 +25,20 @@ export function ReferralLeadForm({ className }: { className?: string }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-white">Name</span>
-          <input required name="name" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
+          <input required name="name" autoComplete="name" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-white">Email</span>
-          <input required type="email" name="email" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
+          <input required type="email" name="email" autoComplete="email" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
         </label>
       </div>
       <label className="block text-sm">
         <span className="mb-1 block font-medium text-white">Referral code</span>
-        <input required name="referralCode" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
+        <input required name="referralCode" autoComplete="off" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
       </label>
       <label className="block text-sm">
         <span className="mb-1 block font-medium text-white">Company (optional)</span>
-        <input name="company" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
+        <input name="company" autoComplete="organization" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
       </label>
       {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
       <TurnstileField />

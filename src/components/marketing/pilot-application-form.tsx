@@ -25,16 +25,16 @@ export function PilotApplicationForm({ className }: { className?: string }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-white">Name</span>
-          <input required name="name" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
+          <input required name="name" autoComplete="name" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-medium text-white">Email</span>
-          <input required type="email" name="email" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
+          <input required type="email" name="email" autoComplete="email" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
         </label>
       </div>
       <label className="block text-sm">
         <span className="mb-1 block font-medium text-white">Company</span>
-        <input required name="company" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
+        <input required name="company" autoComplete="organization" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
       </label>
       <div className="grid gap-4 sm:grid-cols-3">
         <label className="block text-sm">
@@ -52,7 +52,7 @@ export function PilotApplicationForm({ className }: { className?: string }) {
       </div>
       <label className="block text-sm">
         <span className="mb-1 block font-medium text-white">Website</span>
-        <input name="website" type="url" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
+        <input name="website" type="url" autoComplete="url" className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
       </label>
       <label className="block text-sm">
         <span className="mb-1 block font-medium text-white">Operations goals & pain points</span>

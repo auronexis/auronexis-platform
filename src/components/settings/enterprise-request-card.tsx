@@ -112,8 +112,8 @@ export function EnterpriseRequestCard({ status, canManage, autoOpen = false }: E
 
       {canManage && showForm ? (
         <form action={handleSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
-          <Input name="contactEmail" label="Contact email" type="email" placeholder="you@company.com" />
-          <Input name="companyName" label="Company name" placeholder="Your agency name" />
+          <Input name="contactEmail" label="Contact email" type="email" autoComplete="email" placeholder="you@company.com" />
+          <Input name="companyName" label="Company name" autoComplete="organization" placeholder="Your agency name" />
           <Input name="requestedSeats" label="Requested seats" type="number" min={1} placeholder="10" />
           <Input name="requestedClients" label="Requested clients" type="number" min={1} placeholder="100" />
           <div className="md:col-span-2">

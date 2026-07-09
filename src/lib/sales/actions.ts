@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireModulePermissionSafe } from "@/lib/action-errors";
+import { GENERIC_ACTION_ERROR, requireModulePermissionSafe } from "@/lib/action-errors";
 import { requireSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import type { SalesPipelineStage, ProspectSegment, LeadSourceRegion, AgencyType } from "@/types/database";
-import { PIPELINE_STAGES } from "@/lib/sales/pipeline-stages";
+import type { SalesLeadSource, SalesPipelineStage, ProspectSegment, LeadSourceRegion, AgencyType } from "@/types/database";
+import { PIPELINE_STAGES, LEAD_SOURCES, type SalesActivityTypeKey } from "@/lib/sales/pipeline-stages";
 import { enrichLeadScores } from "@/lib/sales/enrichment";
 import { nextCadenceDueAt, shouldEscalate, shouldFlagNoResponse } from "@/lib/sales/automation";
 import { computeCustomerSuccessScores, CUSTOMER_SUCCESS_MILESTONES_TOTAL } from "@/lib/sales/customer-success";
@@ -21,6 +21,7 @@ import { defaultInboxForSource, defaultStageForSource } from "@/lib/sales/pipeli
 export type SalesActionState = {
   error?: string;
   success?: boolean;
+  leadId?: string;
 };
 
 const stageValues = PIPELINE_STAGES.map((stage) => stage.key) as [SalesPipelineStage, ...SalesPipelineStage[]];
@@ -46,10 +47,45 @@ const updateLeadSchema = z.object({
   agencyType: z.string().optional(),
 });
 
+const sourceValues = LEAD_SOURCES.map((source) => source.key) as [SalesLeadSource, ...SalesLeadSource[]];
+
+const createLeadSchema = z
+  .object({
+    companyName: z.string().trim().min(1, "Company name is required."),
+    contactName: z.string().trim().min(1, "Contact name is required."),
+    contactEmail: z.string().trim().email("Enter a valid email address.").or(z.literal("")),
+    website: z.string().trim().optional(),
+    companySize: z.string().trim().optional(),
+    country: z.string().trim().optional(),
+    leadSource: z.enum(sourceValues),
+    pipelineStage: z.enum(stageValues).optional(),
+    notes: z.string().trim().optional(),
+    mrrEstimate: z.string().optional(),
+    leadValue: z.string().optional(),
+    ownerUserId: z.string().uuid().nullable().optional(),
+  })
+  .refine((data) => data.contactEmail.length > 0, {
+    message: "Contact email is required.",
+    path: ["contactEmail"],
+  });
+
 const noteSchema = z.object({
   leadId: z.string().uuid(),
   subject: z.string().trim().min(2),
   body: z.string().trim().min(2),
+});
+
+const activitySchema = z.object({
+  leadId: z.string().uuid(),
+  activityType: z.enum(["note", "email", "call", "meeting", "outreach", "status_change"] as const),
+  subject: z.string().trim().min(2),
+  body: z.string().trim().optional(),
+  dueAt: z.string().optional(),
+});
+
+const changeStageSchema = z.object({
+  leadId: z.string().uuid(),
+  pipelineStage: z.enum(stageValues),
 });
 
 function parseOptionalNumber(value?: string): number | null {
@@ -135,7 +171,7 @@ export async function updateSalesLead(_prev: SalesActionState, formData: FormDat
     .eq("organization_id", session.organization.id);
 
   if (error) {
-    return { error: error.message };
+    return { error: GENERIC_ACTION_ERROR };
   }
 
   if (parsed.data.pipelineStage) {
@@ -188,7 +224,7 @@ export async function scheduleLeadFollowup(_prev: SalesActionState, formData: Fo
   } as never);
 
   if (error) {
-    return { error: error.message };
+    return { error: GENERIC_ACTION_ERROR };
   }
 
   await supabase
@@ -201,6 +237,7 @@ export async function scheduleLeadFollowup(_prev: SalesActionState, formData: Fo
     .eq("id", leadId)
     .eq("organization_id", session.organization.id);
 
+  revalidatePath("/sales");
   revalidatePath("/sales/acquisition");
   revalidatePath(`/sales/leads/${leadId}`);
   return { success: true };
@@ -322,10 +359,267 @@ export async function addSalesLeadNote(_prev: SalesActionState, formData: FormDa
   } as never);
 
   if (error) {
-    return { error: error.message };
+    return { error: GENERIC_ACTION_ERROR };
   }
 
   revalidatePath(`/sales/leads/${parsed.data.leadId}`);
+  return { success: true };
+}
+
+export async function createSalesLead(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
+  const session = await requireSession();
+  const permError = requireModulePermissionSafe(session.role, "sales", "create");
+  if (permError) return permError;
+
+  const parsed = createLeadSchema.safeParse({
+    companyName: formData.get("companyName"),
+    contactName: formData.get("contactName"),
+    contactEmail: formData.get("contactEmail"),
+    website: formData.get("website")?.toString(),
+    companySize: formData.get("companySize")?.toString(),
+    country: formData.get("country")?.toString(),
+    leadSource: formData.get("leadSource"),
+    pipelineStage: formData.get("pipelineStage") || undefined,
+    notes: formData.get("notes")?.toString(),
+    mrrEstimate: formData.get("mrrEstimate")?.toString(),
+    leadValue: formData.get("leadValue")?.toString(),
+    ownerUserId: formData.get("ownerUserId") === "" ? null : formData.get("ownerUserId") || undefined,
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid lead data." };
+  }
+
+  const supabase = await createClient();
+  const stage = parsed.data.pipelineStage ?? defaultStageForSource(parsed.data.leadSource);
+  const enrichmentInput = {
+    website: parsed.data.website ?? null,
+    linkedin_url: null,
+    employee_count: null,
+    location: parsed.data.country ?? null,
+    industry: null,
+    pain_points: null,
+    company_size: parsed.data.companySize ?? null,
+    mrr_estimate: parseOptionalNumber(parsed.data.mrrEstimate),
+    lead_value: parseOptionalNumber(parsed.data.leadValue),
+  };
+  const scores = enrichLeadScores(enrichmentInput);
+
+  const { data, error } = await supabase
+    .from("sales_leads")
+    .insert({
+      organization_id: session.organization.id,
+      pipeline_stage: stage,
+      lead_source: parsed.data.leadSource,
+      inbox_key: defaultInboxForSource(parsed.data.leadSource),
+      contact_name: parsed.data.contactName,
+      contact_email: parsed.data.contactEmail,
+      company_name: parsed.data.companyName,
+      company_size: parsed.data.companySize ?? null,
+      website: parsed.data.website ?? null,
+      location: parsed.data.country ?? null,
+      notes: parsed.data.notes ?? null,
+      mrr_estimate: parseOptionalNumber(parsed.data.mrrEstimate) ?? scores.potential_mrr,
+      lead_value: parseOptionalNumber(parsed.data.leadValue),
+      owner_user_id: parsed.data.ownerUserId ?? session.user.id,
+      potential_mrr: scores.potential_mrr,
+      arr_estimate: scores.arr_estimate,
+      pain_score: scores.pain_score,
+      fit_score: scores.fit_score,
+      priority_score: scores.priority_score,
+      last_contact_at: new Date().toISOString(),
+    } as never)
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    return { error: GENERIC_ACTION_ERROR };
+  }
+
+  const leadId = (data as { id: string }).id;
+
+  await supabase.from("sales_lead_activities").insert({
+    organization_id: session.organization.id,
+    lead_id: leadId,
+    activity_type: "note",
+    subject: "Lead created",
+    body: `Lead manually added to pipeline at ${stage}.`,
+    created_by_user_id: session.user.id,
+  } as never);
+
+  revalidatePath("/sales");
+  revalidatePath("/sales/leads");
+  return { success: true, leadId };
+}
+
+export async function changeLeadStage(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
+  const session = await requireSession();
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
+
+  const parsed = changeStageSchema.safeParse({
+    leadId: formData.get("leadId"),
+    pipelineStage: formData.get("pipelineStage"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid stage." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sales_leads")
+    .update({
+      pipeline_stage: parsed.data.pipelineStage,
+      last_contact_at: new Date().toISOString(),
+    } as never)
+    .eq("id", parsed.data.leadId)
+    .eq("organization_id", session.organization.id);
+
+  if (error) {
+    return { error: GENERIC_ACTION_ERROR };
+  }
+
+  await supabase.from("sales_lead_activities").insert({
+    organization_id: session.organization.id,
+    lead_id: parsed.data.leadId,
+    activity_type: "status_change",
+    subject: "Stage changed",
+    body: `Pipeline stage updated to ${parsed.data.pipelineStage}.`,
+    created_by_user_id: session.user.id,
+  } as never);
+
+  revalidatePath("/sales");
+  revalidatePath("/sales/leads");
+  revalidatePath(`/sales/leads/${parsed.data.leadId}`);
+  return { success: true };
+}
+
+export async function addSalesLeadActivity(
+  _prev: SalesActionState,
+  formData: FormData,
+): Promise<SalesActionState> {
+  const session = await requireSession();
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
+
+  const parsed = activitySchema.safeParse({
+    leadId: formData.get("leadId"),
+    activityType: formData.get("activityType"),
+    subject: formData.get("subject"),
+    body: formData.get("body")?.toString(),
+    dueAt: formData.get("dueAt")?.toString(),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid activity." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("sales_lead_activities").insert({
+    organization_id: session.organization.id,
+    lead_id: parsed.data.leadId,
+    activity_type: parsed.data.activityType,
+    subject: parsed.data.subject,
+    body: parsed.data.body ?? null,
+    created_by_user_id: session.user.id,
+  } as never);
+
+  if (error) {
+    return { error: GENERIC_ACTION_ERROR };
+  }
+
+  if (parsed.data.dueAt) {
+    await supabase.from("sales_lead_reminders").insert({
+      organization_id: session.organization.id,
+      lead_id: parsed.data.leadId,
+      reminder_type: "followup",
+      subject: parsed.data.subject,
+      due_at: parsed.data.dueAt,
+    } as never);
+
+    await supabase
+      .from("sales_leads")
+      .update({ next_followup_at: parsed.data.dueAt } as never)
+      .eq("id", parsed.data.leadId)
+      .eq("organization_id", session.organization.id);
+  }
+
+  await supabase
+    .from("sales_leads")
+    .update({ last_contact_at: new Date().toISOString() } as never)
+    .eq("id", parsed.data.leadId)
+    .eq("organization_id", session.organization.id);
+
+  revalidatePath("/sales");
+  revalidatePath(`/sales/leads/${parsed.data.leadId}`);
+  return { success: true };
+}
+
+export async function completeLeadReminder(
+  _prev: SalesActionState,
+  formData: FormData,
+): Promise<SalesActionState> {
+  const session = await requireSession();
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
+
+  const reminderId = formData.get("reminderId")?.toString();
+  const leadId = formData.get("leadId")?.toString();
+  if (!reminderId || !leadId) {
+    return { error: "Reminder and lead are required." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sales_lead_reminders")
+    .update({ completed_at: new Date().toISOString() } as never)
+    .eq("id", reminderId)
+    .eq("organization_id", session.organization.id)
+    .eq("lead_id", leadId);
+
+  if (error) {
+    return { error: GENERIC_ACTION_ERROR };
+  }
+
+  revalidatePath("/sales");
+  revalidatePath(`/sales/leads/${leadId}`);
+  return { success: true };
+}
+
+export async function archiveSalesLead(_prev: SalesActionState, formData: FormData): Promise<SalesActionState> {
+  const session = await requireSession();
+  const permError = requireModulePermissionSafe(session.role, "sales", "update");
+  if (permError) return permError;
+
+  const leadId = formData.get("leadId")?.toString();
+  if (!leadId) {
+    return { error: "Lead is required." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sales_leads")
+    .update({ pipeline_stage: "lost" } as never)
+    .eq("id", leadId)
+    .eq("organization_id", session.organization.id);
+
+  if (error) {
+    return { error: GENERIC_ACTION_ERROR };
+  }
+
+  await supabase.from("sales_lead_activities").insert({
+    organization_id: session.organization.id,
+    lead_id: leadId,
+    activity_type: "status_change",
+    subject: "Lead archived",
+    body: "Lead moved to Lost.",
+    created_by_user_id: session.user.id,
+  } as never);
+
+  revalidatePath("/sales");
+  revalidatePath("/sales/leads");
+  revalidatePath(`/sales/leads/${leadId}`);
   return { success: true };
 }
 

@@ -52,6 +52,7 @@ export function InviteTeamForm({
               name="email"
               type="email"
               label="Email"
+              autoComplete="email"
               required
               placeholder="colleague@agency.com"
             />

@@ -50,6 +50,7 @@ export function EmailSettingsForm({
             name="fromEmail"
             type="email"
             label="From email"
+            autoComplete="email"
             required
             defaultValue={settings?.from_email ?? defaultFromEmail}
             placeholder="reports@yourdomain.com"
@@ -58,6 +59,7 @@ export function EmailSettingsForm({
             name="replyTo"
             type="email"
             label="Reply-to email (optional)"
+            autoComplete="email"
             defaultValue={settings?.reply_to ?? ""}
             placeholder="support@yourdomain.com"
           />

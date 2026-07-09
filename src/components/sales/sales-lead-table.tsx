@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Users } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
+import { PipelineStageBadge } from "@/components/sales/pipeline-stage-badge";
 import type { SalesLeadWithMeta } from "@/lib/sales/queries";
-import { getLeadSourceLabel, getPipelineStageLabel } from "@/lib/sales/pipeline-stages";
+import { getLeadSourceLabel } from "@/lib/sales/pipeline-stages";
 
 function formatCurrency(value: number | null): string {
   if (value == null) return "—";
@@ -13,27 +14,29 @@ function formatCurrency(value: number | null): string {
 export function SalesLeadTable({
   leads,
   showScores = false,
+  showCreateCta = true,
 }: {
   leads: SalesLeadWithMeta[];
   showScores?: boolean;
+  showCreateCta?: boolean;
 }) {
   if (leads.length === 0) {
     return (
       <EmptyState
         icon={Users}
-        title="No leads yet"
-        description="Inbound forms, pilot requests, and manually added leads appear here. Qualify leads and move them through your pipeline."
+        title="Start building your B2B sales pipeline"
+        description="Inbound forms, demo requests, and manually added leads appear here. Qualify prospects and move them through your pipeline."
         action={
-          <Link href="/sales/leads">
-            <Button size="sm">View leads</Button>
-          </Link>
+          showCreateCta ? (
+            <LinkButton href="/sales/leads/new" size="sm">
+              Add first lead
+            </LinkButton>
+          ) : undefined
         }
         secondaryAction={
-          <Link href="/clients">
-            <Button size="sm" variant="outline">
-              View clients
-            </Button>
-          </Link>
+          <LinkButton href="/sales" size="sm" variant="outline">
+            Sales dashboard
+          </LinkButton>
         }
       />
     );
@@ -48,7 +51,7 @@ export function SalesLeadTable({
             <th className="px-4 py-3 text-left font-medium text-muted">Company</th>
             <th className="px-4 py-3 text-left font-medium text-muted">Stage</th>
             <th className="px-4 py-3 text-left font-medium text-muted">Source</th>
-            <th className="px-4 py-3 text-left font-medium text-muted">MRR est.</th>
+            <th className="px-4 py-3 text-left font-medium text-muted">Deal value</th>
             {showScores ? (
               <>
                 <th className="px-4 py-3 text-left font-medium text-muted">Pain</th>
@@ -69,9 +72,11 @@ export function SalesLeadTable({
                 <p className="text-xs text-muted">{lead.contact_email}</p>
               </td>
               <td className="px-4 py-3 text-muted">{lead.company_name ?? "—"}</td>
-              <td className="px-4 py-3">{getPipelineStageLabel(lead.pipeline_stage)}</td>
+              <td className="px-4 py-3">
+                <PipelineStageBadge stage={lead.pipeline_stage} />
+              </td>
               <td className="px-4 py-3 text-muted">{getLeadSourceLabel(lead.lead_source)}</td>
-              <td className="px-4 py-3">{formatCurrency(lead.potential_mrr ?? lead.mrr_estimate)}</td>
+              <td className="px-4 py-3">{formatCurrency(lead.lead_value ?? lead.potential_mrr ?? lead.mrr_estimate)}</td>
               {showScores ? (
                 <>
                   <td className="px-4 py-3">{lead.pain_score ?? "—"}</td>

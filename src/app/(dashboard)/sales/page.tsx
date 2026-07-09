@@ -5,6 +5,7 @@ import { PipelineMetricCards } from "@/components/sales/pipeline-metric-cards";
 import { RecentOutreachList } from "@/components/sales/recent-outreach-list";
 import { SalesLeadTable } from "@/components/sales/sales-lead-table";
 import { PageHeader } from "@/components/layout/page-header";
+import { LinkButton } from "@/components/ui/link-button";
 import { listSalesAssets } from "@/lib/sales/assets";
 import { getBookingLinks } from "@/lib/sales/calendar";
 import { computeRevenueMetrics } from "@/lib/sales/metrics";
@@ -15,15 +16,17 @@ import {
   listSalesLeads,
 } from "@/lib/sales/queries";
 import { requireSession } from "@/lib/auth/session";
+import { canAccessModule } from "@/lib/rbac/permissions";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 
 export const metadata: Metadata = {
-  title: "Sales Pipeline",
+  title: "Sales CRM",
 };
 
 export default async function SalesDashboardPage() {
   await requireModuleAccess("sales");
   const session = await requireSession();
+  const canCreate = canAccessModule(session.role, "sales", "create");
   const [metrics, leads, outreach, booking] = await Promise.all([
     getPipelineDashboardMetrics(session),
     listSalesLeads(session, { limit: 10 }),
@@ -32,21 +35,44 @@ export default async function SalesDashboardPage() {
   ]);
   const revenueMetrics = computeRevenueMetrics(leads);
   const assets = listSalesAssets();
+  const hasLeads = metrics.totalLeads > 0;
 
   return (
     <>
       <PageHeader
         module="sales"
-        title="Sales pipeline"
-        description="Acquire founding customers — leads, pilots, discovery calls, and revenue metrics."
+        title="Sales CRM"
+        description="Manage leads, follow-ups, deal stages, and your B2B conversion pipeline."
         action={
-          <Link href="/sales/leads" className="text-sm font-medium text-primary hover:underline">
-            View all leads
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            {canCreate ? (
+              <LinkButton href="/sales/leads/new" size="sm">
+                Add lead
+              </LinkButton>
+            ) : null}
+            <Link href="/sales/leads" className="text-sm font-medium text-primary hover:underline">
+              View all leads
+            </Link>
+          </div>
         }
       />
 
       <PipelineMetricCards metrics={metrics} />
+
+      {!hasLeads ? (
+        <section className="aurora-surface mt-8 p-8 text-center">
+          <h2 className="text-lg font-semibold text-foreground">Start building your B2B sales pipeline</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-muted">
+            Capture inbound interest from your website, track demo requests, and add prospects manually.
+            Every lead gets a timeline, notes, and follow-up tasks.
+          </p>
+          {canCreate ? (
+            <div className="mt-6">
+              <LinkButton href="/sales/leads/new">Add first lead</LinkButton>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <div className="mt-8 grid gap-6 xl:grid-cols-2">
         <ContactInboxWidget metrics={metrics} />
@@ -103,8 +129,15 @@ export default async function SalesDashboardPage() {
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-4 text-base font-semibold text-foreground">Recent leads</h2>
-        <SalesLeadTable leads={leads} />
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-foreground">Recent leads</h2>
+          {canCreate ? (
+            <LinkButton href="/sales/leads/new" size="sm" variant="outline">
+              Add lead
+            </LinkButton>
+          ) : null}
+        </div>
+        <SalesLeadTable leads={leads} showCreateCta={canCreate} />
       </section>
     </>
   );
