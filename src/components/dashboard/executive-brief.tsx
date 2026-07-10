@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { ExecutiveBriefAiLink } from "@/components/dashboard/executive-brief-ai-link";
 import type { ExecutiveBrief } from "@/lib/intelligence/types";
 import { cn } from "@/lib/utils/cn";
 import { focusRing, linkText, transitionInteractive } from "@/lib/ui/tokens";
 
 type ExecutiveBriefPanelProps = {
   brief: ExecutiveBrief;
+  aiBriefEnabled?: boolean;
 };
 
 const severityStyles = {
@@ -15,7 +17,7 @@ const severityStyles = {
   Critical: "text-danger",
 } as const;
 
-export function ExecutiveBriefPanel({ brief }: ExecutiveBriefPanelProps) {
+export function ExecutiveBriefPanel({ brief, aiBriefEnabled = false }: ExecutiveBriefPanelProps) {
   return (
     <section
       aria-label="Today's executive brief"
@@ -32,6 +34,7 @@ export function ExecutiveBriefPanel({ brief }: ExecutiveBriefPanelProps) {
             <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
             Today&apos;s Executive Brief
           </div>
+          <ExecutiveBriefAiLink enabled={aiBriefEnabled} />
 
           <div>
             <p className="text-lg font-medium text-foreground sm:text-xl">

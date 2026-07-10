@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ClientCopilotPanel } from "@/components/copilot/client-copilot-panel";
 import { ActivityTimeline } from "@/components/activity/activity-timeline";
 import { ClientSuccessSection } from "@/components/clients/success/client-success-section";
 import { PredictiveIntelligenceSection } from "@/components/predictive/predictive-client-section";
@@ -70,7 +71,10 @@ import { listSlaPolicies, getClientSlaAssignment } from "@/lib/sla/queries";
 import { getClientSLA } from "@/lib/sla/summary";
 import { getClientMonitoringSummary } from "@/lib/monitoring/summary";
 import { canManageSlaPolicies } from "@/lib/team/guards";
+import { getCopilotAccessForSession } from "@/lib/ai/copilot/action";
+import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
 import { checkPlanFeatureForSession } from "@/lib/plans/guards";
+import { getCurrentPlan } from "@/lib/plans/queries";
 import { linkText } from "@/lib/ui/tokens";
 import type { IncidentSeverity, IncidentStatus } from "@/types/database";
 
@@ -144,6 +148,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   );
   const clientSlaSummary = await getClientSLA(session, id);
   const clientMonitoringSummary = await getClientMonitoringSummary(session, id);
+  const [copilotAccess, planKey] = await Promise.all([
+    getCopilotAccessForSession(),
+    getCurrentPlan(session.organization.id),
+  ]);
+  const copilotUsage = await getAIUsageSummaryForSession(session, planKey);
 
   const recentReports = recentReportsResult.data ?? [];
   const primaryReport = recentReports[0] ?? overview.latestReport ?? null;
@@ -281,6 +290,22 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </DetailSection>
 
         <ClientSuccessSection clientId={client.id} />
+
+        <DetailSection
+          id="client-copilot"
+          title="Ask Auroranexis"
+          description="AI-generated client summary, health explanation, and recommended next actions — based on verified workspace data."
+        >
+          <ClientCopilotPanel
+            clientId={client.id}
+            clientName={client.name}
+            allowed={copilotAccess.allowed}
+            upgradeMessage={copilotAccess.message}
+            requiredPlanLabel={copilotAccess.requiredPlanLabel}
+            providerConfigured={copilotAccess.providerConfigured}
+            usageSummary={copilotUsage}
+          />
+        </DetailSection>
 
         <PredictiveIntelligenceSection clientId={client.id} />
 

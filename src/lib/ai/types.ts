@@ -315,6 +315,7 @@ export type AIUsageDisplay = {
 export type AIUsageSummary = {
   callsThisMonth: number;
   limit: number;
+  unlimitedCredits?: boolean;
   totalTokensThisMonth: number | null;
   lastProvider: string | null;
   lastModel: string | null;

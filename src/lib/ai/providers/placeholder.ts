@@ -20,6 +20,33 @@ function delay(ms: number): Promise<void> {
   });
 }
 
+function buildCopilotPlaceholderJson(request: AIGenerateRequest): string {
+  const clientName = request.context.clientName || "Workspace";
+  return JSON.stringify({
+    answer: `${PLACEHOLDER_BANNER}\n\nSimulated Ask Auroranexis response for ${clientName}. Connect OPENAI_API_KEY for production-quality structured answers.`,
+    summary: "Placeholder copilot summary for development workflow testing.",
+    confidence: "low",
+    facts: [
+      {
+        statement: "This is simulated output — not verified operational data.",
+        sourceType: "activity",
+        sourceLabel: "Development placeholder",
+      },
+    ],
+    recommendations: [
+      {
+        title: "Configure AI provider",
+        reason: "Set OPENAI_API_KEY in server environment to enable real generation.",
+        priority: "medium",
+      },
+    ],
+    limitations: [
+      "Placeholder provider active — responses are not grounded in live model inference.",
+      "Verify all operational decisions against Auroranexis source records.",
+    ],
+  });
+}
+
 function buildPlaceholderBody(request: AIGenerateRequest): string {
   const sectionLabel = request.section
     ? REPORT_AI_SECTION_LABELS[request.section]
@@ -59,7 +86,10 @@ export class PlaceholderAIProvider implements AIProvider {
 
   async generate(request: AIGenerateRequest): Promise<AIGenerateResponse> {
     await delay(PLACEHOLDER_SIMULATION_DELAY_MS);
-    return toResponse(request, buildPlaceholderBody(request));
+    const content = request.prompt.includes("Respond with JSON only")
+      ? buildCopilotPlaceholderJson(request)
+      : buildPlaceholderBody(request);
+    return toResponse(request, content);
   }
 
   async *stream(request: AIGenerateRequest): AsyncIterable<string> {

@@ -22,13 +22,17 @@ export function AIUsageCard({
   const {
     callsThisMonth,
     limit,
+    unlimitedCredits,
     totalTokensThisMonth,
     lastProvider,
     lastModel,
     hasUsage,
     remainingCalls,
   } = usageSummary;
-  const percent = limit > 0 ? Math.min(100, Math.round((callsThisMonth / limit) * 100)) : 0;
+  const percent =
+    !unlimitedCredits && limit > 0
+      ? Math.min(100, Math.round((callsThisMonth / limit) * 100))
+      : 0;
 
   return (
     <div
@@ -38,11 +42,17 @@ export function AIUsageCard({
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-foreground">AI Usage</p>
         <p className="text-xs text-muted">
-          {callsThisMonth} / {limit} calls
+          {unlimitedCredits ? (
+            <>{callsThisMonth} calls · Unlimited plan</>
+          ) : (
+            <>
+              {callsThisMonth} / {limit} calls
+            </>
+          )}
         </p>
       </div>
 
-      {limit > 0 ? (
+      {limit > 0 && !unlimitedCredits ? (
         <div
           className="mt-3 h-2 overflow-hidden rounded-full bg-muted/15"
           role="progressbar"
@@ -77,7 +87,12 @@ export function AIUsageCard({
             ) : null}
           </>
         )}
-        <p>Remaining quota: {remainingCalls} call{remainingCalls === 1 ? "" : "s"}</p>
+        <p>
+          Remaining quota:{" "}
+          {unlimitedCredits
+            ? "Unlimited"
+            : `${remainingCalls} call${remainingCalls === 1 ? "" : "s"}`}
+        </p>
       </div>
     </div>
   );

@@ -5,7 +5,11 @@ import {
   AIUserError,
 } from "@/lib/ai/errors";
 import type { PlanKey } from "@/lib/billing/plans";
-import { getAIUsageLimit, getStartOfCurrentMonthUtc } from "@/lib/ai/usage/limits";
+import {
+  getAIUsageLimit,
+  getStartOfCurrentMonthUtc,
+  isAIUsageUnlimited,
+} from "@/lib/ai/usage/limits";
 import { formatLimitReachedMessage } from "@/lib/entitlements/messages";
 import { resolveOrganizationEntitlements } from "@/lib/entitlements/resolver";
 import { isUnlimited } from "@/lib/entitlements/definitions";
@@ -69,17 +73,19 @@ export async function getAIUsageSummaryForPlan(
   ]);
 
   const limit = getAIUsageLimit(planKey);
+  const unlimited = isAIUsageUnlimited(planKey);
   const totalTokensThisMonth = rows.reduce((sum, row) => sum + (row.total_tokens ?? 0), 0);
   const latest = rows[0];
 
   return {
     callsThisMonth,
     limit,
+    unlimitedCredits: unlimited,
     totalTokensThisMonth: rows.length > 0 ? totalTokensThisMonth : null,
     lastProvider: latest?.provider ?? null,
     lastModel: latest?.model ?? null,
     hasUsage: callsThisMonth > 0,
-    remainingCalls: Math.max(0, limit - callsThisMonth),
+    remainingCalls: unlimited ? limit : Math.max(0, limit - callsThisMonth),
   };
 }
 
@@ -95,6 +101,7 @@ export async function getAIUsageSummaryForSession(
   const supabase = await createClient();
   const monthStart = getStartOfCurrentMonthUtc();
   const limit = getAIUsageLimit(planKey);
+  const unlimited = isAIUsageUnlimited(planKey);
 
   const { data, error } = await supabase
     .from("ai_usage_events")
@@ -114,11 +121,12 @@ export async function getAIUsageSummaryForSession(
   return {
     callsThisMonth: rows.length,
     limit,
+    unlimitedCredits: unlimited,
     totalTokensThisMonth: rows.length > 0 ? totalTokensThisMonth : null,
     lastProvider: latest?.provider ?? null,
     lastModel: latest?.model ?? null,
     hasUsage: rows.length > 0,
-    remainingCalls: Math.max(0, limit - rows.length),
+    remainingCalls: unlimited ? limit : Math.max(0, limit - rows.length),
   };
 }
 

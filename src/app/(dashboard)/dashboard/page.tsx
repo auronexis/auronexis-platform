@@ -204,7 +204,7 @@ export default async function DashboardPage() {
         <SectionTitle>Executive intelligence</SectionTitle>
 
         {executiveIntelligence.hasClients ? (
-          <ExecutiveBriefPanel brief={executiveIntelligence.brief} />
+          <ExecutiveBriefPanel brief={executiveIntelligence.brief} aiBriefEnabled={aiAccess.allowed} />
         ) : (
           <ExecutiveBriefEmptyState />
         )}

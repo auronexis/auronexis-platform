@@ -72,3 +72,18 @@ export {
 export { runReportAssistantAction } from "@/lib/ai/assistant";
 export { getDefaultAIProvider, getAIProvider } from "@/lib/ai/providers";
 export type { AIProvider } from "@/lib/ai/providers/types";
+export {
+  askCopilotServerAction,
+  getCopilotAccessForSession,
+  parseCopilotAnswer,
+  buildSafeCopilotFallback,
+  WORKSPACE_SUGGESTED_PROMPTS,
+  CLIENT_SUGGESTED_PROMPTS,
+  COPILOT_FEATURE,
+} from "@/lib/ai/copilot";
+export type {
+  CopilotActionResult,
+  CopilotAnswer,
+  CopilotTaskType,
+  AskCopilotInput,
+} from "@/lib/ai/copilot";
