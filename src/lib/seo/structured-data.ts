@@ -1,4 +1,5 @@
 export {
+  enterpriseOfferJsonLd,
   faqJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,

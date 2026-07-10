@@ -9,11 +9,56 @@ import {
 
 export const MARKETING_NAV = [
   { label: "Features", href: MARKETING_ROUTES.features },
+  { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
   { label: "Use Cases", href: MARKETING_ROUTES.useCases },
   { label: "Pricing", href: MARKETING_ROUTES.pricing },
   { label: "Security", href: MARKETING_ROUTES.security },
   { label: "Pilot Program", href: MARKETING_ROUTES.pilotProgram },
   { label: "Documentation", href: MARKETING_ROUTES.documentation },
+] as const;
+
+export const MARKETING_STATS = [
+  { value: "6", label: "Solution areas", detail: "Health, risk, incident, SLA, executive, and AI reporting." },
+  { value: "3", label: "Public plan tiers", detail: "Professional, Business, and Enterprise subscriptions." },
+  { value: "EU", label: "Deployment posture", detail: "EU-capable hosting with enterprise security controls." },
+  { value: "24/7", label: "Operational visibility", detail: "Portfolio command center for multi-client delivery teams." },
+] as const;
+
+export const MARKETING_LOGO_CLOUD = [
+  { name: "Managed service providers", category: "Operations" },
+  { name: "IT consultancies", category: "Delivery" },
+  { name: "Automation agencies", category: "AI workflows" },
+  { name: "Multi-client service firms", category: "Portfolio" },
+] as const;
+
+export const MARKETING_TESTIMONIALS = [
+  {
+    quote:
+      "We needed one place to see client health, overdue reports, and SLA risk — not another generic CRM.",
+    role: "Operations Director",
+    organizationType: "MSP",
+  },
+  {
+    quote:
+      "Executive briefings are faster because the platform separates verified facts from recommendations.",
+    role: "Delivery Lead",
+    organizationType: "IT consultancy",
+  },
+  {
+    quote:
+      "Plan-gated AI and audit-friendly usage logging made procurement review straightforward.",
+    role: "Head of Client Success",
+    organizationType: "Automation agency",
+  },
+] as const;
+
+export const PLAN_COMPARISON_ROWS = [
+  { feature: "AI copilot", professional: true, business: true, enterprise: "Unlimited credits" },
+  { feature: "Risk & incident modules", professional: "—", business: true, enterprise: true },
+  { feature: "SLA tracking", professional: "—", business: true, enterprise: true },
+  { feature: "Profitability", professional: true, business: true, enterprise: true },
+  { feature: "Priority support", professional: "—", business: "—", enterprise: true },
+  { feature: "Custom limits", professional: "—", business: "—", enterprise: true },
 ] as const;
 
 export const FEATURES = [

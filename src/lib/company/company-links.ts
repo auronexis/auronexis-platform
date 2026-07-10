@@ -20,6 +20,7 @@ export const MARKETING_ROUTES = {
   features: "/features",
   useCases: "/use-cases",
   pricing: "/pricing",
+  enterprise: "/enterprise",
   security: "/security",
   compliance: "/compliance",
   integrations: "/integrations",
@@ -92,6 +93,7 @@ export const HELP_LINKS = {
 export const FOOTER_SECTIONS = {
   product: [
     { label: "Features", href: MARKETING_ROUTES.features },
+    { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     { label: "Pricing", href: MARKETING_ROUTES.pricing },
     { label: "Integrations", href: MARKETING_ROUTES.integrations },
     { label: "Security", href: MARKETING_ROUTES.security },

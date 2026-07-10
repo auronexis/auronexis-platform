@@ -43,6 +43,11 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     description:
       "Transparent B2B SaaS pricing for agencies — Professional, Business, and Enterprise plans for client operations.",
   },
+  [MARKETING_ROUTES.enterprise]: {
+    title: "Enterprise",
+    description:
+      "Enterprise-grade client operations for MSPs and agencies — security, scale, AI copilot, and dedicated support.",
+  },
   [MARKETING_ROUTES.status]: {
     title: "Platform Status",
     description: "Current operational status and availability of the Auroranexis platform.",

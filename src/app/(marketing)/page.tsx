@@ -2,7 +2,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingCta } from "@/components/marketing/marketing-cta";
+import { MarketingCtaSection } from "@/components/marketing/marketing-cta-section";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
+import { MarketingLogoCloud } from "@/components/marketing/marketing-logo-cloud";
+import { MarketingPace } from "@/components/marketing/marketing-pace";
+import { MarketingStats } from "@/components/marketing/marketing-stats";
+import { MarketingTestimonials } from "@/components/marketing/marketing-testimonials";
 import {
   MarketingCardGrid,
   MarketingFaq,
@@ -13,6 +18,9 @@ import {
   COMPLIANCE_READINESS,
   FAQ_ITEMS,
   FEATURES,
+  MARKETING_LOGO_CLOUD,
+  MARKETING_STATS,
+  MARKETING_TESTIMONIALS,
   PUBLIC_PRICING_PLANS,
   PUBLIC_PRICING_NOTE,
   INVITE_ONLY_PROGRAMS_NOTE,
@@ -60,12 +68,19 @@ export default async function MarketingHomePage() {
         secondaryLabel="Documentation"
       />
 
-      <MarketingSection
-        id="what-is-auroranexis"
-        eyebrow="Product"
-        title="What is Auroranexis?"
-        description={COMPANY_SEO.defaultDescription}
-      >
+      <MarketingPace tone="muted">
+        <MarketingSection eyebrow="Proof" title="Operations at portfolio scale">
+          <MarketingStats stats={MARKETING_STATS} />
+        </MarketingSection>
+      </MarketingPace>
+
+      <MarketingPace bordered>
+        <MarketingSection
+          id="what-is-auroranexis"
+          eyebrow="Product"
+          title="What is Auroranexis?"
+          description={COMPANY_SEO.defaultDescription}
+        >
         <div className="grid max-w-4xl gap-6 md:grid-cols-2">
           <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h3 className="text-sm font-semibold text-white">B2B SaaS platform</h3>
@@ -115,22 +130,34 @@ export default async function MarketingHomePage() {
             </Link>
           </li>
         </ul>
-      </MarketingSection>
+        </MarketingSection>
+      </MarketingPace>
 
-      <MarketingSection eyebrow="Platform" title="Built for agency operations" description="Everything your team needs to run client operations from one command center.">
-        <MarketingCardGrid items={FEATURES} />
-      </MarketingSection>
+      <MarketingPace>
+        <MarketingSection eyebrow="Platform" title="Built for agency operations" description="Everything your team needs to run client operations from one command center.">
+          <MarketingCardGrid items={FEATURES} />
+        </MarketingSection>
+      </MarketingPace>
 
-      <MarketingSection
-        eyebrow="Use Cases"
-        title="Designed for service providers"
-        description="From MSPs to automation firms — standardize delivery and prove outcomes."
-        className="border-t border-border/70 bg-surface-2/30"
-      >
-        <MarketingCardGrid items={USE_CASES} />
-      </MarketingSection>
+      <MarketingPace tone="emphasis" bordered>
+        <MarketingSection
+          eyebrow="Use Cases"
+          title="Designed for service providers"
+          description="From MSPs to automation firms — standardize delivery and prove outcomes."
+        >
+          <MarketingCardGrid items={USE_CASES} />
+        </MarketingSection>
+      </MarketingPace>
 
-      <MarketingSection eyebrow="Security" title="Enterprise security posture" description="Security-first architecture with EU-friendly deployment options.">
+      <MarketingCtaSection
+        title="See plans that scale with your portfolio"
+        description="Professional, Business, and Enterprise — transparent pricing with plan-gated AI and operations modules."
+        primaryPreset="seePricing"
+        secondaryPreset="bookDemo"
+      />
+
+      <MarketingPace bordered>
+        <MarketingSection eyebrow="Security" title="Enterprise security posture" description="Security-first architecture with EU-friendly deployment options.">
         <ul className="grid gap-3 md:grid-cols-2">
           {[
             "Encryption in transit and at rest",
@@ -146,14 +173,15 @@ export default async function MarketingHomePage() {
         <Link href={MARKETING_ROUTES.security} className={cn("mt-6 inline-flex text-sm font-medium text-primary hover:underline", focusRing, "rounded-lg")}>
           Learn about security →
         </Link>
-      </MarketingSection>
+        </MarketingSection>
+      </MarketingPace>
 
-      <MarketingSection
-        eyebrow="Compliance"
-        title="Compliance readiness"
-        description="GDPR support and mapped readiness for SOC 2, ISO 27001, NIS2, and DORA — without claiming certifications."
-        className="border-t border-border/70 bg-surface-2/30"
-      >
+      <MarketingPace tone="muted">
+        <MarketingSection
+          eyebrow="Compliance"
+          title="Compliance readiness"
+          description="GDPR support and mapped readiness for SOC 2, ISO 27001, NIS2, and DORA — without claiming certifications."
+        >
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {COMPLIANCE_READINESS.map((item) => (
             <article key={item.framework} className="rounded-2xl border border-border-subtle bg-surface-1 p-5">
@@ -167,9 +195,11 @@ export default async function MarketingHomePage() {
             </article>
           ))}
         </div>
-      </MarketingSection>
+        </MarketingSection>
+      </MarketingPace>
 
-      <MarketingSection eyebrow="Pricing" title="Plans that scale with your agency" description="Professional, Business, and Enterprise — three public subscription tiers with transparent pricing.">
+      <MarketingPace bordered>
+        <MarketingSection eyebrow="Pricing" title="Plans that scale with your agency" description="Professional, Business, and Enterprise — three public subscription tiers with transparent pricing.">
         <div className="grid gap-4 lg:grid-cols-3">
           {PUBLIC_PRICING_PLANS.map((plan) => (
             <article
@@ -205,11 +235,26 @@ export default async function MarketingHomePage() {
         <Link href={MARKETING_ROUTES.pricing} className={cn("mt-6 inline-flex text-sm font-medium text-primary hover:underline", focusRing, "rounded-lg")}>
           Compare plans →
         </Link>
-      </MarketingSection>
+        </MarketingSection>
+      </MarketingPace>
 
-      <MarketingSection eyebrow="FAQ" title="Frequently asked questions">
-        <MarketingFaq items={FAQ_ITEMS} />
-      </MarketingSection>
+      <MarketingPace>
+        <MarketingSection eyebrow="Trusted by" title="Service-led organizations">
+          <MarketingLogoCloud items={MARKETING_LOGO_CLOUD} />
+        </MarketingSection>
+      </MarketingPace>
+
+      <MarketingPace tone="muted" bordered>
+        <MarketingSection eyebrow="Voices" title="Operations leaders">
+          <MarketingTestimonials items={MARKETING_TESTIMONIALS} />
+        </MarketingSection>
+      </MarketingPace>
+
+      <MarketingPace>
+        <MarketingSection eyebrow="FAQ" title="Frequently asked questions">
+          <MarketingFaq items={FAQ_ITEMS} />
+        </MarketingSection>
+      </MarketingPace>
 
       <MarketingCta
         title="Request a Pilot Partner invitation"

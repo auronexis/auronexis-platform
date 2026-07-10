@@ -5,6 +5,7 @@ import { resolveMarketingCtaActions } from "@/lib/marketing/auth-context";
 import { useMarketingAuth } from "@/components/marketing/marketing-auth-provider";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
+import { marketingCardHover, marketingSectionFade } from "@/lib/ui/marketing-motion";
 
 type MarketingSectionProps = {
   eyebrow?: string;
@@ -24,7 +25,7 @@ export function MarketingSection({
   id,
 }: MarketingSectionProps) {
   return (
-    <section id={id} className={cn("mx-auto max-w-6xl px-6 py-16 sm:py-20", className)}>
+    <section id={id} className={cn("mx-auto max-w-6xl px-6 py-16 sm:py-20", marketingSectionFade, className)}>
       {eyebrow ? (
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70">
           {eyebrow}
@@ -51,6 +52,7 @@ export function MarketingCardGrid({
           key={item.title}
           className={cn(
             "rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-sm",
+            marketingCardHover,
             item.featured && "border-primary/30 ring-1 ring-primary/20",
           )}
         >

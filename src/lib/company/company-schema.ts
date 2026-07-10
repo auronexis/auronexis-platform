@@ -91,3 +91,23 @@ export function pilotProgramJsonLd() {
     },
   };
 }
+
+export function enterpriseOfferJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `${COMPANY_INFORMATION.productName} Enterprise`,
+    description:
+      "Enterprise client operations platform with unlimited AI credits, custom limits, priority support, and advanced security controls.",
+    provider: {
+      "@type": "Organization",
+      name: COMPANY_INFORMATION.legalName,
+      url: COMPANY_SEO.canonicalBaseUrl,
+    },
+    areaServed: "Worldwide",
+    audience: {
+      "@type": "BusinessAudience",
+      audienceType: "MSPs, IT consultancies, and multi-client service organizations",
+    },
+  };
+}

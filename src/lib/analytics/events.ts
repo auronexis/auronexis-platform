@@ -1,4 +1,5 @@
-import { hasAnalyticsConsent, hasMarketingConsent } from "@/lib/consent/storage";
+import { canTrackEvent } from "@/lib/analytics/consent-gate";
+import { isProductionAnalyticsRuntime } from "@/lib/analytics/runtime";
 
 /** Supported conversion and product analytics events. */
 export type AnalyticsEventName =
@@ -14,6 +15,9 @@ export type AnalyticsEventName =
   | "contact_clicked"
   | "support_clicked"
   | "demo_requested"
+  | "cta_clicked"
+  | "enterprise_page_viewed"
+  | "portal_viewed"
   | "docs_viewed"
   | "legal_page_viewed"
   | "client_created"
@@ -49,11 +53,11 @@ export function trackAnalyticsEvent(
   name: AnalyticsEventName,
   props?: AnalyticsEventProps,
 ): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !isProductionAnalyticsRuntime()) return;
 
   if (isMarketingEvent(name)) {
-    if (!hasMarketingConsent()) return;
-  } else if (!hasAnalyticsConsent()) {
+    if (!canTrackEvent("marketing")) return;
+  } else if (!canTrackEvent("analytics")) {
     return;
   }
 

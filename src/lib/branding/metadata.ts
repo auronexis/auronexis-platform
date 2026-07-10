@@ -8,14 +8,7 @@ import {
 import { COMPANY_SEO } from "@/lib/company/company-seo";
 import { getSiteVerificationMetadata } from "@/lib/seo/metadata";
 
-function resolveMetadataBase(): URL {
-  const raw = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (!raw || /localhost|127\.0\.0\.1|\.vercel\.app/i.test(raw)) {
-    return new URL(COMPANY_SEO.canonicalBaseUrl);
-  }
-
-  return new URL(raw);
-}
+import { resolveMetadataBase } from "@/lib/seo/metadata";
 
 const metadataBase = resolveMetadataBase();
 

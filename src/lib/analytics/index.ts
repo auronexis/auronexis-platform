@@ -1,4 +1,7 @@
 export { ANALYTICS_CONFIG, isAnyAnalyticsConfigured, isMarketingAnalyticsConfigured } from "@/lib/analytics/config";
+export { canInitializeAnalyticsProviders, canTrackEvent } from "@/lib/analytics/consent-gate";
+export { claritySink } from "@/lib/analytics/clarity-events";
+export { isProductionAnalyticsRuntime } from "@/lib/analytics/runtime";
 export {
   ga4Sink,
   plausibleSink,

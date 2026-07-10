@@ -1,8 +1,8 @@
-import Link from "next/link";
+import { MarketingButton } from "@/components/marketing/marketing-button";
 import { resolveMarketingHeroActions } from "@/lib/marketing/auth-context";
 import { getPublicNavState } from "@/lib/marketing/public-nav";
 import { cn } from "@/lib/utils/cn";
-import { focusRing } from "@/lib/ui/tokens";
+import { marketingMotionEnter } from "@/lib/ui/marketing-motion";
 
 export type MarketingHeroProps = {
   eyebrow: string;
@@ -35,7 +35,7 @@ export async function MarketingHero({
   });
 
   return (
-    <section className="relative overflow-hidden border-b border-white/10">
+    <section className={cn("relative overflow-hidden border-b border-white/10", marketingMotionEnter)}>
       {withBanner ? (
         <>
           <div
@@ -64,25 +64,27 @@ export async function MarketingHero({
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-primary-foreground/85">{description}</p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link
+          <MarketingButton
             href={actions.primaryHref}
-            className={cn(
-              "rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm",
-              focusRing,
-            )}
+            variant="primary"
+            size="lg"
+            ctaId="hero_primary"
+            analyticsEvent="cta_clicked"
+            analyticsProps={{ placement: "hero", label: actions.primaryLabel }}
           >
             {actions.primaryLabel}
-          </Link>
+          </MarketingButton>
           {actions.secondaryHref && actions.secondaryLabel ? (
-            <Link
+            <MarketingButton
               href={actions.secondaryHref}
-              className={cn(
-                "rounded-lg border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm",
-                focusRing,
-              )}
+              variant="secondary"
+              size="lg"
+              ctaId="hero_secondary"
+              analyticsEvent="cta_clicked"
+              analyticsProps={{ placement: "hero", label: actions.secondaryLabel }}
             >
               {actions.secondaryLabel}
-            </Link>
+            </MarketingButton>
           ) : null}
         </div>
       </div>

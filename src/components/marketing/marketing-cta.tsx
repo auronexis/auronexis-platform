@@ -1,8 +1,8 @@
-import Link from "next/link";
+import { MarketingButton } from "@/components/marketing/marketing-button";
 import { resolveMarketingCtaActions } from "@/lib/marketing/auth-context";
 import { getPublicNavState } from "@/lib/marketing/public-nav";
+import { marketingSectionFade } from "@/lib/ui/marketing-motion";
 import { cn } from "@/lib/utils/cn";
-import { focusRing } from "@/lib/ui/tokens";
 
 type MarketingCtaProps = {
   title: string;
@@ -17,7 +17,7 @@ export async function MarketingCta({ title, description, href, label }: Marketin
   const action = resolveMarketingCtaActions(auth, { href, label });
 
   return (
-    <section className="border-t border-white/10 bg-white/[0.02]">
+    <section className={cn("border-t border-white/10 bg-white/[0.02]", marketingSectionFade)}>
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-16 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{title}</h2>
@@ -25,15 +25,15 @@ export async function MarketingCta({ title, description, href, label }: Marketin
             {description}
           </p>
         </div>
-        <Link
+        <MarketingButton
           href={action.href}
-          className={cn(
-            "shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground",
-            focusRing,
-          )}
+          variant="primary"
+          ctaId="cta_band"
+          analyticsEvent="cta_clicked"
+          analyticsProps={{ placement: "cta_band", label: action.label }}
         >
           {action.label}
-        </Link>
+        </MarketingButton>
       </div>
     </section>
   );

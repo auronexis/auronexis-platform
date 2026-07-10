@@ -1,16 +1,23 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { TurnstileField } from "@/components/security/turnstile-field";
 import { FormAlert } from "@/components/ui/form-alert";
+import { MarketingButton } from "@/components/marketing/marketing-button";
+import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils/cn";
-import { focusRing } from "@/lib/ui/tokens";
 import { submitDemoRequest, type CaptureActionState } from "@/lib/sales/capture-actions";
 
 const initialState: CaptureActionState = {};
 
 export function DemoBookingForm({ className }: { className?: string }) {
   const [state, formAction, isPending] = useActionState(submitDemoRequest, initialState);
+
+  useEffect(() => {
+    if (state.success) {
+      trackAnalyticsEvent("demo_requested", { source: "demo_booking_form" });
+    }
+  }, [state.success]);
 
   if (state.success) {
     return (
@@ -42,9 +49,9 @@ export function DemoBookingForm({ className }: { className?: string }) {
       </label>
       {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
       <TurnstileField />
-      <button type="submit" disabled={isPending} className={cn("rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60", focusRing)}>
-        {isPending ? "Submitting…" : "Book demo"}
-      </button>
+      <MarketingButton type="submit" loading={isPending} ctaId="book_demo" analyticsEvent="demo_requested">
+        Book demo
+      </MarketingButton>
     </form>
   );
 }

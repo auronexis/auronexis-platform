@@ -17,6 +17,7 @@ export function createMarketingMetadata(input: MarketingMetadataInput): Metadata
 export {
   articleJsonLd,
   breadcrumbJsonLd,
+  enterpriseOfferJsonLd,
   faqJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,

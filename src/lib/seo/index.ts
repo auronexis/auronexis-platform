@@ -1,7 +1,9 @@
 export {
   createPageMetadata,
+  createPageMetadataForPath,
   getSeoBaseUrl,
   getSiteVerificationMetadata,
+  resolveMetadataBase,
   shouldNoIndex,
   type PageMetadataInput,
 } from "@/lib/seo/metadata";
@@ -17,6 +19,7 @@ export {
 export {
   articleJsonLd,
   breadcrumbJsonLd,
+  enterpriseOfferJsonLd,
   faqJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,

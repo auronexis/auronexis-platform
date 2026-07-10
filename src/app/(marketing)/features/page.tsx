@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import {
@@ -17,6 +18,7 @@ export const metadata: Metadata = createMarketingMetadata({
 export default function FeaturesPage() {
   return (
     <MarketingShell>
+      <ConversionTracker event="cta_clicked" props={{ surface: "features" }} />
       <MarketingHero
         eyebrow="Features"
         title="Everything your operations team needs"

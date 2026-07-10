@@ -3,6 +3,7 @@ import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingAuthProvider } from "@/components/marketing/marketing-auth-provider";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { getPublicNavState } from "@/lib/marketing/public-nav";
+import { marketingMotionEnter } from "@/lib/ui/marketing-motion";
 import { cn } from "@/lib/utils/cn";
 
 type MarketingShellProps = {
@@ -38,7 +39,7 @@ async function MarketingShellContent({
     <>
       {hideHeader ? null : <MarketingHeader auth={auth} />}
       <MarketingAuthProvider value={auth}>
-        <main className={cn("flex-auto", className)}>{children}</main>
+        <main className={cn("flex-auto", marketingMotionEnter, className)}>{children}</main>
       </MarketingAuthProvider>
     </>
   );

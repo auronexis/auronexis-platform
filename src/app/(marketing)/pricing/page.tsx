@@ -4,8 +4,14 @@ import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { AuthAwareMarketingLink } from "@/components/marketing/auth-aware-marketing-link";
 import { NewsletterSignupForm } from "@/components/marketing/newsletter-signup-form";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
+import { MarketingComparisonTable } from "@/components/marketing/marketing-comparison-table";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
-import { PUBLIC_PRICING_PLANS, PUBLIC_PRICING_NOTE, INVITE_ONLY_PROGRAMS_NOTE } from "@/lib/marketing/content";
+import {
+  INVITE_ONLY_PROGRAMS_NOTE,
+  PLAN_COMPARISON_ROWS,
+  PUBLIC_PRICING_NOTE,
+  PUBLIC_PRICING_PLANS,
+} from "@/lib/marketing/content";
 import { MARKETING_ROUTES, SALES_EMAIL } from "@/lib/company/contact";
 import { createMarketingMetadata } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
@@ -84,6 +90,9 @@ export default function PublicPricingPage() {
           </a>
           .
         </p>
+      </MarketingSection>
+      <MarketingSection title="Compare capabilities" className="border-t border-white/10">
+        <MarketingComparisonTable rows={PLAN_COMPARISON_ROWS} />
       </MarketingSection>
       <MarketingSection title="Product updates" className="border-t border-white/10 bg-white/[0.02]">
         <p className="mb-4 max-w-2xl text-sm text-primary-foreground/75">
