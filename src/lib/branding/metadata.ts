@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { PLATFORM_NAME } from "@/lib/branding/defaults";
 import {
   PLATFORM_BACKGROUND_COLOR,
@@ -45,10 +45,6 @@ export const PLATFORM_METADATA: Metadata = {
     apple: [{ url: PLATFORM_ICONS.appleTouchIcon, type: "image/svg+xml" }],
     shortcut: [PLATFORM_ICONS.favicon],
   },
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: PLATFORM_THEME_COLOR },
-    { media: "(prefers-color-scheme: dark)", color: PLATFORM_BACKGROUND_COLOR },
-  ],
   appleWebApp: {
     capable: true,
     title: PLATFORM_NAME,
@@ -78,4 +74,12 @@ export const PLATFORM_METADATA: Metadata = {
     index: true,
     follow: true,
   },
+};
+
+/** Browser chrome theme colors — Next.js 15 requires viewport export, not metadata. */
+export const PLATFORM_VIEWPORT: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: PLATFORM_THEME_COLOR },
+    { media: "(prefers-color-scheme: dark)", color: PLATFORM_BACKGROUND_COLOR },
+  ],
 };

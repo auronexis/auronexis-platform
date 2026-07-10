@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 import { CookieConsentBanner } from "@/components/consent/cookie-consent-banner";
-import { PLATFORM_METADATA } from "@/lib/branding/metadata";
+import { PLATFORM_METADATA, PLATFORM_VIEWPORT } from "@/lib/branding/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,6 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = PLATFORM_METADATA;
+
+export const viewport: Viewport = PLATFORM_VIEWPORT;
 
 export default function RootLayout({
   children,

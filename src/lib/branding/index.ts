@@ -5,7 +5,7 @@ export {
   getOrganizationBrandingForOrganization,
   getOrganizationBrandingRecord,
 } from "./queries";
-export { PLATFORM_METADATA } from "./metadata";
+export { PLATFORM_METADATA, PLATFORM_VIEWPORT } from "./metadata";
 export { getPlatformBrandingDefaults } from "./platform-defaults";
 export {  DEFAULT_PORTAL_WELCOME_MESSAGE,
   DEFAULT_PRIMARY_COLOR,
