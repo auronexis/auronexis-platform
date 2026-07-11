@@ -31,7 +31,8 @@ export type AppModule =
   | "pricing"
   | "sales"
   | "settings"
-  | "customer_success";
+  | "customer_success"
+  | "executive_intelligence";
 
 export type PermissionAction = "read" | "create" | "update" | "delete" | "export" | "manage";
 
@@ -92,6 +93,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     sales: fullAccess,
     settings: fullAccess,
     customer_success: fullAccess,
+    executive_intelligence: fullAccess,
   },
   admin: {
     dashboard: readOnly,
@@ -109,6 +111,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     sales: { read: true, create: true, update: true, delete: false, export: true, manage: false },
     settings: { read: true, create: false, update: true, delete: false, export: false, manage: false },
     customer_success: { read: true, create: true, update: true, delete: false, export: true, manage: true },
+    executive_intelligence: { read: true, create: true, update: true, delete: false, export: true, manage: true },
   },
   staff: {
     dashboard: readOnly,
@@ -126,6 +129,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     sales: readOnly,
     settings: noAccess,
     customer_success: { read: true, create: true, update: true, delete: false, export: false, manage: false },
+    executive_intelligence: { read: true, create: true, update: true, delete: false, export: true, manage: false },
   },
   viewer: {
     dashboard: readOnly,
@@ -143,6 +147,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     sales: noAccess,
     settings: noAccess,
     customer_success: readOnly,
+    executive_intelligence: readOnly,
   },
 };
 
@@ -190,6 +195,13 @@ const MODULE_ACTION_TO_PERMISSION: Partial<
     create: "customer_success.write",
     update: "customer_success.write",
     manage: "customer_success.manage",
+  },
+  executive_intelligence: {
+    read: "executive_intelligence.read",
+    create: "executive_intelligence.generate",
+    update: "executive_intelligence.refresh",
+    export: "executive_intelligence.export",
+    manage: "executive_intelligence.manage",
   },
 };
 

@@ -5107,6 +5107,77 @@ export type Database = {
           },
         ];
       };
+      executive_intelligence_briefings: {
+        Row: {
+          id: string;
+          organization_id: string;
+          period_key: string;
+          period_start: string;
+          period_end: string;
+          comparison_start: string;
+          comparison_end: string;
+          snapshot: Json;
+          deterministic_narrative: string;
+          ai_narrative: string | null;
+          generated_by: string;
+          generated_by_user_id: string | null;
+          provider: string | null;
+          model: string | null;
+          status: string;
+          error_code: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          period_key: string;
+          period_start: string;
+          period_end: string;
+          comparison_start: string;
+          comparison_end: string;
+          snapshot: Json;
+          deterministic_narrative: string;
+          ai_narrative?: string | null;
+          generated_by: string;
+          generated_by_user_id?: string | null;
+          provider?: string | null;
+          model?: string | null;
+          status?: string;
+          error_code?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          period_key?: string;
+          period_start?: string;
+          period_end?: string;
+          comparison_start?: string;
+          comparison_end?: string;
+          snapshot?: Json;
+          deterministic_narrative?: string;
+          ai_narrative?: string | null;
+          generated_by?: string;
+          generated_by_user_id?: string | null;
+          provider?: string | null;
+          model?: string | null;
+          status?: string;
+          error_code?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "executive_intelligence_briefings_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

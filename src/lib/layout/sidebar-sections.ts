@@ -3,7 +3,7 @@ export const SIDEBAR_SECTIONS = [
   {
     id: "main",
     label: "Main",
-    itemLabels: ["Dashboard", "Adoption"],
+    itemLabels: ["Dashboard", "Adoption", "Intelligence"],
   },
   {
     id: "operations",

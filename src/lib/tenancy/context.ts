@@ -45,6 +45,12 @@ export const PRIMARY_NAV: NavItem[] = [
     requiresRead: true,
   },
   {
+    label: "Intelligence",
+    href: "/intelligence",
+    module: "executive_intelligence",
+    requiresRead: true,
+  },
+  {
     label: "Ask Auroranexis",
     href: "/copilot",
     module: "dashboard",

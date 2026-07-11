@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { ACTIVITY_SELECT } from "@/lib/activity/queries";
 import type { ActivityEventView } from "@/lib/activity/types";
 import type { DashboardData } from "@/lib/dashboard/types";
@@ -269,7 +270,7 @@ async function loadRecentActivity(session: SessionContext, limit = 12): Promise<
 }
 
 /** Build trusted operational snapshot from existing DB sources. */
-export async function buildOperationalSnapshot(
+export const buildOperationalSnapshot = cache(async function buildOperationalSnapshot(
   session: SessionContext,
   existingDashboard?: DashboardData,
 ): Promise<OperationalSnapshot> {
@@ -426,4 +427,4 @@ export async function buildOperationalSnapshot(
     portfolioMargin,
     recentActivity,
   };
-}
+});

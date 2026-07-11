@@ -41,6 +41,8 @@ import { AdoptionSummaryPanel } from "@/components/adoption/adoption-summary-pan
 import { AdoptionTracker } from "@/components/adoption/adoption-tracker";
 import { CustomerSuccessSummaryPanel } from "@/components/customer-success/customer-success-summary-panel";
 import { CustomerSuccessTracker } from "@/components/customer-success/customer-success-tracker";
+import { ExecutiveIntelligenceSummaryPanel } from "@/components/executive-intelligence/executive-intelligence-summary-panel";
+import { ExecutiveIntelligenceTracker } from "@/components/executive-intelligence/executive-intelligence-tracker";
 import { DashboardSlaOverview } from "@/components/dashboard/dashboard-sla-overview";
 import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-monitoring-overview";
 import { DashboardIncidentAIOverview } from "@/components/incidents/ai/dashboard-incident-ai-overview";
@@ -76,6 +78,10 @@ import {
   buildCustomerSuccessPortfolio,
   resolveDashboardCustomerSuccessMode,
 } from "@/lib/customer-success/snapshot";
+import {
+  buildExecutiveIntelligenceSnapshot,
+  resolveDashboardExecutiveIntelligenceMode,
+} from "@/lib/executive-intelligence/snapshot";
 import { getIntegrationsDashboardSummary, getIntegrationRuntimeSummary } from "@/lib/integrations/queries";
 import { getPredictiveDashboardSummary } from "@/lib/predictive/cache";
 import { getComplianceDiagnosticsSnapshot } from "@/lib/compliance/diagnostics";
@@ -187,6 +193,28 @@ export default async function DashboardPage() {
   const customerSuccessMode = customerSuccessPortfolio
     ? resolveDashboardCustomerSuccessMode(activation, adoption, customerSuccessPortfolio)
     : "hidden";
+
+  const canReadExecutiveIntelligence = sessionHasPermission(session, "executive_intelligence.read");
+  const executiveSnapshot = canReadExecutiveIntelligence
+    ? await buildExecutiveIntelligenceSnapshot({
+        session,
+        dashboardData: data,
+        activation,
+        adoption,
+        customerSuccessPortfolio,
+        planContext,
+        canReadCustomerSuccess,
+      })
+    : null;
+  const executiveIntelligenceMode =
+    executiveSnapshot && customerSuccessMode !== "critical"
+      ? resolveDashboardExecutiveIntelligenceMode(
+          activation,
+          adoption,
+          customerSuccessMode,
+          executiveSnapshot,
+        )
+      : "hidden";
 
   const canDismissActivation = canManageOrganizationSettings(session);
 
@@ -367,6 +395,14 @@ export default async function DashboardPage() {
                 />
                 <CustomerSuccessSummaryPanel portfolio={customerSuccessPortfolio} mode="critical" />
               </>
+            ) : executiveIntelligenceMode === "critical" && executiveSnapshot ? (
+              <>
+                <ExecutiveIntelligenceTracker
+                  event="executive_intelligence_viewed"
+                  organizationId={session.organization.id}
+                />
+                <ExecutiveIntelligenceSummaryPanel snapshot={executiveSnapshot} mode="critical" />
+              </>
             ) : (
               <>
                 <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
@@ -380,6 +416,15 @@ export default async function DashboardPage() {
                       portfolio={customerSuccessPortfolio}
                       mode="summary"
                     />
+                  </>
+                ) : null}
+                {executiveIntelligenceMode === "summary" && executiveSnapshot ? (
+                  <>
+                    <ExecutiveIntelligenceTracker
+                      event="executive_intelligence_viewed"
+                      organizationId={session.organization.id}
+                    />
+                    <ExecutiveIntelligenceSummaryPanel snapshot={executiveSnapshot} mode="summary" />
                   </>
                 ) : null}
               </>

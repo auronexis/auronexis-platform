@@ -31,7 +31,12 @@ export type Permission =
   | "customer_success.write"
   | "customer_success.assign"
   | "customer_success.complete"
-  | "customer_success.manage";
+  | "customer_success.manage"
+  | "executive_intelligence.read"
+  | "executive_intelligence.generate"
+  | "executive_intelligence.refresh"
+  | "executive_intelligence.export"
+  | "executive_intelligence.manage";
 
 const ALL_PERMISSIONS: readonly Permission[] = [
   "clients.read",
@@ -52,6 +57,11 @@ const ALL_PERMISSIONS: readonly Permission[] = [
   "customer_success.assign",
   "customer_success.complete",
   "customer_success.manage",
+  "executive_intelligence.read",
+  "executive_intelligence.generate",
+  "executive_intelligence.refresh",
+  "executive_intelligence.export",
+  "executive_intelligence.manage",
 ] as const;
 
 /**
@@ -84,6 +94,10 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "customer_success.write",
     "customer_success.assign",
     "customer_success.complete",
+    "executive_intelligence.read",
+    "executive_intelligence.generate",
+    "executive_intelligence.refresh",
+    "executive_intelligence.export",
   ],
   analyst: [
     "clients.read",
@@ -95,6 +109,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "risks.write",
     "customer_success.read",
     "customer_success.complete",
+    "executive_intelligence.read",
+    "executive_intelligence.generate",
   ],
   member: [
     "clients.read",
@@ -103,6 +119,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "activity.read",
     "risks.read",
     "customer_success.read",
+    "executive_intelligence.read",
   ],
   readonly: [
     "clients.read",
@@ -111,6 +128,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "activity.read",
     "risks.read",
     "customer_success.read",
+    "executive_intelligence.read",
   ],
 };
 
