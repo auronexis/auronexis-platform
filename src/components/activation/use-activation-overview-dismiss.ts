@@ -42,18 +42,19 @@ export function useActivationOverviewDismiss({
     setPending(true);
     setError(null);
 
-    trackAnalyticsEvent("activation_panel_dismissed", {
-      activation_stage: stage,
-      completion_percentage: completionPercent,
-      source_route: sourceRoute,
-    });
-
     try {
       const result = await dismissActivationPanelAction();
-      if (result.error) {
+      if (!result.success) {
         setOptimisticDismissed(false);
         setError(result.error);
+        return;
       }
+
+      trackAnalyticsEvent("activation_panel_dismissed", {
+        activation_stage: stage,
+        completion_percentage: completionPercent,
+        source_route: sourceRoute,
+      });
     } catch {
       setOptimisticDismissed(false);
       setError("Unable to dismiss the activation overview. Please try again.");
@@ -74,7 +75,7 @@ export function useActivationOverviewDismiss({
 
     try {
       const result = await restoreActivationPanelAction();
-      if (result.error) {
+      if (!result.success) {
         setOptimisticRestored(false);
         setError(result.error);
       }

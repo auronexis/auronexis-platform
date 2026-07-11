@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 import type { ActivationPreferences } from "@/lib/activation/types";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 export type ActivationPrefsUpdate =
   Database["public"]["Tables"]["organization_activation_preferences"]["Update"];
@@ -18,6 +19,21 @@ const EMPTY_PREFERENCES: ActivationPreferences = {
   activationMilestoneReachedAt: null,
   activationPanelDismissedAt: null,
 };
+
+function logActivationPrefsError(
+  operation: "select_existing" | "update" | "insert",
+  organizationId: string,
+  error: PostgrestError,
+): void {
+  console.error("[activation_preferences]", {
+    operation,
+    organization_id: organizationId,
+    code: error.code,
+    message: error.message,
+    details: error.details,
+    hint: error.hint,
+  });
+}
 
 function mapRow(data: ActivationPrefsRow): ActivationPreferences {
   return {
@@ -48,28 +64,24 @@ export async function getActivationPreferences(
   return mapRow(data as ActivationPrefsRow);
 }
 
-export async function upsertActivationPreferences(
+async function updateActivationPreferences(
   organizationId: string,
   patch: ActivationPrefsUpdate,
-): Promise<{ error: string } | null> {
+): Promise<PostgrestError | null> {
   const supabase = await createClient();
-  const { data: existing } = await supabase
+  const { error } = await supabase
     .from("organization_activation_preferences")
-    .select("organization_id")
-    .eq("organization_id", organizationId)
-    .maybeSingle();
+    .update(patch as never)
+    .eq("organization_id", organizationId);
 
-  if (existing) {
-    const { error } = await supabase
-      .from("organization_activation_preferences")
-      .update(patch as never)
-      .eq("organization_id", organizationId);
-    if (error) {
-      return { error: "Unable to update workspace preferences." };
-    }
-    return null;
-  }
+  return error;
+}
 
+async function insertActivationPreferences(
+  organizationId: string,
+  patch: ActivationPrefsUpdate,
+): Promise<PostgrestError | null> {
+  const supabase = await createClient();
   const insertRow: ActivationPrefsInsert = {
     organization_id: organizationId,
     ...patch,
@@ -79,9 +91,48 @@ export async function upsertActivationPreferences(
     .from("organization_activation_preferences")
     .insert(insertRow as never);
 
-  if (error) {
+  return error;
+}
+
+export async function upsertActivationPreferences(
+  organizationId: string,
+  patch: ActivationPrefsUpdate,
+): Promise<{ error: string } | null> {
+  const supabase = await createClient();
+  const { data: existing, error: selectError } = await supabase
+    .from("organization_activation_preferences")
+    .select("organization_id")
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  if (selectError) {
+    logActivationPrefsError("select_existing", organizationId, selectError);
     return { error: "Unable to save workspace preferences." };
   }
 
-  return null;
+  if (existing) {
+    const updateError = await updateActivationPreferences(organizationId, patch);
+    if (updateError) {
+      logActivationPrefsError("update", organizationId, updateError);
+      return { error: "Unable to save workspace preferences." };
+    }
+    return null;
+  }
+
+  const insertError = await insertActivationPreferences(organizationId, patch);
+  if (!insertError) {
+    return null;
+  }
+
+  logActivationPrefsError("insert", organizationId, insertError);
+
+  if (insertError.code === "23505") {
+    const retryUpdateError = await updateActivationPreferences(organizationId, patch);
+    if (!retryUpdateError) {
+      return null;
+    }
+    logActivationPrefsError("update", organizationId, retryUpdateError);
+  }
+
+  return { error: "Unable to save workspace preferences." };
 }

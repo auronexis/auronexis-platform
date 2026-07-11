@@ -35,6 +35,7 @@ export {
   recordOnboardingViewAction,
   recordActivationMilestoneAction,
   type ActivationActionState,
+  type ActivationPanelPersistResult,
 } from "@/lib/activation/actions";
 export { ACTIVATION_CTA_PRESETS, type ActivationCtaPreset, type ActivationCtaPresetKey } from "@/lib/activation/cta";
 export {

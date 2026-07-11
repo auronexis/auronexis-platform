@@ -17,6 +17,10 @@ export type ActivationActionState = {
   success?: string;
 };
 
+export type ActivationPanelPersistResult =
+  | { success: true }
+  | { success: false; error: string };
+
 const dismissSchema = z.object({
   surface: z.enum(["welcome", "onboarding"]),
 });
@@ -80,11 +84,14 @@ export async function recordOnboardingViewAction(): Promise<ActivationActionStat
 }
 
 /** Persist activation panel dismissal for the workspace dashboard. */
-export async function dismissActivationPanelAction(): Promise<ActivationActionState> {
+export async function dismissActivationPanelAction(): Promise<ActivationPanelPersistResult> {
   try {
     const session = await requireSession();
     if (!canManageOrganizationSettings(session)) {
-      return { error: "Only workspace owners and admins can dismiss the activation panel." };
+      return {
+        success: false,
+        error: "Only workspace owners and admins can dismiss the activation panel.",
+      };
     }
 
     const now = new Date().toISOString();
@@ -92,37 +99,48 @@ export async function dismissActivationPanelAction(): Promise<ActivationActionSt
       activation_panel_dismissed_at: now,
     });
     if (upsertError) {
-      return upsertError;
+      return { success: false, error: upsertError.error };
     }
 
     revalidatePath("/dashboard");
     revalidatePath("/onboarding");
-    return { success: "Activation panel dismissed." };
+    return { success: true };
   } catch (error) {
-    return resolveActionError(error);
+    const resolved = resolveActionError(error);
+    return {
+      success: false,
+      error: resolved.error ?? "Unable to save workspace preferences.",
+    };
   }
 }
 
 /** Restore the activation overview after dismissal. */
-export async function restoreActivationPanelAction(): Promise<ActivationActionState> {
+export async function restoreActivationPanelAction(): Promise<ActivationPanelPersistResult> {
   try {
     const session = await requireSession();
     if (!canManageOrganizationSettings(session)) {
-      return { error: "Only workspace owners and admins can restore the activation overview." };
+      return {
+        success: false,
+        error: "Only workspace owners and admins can restore the activation overview.",
+      };
     }
 
     const upsertError = await upsertActivationPreferences(session.organization.id, {
       activation_panel_dismissed_at: null,
     });
     if (upsertError) {
-      return upsertError;
+      return { success: false, error: upsertError.error };
     }
 
     revalidatePath("/dashboard");
     revalidatePath("/onboarding");
-    return { success: "Activation overview restored." };
+    return { success: true };
   } catch (error) {
-    return resolveActionError(error);
+    const resolved = resolveActionError(error);
+    return {
+      success: false,
+      error: resolved.error ?? "Unable to save workspace preferences.",
+    };
   }
 }
 
