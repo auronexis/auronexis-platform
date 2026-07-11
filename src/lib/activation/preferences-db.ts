@@ -16,6 +16,7 @@ const EMPTY_PREFERENCES: ActivationPreferences = {
   onboardingDismissedAt: null,
   onboardingLastViewedAt: null,
   activationMilestoneReachedAt: null,
+  activationPanelDismissedAt: null,
 };
 
 function mapRow(data: ActivationPrefsRow): ActivationPreferences {
@@ -24,6 +25,7 @@ function mapRow(data: ActivationPrefsRow): ActivationPreferences {
     onboardingDismissedAt: data.onboarding_dismissed_at,
     onboardingLastViewedAt: data.onboarding_last_viewed_at,
     activationMilestoneReachedAt: data.activation_milestone_reached_at,
+    activationPanelDismissedAt: data.activation_panel_dismissed_at,
   };
 }
 
@@ -34,7 +36,7 @@ export async function getActivationPreferences(
   const { data, error } = await supabase
     .from("organization_activation_preferences")
     .select(
-      "welcome_dismissed_at, onboarding_dismissed_at, onboarding_last_viewed_at, activation_milestone_reached_at",
+      "welcome_dismissed_at, onboarding_dismissed_at, onboarding_last_viewed_at, activation_milestone_reached_at, activation_panel_dismissed_at",
     )
     .eq("organization_id", organizationId)
     .maybeSingle();

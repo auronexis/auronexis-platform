@@ -79,6 +79,29 @@ export async function recordOnboardingViewAction(): Promise<ActivationActionStat
   }
 }
 
+/** Persist activation panel dismissal for the workspace dashboard. */
+export async function dismissActivationPanelAction(): Promise<ActivationActionState> {
+  try {
+    const session = await requireSession();
+    if (!canManageOrganizationSettings(session)) {
+      return { error: "Only workspace owners and admins can dismiss the activation panel." };
+    }
+
+    const now = new Date().toISOString();
+    const upsertError = await upsertActivationPreferences(session.organization.id, {
+      activation_panel_dismissed_at: now,
+    });
+    if (upsertError) {
+      return upsertError;
+    }
+
+    revalidatePath("/dashboard");
+    return { success: "Activation panel dismissed." };
+  } catch (error) {
+    return resolveActionError(error);
+  }
+}
+
 /** Persist activation milestone timestamp when first value is reached. */
 export async function recordActivationMilestoneAction(): Promise<ActivationActionState> {
   try {

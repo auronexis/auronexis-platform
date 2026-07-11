@@ -17,6 +17,7 @@ export {
   resolveActivationStage,
   shouldShowBeginnerSurfaces,
   shouldShowWelcome,
+  shouldShowActivationPanel,
   FIRST_VALUE_MILESTONE_DESCRIPTION,
   buildReadinessCategories,
 } from "@/lib/activation/scoring";
@@ -29,6 +30,7 @@ export { buildActivationSnapshot, summarizeActivationForDashboard } from "@/lib/
 export { buildNextBestAction } from "@/lib/activation/recommendations";
 export {
   dismissActivationSurfaceAction,
+  dismissActivationPanelAction,
   recordOnboardingViewAction,
   recordActivationMilestoneAction,
   type ActivationActionState,

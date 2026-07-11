@@ -4891,6 +4891,7 @@ export type Database = {
           onboarding_dismissed_at: string | null;
           onboarding_last_viewed_at: string | null;
           activation_milestone_reached_at: string | null;
+          activation_panel_dismissed_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -4900,6 +4901,7 @@ export type Database = {
           onboarding_dismissed_at?: string | null;
           onboarding_last_viewed_at?: string | null;
           activation_milestone_reached_at?: string | null;
+          activation_panel_dismissed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -4909,6 +4911,7 @@ export type Database = {
           onboarding_dismissed_at?: string | null;
           onboarding_last_viewed_at?: string | null;
           activation_milestone_reached_at?: string | null;
+          activation_panel_dismissed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -14,7 +14,8 @@ export type ActivationAnalyticsEvent =
   | "first_report_created"
   | "first_risk_created"
   | "first_incident_created"
-  | "workspace_activated";
+  | "workspace_activated"
+  | "activation_panel_dismissed";
 
 export type ActivationAnalyticsProps = AnalyticsEventProps & {
   step_id?: string;

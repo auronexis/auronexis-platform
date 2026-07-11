@@ -13,6 +13,7 @@ import {
   resolveActivationStage,
   shouldShowBeginnerSurfaces,
   shouldShowWelcome,
+  shouldShowActivationPanel,
 } from "@/lib/activation/scoring";
 import { buildNextBestAction } from "@/lib/activation/recommendations";
 import {
@@ -51,6 +52,7 @@ export async function buildActivationSnapshot(
   const firstValueReached = hasReachedFirstValueMilestone(dataSnapshot, steps);
   const showBeginnerSurfaces = shouldShowBeginnerSurfaces(stage, preferences);
   const showWelcome = shouldShowWelcome(stage, preferences);
+  const showActivationPanel = shouldShowActivationPanel(stage, preferences, showBeginnerSurfaces);
 
   return {
     stage,
@@ -62,6 +64,7 @@ export async function buildActivationSnapshot(
     firstValueReached,
     showBeginnerSurfaces,
     showWelcome,
+    showActivationPanel,
     showOnboardingHub: showBeginnerSurfaces || !preferences.onboardingDismissedAt,
     steps,
     categories: buildReadinessCategories(steps),

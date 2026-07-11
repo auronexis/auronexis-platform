@@ -319,7 +319,7 @@ export default async function DashboardPage() {
             <DashboardQuickActions />
           </div>
           <div className="lg:col-span-4">
-            <ActivationPanel activation={activation} />
+            <ActivationPanel activation={activation} canDismiss={canDismissActivation} />
           </div>
           <div className="lg:col-span-12">
             <SmartRecommendations recommendations={smartRecommendations} />

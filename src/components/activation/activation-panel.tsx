@@ -1,25 +1,73 @@
+"use client";
+
+import { useCallback, useState } from "react";
+import Link from "next/link";
+import { X } from "lucide-react";
 import type { ActivationSnapshot, NextBestAction } from "@/lib/activation/types";
 import { ACTIVATION_CTA_PRESETS } from "@/lib/activation/cta";
+import { dismissActivationPanelAction } from "@/lib/activation/actions";
 import { ActivationCtaLink } from "@/components/activation/activation-cta-link";
 import { ActivationStageBadge } from "@/components/activation/activation-stage-badge";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
-import Link from "next/link";
 
 type ActivationPanelProps = {
   activation: ActivationSnapshot;
+  canDismiss: boolean;
   compact?: boolean;
 };
 
-export function ActivationPanel({ activation, compact = false }: ActivationPanelProps) {
-  const { stage, completionPercent, nextBestAction, showBeginnerSurfaces } = activation;
+export function ActivationPanel({ activation, canDismiss, compact = false }: ActivationPanelProps) {
+  const { stage, completionPercent, nextBestAction } = activation;
+  const serverDismissed = !activation.showActivationPanel;
+  const [optimisticDismissed, setOptimisticDismissed] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!showBeginnerSurfaces && stage === "mature") {
+  const isDismissed = optimisticDismissed || serverDismissed;
+
+  const handleDismiss = useCallback(async () => {
+    if (!canDismiss || pending || optimisticDismissed || serverDismissed) {
+      return;
+    }
+
+    setOptimisticDismissed(true);
+    setPending(true);
+    setError(null);
+
+    trackAnalyticsEvent("activation_panel_dismissed", {
+      activation_stage: stage,
+      completion_percentage: completionPercent,
+      source_route: "/dashboard",
+    });
+
+    try {
+      const result = await dismissActivationPanelAction();
+      if (result.error) {
+        setOptimisticDismissed(false);
+        setError(result.error);
+      }
+    } catch {
+      setOptimisticDismissed(false);
+      setError("Unable to dismiss the activation panel. Please try again.");
+    } finally {
+      setPending(false);
+    }
+  }, [canDismiss, pending, optimisticDismissed, serverDismissed, stage, completionPercent]);
+
+  if (stage === "mature") {
     return <WorkspaceMaturityCard activation={activation} />;
   }
 
-  if (!showBeginnerSurfaces && !compact) {
+  if (isDismissed) {
+    return null;
+  }
+
+  if (!activation.showBeginnerSurfaces && !compact) {
     return null;
   }
 
@@ -32,12 +80,34 @@ export function ActivationPanel({ activation, compact = false }: ActivationPanel
           : "Complete core setup to unlock operational intelligence."
       }
       action={
-        <Link href="/onboarding" className={cn(linkText, "text-xs")}>
-          View setup hub
-        </Link>
+        <div className="flex items-center gap-1">
+          <Link href="/onboarding" className={cn(linkText, "text-xs")}>
+            View setup hub
+          </Link>
+          {canDismiss ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={pending}
+              aria-label="Dismiss activation panel"
+              aria-busy={pending || undefined}
+              onClick={handleDismiss}
+              className="text-muted hover:text-foreground"
+            >
+              {pending ? <Spinner size="sm" /> : <X className="h-4 w-4" aria-hidden />}
+            </Button>
+          ) : null}
+        </div>
       }
     >
       <div className="space-y-4">
+        {error ? (
+          <p className="text-sm text-danger" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <ActivationStageBadge stage={stage} />
           <p className="text-sm text-muted">

@@ -89,6 +89,7 @@ export type ActivationPreferences = {
   onboardingDismissedAt: string | null;
   onboardingLastViewedAt: string | null;
   activationMilestoneReachedAt: string | null;
+  activationPanelDismissedAt: string | null;
 };
 
 export type ActivationDataSnapshot = {
@@ -134,6 +135,7 @@ export type ActivationSnapshot = {
   showBeginnerSurfaces: boolean;
   showWelcome: boolean;
   showOnboardingHub: boolean;
+  showActivationPanel: boolean;
   steps: ActivationStepStatus[];
   categories: ActivationReadinessCategory[];
   nextBestAction: NextBestAction | null;

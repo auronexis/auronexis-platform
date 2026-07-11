@@ -117,5 +117,20 @@ export function shouldShowWelcome(
   return stage === "not_started" || stage === "getting_started";
 }
 
+/** Whether the dashboard activation panel should render — independent of progress calculation. */
+export function shouldShowActivationPanel(
+  stage: ActivationStage,
+  preferences: { activationPanelDismissedAt: string | null },
+  showBeginnerSurfaces: boolean,
+): boolean {
+  if (preferences.activationPanelDismissedAt) {
+    return false;
+  }
+  if (stage === "mature") {
+    return false;
+  }
+  return showBeginnerSurfaces;
+}
+
 export const FIRST_VALUE_MILESTONE_DESCRIPTION =
   "Create a client, then add a report, risk, or incident to unlock operational intelligence on your dashboard.";

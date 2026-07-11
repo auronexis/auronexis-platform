@@ -36,7 +36,8 @@ export type AnalyticsEventName =
   | "first_report_created"
   | "first_risk_created"
   | "first_incident_created"
-  | "workspace_activated";
+  | "workspace_activated"
+  | "activation_panel_dismissed";
 
 export type AnalyticsEventProps = Record<string, string | number | boolean>;
 
