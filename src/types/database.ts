@@ -4957,6 +4957,156 @@ export type Database = {
           },
         ];
       };
+      customer_success_playbook_instances: {
+        Row: {
+          id: string;
+          organization_id: string;
+          client_id: string;
+          playbook_key: string;
+          status: string;
+          priority: string;
+          assigned_to_user_id: string | null;
+          started_by_user_id: string;
+          started_at: string;
+          due_at: string | null;
+          completed_at: string | null;
+          cancelled_at: string | null;
+          trigger_code: string | null;
+          trigger_snapshot: Json | null;
+          outcome: string | null;
+          recovery_score_before: number | null;
+          recovery_score_after: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          client_id: string;
+          playbook_key: string;
+          status?: string;
+          priority?: string;
+          assigned_to_user_id?: string | null;
+          started_by_user_id: string;
+          started_at?: string;
+          due_at?: string | null;
+          completed_at?: string | null;
+          cancelled_at?: string | null;
+          trigger_code?: string | null;
+          trigger_snapshot?: Json | null;
+          outcome?: string | null;
+          recovery_score_before?: number | null;
+          recovery_score_after?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          client_id?: string;
+          playbook_key?: string;
+          status?: string;
+          priority?: string;
+          assigned_to_user_id?: string | null;
+          started_by_user_id?: string;
+          started_at?: string;
+          due_at?: string | null;
+          completed_at?: string | null;
+          cancelled_at?: string | null;
+          trigger_code?: string | null;
+          trigger_snapshot?: Json | null;
+          outcome?: string | null;
+          recovery_score_before?: number | null;
+          recovery_score_after?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "customer_success_playbook_instances_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "customer_success_playbook_instances_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      customer_success_tasks: {
+        Row: {
+          id: string;
+          organization_id: string;
+          client_id: string;
+          playbook_instance_id: string;
+          task_key: string;
+          title: string;
+          description: string | null;
+          status: string;
+          required: boolean;
+          assigned_to_user_id: string | null;
+          due_at: string | null;
+          completed_at: string | null;
+          completed_by_user_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          client_id: string;
+          playbook_instance_id: string;
+          task_key: string;
+          title: string;
+          description?: string | null;
+          status?: string;
+          required?: boolean;
+          assigned_to_user_id?: string | null;
+          due_at?: string | null;
+          completed_at?: string | null;
+          completed_by_user_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          client_id?: string;
+          playbook_instance_id?: string;
+          task_key?: string;
+          title?: string;
+          description?: string | null;
+          status?: string;
+          required?: boolean;
+          assigned_to_user_id?: string | null;
+          due_at?: string | null;
+          completed_at?: string | null;
+          completed_by_user_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "customer_success_tasks_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "customer_success_tasks_playbook_instance_id_fkey";
+            columns: ["playbook_instance_id"];
+            isOneToOne: false;
+            referencedRelation: "customer_success_playbook_instances";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

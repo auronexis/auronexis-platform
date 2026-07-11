@@ -30,7 +30,8 @@ export type AppModule =
   | "team"
   | "pricing"
   | "sales"
-  | "settings";
+  | "settings"
+  | "customer_success";
 
 export type PermissionAction = "read" | "create" | "update" | "delete" | "export" | "manage";
 
@@ -90,6 +91,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     pricing: readOnly,
     sales: fullAccess,
     settings: fullAccess,
+    customer_success: fullAccess,
   },
   admin: {
     dashboard: readOnly,
@@ -106,6 +108,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     pricing: readOnly,
     sales: { read: true, create: true, update: true, delete: false, export: true, manage: false },
     settings: { read: true, create: false, update: true, delete: false, export: false, manage: false },
+    customer_success: { read: true, create: true, update: true, delete: false, export: true, manage: true },
   },
   staff: {
     dashboard: readOnly,
@@ -122,6 +125,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     pricing: readOnly,
     sales: readOnly,
     settings: noAccess,
+    customer_success: { read: true, create: true, update: true, delete: false, export: false, manage: false },
   },
   viewer: {
     dashboard: readOnly,
@@ -138,6 +142,7 @@ export const MODULE_PERMISSIONS: Record<UserRole, Record<AppModule, ModulePermis
     pricing: readOnly,
     sales: noAccess,
     settings: noAccess,
+    customer_success: readOnly,
   },
 };
 
@@ -179,6 +184,12 @@ const MODULE_ACTION_TO_PERMISSION: Partial<
     update: "risks.write",
     delete: "risks.write",
     export: "risks.read",
+  },
+  customer_success: {
+    read: "customer_success.read",
+    create: "customer_success.write",
+    update: "customer_success.write",
+    manage: "customer_success.manage",
   },
 };
 

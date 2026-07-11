@@ -39,6 +39,12 @@ export const PRIMARY_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", module: "dashboard", requiresRead: true },
   { label: "Adoption", href: "/adoption", module: "dashboard", requiresRead: true },
   {
+    label: "Customer Success",
+    href: "/customer-success",
+    module: "customer_success",
+    requiresRead: true,
+  },
+  {
     label: "Ask Auroranexis",
     href: "/copilot",
     module: "dashboard",

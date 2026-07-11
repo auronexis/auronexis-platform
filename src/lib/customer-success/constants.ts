@@ -1,0 +1,210 @@
+import type { SuccessPlaybookDefinition } from "@/lib/customer-success/types";
+
+export const CLIENT_HEALTH_WEIGHTS = {
+  deliveryConsistency: 25,
+  riskExposure: 20,
+  incidentStability: 15,
+  customerEngagement: 15,
+  serviceReliability: 10,
+  customerVisibility: 10,
+  successExecution: 5,
+} as const;
+
+export const MAX_SUGGESTED_PLAYBOOKS = 3;
+export const PORTFOLIO_PAGE_SIZE = 50;
+export const STALE_REPORT_DAYS = 30;
+export const STALE_ACTIVITY_DAYS = 21;
+export const NEW_CLIENT_GRACE_DAYS = 14;
+
+export const SUCCESS_PLAYBOOK_REGISTRY: SuccessPlaybookDefinition[] = [
+  {
+    key: "onboarding_recovery",
+    name: "Client onboarding recovery",
+    description: "Restore delivery momentum for clients without recent published reports.",
+    category: "foundation",
+    triggerCodes: ["no_recent_report", "stale_activity", "onboarding_stalled"],
+    defaultPriority: "high",
+    estimatedDurationDays: 14,
+    requiredPermissions: ["customer_success.write"],
+    requiredFeatures: [],
+    tasks: [
+      { key: "review_client_profile", title: "Review client profile", description: "Confirm scope and delivery expectations.", offsetDays: 0, required: true, route: null },
+      { key: "create_delivery_plan", title: "Create delivery plan", description: "Define the next report or operational deliverable.", offsetDays: 2, required: true, route: "/reports/new" },
+      { key: "publish_report", title: "Publish client report", description: "Publish at least one client-facing report.", offsetDays: 7, required: true, route: "/reports" },
+    ],
+  },
+  {
+    key: "report_delivery_recovery",
+    name: "Report delivery recovery",
+    description: "Re-establish recurring report delivery cadence.",
+    category: "delivery",
+    triggerCodes: ["no_recent_report", "declining_delivery"],
+    defaultPriority: "high",
+    estimatedDurationDays: 10,
+    requiredPermissions: ["customer_success.write", "reports.write"],
+    requiredFeatures: ["reports"],
+    tasks: [
+      { key: "audit_drafts", title: "Audit draft reports", description: "Identify publishable draft work.", offsetDays: 0, required: true, route: "/reports" },
+      { key: "publish_report", title: "Publish report", description: "Move a report to published status.", offsetDays: 3, required: true, route: "/reports" },
+      { key: "schedule_recurring", title: "Schedule recurring delivery", description: "Create a report schedule if available.", offsetDays: 7, required: false, route: "/reports/schedules/new" },
+    ],
+  },
+  {
+    key: "risk_remediation",
+    name: "Risk remediation",
+    description: "Address unresolved high-severity client risks.",
+    category: "operations",
+    triggerCodes: ["critical_risk", "high_risk_open"],
+    defaultPriority: "urgent",
+    estimatedDurationDays: 7,
+    requiredPermissions: ["customer_success.write", "risks.read"],
+    requiredFeatures: ["risks"],
+    tasks: [
+      { key: "review_risks", title: "Review open risks", description: "Triage all open risks for this client.", offsetDays: 0, required: true, route: "/risks" },
+      { key: "mitigate_critical", title: "Mitigate critical risk", description: "Assign owner and mitigation plan.", offsetDays: 2, required: true, route: "/risks" },
+      { key: "verify_resolution", title: "Verify risk resolution", description: "Confirm risk status updated.", offsetDays: 5, required: true, route: "/risks" },
+    ],
+  },
+  {
+    key: "incident_recovery",
+    name: "Incident recovery",
+    description: "Resolve open incidents affecting client stability.",
+    category: "operations",
+    triggerCodes: ["open_incident", "critical_incident"],
+    defaultPriority: "urgent",
+    estimatedDurationDays: 5,
+    requiredPermissions: ["customer_success.write", "risks.read"],
+    requiredFeatures: ["incidents"],
+    tasks: [
+      { key: "triage_incident", title: "Triage open incidents", description: "Review incident queue and severity.", offsetDays: 0, required: true, route: "/incidents" },
+      { key: "resolve_incident", title: "Resolve incident", description: "Close or escalate with documented outcome.", offsetDays: 2, required: true, route: "/incidents" },
+      { key: "post_incident_review", title: "Post-incident review", description: "Document lessons and preventive actions.", offsetDays: 4, required: false, route: null },
+    ],
+  },
+  {
+    key: "monitoring_activation",
+    name: "Monitoring activation",
+    description: "Connect monitoring signals for operational visibility.",
+    category: "operations",
+    triggerCodes: ["no_monitoring"],
+    defaultPriority: "medium",
+    estimatedDurationDays: 7,
+    requiredPermissions: ["customer_success.write"],
+    requiredFeatures: [],
+    tasks: [
+      { key: "review_monitoring_needs", title: "Review monitoring needs", description: "Identify signal sources for this client.", offsetDays: 0, required: true, route: null },
+      { key: "add_connector", title: "Add monitoring connector", description: "Configure a monitoring connector.", offsetDays: 3, required: true, route: "/monitoring" },
+    ],
+  },
+  {
+    key: "portal_activation",
+    name: "Client portal activation",
+    description: "Enable customer-facing visibility after delivery exists.",
+    category: "visibility",
+    triggerCodes: ["portal_unused", "no_portal_activity"],
+    defaultPriority: "medium",
+    estimatedDurationDays: 7,
+    requiredPermissions: ["customer_success.write", "clients.write"],
+    requiredFeatures: ["customer_portal"],
+    tasks: [
+      { key: "invite_portal_user", title: "Invite portal user", description: "Provision client portal access.", offsetDays: 0, required: true, route: null },
+      { key: "verify_portal_access", title: "Verify portal access", description: "Confirm portal login or report view activity.", offsetDays: 5, required: true, route: null },
+    ],
+  },
+  {
+    key: "engagement_reactivation",
+    name: "Engagement reactivation",
+    description: "Re-engage a previously active client that has gone stale.",
+    category: "retention",
+    triggerCodes: ["stale_activity", "declining_engagement"],
+    defaultPriority: "high",
+    estimatedDurationDays: 14,
+    requiredPermissions: ["customer_success.write"],
+    requiredFeatures: [],
+    tasks: [
+      { key: "review_history", title: "Review activity history", description: "Identify last meaningful delivery events.", offsetDays: 0, required: true, route: "/activity" },
+      { key: "schedule_touchpoint", title: "Schedule operational touchpoint", description: "Plan report, risk review, or incident follow-up.", offsetDays: 3, required: true, route: null },
+      { key: "deliver_value", title: "Deliver measurable value", description: "Complete a publish, resolve, or delivery action.", offsetDays: 10, required: true, route: "/reports/new" },
+    ],
+  },
+  {
+    key: "sla_recovery",
+    name: "SLA recovery",
+    description: "Address SLA breaches and restore service reliability.",
+    category: "service",
+    triggerCodes: ["sla_breach"],
+    defaultPriority: "high",
+    estimatedDurationDays: 7,
+    requiredPermissions: ["customer_success.write", "sla.read"],
+    requiredFeatures: ["sla_tracking"],
+    tasks: [
+      { key: "review_sla_status", title: "Review SLA status", description: "Audit breached and at-risk SLA events.", offsetDays: 0, required: true, route: "/settings/sla" },
+      { key: "remediate_breach", title: "Remediate breach", description: "Document remediation and owner assignment.", offsetDays: 2, required: true, route: null },
+    ],
+  },
+  {
+    key: "executive_review",
+    name: "Executive review preparation",
+    description: "Prepare leadership-ready client health summary.",
+    category: "governance",
+    triggerCodes: ["executive_review_due"],
+    defaultPriority: "medium",
+    estimatedDurationDays: 5,
+    requiredPermissions: ["customer_success.read"],
+    requiredFeatures: [],
+    tasks: [
+      { key: "compile_health_summary", title: "Compile health summary", description: "Gather risks, incidents, and delivery metrics.", offsetDays: 0, required: true, route: null },
+      { key: "publish_executive_report", title: "Publish executive report", description: "Publish or generate leadership deliverable.", offsetDays: 3, required: true, route: "/reports/new" },
+    ],
+  },
+  {
+    key: "expansion_readiness",
+    name: "Expansion readiness",
+    description: "Prepare healthy clients for broader feature adoption.",
+    category: "growth",
+    triggerCodes: ["healthy_expansion"],
+    defaultPriority: "low",
+    estimatedDurationDays: 21,
+    requiredPermissions: ["customer_success.write"],
+    requiredFeatures: [],
+    tasks: [
+      { key: "assess_adoption_gaps", title: "Assess adoption gaps", description: "Identify unused available modules.", offsetDays: 0, required: true, route: "/adoption" },
+      { key: "propose_expansion", title: "Propose expansion plan", description: "Document next module or workflow to adopt.", offsetDays: 7, required: true, route: null },
+    ],
+  },
+  {
+    key: "renewal_risk",
+    name: "Renewal risk intervention",
+    description: "Intervene when renewal risk signals are present.",
+    category: "retention",
+    triggerCodes: ["renewal_risk", "declining_health"],
+    defaultPriority: "urgent",
+    estimatedDurationDays: 14,
+    requiredPermissions: ["customer_success.manage"],
+    requiredFeatures: [],
+    tasks: [
+      { key: "assess_renewal_risk", title: "Assess renewal risk", description: "Review delivery, risk, and engagement trends.", offsetDays: 0, required: true, route: null },
+      { key: "build_recovery_plan", title: "Build recovery plan", description: "Define intervention milestones before renewal.", offsetDays: 3, required: true, route: null },
+      { key: "execute_recovery", title: "Execute recovery actions", description: "Complete required delivery and risk tasks.", offsetDays: 10, required: true, route: null },
+    ],
+  },
+  {
+    key: "low_profitability_review",
+    name: "Low profitability review",
+    description: "Review financial health for low-margin accounts.",
+    category: "commercial",
+    triggerCodes: ["low_profitability"],
+    defaultPriority: "medium",
+    estimatedDurationDays: 10,
+    requiredPermissions: ["customer_success.read"],
+    requiredFeatures: ["profitability"],
+    tasks: [
+      { key: "review_financials", title: "Review client financials", description: "Analyze margin and revenue trends.", offsetDays: 0, required: true, route: "/profitability" },
+      { key: "recommend_actions", title: "Recommend commercial actions", description: "Document scope, pricing, or efficiency adjustments.", offsetDays: 5, required: true, route: null },
+    ],
+  },
+];
+
+export function getPlaybookDefinition(key: string): SuccessPlaybookDefinition | undefined {
+  return SUCCESS_PLAYBOOK_REGISTRY.find((p) => p.key === key);
+}

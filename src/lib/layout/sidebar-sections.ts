@@ -8,7 +8,7 @@ export const SIDEBAR_SECTIONS = [
   {
     id: "operations",
     label: "Operations",
-    itemLabels: ["Clients", "Reports", "Automation", "Knowledge", "Activity"],
+    itemLabels: ["Clients", "Customer Success", "Reports", "Automation", "Knowledge", "Activity"],
   },
   {
     id: "monitoring",

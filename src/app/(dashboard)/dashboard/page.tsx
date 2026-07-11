@@ -39,6 +39,8 @@ import { ActivationTracker } from "@/components/activation/activation-tracker";
 import { ActivationWelcome } from "@/components/activation/activation-welcome";
 import { AdoptionSummaryPanel } from "@/components/adoption/adoption-summary-panel";
 import { AdoptionTracker } from "@/components/adoption/adoption-tracker";
+import { CustomerSuccessSummaryPanel } from "@/components/customer-success/customer-success-summary-panel";
+import { CustomerSuccessTracker } from "@/components/customer-success/customer-success-tracker";
 import { DashboardSlaOverview } from "@/components/dashboard/dashboard-sla-overview";
 import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-monitoring-overview";
 import { DashboardIncidentAIOverview } from "@/components/incidents/ai/dashboard-incident-ai-overview";
@@ -52,6 +54,7 @@ import { SystemHealthCard } from "@/components/dashboard/system-health-card";
 import { PlatformStatusWidget } from "@/components/dashboard/platform-status-widget";
 import { SectionTitle } from "@/components/ui/typography";
 import { requireSession } from "@/lib/auth/session";
+import { sessionHasPermission } from "@/lib/authorization/guards";
 import { AutomationCenterDashboardClient } from "@/components/automation/automation-center-dashboard-client";
 import { IntegrationsHubCard } from "@/components/automation/integrations-hub-card";
 import { IntegrationRuntimeHubCard } from "@/components/automation/integration-runtime-hub-card";
@@ -69,6 +72,10 @@ import {
 } from "@/lib/dashboard/workspace-guidance";
 import { buildActivationSnapshot } from "@/lib/activation/status";
 import { buildAdoptionSnapshot, resolveDashboardGuidanceMode } from "@/lib/adoption/snapshot";
+import {
+  buildCustomerSuccessPortfolio,
+  resolveDashboardCustomerSuccessMode,
+} from "@/lib/customer-success/snapshot";
 import { getIntegrationsDashboardSummary, getIntegrationRuntimeSummary } from "@/lib/integrations/queries";
 import { getPredictiveDashboardSummary } from "@/lib/predictive/cache";
 import { getComplianceDiagnosticsSnapshot } from "@/lib/compliance/diagnostics";
@@ -172,6 +179,14 @@ export default async function DashboardPage() {
   ]);
 
   const guidanceMode = resolveDashboardGuidanceMode(activation, adoption);
+
+  const canReadCustomerSuccess = sessionHasPermission(session, "customer_success.read");
+  const customerSuccessPortfolio = canReadCustomerSuccess
+    ? await buildCustomerSuccessPortfolio({ session, planContext })
+    : null;
+  const customerSuccessMode = customerSuccessPortfolio
+    ? resolveDashboardCustomerSuccessMode(activation, adoption, customerSuccessPortfolio)
+    : "hidden";
 
   const canDismissActivation = canManageOrganizationSettings(session);
 
@@ -339,11 +354,35 @@ export default async function DashboardPage() {
           <div className="lg:col-span-8">
             <DashboardQuickActions />
           </div>
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 space-y-4">
             {guidanceMode === "activation_primary" ? (
               <ActivationPanel activation={activation} canDismiss={canDismissActivation} />
-            ) : (
+            ) : guidanceMode === "adoption_risk" ? (
               <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
+            ) : customerSuccessMode === "critical" && customerSuccessPortfolio ? (
+              <>
+                <CustomerSuccessTracker
+                  event="customer_success_summary_viewed"
+                  organizationId={session.organization.id}
+                />
+                <CustomerSuccessSummaryPanel portfolio={customerSuccessPortfolio} mode="critical" />
+              </>
+            ) : (
+              <>
+                <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
+                {customerSuccessMode === "summary" && customerSuccessPortfolio ? (
+                  <>
+                    <CustomerSuccessTracker
+                      event="customer_success_summary_viewed"
+                      organizationId={session.organization.id}
+                    />
+                    <CustomerSuccessSummaryPanel
+                      portfolio={customerSuccessPortfolio}
+                      mode="summary"
+                    />
+                  </>
+                ) : null}
+              </>
             )}
           </div>
           <div className="lg:col-span-12">
