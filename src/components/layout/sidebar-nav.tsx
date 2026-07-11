@@ -15,6 +15,7 @@ import {
   BookOpen,
   CreditCard,
   FileText,
+  HeartPulse,
   LayoutDashboard,
   Lock,
   Settings,
@@ -29,6 +30,7 @@ import type { LucideIcon } from "lucide-react";
 
 const NAV_ICONS: Record<string, LucideIcon> = {
   Dashboard: LayoutDashboard,
+  Adoption: HeartPulse,
   Clients: Users,
   Risks: AlertTriangle,
   Incidents: FileText,

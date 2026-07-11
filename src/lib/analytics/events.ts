@@ -37,7 +37,17 @@ export type AnalyticsEventName =
   | "first_risk_created"
   | "first_incident_created"
   | "workspace_activated"
-  | "activation_panel_dismissed";
+  | "activation_panel_dismissed"
+  | "adoption_page_viewed"
+  | "adoption_score_viewed"
+  | "adoption_recommendation_clicked"
+  | "adoption_stage_changed"
+  | "adoption_trend_changed"
+  | "retention_risk_detected"
+  | "retention_risk_resolved"
+  | "feature_adopted"
+  | "workspace_reengaged"
+  | "adoption_summary_viewed";
 
 export type AnalyticsEventProps = Record<string, string | number | boolean>;
 

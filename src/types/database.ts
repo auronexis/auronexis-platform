@@ -4925,6 +4925,38 @@ export type Database = {
           },
         ];
       };
+      organization_adoption_preferences: {
+        Row: {
+          organization_id: string;
+          last_viewed_at: string | null;
+          summary_dismissed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          organization_id: string;
+          last_viewed_at?: string | null;
+          summary_dismissed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          organization_id?: string;
+          last_viewed_at?: string | null;
+          summary_dismissed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_adoption_preferences_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

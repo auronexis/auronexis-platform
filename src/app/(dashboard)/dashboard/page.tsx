@@ -37,6 +37,8 @@ import { SmartRecommendations } from "@/components/dashboard/smart-recommendatio
 import { ActivationPanel } from "@/components/activation/activation-panel";
 import { ActivationTracker } from "@/components/activation/activation-tracker";
 import { ActivationWelcome } from "@/components/activation/activation-welcome";
+import { AdoptionSummaryPanel } from "@/components/adoption/adoption-summary-panel";
+import { AdoptionTracker } from "@/components/adoption/adoption-tracker";
 import { DashboardSlaOverview } from "@/components/dashboard/dashboard-sla-overview";
 import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-monitoring-overview";
 import { DashboardIncidentAIOverview } from "@/components/incidents/ai/dashboard-incident-ai-overview";
@@ -66,6 +68,7 @@ import {
   buildSmartRecommendations,
 } from "@/lib/dashboard/workspace-guidance";
 import { buildActivationSnapshot } from "@/lib/activation/status";
+import { buildAdoptionSnapshot, resolveDashboardGuidanceMode } from "@/lib/adoption/snapshot";
 import { getIntegrationsDashboardSummary, getIntegrationRuntimeSummary } from "@/lib/integrations/queries";
 import { getPredictiveDashboardSummary } from "@/lib/predictive/cache";
 import { getComplianceDiagnosticsSnapshot } from "@/lib/compliance/diagnostics";
@@ -144,8 +147,18 @@ export default async function DashboardPage() {
     session,
   };
 
-  const [activation, smartRecommendations] = await Promise.all([
-    buildActivationSnapshot({
+  const activation = await buildActivationSnapshot({
+    session,
+    planContext,
+    teamMemberCount: teamMembers.length || 1,
+    pendingInvitationCount: pendingInvitations.length,
+    knowledgeHub,
+    openRiskCount: data.openRiskCount,
+    monitoringConnectorCount: data.monitoringMetrics.activeConnectors,
+  });
+
+  const [adoption, smartRecommendations] = await Promise.all([
+    buildAdoptionSnapshot({
       session,
       planContext,
       teamMemberCount: teamMembers.length || 1,
@@ -153,9 +166,12 @@ export default async function DashboardPage() {
       knowledgeHub,
       openRiskCount: data.openRiskCount,
       monitoringConnectorCount: data.monitoringMetrics.activeConnectors,
+      activation,
     }),
     buildSmartRecommendations(guidanceInput),
   ]);
+
+  const guidanceMode = resolveDashboardGuidanceMode(activation, adoption);
 
   const canDismissActivation = canManageOrganizationSettings(session);
 
@@ -314,12 +330,21 @@ export default async function DashboardPage() {
 
       <section aria-label="Workspace guidance" className="space-y-4">
         <SectionTitle>Get started</SectionTitle>
+        <AdoptionTracker
+          event="adoption_summary_viewed"
+          snapshot={adoption}
+          sourceRoute="/dashboard"
+        />
         <div className="grid gap-4 lg:grid-cols-12">
           <div className="lg:col-span-8">
             <DashboardQuickActions />
           </div>
           <div className="lg:col-span-4">
-            <ActivationPanel activation={activation} canDismiss={canDismissActivation} />
+            {guidanceMode === "activation_primary" ? (
+              <ActivationPanel activation={activation} canDismiss={canDismissActivation} />
+            ) : (
+              <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
+            )}
           </div>
           <div className="lg:col-span-12">
             <SmartRecommendations recommendations={smartRecommendations} />

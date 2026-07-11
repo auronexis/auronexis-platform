@@ -37,6 +37,7 @@ export type NavItemView = NavItem & {
 
 export const PRIMARY_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", module: "dashboard", requiresRead: true },
+  { label: "Adoption", href: "/adoption", module: "dashboard", requiresRead: true },
   {
     label: "Ask Auroranexis",
     href: "/copilot",
