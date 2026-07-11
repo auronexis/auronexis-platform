@@ -16,8 +16,8 @@ export type MarketingCtaPreset = {
 
 export const MARKETING_CTA_PRESETS = {
   startFreeTrial: {
-    id: "start_free_trial",
-    label: "Start free trial",
+    id: "create_workspace",
+    label: "Create workspace",
     href: "/signup",
     variant: "primary",
     analyticsEvent: "signup_started",
@@ -34,7 +34,7 @@ export const MARKETING_CTA_PRESETS = {
   requestEnterpriseDemo: {
     id: "request_enterprise_demo",
     label: "Request enterprise demo",
-    href: "/enterprise",
+    href: "/contact",
     variant: "primary",
     analyticsEvent: "demo_requested",
     analyticsProps: { source: "enterprise_cta" },

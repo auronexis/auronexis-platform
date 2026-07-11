@@ -33,8 +33,8 @@ export const ENTERPRISE_CONTENT = {
       description: "Deterministic portfolio metrics with source-grounded AI explanations.",
     },
     {
-      title: "Procurement-ready",
-      description: "DPA, sub-processor list, and security policy available for vendor review.",
+      title: "Procurement documentation",
+      description: "DPA summary, sub-processor list, and security policy available for vendor review.",
     },
   ] satisfies readonly MarketingBenefit[],
   securityHighlights: [

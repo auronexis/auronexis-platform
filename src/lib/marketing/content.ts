@@ -34,21 +34,21 @@ export const MARKETING_LOGO_CLOUD = [
 export const MARKETING_TESTIMONIALS = [
   {
     quote:
-      "We needed one place to see client health, overdue reports, and SLA risk — not another generic CRM.",
-    role: "Operations Director",
-    organizationType: "MSP",
+      "Teams need one portfolio view for client health, overdue reports, and SLA risk — not another generic CRM.",
+    role: "Operations leadership",
+    organizationType: "Representative priority",
   },
   {
     quote:
-      "Executive briefings are faster because the platform separates verified facts from recommendations.",
-    role: "Delivery Lead",
-    organizationType: "IT consultancy",
+      "Executive briefings should separate verified facts from recommendations before they reach clients.",
+    role: "Delivery leadership",
+    organizationType: "Representative priority",
   },
   {
     quote:
-      "Plan-gated AI and audit-friendly usage logging made procurement review straightforward.",
-    role: "Head of Client Success",
-    organizationType: "Automation agency",
+      "Procurement reviews go faster when AI usage, audit trails, and plan entitlements are documented.",
+    role: "Client success leadership",
+    organizationType: "Representative priority",
   },
 ] as const;
 
@@ -61,32 +61,82 @@ export const PLAN_COMPARISON_ROWS = [
   { feature: "Custom limits", professional: "—", business: "—", enterprise: true },
 ] as const;
 
-export const FEATURES = [
+export type MarketingFeature = {
+  title: string;
+  description: string;
+  problem: string;
+  workflow: string;
+  outcome: string;
+  enterpriseValue: string;
+  ctaLabel: string;
+  ctaHref: string;
+  planNote?: string;
+};
+
+export const FEATURES: readonly MarketingFeature[] = [
   {
     title: "Operations Command Center",
     description: "One workspace for client health, alerts, reports, and delivery metrics.",
+    problem: "Client signals are scattered across spreadsheets, inboxes, and disconnected tools.",
+    workflow: "Monitor portfolio health, overdue work, and executive priorities from a single dashboard.",
+    outcome: "Leadership sees what changed, which clients need attention, and what to do next.",
+    enterpriseValue: "Faster operational decisions with organization-scoped visibility and audit-friendly activity.",
+    ctaLabel: "Explore the dashboard",
+    ctaHref: "/signup",
   },
   {
     title: "Client Reporting",
     description: "Templates, schedules, PDF export, and secure client portal delivery.",
+    problem: "Recurring client reports are manual, inconsistent, and hard to prove on time.",
+    workflow: "Draft, generate, publish, and schedule reports with client portal visibility controls.",
+    outcome: "Predictable delivery and a published record of value for every client.",
+    enterpriseValue: "Client-ready reporting with version history and portal-only publication rules.",
+    ctaLabel: "See reporting workflow",
+    ctaHref: "/docs/reports",
   },
   {
     title: "Risk & Incident Management",
     description: "Track operational risks, incidents, and SLA breaches with audit trails.",
+    problem: "Operational issues are tracked informally and escalate without portfolio context.",
+    workflow: "Log risks and incidents, tie them to clients, and resolve with traceable status changes.",
+    outcome: "Fewer surprises and a defensible record for client and leadership reviews.",
+    enterpriseValue: "Governance-ready risk and incident history with role-based access.",
+    ctaLabel: "Review risk workflows",
+    ctaHref: "/pricing#compare",
+    planNote: "Available on Business and Enterprise plans.",
   },
   {
     title: "Automation Workflows",
     description: "Build triggers, actions, and execution history without leaving the platform.",
+    problem: "Repeatable operational work still depends on manual follow-up across teams.",
+    workflow: "Define triggers and actions, monitor execution history, and connect delivery events.",
+    outcome: "More consistent operations with less manual coordination.",
+    enterpriseValue: "Repeatable automation with organization-scoped execution logs.",
+    ctaLabel: "View automation capabilities",
+    ctaHref: "/docs/automation",
   },
   {
     title: "Integrations & Connectors",
     description: "Connect CRM, ticketing, and productivity tools with OAuth and sync jobs.",
+    problem: "Client data lives in external systems that operations teams still reconcile by hand.",
+    workflow: "Connect approved systems, sync events, and keep operational records in one workspace.",
+    outcome: "Less swivel-chair work between delivery tools and client intelligence.",
+    enterpriseValue: "Connector inventory and OAuth flows designed for multi-tenant operations teams.",
+    ctaLabel: "Browse integrations",
+    ctaHref: "/integrations",
   },
   {
     title: "Predictive Intelligence",
     description: "Health scores, forecasts, and early warning signals for client portfolios.",
+    problem: "Client deterioration is noticed too late to protect revenue and delivery quality.",
+    workflow: "Use adoption, success, and operational signals to surface priority clients and changes.",
+    outcome: "Earlier intervention on at-risk clients and clearer executive narratives.",
+    enterpriseValue: "Deterministic intelligence with evidence-backed findings and optional AI assistance.",
+    ctaLabel: "See executive intelligence",
+    ctaHref: "/intelligence",
+    planNote: "Advanced AI narrative features are plan-gated.",
   },
-] as const;
+];
 
 export const USE_CASES = [
   {
@@ -121,7 +171,7 @@ export const PUBLIC_PRICING_PLANS = [
     price: "€499",
     period: "/ month",
     description: "For established agencies with compliance, white-label, and higher operational limits.",
-    highlights: ["Higher limits", "White label", "Compliance center", "Priority support"],
+    highlights: ["Higher limits", "White label", "Compliance center", "Advanced operations"],
     featured: true,
   },
   {
@@ -172,7 +222,7 @@ export const COMPLIANCE_READINESS = [
   {
     framework: "DORA",
     status: "Readiness",
-    detail: "Operational resilience features planned for financial-sector partners.",
+    detail: "Incident and resilience workflows support operator obligations; roadmap aligned with financial-sector needs.",
   },
 ] as const;
 

@@ -25,7 +25,7 @@ export default async function SignUpPage() {
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold text-navy-950">Create your agency</h1>
           <p className="mt-2 text-sm text-muted">
-            Set up your Operations Command Center.
+            Create a free workspace to explore the platform, then choose a paid plan when you are ready to scale.
           </p>
         </div>
         <SignUpForm />

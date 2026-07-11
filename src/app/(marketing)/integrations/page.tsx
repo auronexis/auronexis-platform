@@ -21,7 +21,7 @@ export default function IntegrationsPage() {
         title="Connect your operational stack"
         description="Native platform services, workflow connectors, and outbound events — built into every workspace."
         primaryHref="/signup"
-        primaryLabel="Start free trial"
+        primaryLabel="Create workspace"
         secondaryHref="/docs/integrations"
         secondaryLabel="Integration docs"
       />

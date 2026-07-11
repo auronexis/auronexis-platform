@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
-import { MarketingCta } from "@/components/marketing/marketing-cta";
+import { MarketingPlanCta } from "@/components/marketing/marketing-plan-cta";
 import { MarketingCtaSection } from "@/components/marketing/marketing-cta-section";
+import { MarketingCta } from "@/components/marketing/marketing-cta";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingLogoCloud } from "@/components/marketing/marketing-logo-cloud";
 import { MarketingPace } from "@/components/marketing/marketing-pace";
@@ -227,6 +228,7 @@ export default async function MarketingHomePage() {
                   <li key={highlight}>• {highlight}</li>
                 ))}
               </ul>
+              <MarketingPlanCta planName={plan.name} />
             </article>
           ))}
         </div>
@@ -239,13 +241,13 @@ export default async function MarketingHomePage() {
       </MarketingPace>
 
       <MarketingPace>
-        <MarketingSection eyebrow="Trusted by" title="Service-led organizations">
+        <MarketingSection eyebrow="Built for" title="Service-led organizations">
           <MarketingLogoCloud items={MARKETING_LOGO_CLOUD} />
         </MarketingSection>
       </MarketingPace>
 
       <MarketingPace tone="muted" bordered>
-        <MarketingSection eyebrow="Voices" title="Operations leaders">
+        <MarketingSection eyebrow="Priorities" title="What operations leaders look for">
           <MarketingTestimonials items={MARKETING_TESTIMONIALS} />
         </MarketingSection>
       </MarketingPace>
@@ -255,6 +257,13 @@ export default async function MarketingHomePage() {
           <MarketingFaq items={FAQ_ITEMS} />
         </MarketingSection>
       </MarketingPace>
+
+      <MarketingCtaSection
+        title="Create your agency workspace"
+        description="Set up Auroranexis, invite your team, and start managing client operations from one command center."
+        primaryPreset="startFreeTrial"
+        secondaryPreset="seePricing"
+      />
 
       <MarketingCta
         title="Request a Pilot Partner invitation"

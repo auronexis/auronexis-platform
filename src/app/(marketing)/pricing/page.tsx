@@ -5,6 +5,8 @@ import { AuthAwareMarketingLink } from "@/components/marketing/auth-aware-market
 import { NewsletterSignupForm } from "@/components/marketing/newsletter-signup-form";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingComparisonTable } from "@/components/marketing/marketing-comparison-table";
+import { MarketingCtaSection } from "@/components/marketing/marketing-cta-section";
+import { MarketingPlanCta } from "@/components/marketing/marketing-plan-cta";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import {
   INVITE_ONLY_PROGRAMS_NOTE,
@@ -30,7 +32,7 @@ export default function PublicPricingPage() {
       <MarketingHero
         eyebrow="Pricing"
         title="Professional, Business, and Enterprise"
-        description="Three public subscription tiers for agencies. Professional, Business, and Enterprise."
+        description="Transparent plans for agencies scaling client operations. Compare capabilities and choose the right tier."
         primaryHref="/signup"
         primaryLabel="Get started"
         secondaryHref="/login"
@@ -66,6 +68,7 @@ export default function PublicPricingPage() {
                   <li key={highlight}>• {highlight}</li>
                 ))}
               </ul>
+              <MarketingPlanCta planName={plan.name} />
             </article>
           ))}
         </div>
@@ -91,7 +94,7 @@ export default function PublicPricingPage() {
           .
         </p>
       </MarketingSection>
-      <MarketingSection title="Compare capabilities" className="border-t border-white/10">
+      <MarketingSection title="Compare capabilities" id="compare" className="border-t border-white/10">
         <MarketingComparisonTable rows={PLAN_COMPARISON_ROWS} />
       </MarketingSection>
       <MarketingSection title="Product updates" className="border-t border-white/10 bg-white/[0.02]">
@@ -100,6 +103,12 @@ export default function PublicPricingPage() {
         </p>
         <NewsletterSignupForm />
       </MarketingSection>
+      <MarketingCtaSection
+        title="Ready to standardize client operations?"
+        description="Create a workspace, invite your team, and connect your first clients."
+        primaryPreset="startFreeTrial"
+        secondaryPreset="contactSales"
+      />
     </MarketingShell>
   );
 }

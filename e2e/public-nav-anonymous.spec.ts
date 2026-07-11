@@ -15,7 +15,7 @@ const ANONYMOUS_PUBLIC_ROUTES = [
 
 test.describe("public navigation — anonymous", () => {
   for (const route of ANONYMOUS_PUBLIC_ROUTES) {
-    test(`${route} shows Sign in and Start free trial`, async ({ page }) => {
+    test(`${route} shows Sign in and Create workspace`, async ({ page }) => {
       await page.goto(route, { waitUntil: "domcontentloaded" });
       await expect(page.locator('a[href="/login"]').first()).toBeVisible();
       await expect(page.locator('a[href="/signup"]').first()).toBeVisible();

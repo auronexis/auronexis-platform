@@ -5,13 +5,17 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { PublicAppLink } from "@/components/marketing/public-app-link";
 import { StatusBadge, type StatusLevel } from "@/components/marketing/status-badge";
 import { STATUS_COMPONENTS_STATIC } from "@/lib/marketing/content";
+import {
+  filterPublicStatusComponents,
+  resolvePublicAiStatus,
+  resolvePublicOverallStatus,
+  type PublicStatusComponent,
+} from "@/lib/marketing/public-status";
 import { COMPANY_NAME } from "@/lib/company/contact";
 import { checkDatabaseHealth, type DatabaseHealthLevel } from "@/lib/diagnostics/platform-health";
 import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
 import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
 import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
-import { getPlatformStatusSnapshot } from "@/lib/diagnostics/platform-status";
-import { isDevelopmentEnvironment } from "@/lib/diagnostics/platform-readiness";
 import { createMarketingMetadata } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 
@@ -24,15 +28,11 @@ export const metadata: Metadata = createMarketingMetadata({
 /** Live probes require runtime env — skip static prerender at build time. */
 export const dynamic = "force-dynamic";
 
-type StatusComponent = {
-  name: string;
-  status: StatusLevel;
-  detail: string;
-};
+type StatusComponent = PublicStatusComponent;
 
-function mapHealth(ok: boolean, degraded = false, allowDegradedInDev = false): StatusLevel {
+function mapHealth(ok: boolean, degraded = false): StatusLevel {
   if (ok) return "operational";
-  if (degraded || allowDegradedInDev) return "degraded";
+  if (degraded) return "degraded";
   return "incident";
 }
 
@@ -43,10 +43,6 @@ function mapDatabaseLevel(level: DatabaseHealthLevel): StatusLevel {
 }
 
 async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>> {
-  const environment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
-  const nodeEnv = process.env.NODE_ENV ?? "development";
-  const isDev = isDevelopmentEnvironment(environment, nodeEnv);
-
   const [database, stripeWebhook, cron, queue] = await Promise.all([
     checkDatabaseHealth(),
     getStripeWebhookDiagnostics(),
@@ -54,54 +50,60 @@ async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>
     getQueueDiagnosticsSnapshot(),
   ]);
 
+  const aiStatus = resolvePublicAiStatus();
+
   return {
     Platform: {
       name: "Platform",
       status: mapDatabaseLevel(database.level),
-      detail: database.message,
+      detail: database.level === "healthy" ? "Application services available" : database.message,
     },
     API: {
       name: "API",
       status: database.level === "unavailable" ? "incident" : "operational",
-      detail: "REST API and application routes",
+      detail: "Application and authenticated API routes",
     },
     Database: {
       name: "Database",
       status: mapDatabaseLevel(database.level),
-      detail: database.message,
+      detail: database.level === "healthy" ? "Data services available" : "Data services impacted",
     },
     Billing: {
       name: "Billing",
-      status: process.env.STRIPE_SECRET_KEY ? "operational" : isDev ? "degraded" : "degraded",
+      status: process.env.STRIPE_SECRET_KEY ? "operational" : "degraded",
       detail: process.env.STRIPE_SECRET_KEY
-        ? "Stripe connected"
-        : isDev
-          ? "Stripe not configured (optional in development)"
-          : "Stripe not configured",
+        ? "Subscription billing available"
+        : "Billing availability limited",
+    },
+    AI: {
+      name: "AI",
+      status: aiStatus.status,
+      detail: aiStatus.detail,
+    },
+    Connectors: {
+      name: "Connectors",
+      status: "operational",
+      detail: "Integration infrastructure available",
+    },
+    Automation: {
+      name: "Automation",
+      status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
+      detail: "Workflow execution services",
     },
     Stripe: {
       name: "Stripe",
       status: mapHealth(stripeWebhook.tableReachable, stripeWebhook.failedEvents > 0),
-      detail: `${stripeWebhook.processedEvents} processed · ${stripeWebhook.failedEvents} failed`,
+      detail: "Payment processing",
     },
     Cron: {
       name: "Cron",
-      status: mapHealth(
-        cron.tableReachable && cron.status !== "unavailable",
-        cron.status === "degraded" || isDev,
-        isDev,
-      ),
-      detail: isDev && cron.status === "unavailable" ? "Not configured (optional in development)" : cron.status,
+      status: mapHealth(cron.tableReachable && cron.status !== "unavailable", cron.status === "degraded"),
+      detail: "Scheduled maintenance jobs",
     },
     Queue: {
       name: "Queue",
       status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
-      detail: `${queue.jobsPending} pending · ${queue.deadLetters} dead letter`,
-    },
-    AI: {
-      name: "AI",
-      status: process.env.OPENAI_API_KEY ? "operational" : "degraded",
-      detail: process.env.OPENAI_API_KEY ? "Provider configured" : "Provider not configured",
+      detail: "Background processing",
     },
     Observability: {
       name: "Observability",
@@ -110,25 +112,22 @@ async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>
         process.env.NEXT_PUBLIC_POSTHOG_KEY ||
         process.env.SENTRY_DSN
           ? "operational"
-          : isDev
-            ? "degraded"
-            : "maintenance",
-      detail: isDev
-        ? "Monitoring optional in development"
-        : "Monitoring hooks available when configured",
+          : "maintenance",
+      detail: "Platform monitoring",
     },
   };
 }
 
 export default async function StatusPage() {
-  const [platformSnapshot, overrides] = await Promise.all([
-    getPlatformStatusSnapshot(),
-    getLiveStatusOverrides(),
-  ]);
-  const components: StatusComponent[] = STATUS_COMPONENTS_STATIC.map((item) => {
-    const live = overrides[item.name];
-    return live ?? { name: item.name, status: item.status, detail: item.detail };
-  });
+  const overrides = await getLiveStatusOverrides();
+  const components: StatusComponent[] = filterPublicStatusComponents(
+    STATUS_COMPONENTS_STATIC.map((item) => {
+      const live = overrides[item.name];
+      return live ?? { name: item.name, status: item.status, detail: item.detail };
+    }),
+  );
+
+  const overall = resolvePublicOverallStatus(components);
 
   const readinessColorStyles = {
     green: "border-success/30 bg-success/5 text-success",
@@ -147,7 +146,7 @@ export default async function StatusPage() {
             <div>
               <h1 className="text-xl font-semibold text-white">{COMPANY_NAME} Status</h1>
               <p className="text-sm text-primary-foreground/75">
-                Platform, API, billing, AI, connectors, and infrastructure health.
+                Customer-impacting platform services and availability.
               </p>
             </div>
           </div>
@@ -165,14 +164,12 @@ export default async function StatusPage() {
         <div
           className={cn(
             "rounded-2xl border p-6",
-            readinessColorStyles[platformSnapshot.readiness.color],
+            readinessColorStyles[overall.color],
           )}
         >
           <p className="text-sm opacity-80">Overall status</p>
-          <p className="mt-2 text-2xl font-semibold">{platformSnapshot.readiness.label}</p>
-          <p className="mt-1 text-sm font-medium opacity-90">
-            {platformSnapshot.readiness.score}% · {platformSnapshot.readiness.tierLabel}
-          </p>
+          <p className="mt-2 text-2xl font-semibold">{overall.label}</p>
+          <p className="mt-1 text-sm font-medium opacity-90">{overall.tierLabel}</p>
         </div>
 
         <ul className="mt-8 space-y-3">

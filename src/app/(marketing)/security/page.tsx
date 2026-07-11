@@ -22,6 +22,8 @@ export default function SecurityPage() {
         description="Administrative, technical, and organizational controls for B2B SaaS workloads."
         primaryHref={LEGAL_ROUTES.securityPolicy}
         primaryLabel="Security policy"
+        secondaryHref={MARKETING_ROUTES.status}
+        secondaryLabel="Platform status"
       />
       <MarketingSection title="Security highlights">
         <ul className="space-y-3">
@@ -45,7 +47,15 @@ export default function SecurityPage() {
             platform status
           </Link>
           , and{" "}
-          <Link href="/docs/api" className="font-medium text-primary hover:underline">
+          <Link href={LEGAL_ROUTES.subprocessors} className="font-medium text-primary hover:underline">
+            sub-processors
+          </Link>
+          ,{" "}
+          <Link href={LEGAL_ROUTES.dataProcessingAgreement} className="font-medium text-primary hover:underline">
+            DPA summary
+          </Link>
+          ,{" "}
+          <Link href="/api/docs" className="font-medium text-primary hover:underline">
             API documentation
           </Link>
           .
