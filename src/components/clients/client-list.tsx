@@ -16,6 +16,7 @@ import {
 import type { ClientWithRelations } from "@/lib/clients/types";
 import type { ClientHealthSummary } from "@/lib/health/types";
 import { formatClientDate } from "@/lib/clients/types";
+import { ACTIVATION_EMPTY_STATE_COPY, ACTIVATION_EMPTY_STATE_LINKS } from "@/lib/activation/empty-states";
 
 type ClientListProps = {
   clients: ClientWithRelations[];
@@ -28,12 +29,12 @@ export function ClientList({ clients, canManage, healthSummaries }: ClientListPr
     return (
       <EmptyState
         icon={Users}
-        title="No clients yet"
-        description="Add a client to start monitoring operational health across your portfolio."
-        action={canManage ? <LinkButton href="/clients/new" size="sm">Add client</LinkButton> : undefined}
+        title={ACTIVATION_EMPTY_STATE_COPY.clients.title}
+        description={ACTIVATION_EMPTY_STATE_COPY.clients.description}
+        action={canManage ? <LinkButton href={ACTIVATION_EMPTY_STATE_LINKS.clients.href} size="sm">{ACTIVATION_EMPTY_STATE_LINKS.clients.label}</LinkButton> : undefined}
         secondaryAction={
-          <LinkButton href="/dashboard" size="sm" variant="outline">
-            Back to dashboard
+          <LinkButton href={ACTIVATION_EMPTY_STATE_LINKS.onboarding.href} size="sm" variant="outline">
+            {ACTIVATION_EMPTY_STATE_LINKS.onboarding.label}
           </LinkButton>
         }
       />

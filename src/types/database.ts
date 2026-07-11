@@ -4884,6 +4884,44 @@ export type Database = {
           },
         ];
       };
+      organization_activation_preferences: {
+        Row: {
+          organization_id: string;
+          welcome_dismissed_at: string | null;
+          onboarding_dismissed_at: string | null;
+          onboarding_last_viewed_at: string | null;
+          activation_milestone_reached_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          organization_id: string;
+          welcome_dismissed_at?: string | null;
+          onboarding_dismissed_at?: string | null;
+          onboarding_last_viewed_at?: string | null;
+          activation_milestone_reached_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          organization_id?: string;
+          welcome_dismissed_at?: string | null;
+          onboarding_dismissed_at?: string | null;
+          onboarding_last_viewed_at?: string | null;
+          activation_milestone_reached_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_activation_preferences_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -4975,3 +5013,5 @@ export type CustomerOnboardingRecord =
   Database["public"]["Tables"]["customer_onboarding_records"]["Row"];
 export type PortalCustomerOnboarding =
   Database["public"]["Tables"]["portal_customer_onboarding"]["Row"];
+export type OrganizationActivationPreferences =
+  Database["public"]["Tables"]["organization_activation_preferences"]["Row"];

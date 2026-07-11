@@ -34,7 +34,9 @@ import { DashboardMetricCard } from "@/components/dashboard/dashboard-panel";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 import { SmartRecommendations } from "@/components/dashboard/smart-recommendations";
-import { WorkspaceProgress } from "@/components/dashboard/workspace-progress";
+import { ActivationPanel } from "@/components/activation/activation-panel";
+import { ActivationTracker } from "@/components/activation/activation-tracker";
+import { ActivationWelcome } from "@/components/activation/activation-welcome";
 import { DashboardSlaOverview } from "@/components/dashboard/dashboard-sla-overview";
 import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-monitoring-overview";
 import { DashboardIncidentAIOverview } from "@/components/incidents/ai/dashboard-incident-ai-overview";
@@ -62,8 +64,8 @@ import { getDashboardData } from "@/lib/dashboard/queries";
 import { getExecutiveIntelligence } from "@/lib/intelligence/queries";
 import {
   buildSmartRecommendations,
-  buildWorkspaceProgress,
 } from "@/lib/dashboard/workspace-guidance";
+import { buildActivationSnapshot } from "@/lib/activation/status";
 import { getIntegrationsDashboardSummary, getIntegrationRuntimeSummary } from "@/lib/integrations/queries";
 import { getPredictiveDashboardSummary } from "@/lib/predictive/cache";
 import { getComplianceDiagnosticsSnapshot } from "@/lib/compliance/diagnostics";
@@ -139,9 +141,23 @@ export default async function DashboardPage() {
     pendingInvitationCount: pendingInvitations.length,
     knowledgeHub,
     planContext,
+    session,
   };
-  const workspaceProgress = buildWorkspaceProgress(guidanceInput);
-  const smartRecommendations = buildSmartRecommendations(guidanceInput);
+
+  const [activation, smartRecommendations] = await Promise.all([
+    buildActivationSnapshot({
+      session,
+      planContext,
+      teamMemberCount: teamMembers.length || 1,
+      pendingInvitationCount: pendingInvitations.length,
+      knowledgeHub,
+      openRiskCount: data.openRiskCount,
+      monitoringConnectorCount: data.monitoringMetrics.activeConnectors,
+    }),
+    buildSmartRecommendations(guidanceInput),
+  ]);
+
+  const canDismissActivation = canManageOrganizationSettings(session);
 
   const operationalMetrics = [
     {
@@ -194,6 +210,23 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <ActivationTracker
+        organizationId={session.organization.id}
+        event={activation.firstValueReached ? "workspace_activated" : "onboarding_started"}
+        stage={activation.stage}
+        completionPercent={activation.completionPercent}
+        sourceRoute="/dashboard"
+        milestoneKey={activation.firstValueReached ? "first_value" : undefined}
+      />
+
+      {activation.showWelcome ? (
+        <ActivationWelcome
+          userName={session.user.full_name}
+          activation={activation}
+          canDismiss={canDismissActivation}
+        />
+      ) : null}
+
       <CommandCenterHero
         userName={session.user.full_name}
         data={data}
@@ -286,7 +319,7 @@ export default async function DashboardPage() {
             <DashboardQuickActions />
           </div>
           <div className="lg:col-span-4">
-            <WorkspaceProgress items={workspaceProgress} />
+            <ActivationPanel activation={activation} />
           </div>
           <div className="lg:col-span-12">
             <SmartRecommendations recommendations={smartRecommendations} />

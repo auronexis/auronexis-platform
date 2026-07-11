@@ -23,7 +23,20 @@ export type AnalyticsEventName =
   | "client_created"
   | "report_created"
   | "risk_created"
-  | "incident_created";
+  | "incident_created"
+  | "onboarding_viewed"
+  | "onboarding_started"
+  | "onboarding_dismissed"
+  | "onboarding_step_viewed"
+  | "onboarding_step_completed"
+  | "activation_stage_changed"
+  | "activation_milestone_reached"
+  | "next_best_action_clicked"
+  | "first_client_created"
+  | "first_report_created"
+  | "first_risk_created"
+  | "first_incident_created"
+  | "workspace_activated";
 
 export type AnalyticsEventProps = Record<string, string | number | boolean>;
 

@@ -1,8 +1,7 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { FileText } from "lucide-react";
+import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Button } from "@/components/ui/button";
 
 type ReportEmptyStateProps = {
   title: string;
@@ -27,11 +26,9 @@ export function ReportEmptyState({
       action={action}
       secondaryAction={
         secondaryHref && secondaryLabel ? (
-          <Link href={secondaryHref}>
-            <Button size="sm" variant="outline">
-              {secondaryLabel}
-            </Button>
-          </Link>
+          <LinkButton href={secondaryHref} size="sm" variant="outline">
+            {secondaryLabel}
+          </LinkButton>
         ) : undefined
       }
     />

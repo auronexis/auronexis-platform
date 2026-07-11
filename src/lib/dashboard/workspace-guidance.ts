@@ -1,6 +1,12 @@
 import type { KnowledgeHubData } from "@/lib/ai/knowledge/types";
 import type { DashboardData } from "@/lib/dashboard/types";
 import type { OrganizationPlanContext } from "@/lib/plans/types";
+import type { ActivationStepStatus } from "@/lib/activation/types";
+import { buildActivationSteps } from "@/lib/activation/steps";
+import { buildNextBestAction } from "@/lib/activation/recommendations";
+import { getCompletionPercent, resolveActivationStage } from "@/lib/activation/scoring";
+import { getActivationDataSnapshot } from "@/lib/activation/queries";
+import type { SessionContext } from "@/lib/tenancy/context";
 
 export type WorkspaceProgressItem = {
   id: string;
@@ -23,60 +29,66 @@ export type WorkspaceGuidanceInput = {
   pendingInvitationCount: number;
   knowledgeHub: KnowledgeHubData | null;
   planContext: OrganizationPlanContext | null;
+  session?: SessionContext;
 };
 
-function hasBillingIssue(planContext: OrganizationPlanContext | null): boolean {
-  if (!planContext?.subscriptionStatus) {
-    return false;
+async function resolveActivationSteps(
+  input: WorkspaceGuidanceInput,
+): Promise<ActivationStepStatus[]> {
+  if (!input.session) {
+    return [];
   }
-  return ["past_due", "unpaid", "incomplete"].includes(planContext.subscriptionStatus);
+
+  const snapshot = await getActivationDataSnapshot({
+    session: input.session,
+    planContext: input.planContext,
+    teamMemberCount: input.teamMemberCount,
+    pendingInvitationCount: input.pendingInvitationCount,
+    knowledgeHub: input.knowledgeHub,
+    openRiskCount: input.data.openRiskCount,
+    monitoringConnectorCount: input.data.monitoringMetrics.activeConnectors,
+  });
+
+  return buildActivationSteps(snapshot, input.session, input.planContext?.features ?? null);
 }
 
-function isBillingConfigured(planContext: OrganizationPlanContext | null): boolean {
-  if (!planContext) {
-    return false;
-  }
-  return planContext.isActiveSubscription || planContext.planKey !== "starter";
+function toWorkspaceProgressItems(steps: ActivationStepStatus[]): WorkspaceProgressItem[] {
+  return steps
+    .filter((step) => !step.locked)
+    .map((step) => ({
+      id: step.id,
+      label: step.label,
+      complete: step.complete,
+      href: step.href,
+    }));
 }
 
-function hasReports(data: DashboardData): boolean {
-  return (
-    data.draftReportsCount > 0 ||
-    data.reportsMetrics.draftCount > 0 ||
-    data.reportsMetrics.publishedThisMonth > 0
-  );
+/** Setup checklist derived from activation model — backward compatible export. */
+export async function buildWorkspaceProgress(
+  input: WorkspaceGuidanceInput,
+): Promise<WorkspaceProgressItem[]> {
+  const steps = await resolveActivationSteps(input);
+  return toWorkspaceProgressItems(steps);
 }
 
-function knowledgeCount(knowledgeHub: KnowledgeHubData | null): number {
-  if (!knowledgeHub) {
-    return 0;
-  }
-  return (
-    knowledgeHub.articles.length +
-    knowledgeHub.playbooks.length +
-    knowledgeHub.publishedReports.length
-  );
-}
-
-/** Setup checklist derived from existing workspace data — never throws. */
-export function buildWorkspaceProgress(input: WorkspaceGuidanceInput): WorkspaceProgressItem[] {
+/** Synchronous fallback for callers without session — legacy dashboard path. */
+export function buildWorkspaceProgressSync(input: WorkspaceGuidanceInput): WorkspaceProgressItem[] {
   const { data, teamMemberCount, pendingInvitationCount, knowledgeHub, planContext } = input;
   const clientsExist = data.clientHealth.totalClients > 0;
-  const risksApplicable = data.features.risks;
+  const hasReports =
+    data.draftReportsCount > 0 ||
+    data.reportsMetrics.draftCount > 0 ||
+    data.reportsMetrics.publishedThisMonth > 0;
+  const knowledgeCount =
+    (knowledgeHub?.articles.length ?? 0) +
+    (knowledgeHub?.playbooks.length ?? 0) +
+    (knowledgeHub?.publishedReports.length ?? 0);
+  const billingConfigured =
+    planContext?.isActiveSubscription || (planContext?.planKey ?? "starter") !== "starter";
 
   return [
-    {
-      id: "client",
-      label: "Client created",
-      complete: clientsExist,
-      href: "/clients/new",
-    },
-    {
-      id: "report",
-      label: "Report created",
-      complete: hasReports(data),
-      href: "/reports/new",
-    },
+    { id: "client", label: "Client created", complete: clientsExist, href: "/clients/new" },
+    { id: "report", label: "Report created", complete: hasReports, href: "/reports/new" },
     {
       id: "team",
       label: "Team invited",
@@ -86,30 +98,77 @@ export function buildWorkspaceProgress(input: WorkspaceGuidanceInput): Workspace
     {
       id: "knowledge",
       label: "Knowledge added",
-      complete: knowledgeCount(knowledgeHub) > 0,
+      complete: knowledgeCount > 0,
       href: "/knowledge",
     },
     {
       id: "risks",
       label: "Risks reviewed",
-      complete: !risksApplicable || (clientsExist && data.openRiskCount === 0),
+      complete: !data.features.risks || (clientsExist && data.openRiskCount === 0),
       href: "/risks?tab=open",
     },
     {
       id: "billing",
       label: "Billing configured",
-      complete: isBillingConfigured(planContext),
+      complete: billingConfigured,
       href: "/settings/billing",
     },
   ];
 }
 
-/** Contextual next-step cards for the dashboard — highest priority first. */
-export function buildSmartRecommendations(input: WorkspaceGuidanceInput): SmartRecommendation[] {
-  const { data, teamMemberCount, pendingInvitationCount, knowledgeHub, planContext } = input;
+/** Contextual next-step cards — delegates to activation next-best-action when session present. */
+export async function buildSmartRecommendations(
+  input: WorkspaceGuidanceInput,
+): Promise<SmartRecommendation[]> {
+  if (!input.session) {
+    return buildSmartRecommendationsSync(input);
+  }
+
+  const snapshot = await getActivationDataSnapshot({
+    session: input.session,
+    planContext: input.planContext,
+    teamMemberCount: input.teamMemberCount,
+    pendingInvitationCount: input.pendingInvitationCount,
+    knowledgeHub: input.knowledgeHub,
+    openRiskCount: input.data.openRiskCount,
+    monitoringConnectorCount: input.data.monitoringMetrics.activeConnectors,
+  });
+
+  const steps = buildActivationSteps(snapshot, input.session, input.planContext?.features ?? null);
+  const stage = resolveActivationStage(snapshot, steps);
+  const next = buildNextBestAction({
+    session: input.session,
+    snapshot,
+    steps,
+    stage,
+    planContext: input.planContext,
+  });
+
+  if (!next) {
+    return [];
+  }
+
+  return [
+    {
+      id: next.id,
+      title: next.title,
+      description: next.description,
+      href: next.href,
+      cta: "Continue",
+    },
+  ];
+}
+
+/** Legacy synchronous recommendations for compatibility. */
+export function buildSmartRecommendationsSync(input: WorkspaceGuidanceInput): SmartRecommendation[] {
+  const { data, knowledgeHub, planContext } = input;
   const recommendations: SmartRecommendation[] = [];
 
-  if (hasBillingIssue(planContext)) {
+  const hasBillingIssue =
+    planContext?.subscriptionStatus &&
+    ["past_due", "unpaid", "incomplete"].includes(planContext.subscriptionStatus);
+
+  if (hasBillingIssue) {
     recommendations.push({
       id: "billing-issue",
       title: "Resolve billing",
@@ -127,54 +186,22 @@ export function buildSmartRecommendations(input: WorkspaceGuidanceInput): SmartR
       href: "/clients/new",
       cta: "Add client",
     });
-  } else if (!hasReports(data)) {
-    recommendations.push({
-      id: "first-report",
-      title: "Generate your first report",
-      description: "Publish a client report to demonstrate value and track delivery history.",
-      href: "/reports/new",
-      cta: "Create report",
-    });
   }
 
-  if (data.features.risks && data.openRiskCount > 0) {
-    recommendations.push({
-      id: "review-risks",
-      title: "Review open risks",
-      description: `${data.openRiskCount} open risk${data.openRiskCount === 1 ? "" : "s"} need attention across your portfolio.`,
-      href: "/risks?tab=open",
-      cta: "View risks",
-    });
-  }
-
-  if (teamMemberCount <= 1 && pendingInvitationCount === 0) {
-    recommendations.push({
-      id: "invite-team",
-      title: "Invite your team",
-      description: "Collaborate on incidents, reports, and client delivery with workspace members.",
-      href: "/settings/team",
-      cta: "Invite member",
-    });
-  }
-
-  if (knowledgeHub && knowledgeCount(knowledgeHub) === 0) {
-    recommendations.push({
-      id: "knowledge-start",
-      title: "Build organizational knowledge",
-      description: "Capture playbooks and learnings from resolved incidents and published reports.",
-      href: "/knowledge",
-      cta: "Open knowledge hub",
-    });
-  }
-
-  if (!isBillingConfigured(planContext) && !hasBillingIssue(planContext)) {
-    recommendations.push({
-      id: "configure-billing",
-      title: "Configure billing",
-      description: "Choose a plan and set up billing to unlock the full Auroranexis workspace.",
-      href: "/settings/plans",
-      cta: "View plans",
-    });
+  if (knowledgeHub) {
+    const knowledgeCount =
+      knowledgeHub.articles.length +
+      knowledgeHub.playbooks.length +
+      knowledgeHub.publishedReports.length;
+    if (knowledgeCount === 0) {
+      recommendations.push({
+        id: "knowledge-start",
+        title: "Build organizational knowledge",
+        description: "Capture playbooks and learnings from resolved incidents and published reports.",
+        href: "/knowledge",
+        cta: "Open knowledge hub",
+      });
+    }
   }
 
   return recommendations.slice(0, 4);
@@ -186,4 +213,9 @@ export function getWorkspaceProgressPercent(items: WorkspaceProgressItem[]): num
   }
   const complete = items.filter((item) => item.complete).length;
   return Math.round((complete / items.length) * 100);
+}
+
+/** Activation-aware progress percent from steps. */
+export function getActivationProgressPercent(steps: ActivationStepStatus[]): number {
+  return getCompletionPercent(steps.filter((step) => !step.locked));
 }

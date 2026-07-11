@@ -1,8 +1,7 @@
-import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
 import type { ReactNode } from "react";
+import { AlertTriangle } from "lucide-react";
+import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Button } from "@/components/ui/button";
 
 type RiskEmptyStateProps = {
   title?: string;
@@ -27,11 +26,9 @@ export function RiskEmptyState({
       action={action}
       secondaryAction={
         secondaryHref && secondaryLabel ? (
-          <Link href={secondaryHref}>
-            <Button size="sm" variant="outline">
-              {secondaryLabel}
-            </Button>
-          </Link>
+          <LinkButton href={secondaryHref} size="sm" variant="outline">
+            {secondaryLabel}
+          </LinkButton>
         ) : undefined
       }
     />
