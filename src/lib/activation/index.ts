@@ -31,6 +31,7 @@ export { buildNextBestAction } from "@/lib/activation/recommendations";
 export {
   dismissActivationSurfaceAction,
   dismissActivationPanelAction,
+  restoreActivationPanelAction,
   recordOnboardingViewAction,
   recordActivationMilestoneAction,
   type ActivationActionState,

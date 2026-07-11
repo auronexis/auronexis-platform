@@ -1,17 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import Link from "next/link";
-import { X } from "lucide-react";
 import type { ActivationSnapshot, NextBestAction } from "@/lib/activation/types";
 import { ACTIVATION_CTA_PRESETS } from "@/lib/activation/cta";
-import { dismissActivationPanelAction } from "@/lib/activation/actions";
 import { ActivationCtaLink } from "@/components/activation/activation-cta-link";
+import { ActivationOverviewDismissButton } from "@/components/activation/activation-overview-dismiss-button";
 import { ActivationStageBadge } from "@/components/activation/activation-stage-badge";
+import { useActivationOverviewDismiss } from "@/components/activation/use-activation-overview-dismiss";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -23,41 +19,14 @@ type ActivationPanelProps = {
 
 export function ActivationPanel({ activation, canDismiss, compact = false }: ActivationPanelProps) {
   const { stage, completionPercent, nextBestAction } = activation;
-  const serverDismissed = !activation.showActivationPanel;
-  const [optimisticDismissed, setOptimisticDismissed] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const isDismissed = optimisticDismissed || serverDismissed;
-
-  const handleDismiss = useCallback(async () => {
-    if (!canDismiss || pending || optimisticDismissed || serverDismissed) {
-      return;
-    }
-
-    setOptimisticDismissed(true);
-    setPending(true);
-    setError(null);
-
-    trackAnalyticsEvent("activation_panel_dismissed", {
-      activation_stage: stage,
-      completion_percentage: completionPercent,
-      source_route: "/dashboard",
-    });
-
-    try {
-      const result = await dismissActivationPanelAction();
-      if (result.error) {
-        setOptimisticDismissed(false);
-        setError(result.error);
-      }
-    } catch {
-      setOptimisticDismissed(false);
-      setError("Unable to dismiss the activation panel. Please try again.");
-    } finally {
-      setPending(false);
-    }
-  }, [canDismiss, pending, optimisticDismissed, serverDismissed, stage, completionPercent]);
+  const { isDismissed, pending, error, handleDismiss } = useActivationOverviewDismiss({
+    canDismiss,
+    serverDismissed: !activation.showActivationPanel,
+    stage,
+    completionPercent,
+    sourceRoute: "/dashboard",
+  });
 
   if (stage === "mature") {
     return <WorkspaceMaturityCard activation={activation} />;
@@ -85,18 +54,11 @@ export function ActivationPanel({ activation, canDismiss, compact = false }: Act
             View setup hub
           </Link>
           {canDismiss ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={pending}
-              aria-label="Dismiss activation panel"
-              aria-busy={pending || undefined}
-              onClick={handleDismiss}
-              className="text-muted hover:text-foreground"
-            >
-              {pending ? <Spinner size="sm" /> : <X className="h-4 w-4" aria-hidden />}
-            </Button>
+            <ActivationOverviewDismissButton
+              onDismiss={handleDismiss}
+              pending={pending}
+              ariaLabel="Dismiss activation panel"
+            />
           ) : null}
         </div>
       }

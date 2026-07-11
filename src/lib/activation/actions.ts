@@ -96,7 +96,31 @@ export async function dismissActivationPanelAction(): Promise<ActivationActionSt
     }
 
     revalidatePath("/dashboard");
+    revalidatePath("/onboarding");
     return { success: "Activation panel dismissed." };
+  } catch (error) {
+    return resolveActionError(error);
+  }
+}
+
+/** Restore the activation overview after dismissal. */
+export async function restoreActivationPanelAction(): Promise<ActivationActionState> {
+  try {
+    const session = await requireSession();
+    if (!canManageOrganizationSettings(session)) {
+      return { error: "Only workspace owners and admins can restore the activation overview." };
+    }
+
+    const upsertError = await upsertActivationPreferences(session.organization.id, {
+      activation_panel_dismissed_at: null,
+    });
+    if (upsertError) {
+      return upsertError;
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/onboarding");
+    return { success: "Activation overview restored." };
   } catch (error) {
     return resolveActionError(error);
   }
