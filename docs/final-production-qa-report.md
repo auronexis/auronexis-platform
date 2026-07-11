@@ -13,6 +13,7 @@ Full static audit of Phases 22–25 systems, migrations, RBAC, routes, grants, p
 | QA-01 | Performance | Medium | Dashboard double-fetched operational snapshot when executive + AI insights enabled | `buildOperationalSnapshot` not wrapped in React `cache()` | `src/lib/ai/insights/queries.ts` | Wrapped with `cache()` | `buildOperationalSnapshot uses React cache` in executive-intelligence test | verified |
 | QA-02 | Intelligence | High | No dedicated `/intelligence` route | Phase 12 panels dashboard-only | N/A | Phase 25 `/intelligence` route + domain | Route in build manifest + page test pattern | verified |
 | QA-03 | Grants | High | Phase 24/25 tables could fail without explicit grants (Phase 22.3 regression) | Missing authenticated grants | Migrations | Explicit GRANT in both migrations | Migration grant tests | verified |
+| QA-04 | Intelligence | Medium | Client intelligence summary built but not surfaced in client success workspace | `buildClientIntelligenceSummary` not wired to `/clients/[id]/success` | `src/app/(dashboard)/clients/[id]/success/page.tsx` | Added `ClientIntelligencePanel` with permission gate | `client intelligence integrated on client success route` test | verified |
 
 ## Route Inventory (Dashboard Core)
 
@@ -32,7 +33,7 @@ Full static audit of Phases 22–25 systems, migrations, RBAC, routes, grants, p
 | test:activation-prefs | 14/14 pass |
 | test:adoption | 32/32 pass |
 | test:customer-success | 29/29 pass |
-| test:executive-intelligence | 17/17 pass |
+| test:executive-intelligence | 18/18 pass |
 | typecheck | Pass |
 | lint | Pass (pre-existing warnings only) |
 | build | Pass |

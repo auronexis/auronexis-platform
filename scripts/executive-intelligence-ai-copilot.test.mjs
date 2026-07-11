@@ -186,3 +186,18 @@ test("buildOperationalSnapshot uses React cache", () => {
   const source = readFileSync(join(rootDir, "src", "lib", "ai", "insights", "queries.ts"), "utf8");
   assert.match(source, /export const buildOperationalSnapshot = cache/);
 });
+
+test("client intelligence integrated on client success route", () => {
+  const page = readFileSync(
+    join(rootDir, "src", "app", "(dashboard)", "clients", "[id]", "success", "page.tsx"),
+    "utf8",
+  );
+  const panel = readFileSync(
+    join(rootDir, "src", "components", "executive-intelligence", "client-intelligence-panel.tsx"),
+    "utf8",
+  );
+  assert.match(page, /buildClientIntelligenceSummary/);
+  assert.match(page, /ClientIntelligencePanel/);
+  assert.match(page, /canReadExecutiveIntelligence/);
+  assert.match(panel, /Client intelligence/);
+});

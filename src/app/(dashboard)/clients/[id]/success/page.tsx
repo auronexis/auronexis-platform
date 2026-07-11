@@ -9,7 +9,10 @@ import {
   canCompleteCustomerSuccess,
   canWriteCustomerSuccess,
 } from "@/lib/customer-success/guards";
+import { buildClientIntelligenceSummary } from "@/lib/executive-intelligence/client-summary";
+import { canReadExecutiveIntelligence } from "@/lib/executive-intelligence/guards";
 import { ClientSuccessWorkspace } from "@/components/customer-success/client-success-workspace";
+import { ClientIntelligencePanel } from "@/components/executive-intelligence/client-intelligence-panel";
 import { CustomerSuccessTracker } from "@/components/customer-success/customer-success-tracker";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
@@ -49,6 +52,14 @@ export default async function ClientSuccessPage({ params }: PageProps) {
 
   if (!snapshot) notFound();
 
+  const clientIntelligence = canReadExecutiveIntelligence(session)
+    ? await buildClientIntelligenceSummary({
+        session,
+        clientId: id,
+        planContext,
+      })
+    : null;
+
   return (
     <>
       <PageHeader
@@ -60,7 +71,8 @@ export default async function ClientSuccessPage({ params }: PageProps) {
         organizationId={session.organization.id}
         extra={{ client_id_hash: id.slice(0, 8) }}
       />
-      <PageSurface>
+      <PageSurface className="space-y-6">
+        {clientIntelligence ? <ClientIntelligencePanel summary={clientIntelligence} /> : null}
         <ClientSuccessWorkspace
           snapshot={snapshot}
           canManage={canWriteCustomerSuccess(session)}
