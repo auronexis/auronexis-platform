@@ -14,6 +14,7 @@
     "test:adoption": "node --test scripts/adoption-retention-system.test.mjs",
     "test:customer-success": "node --test scripts/customer-success-operations.test.mjs",
     "test:executive-intelligence": "node --test scripts/executive-intelligence-ai-copilot.test.mjs",
+    "test:production-polish": "node --test scripts/production-polish.test.mjs",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "seed:pilot": "node scripts/seed-pilot-environment.mjs"

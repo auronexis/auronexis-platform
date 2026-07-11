@@ -32,10 +32,17 @@ export const PLATFORM_METADATA: Metadata = {
   ],
   icons: {
     icon: [
-      { url: PLATFORM_ICONS.favicon, type: "image/svg+xml" },
+      { url: PLATFORM_ICONS.favicon, sizes: "any" },
+      { url: PLATFORM_ICONS.faviconSvg, type: "image/svg+xml" },
       { url: PLATFORM_ICONS.pwaIcon512, type: "image/png", sizes: "512x512" },
     ],
-    apple: [{ url: PLATFORM_ICONS.appleTouchIcon, type: "image/svg+xml" }],
+    apple: [
+      {
+        url: PLATFORM_ICONS.appleTouchIcon,
+        type: "image/png",
+        sizes: "180x180",
+      },
+    ],
     shortcut: [PLATFORM_ICONS.favicon],
   },
   appleWebApp: {

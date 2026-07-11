@@ -319,7 +319,9 @@ export function GlobalSearchProvider({ children }: GlobalSearchProviderProps) {
                 <input
                   ref={panelInputRef}
                   id={`${titleId}-input`}
+                  name="workspace-search"
                   type="search"
+                  autoComplete="off"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={handleInputKeyDown}

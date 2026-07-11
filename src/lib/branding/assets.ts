@@ -9,8 +9,8 @@
 export const BRANDING_ASSETS = {
   /** Metadata / OpenGraph only — black background, not for inline UI. */
   logoHorizontal: "/branding/logo-horizontal.png",
-  /** @deprecated Metadata only — use logoHorizontalTransparent or logoHorizontalOnLight in UI. */
-  approvedCompositeLogo: "/branding/logo-horizontal.png",
+  /** Metadata / manifest 512 — compact symbol (not full wordmark). */
+  approvedCompositeLogo: "/icon-512-compact.png",
 
   /** Dark UI — navbar, footer, login left panel. */
   logoHorizontalTransparent: "/branding/logo-horizontal-transparent.png",
@@ -21,7 +21,10 @@ export const BRANDING_ASSETS = {
   logoDark: "/branding/logo-dark.png",
 
   loginBackground: "/branding/login-screen.png",
-  favicon: "/favicon.svg",
+  favicon: "/favicon.ico",
+  faviconSvg: "/favicon.svg",
+  appleTouchIcon: "/apple-icon.png",
+  pwaIconCompact: "/icon-512-compact.png",
   heroBanner: "/branding/hero-banner.png",
   splashScreen: "/branding/splash-screen.png",
   linkedinBanner: "/branding/linkedin-banner.png",

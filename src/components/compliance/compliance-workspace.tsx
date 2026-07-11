@@ -113,7 +113,13 @@ export function ComplianceWorkspace({
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
-            <Input name="subjectEmail" label="Subject email" type="email" required />
+            <Input
+              name="subjectEmail"
+              label="Subject email"
+              type="email"
+              autoComplete="email"
+              required
+            />
             <Input name="notes" label="Notes" />
             <Button type="submit" loading={isPending}>Create request</Button>
           </form>

@@ -71,6 +71,7 @@ export function ResetPasswordForm({ canReset, sessionError }: ResetPasswordFormP
       <AuthPasswordInput
         name="confirmPassword"
         label="Confirm password"
+        autoComplete="new-password"
         error={state.fieldErrors?.confirmPassword}
       />
 

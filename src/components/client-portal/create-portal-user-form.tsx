@@ -20,14 +20,22 @@ export function CreatePortalUserForm({ clientId }: CreatePortalUserFormProps) {
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="clientId" value={clientId} />
-      <Input name="fullName" label="Full name" required placeholder="Jane Client" />
-      <Input name="email" type="email" label="Email" required placeholder="jane@client.com" />
+      <Input name="fullName" label="Full name" required placeholder="Jane Client" autoComplete="name" />
+      <Input
+        name="email"
+        type="email"
+        label="Email"
+        required
+        placeholder="jane@client.com"
+        autoComplete="email"
+      />
       <Input
         name="password"
         type="password"
         label="Initial password"
         required
         placeholder="Minimum 8 characters"
+        autoComplete="new-password"
       />
       {state.error ? (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-critical">{state.error}</p>
