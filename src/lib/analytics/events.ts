@@ -1,17 +1,31 @@
 import { canTrackEvent } from "@/lib/analytics/consent-gate";
 import { isProductionAnalyticsRuntime } from "@/lib/analytics/runtime";
+import {
+  getEventCategory,
+  resolveCanonicalEventName,
+} from "@/lib/analytics/taxonomy";
 
 /** Supported conversion and product analytics events. */
 export type AnalyticsEventName =
   | "page_view"
+  | "landing_page_view"
   | "signup_started"
   | "signup_completed"
   | "login_completed"
+  | "workspace_created"
+  | "pricing_view"
   | "pricing_viewed"
   | "plan_selected"
+  | "subscription_checkout_started"
+  | "subscription_checkout_completed"
   | "checkout_started"
   | "checkout_completed"
   | "billing_portal_opened"
+  | "invoice_paid"
+  | "invoice_failed"
+  | "subscription_upgraded"
+  | "subscription_downgraded"
+  | "subscription_cancelled"
   | "contact_clicked"
   | "support_clicked"
   | "demo_requested"
@@ -22,8 +36,13 @@ export type AnalyticsEventName =
   | "legal_page_viewed"
   | "client_created"
   | "report_created"
+  | "report_generated"
+  | "report_published"
   | "risk_created"
   | "incident_created"
+  | "dashboard_loaded"
+  | "integration_connected"
+  | "ai_summary_generated"
   | "onboarding_viewed"
   | "onboarding_started"
   | "onboarding_dismissed"
@@ -31,6 +50,7 @@ export type AnalyticsEventName =
   | "onboarding_step_completed"
   | "activation_stage_changed"
   | "activation_milestone_reached"
+  | "activation_completed"
   | "next_best_action_clicked"
   | "first_client_created"
   | "first_report_created"
@@ -45,8 +65,11 @@ export type AnalyticsEventName =
   | "adoption_trend_changed"
   | "retention_risk_detected"
   | "retention_risk_resolved"
+  | "retention_signal"
+  | "expansion_signal"
   | "feature_adopted"
   | "workspace_reengaged"
+  | "workspace_health_viewed"
   | "adoption_summary_viewed"
   | "customer_success_page_viewed"
   | "client_success_viewed"
@@ -92,49 +115,61 @@ export type AnalyticsEventProps = Record<string, string | number | boolean>;
 type AnalyticsSink = (name: AnalyticsEventName, props?: AnalyticsEventProps) => void;
 
 const sinks: AnalyticsSink[] = [];
+const recentEvents = new Map<string, number>();
+const DEDUPE_WINDOW_MS = 400;
 
 /** Register a runtime analytics sink (Plausible, PostHog, etc.). */
 export function registerAnalyticsSink(sink: AnalyticsSink): void {
   sinks.push(sink);
 }
 
-function isMarketingEvent(name: AnalyticsEventName): boolean {
-  return (
-    name === "checkout_started" ||
-    name === "checkout_completed" ||
-    name === "plan_selected" ||
-    name === "billing_portal_opened"
-  );
+function shouldDedupeEvent(name: AnalyticsEventName, props?: AnalyticsEventProps): boolean {
+  const signature = `${resolveCanonicalEventName(name)}:${props?.path ?? ""}:${props?.surface ?? ""}`;
+  const now = Date.now();
+  const last = recentEvents.get(signature);
+  if (last && now - last < DEDUPE_WINDOW_MS) {
+    return true;
+  }
+  recentEvents.set(signature, now);
+  return false;
 }
 
 /**
  * Track a privacy-aware analytics event.
- * Never sends personal data by default — only safe metadata props.
+ * Never sends personal data — only safe metadata props.
  */
 export function trackAnalyticsEvent(
   name: AnalyticsEventName,
   props?: AnalyticsEventProps,
 ): void {
   if (typeof window === "undefined" || !isProductionAnalyticsRuntime()) return;
+  if (shouldDedupeEvent(name, props)) return;
 
-  if (isMarketingEvent(name)) {
-    if (!canTrackEvent("marketing")) return;
-  } else if (!canTrackEvent("analytics")) {
-    return;
-  }
+  const canonicalName = resolveCanonicalEventName(name) as AnalyticsEventName;
+  const category = getEventCategory(canonicalName);
+  const enrichedProps: AnalyticsEventProps = {
+    ...sanitizeEventProps(props),
+    event_category: category,
+  };
 
-  const safeProps = sanitizeEventProps(props);
+  const canTrackAnalytics = canTrackEvent("analytics");
+  const canTrackMarketing = canTrackEvent("marketing");
+
+  if (!canTrackAnalytics && !canTrackMarketing) return;
 
   for (const sink of sinks) {
     try {
-      sink(name, safeProps);
+      if (sink === ga4Sink && !canTrackMarketing) continue;
+      if (sink !== ga4Sink && !canTrackAnalytics) continue;
+      sink(canonicalName, enrichedProps);
     } catch {
       // Analytics must never break the app.
     }
   }
 }
 
-const BLOCKED_PROP_KEYS = /email|name|phone|address|password|token|secret/i;
+const BLOCKED_PROP_KEYS =
+  /email|name|phone|address|password|token|secret|workspace|organization|client_id|customer|stripe|api_key|session_id|subscription_id|invoice_id/i;
 
 function sanitizeEventProps(props?: AnalyticsEventProps): AnalyticsEventProps | undefined {
   if (!props) return undefined;
@@ -163,9 +198,35 @@ export function posthogSink(name: string, props?: AnalyticsEventProps): void {
   posthog.capture(name, props);
 }
 
-/** GA4 gtag sink — only when marketing consent granted. */
+/** GA4 gtag sink — manual page views to avoid duplicate automatic page_view. */
 export function ga4Sink(name: string, props?: AnalyticsEventProps): void {
   const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag;
   if (!gtag) return;
+
+  if (name === "page_view" && props?.path) {
+    gtag("event", "page_view", {
+      page_path: props.path,
+      page_location: window.location.href.split("?")[0],
+      ...props,
+    });
+    return;
+  }
+
   gtag("event", name, props);
+}
+
+/** Track a canonical conversion event. */
+export function trackConversionEvent(
+  name: AnalyticsEventName,
+  props?: AnalyticsEventProps,
+): void {
+  trackAnalyticsEvent(name, { ...props, funnel: "conversion" });
+}
+
+/** Track a canonical product analytics event. */
+export function trackProductEvent(
+  name: AnalyticsEventName,
+  props?: AnalyticsEventProps,
+): void {
+  trackAnalyticsEvent(name, { ...props, funnel: "product" });
 }

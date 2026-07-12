@@ -13,6 +13,7 @@ import { getCurrentPlan } from "@/lib/plans/queries";
 import { canUseFeature } from "@/lib/plans/guards";
 import { getNavItemsForRoleAndPlan } from "@/lib/tenancy/context";
 import { getUnreadNotificationCount } from "@/lib/notifications/queries";
+import { DashboardAnalyticsTracker } from "@/components/analytics/dashboard-analytics-tracker";
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
@@ -38,12 +39,19 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     canUseFeature(session.organization.id, "notifications"),
   ]);
 
+  const organizationAgeMs = Date.now() - new Date(session.organization.created_at).getTime();
+  const isRecentSignup = organizationAgeMs >= 0 && organizationAgeMs < 10 * 60 * 1000;
+
   return (
     <UserPreferencesProvider>
       <ToastProvider>
         <MobileNavProvider>
           <WhiteLabelThemeInjector branding={branding} scopeId="dashboard-root" />
           <div id="dashboard-root" className="white-label-scope contents">
+            <DashboardAnalyticsTracker
+              isRecentSignup={isRecentSignup}
+              planTier={session.organization.plan}
+            />
             <DashboardShell
             navItems={navItems}
             organizationName={session.organization.name}

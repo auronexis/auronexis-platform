@@ -20,6 +20,7 @@ import {
   type RiskWithRelations,
 } from "@/lib/risks/types";
 import { formGrid } from "@/lib/ui/form-tokens";
+import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
 import type { AppUser, Client } from "@/types/database";
 
@@ -89,7 +90,14 @@ export function RiskForm({
     : risk?.recommendation ?? "";
 
   return (
-    <form action={formAction}>
+    <form
+      action={formAction}
+      onSubmit={() => {
+        if (!risk) {
+          markPendingAnalyticsEvent("risk_created", { surface: "risk_form" });
+        }
+      }}
+    >
       <FormRoot>
         <FormSection title="General" description="Risk identity, client context, and severity.">
           <div className={formGrid}>

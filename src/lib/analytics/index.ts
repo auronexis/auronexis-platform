@@ -8,9 +8,27 @@ export {
   posthogSink,
   registerAnalyticsSink,
   trackAnalyticsEvent,
+  trackConversionEvent,
+  trackProductEvent,
   type AnalyticsEventName,
   type AnalyticsEventProps,
 } from "@/lib/analytics/events";
+
+export {
+  ANALYTICS_EVENT_CATEGORIES,
+  CONVERSION_EVENTS,
+  PRODUCT_EVENTS,
+  getEventCategory,
+  resolveCanonicalEventName,
+} from "@/lib/analytics/taxonomy";
+
+export { markPendingAnalyticsEvent, consumePendingAnalyticsEvents } from "@/lib/analytics/pending-events";
+export {
+  trackFeatureAdoption,
+  trackMonthlyActiveUsage,
+  trackWeeklyActiveUsage,
+  trackWorkspaceHealthViewed,
+} from "@/lib/analytics/adoption-metrics";
 
 export {
   acceptAllConsent,

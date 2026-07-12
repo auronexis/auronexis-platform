@@ -33,6 +33,7 @@ import { formatBillingDateTime } from "@/lib/billing/types";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
 import type { OrganizationSeatUsage } from "@/lib/seats/types";
 import { EnterpriseRequestCard } from "@/components/settings/enterprise-request-card";
+import { BillingConversionTracker } from "@/components/analytics/billing-conversion-tracker";
 import type { EnterpriseStatus } from "@/lib/enterprise/types";
 import type { BillingContactCardContent } from "@/lib/billing/billing-contact";
 import { cn } from "@/lib/utils/cn";
@@ -193,6 +194,11 @@ export function BillingSettingsPanel({
 
   return (
     <div className="space-y-8">
+      <BillingConversionTracker
+        checkoutSuccess={Boolean(success)}
+        checkoutCancelled={Boolean(cancelled)}
+        planTier={overview.currentPlanKey ?? "free"}
+      />
       {success ? (
         <FormAlert variant="success">
           {successMessage ?? "Payment received. Your plan may update shortly."}

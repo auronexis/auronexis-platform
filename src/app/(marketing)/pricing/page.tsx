@@ -26,7 +26,7 @@ export default function PublicPricingPage() {
   return (
     <MarketingShell>
       <JsonLdScript data={pricingPageJsonLd()} />
-      <ConversionTracker event="pricing_viewed" />
+      <ConversionTracker event="pricing_view" />
       <MarketingHero
         eyebrow="Pricing"
         title="Professional, Business, and Enterprise"

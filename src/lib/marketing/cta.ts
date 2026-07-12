@@ -52,7 +52,7 @@ export const MARKETING_CTA_PRESETS = {
     label: "See pricing",
     href: "/pricing",
     variant: "secondary",
-    analyticsEvent: "pricing_viewed",
+    analyticsEvent: "pricing_view",
     analyticsProps: { source: "cta" },
   },
   learnMore: {

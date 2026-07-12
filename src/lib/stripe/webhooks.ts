@@ -1,4 +1,5 @@
 import { recordActivityEvent } from "@/lib/activity/record";
+import { trackServerAnalyticsEvent } from "@/lib/analytics/server-events";
 import { recordBillingEvent, syncCustomerInvoiceFromStripe } from "@/lib/billing/invoices";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
 import { applyCheckoutSessionToOrganization } from "@/lib/stripe/checkout-sync";
@@ -173,6 +174,15 @@ async function handleCheckoutSessionCompleted(
     },
   });
 
+  void trackServerAnalyticsEvent("subscription_checkout_completed", {
+    surface: "stripe_webhook",
+    status: subscriptionStatus ?? "unknown",
+  });
+  void trackServerAnalyticsEvent("subscription_upgraded", {
+    surface: "stripe_webhook",
+    status: subscriptionStatus ?? "unknown",
+  });
+
   await notifyOwnersAndAdmins(organizationId, {
     type: "subscription_activated",
     title: "Subscription activated",
@@ -226,6 +236,13 @@ async function handleSubscriptionUpsert(
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   });
+
+  if (eventType === "customer.subscription.updated" && subscription.cancel_at_period_end) {
+    void trackServerAnalyticsEvent("subscription_downgraded", {
+      surface: "stripe_webhook",
+      reason: "cancel_at_period_end",
+    });
+  }
 }
 
 async function handleSubscriptionDeleted(
@@ -274,6 +291,8 @@ async function handleSubscriptionDeleted(
     title: "Subscription cancelled",
     message: "Your organization subscription has been cancelled.",
   });
+
+  void trackServerAnalyticsEvent("subscription_cancelled", { surface: "stripe_webhook" });
 }
 
 async function syncInvoiceWithSubscription(
@@ -374,6 +393,8 @@ async function handleInvoiceEvent(
       title: "Invoice paid",
       message: "Your subscription invoice was paid successfully.",
     });
+
+    void trackServerAnalyticsEvent("invoice_paid", { surface: "stripe_webhook" });
     return;
   }
 
@@ -406,6 +427,12 @@ async function handleInvoiceEvent(
       type: "invoice_failed",
       title: "Invoice payment failed",
       message: "An invoice payment failed. Review billing in the customer portal.",
+    });
+
+    void trackServerAnalyticsEvent("invoice_failed", { surface: "stripe_webhook" });
+    void trackServerAnalyticsEvent("subscription_downgraded", {
+      surface: "stripe_webhook",
+      reason: "payment_failed",
     });
   }
 }

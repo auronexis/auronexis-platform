@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { ANALYTICS_CONFIG } from "@/lib/analytics/config";
 import {
   ga4Sink,
@@ -14,6 +14,8 @@ import { hasAnalyticsConsent, hasMarketingConsent, subscribeToConsentChanges } f
 import { PlausibleScript } from "@/components/analytics/plausible-script";
 import { ClarityScript } from "@/components/analytics/clarity-script";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
+import { AnalyticsEventFlusher } from "@/components/analytics/analytics-event-flusher";
+import { IntegrationConnectionTracker } from "@/components/analytics/integration-connection-tracker";
 
 let sinksRegistered = false;
 
@@ -62,7 +64,7 @@ function initGa4(): void {
 
   const inline = document.createElement("script");
   inline.id = "ga4-inline";
-  inline.textContent = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${measurementId}',{anonymize_ip:true});`;
+  inline.textContent = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${measurementId}',{anonymize_ip:true,send_page_view:false});`;
   document.head.appendChild(inline);
 }
 
@@ -92,6 +94,10 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
       <PlausibleScript />
       <ClarityScript />
       <PageViewTracker />
+      <AnalyticsEventFlusher />
+      <Suspense fallback={null}>
+        <IntegrationConnectionTracker />
+      </Suspense>
     </>
   );
 }

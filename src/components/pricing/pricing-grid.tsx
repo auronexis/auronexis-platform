@@ -26,6 +26,7 @@ import type { PricingSelectionContext } from "@/lib/pricing/selection-context";
 import { createFallbackPricingSelection } from "@/lib/pricing/selection-context";
 import { normalizeStripeBillingUiStatus } from "@/lib/pricing/safe-stripe-status";
 import { FormAlert } from "@/components/ui/form-alert";
+import { trackConversionEvent } from "@/lib/analytics/events";
 
 export type { PricingSelectionContext } from "@/lib/pricing/selection-context";
 export { buildPricingSelectionContext, createFallbackPricingSelection } from "@/lib/pricing/selection-context";
@@ -69,6 +70,10 @@ export function PricingGrid({
 
     setError(null);
     setPendingPlanKey(planKey);
+    trackConversionEvent("subscription_checkout_started", {
+      surface: "pricing_grid",
+      plan_tier: planKey,
+    });
     startTransition(async () => {
       const result = await createCheckoutSessionAction(planKey);
       if (result?.error) {

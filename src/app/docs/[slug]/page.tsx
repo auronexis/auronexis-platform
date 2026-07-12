@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DocPageLayout } from "@/components/docs/doc-page-layout";
+import { DocsViewTracker } from "@/components/analytics/docs-view-tracker";
 import { JsonLdScript } from "@/lib/marketing/seo";
 import { getAllDocSlugs, getDocPage } from "@/lib/docs/registry";
 import { createPageMetadata, techArticleJsonLd } from "@/lib/seo";
@@ -45,6 +46,7 @@ export default async function DocTopicPage({ params }: DocTopicPageProps) {
           path: `/docs/${slug}`,
         })}
       />
+      <DocsViewTracker slug={slug} />
       <DocPageLayout doc={doc} />
     </>
   );

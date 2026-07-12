@@ -28,6 +28,7 @@ import { formGrid, formFieldShell } from "@/lib/ui/form-tokens";
 import { auroraInputFocus } from "@/lib/ui/motion";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils/cn";
+import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
 import type { AppUser, Client, ReportStatus } from "@/types/database";
 
@@ -231,7 +232,15 @@ export function ReportForm({
   ];
 
   return (
-    <form action={formAction} key={`${report?.id ?? "new"}-${templateSelection}`}>
+    <form
+      action={formAction}
+      key={`${report?.id ?? "new"}-${templateSelection}`}
+      onSubmit={() => {
+        if (!report) {
+          markPendingAnalyticsEvent("report_generated", { surface: "report_form" });
+        }
+      }}
+    >
       <FormRoot>
         {!report && templates.length > 0 ? (
           <FormSection title="Template" description="Pre-fill content from an organization template.">

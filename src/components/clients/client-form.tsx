@@ -15,6 +15,7 @@ import type { ClientActionState } from "@/lib/clients/actions";
 import type { ClientView } from "@/lib/clients/types";
 import { formGrid } from "@/lib/ui/form-tokens";
 import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
+import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import type { AppUser } from "@/types/database";
 
 type ClientFormProps = {
@@ -53,7 +54,14 @@ export function ClientForm({
   });
 
   return (
-    <form action={formAction}>
+    <form
+      action={formAction}
+      onSubmit={() => {
+        if (!client) {
+          markPendingAnalyticsEvent("client_created", { surface: "client_form" });
+        }
+      }}
+    >
       <FormRoot>
         <FormSection title="General" description="Core client identity and status.">
           <div className={formGrid}>

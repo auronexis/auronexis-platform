@@ -7,7 +7,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { testOpenAIConnectionAction } from "@/lib/integrations/center/actions";
 import type { IntegrationCenterSnapshot } from "@/lib/integrations/center/types";
-import { trackAnalyticsEvent } from "@/lib/analytics/events";
+import { trackAnalyticsEvent, trackProductEvent } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -112,6 +112,12 @@ export function IntegrationCenterWorkspace({ snapshot }: IntegrationCenterWorksp
         result.ok ? "ai_connection_test_succeeded" : "ai_connection_test_failed",
         { provider: "openai", state: result.state ?? "unknown" },
       );
+      if (result.ok) {
+        trackProductEvent("integration_connected", {
+          provider: "openai",
+          surface: "integration_center",
+        });
+      }
       setTestResult(result);
     });
   };

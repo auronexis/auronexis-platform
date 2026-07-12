@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createPageMetadataForPath } from "@/lib/seo";
 import { redirect } from "next/navigation";
+import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { SignUpForm } from "@/components/auth/signup-form";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
 import { getSession } from "@/lib/auth/session";
@@ -23,6 +24,7 @@ export default async function SignUpPage() {
             Create a free workspace to explore the platform, then choose a paid plan when you are ready to scale.
           </p>
         </div>
+        <ConversionTracker event="signup_started" props={{ surface: "signup_page" }} />
         <SignUpForm />
         <LegalLinksInline className="mt-8 border-t border-border/60 pt-4" />
       </div>

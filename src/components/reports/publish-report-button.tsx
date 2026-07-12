@@ -1,6 +1,7 @@
 "use client";
 
 import { publishReportAction } from "@/lib/reports/actions";
+import { trackProductEvent } from "@/lib/analytics/events";
 import { ConfirmActionButton } from "@/components/ui/confirm-action-button";
 
 type PublishReportButtonProps = {
@@ -17,7 +18,10 @@ export function PublishReportButton({ reportId, reportTitle }: PublishReportButt
       dialogConsequences="Clients will be able to view this report."
       confirmLabel="Publish"
       successToast={`"${reportTitle}" published`}
-      onConfirm={() => publishReportAction(reportId)}
+      onConfirm={async () => {
+        await publishReportAction(reportId);
+        trackProductEvent("report_published", { surface: "report_detail" });
+      }}
     >
       Publish to Client Portal
     </ConfirmActionButton>

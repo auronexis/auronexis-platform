@@ -7,6 +7,8 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { Input } from "@/components/ui/input";
 import { TurnstileField } from "@/components/security/turnstile-field";
 import { signUp, type AuthActionState } from "@/lib/auth/actions";
+import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
+import { trackAnalyticsEvent } from "@/lib/analytics/events";
 
 const initialState: AuthActionState = {};
 
@@ -14,7 +16,15 @@ export function SignUpForm() {
   const [state, formAction, isPending] = useActionState(signUp, initialState);
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form
+      action={formAction}
+      className="space-y-4"
+      onSubmit={() => {
+        trackAnalyticsEvent("signup_started", { surface: "signup_form" });
+        markPendingAnalyticsEvent("signup_completed", { surface: "signup_form" });
+        markPendingAnalyticsEvent("workspace_created", { surface: "signup_form" });
+      }}
+    >
       <Input name="fullName" label="Full name" required placeholder="Jane Smith" autoComplete="name" />
       <Input
         name="organizationName"

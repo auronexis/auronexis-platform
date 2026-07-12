@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { TurnstileField } from "@/components/security/turnstile-field";
 import { signIn, type AuthActionState } from "@/lib/auth/actions";
+import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { cn } from "@/lib/utils/cn";
 
@@ -30,7 +31,11 @@ export function LoginForm({ redirectTo, initialError, initialSuccess }: LoginFor
   const errorMessage = state.error ?? initialError;
 
   return (
-    <form action={formAction} className="space-y-4 text-slate-950 [color-scheme:light]">
+    <form
+      action={formAction}
+      className="space-y-4 text-slate-950 [color-scheme:light]"
+      onSubmit={() => markPendingAnalyticsEvent("login_completed", { surface: "login_form" })}
+    >
       {redirectTo ? <input type="hidden" name="redirect" value={redirectTo} /> : null}
       <div className="mb-8 text-center">
         {logoFailed ? (

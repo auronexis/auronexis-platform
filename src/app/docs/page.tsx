@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { BookOpen, ScrollText } from "lucide-react";
+import { DocsViewTracker } from "@/components/analytics/docs-view-tracker";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { PublicAppLink } from "@/components/marketing/public-app-link";
 import { COMPANY_NAME, DOCS_URL, SUPPORT_EMAIL } from "@/lib/company/contact";
@@ -26,6 +27,7 @@ const HUB_ICONS = {
 export default function DocsHubPage() {
   return (
     <MarketingShell>
+      <DocsViewTracker />
       <section className="relative overflow-hidden border-b border-white/10">
         <div
           className="absolute inset-0 bg-cover bg-center"

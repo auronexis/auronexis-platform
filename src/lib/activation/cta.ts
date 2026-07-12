@@ -63,7 +63,7 @@ export const ACTIVATION_CTA_PRESETS = {
     label: "Review plans",
     href: "/settings/plans",
     variant: "outline",
-    analyticsEvent: "pricing_viewed",
+    analyticsEvent: "pricing_view",
     analyticsProps: { source: "activation" },
   },
   continueSetup: {

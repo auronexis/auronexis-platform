@@ -127,6 +127,7 @@ test("GA4 and Clarity load once with consent gating", () => {
   const analytics = readSource("src/components/analytics/analytics-provider.tsx");
   const clarity = readSource("src/components/analytics/clarity-script.tsx");
   assert.match(analytics, /getElementById\("ga4-script"\)/);
+  assert.match(analytics, /send_page_view:false/);
   assert.match(analytics, /sinksRegistered/);
   assert.match(clarity, /hasAnalyticsConsent/);
   assert.doesNotMatch(analytics, /gtag\('config'.*gtag\('config'/);

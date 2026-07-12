@@ -11,6 +11,9 @@ export function PageViewTracker() {
   useEffect(() => {
     if (!pathname) return;
     trackAnalyticsEvent("page_view", { path: pathname });
+    if (pathname === "/") {
+      trackAnalyticsEvent("landing_page_view", { path: pathname, surface: "homepage" });
+    }
   }, [pathname]);
 
   return null;

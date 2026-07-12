@@ -21,6 +21,7 @@ import {
   type RiskOption,
 } from "@/lib/incidents/types";
 import { formGrid } from "@/lib/ui/form-tokens";
+import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
 import type { AppUser, Client, IncidentSeverity, IncidentStatus } from "@/types/database";
 
@@ -109,7 +110,14 @@ export function IncidentForm({
     : incident?.resolution_notes ?? "";
 
   return (
-    <form action={formAction}>
+    <form
+      action={formAction}
+      onSubmit={() => {
+        if (!incident) {
+          markPendingAnalyticsEvent("incident_created", { surface: "incident_form" });
+        }
+      }}
+    >
       <FormRoot>
         <FormSection title="General" description="Incident identity and operational context.">
           <div className={formGrid}>

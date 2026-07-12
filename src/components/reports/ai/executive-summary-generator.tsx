@@ -80,8 +80,9 @@ export function ExecutiveSummaryGenerator({
         return;
       }
 
-      trackAnalyticsEvent("ai_summary_generation_succeeded", {
+      trackAnalyticsEvent("ai_summary_generated", {
         feature: "executive_report_summary",
+        surface: "report_ai",
         has_existing: result.hasExistingSummary,
       });
       setPreviewDraft(result.formattedDraft);
