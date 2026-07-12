@@ -161,13 +161,45 @@ Status page production HTML: no `Development`, no `Provider not configured`; AI 
 | `npm run build` | pass |
 | `git diff --check` | pass |
 
+## Git
+
+- Commit: `5d69fd2` — Phase 27 final founder review and enterprise QA
+- Push: succeeded to `origin/main`
+- Local HEAD: `5d69fd22a148ba6384b7e5affb614851ecc0afdc`
+- origin/main HEAD: `5d69fd22a148ba6384b7e5affb614851ecc0afdc`
+- HEAD match: **yes**
+
+## Vercel
+
+- Vercel CLI: **not installed** in this environment — deployment Ready/Production/Current alias not verified via CLI
+- GitHub push to `main` should trigger automatic Vercel production deployment; manual dashboard verification recommended
+
+## Production smoke test (post-push)
+
+Verified HTTP 200 on `app.auroranexis.com` for: `/`, `/pricing`, `/features`, `/enterprise`, `/signup`, `/login`, `/api/docs`, `/favicon.ico`, `/manifest.webmanifest`.
+
+`/status`: no `Development`, no `Provider not configured`, no secret env names in HTML.
+
+## Manual owner checks
+
+1. Hard refresh marketing pages; confirm CTA copy and mobile layout
+2. Browser Console/Network on `/status`, `/pricing`, `/signup` — no 404/500 or hydration warnings
+3. Verify OpenAI `OPENAI_API_KEY` in production if selling AI-assisted features
+4. Safe test signup → workspace creation → first client
+5. Create and publish one test report; confirm portal visibility rules
+6. Open billing portal from Settings → Billing (no live purchase required)
+7. Verify contact form email delivery if Resend is enabled
+8. Confirm Vercel deployment shows commit `5d69fd2` as Production / Current on dashboard
+9. Inspect `/intelligence` after login — executive intelligence loads without console errors
+10. Mobile keyboard test on signup/login forms
+
 ## Launch decision
 
 **B. CONDITIONALLY APPROVED FOR CUSTOMER ACQUISITION**
 
 - No P0 or unresolved P1 defects after fixes
 - Build and full regression pass
-- Production public routes verified before push; post-push smoke test required after deployment
+- Production public routes verified (pre- and post-push smoke)
 - Manual owner checks remain for authenticated flows, browser console, OpenAI production config, and contact email delivery
 
 ---
