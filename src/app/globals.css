@@ -78,6 +78,11 @@
 @layer base {
   html {
     @apply antialiased;
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   body {
@@ -85,6 +90,12 @@
     background-image:
       radial-gradient(ellipse 80% 50% at 50% -20%, rgb(37 99 235 / 0.08), transparent),
       radial-gradient(ellipse 60% 40% at 100% 0%, rgb(37 99 235 / 0.04), transparent);
+  }
+
+  /* Marketing shell is dark — prevent light body gradients bleeding through overscroll. */
+  html:has(.marketing-theme) body {
+    background-color: var(--color-secondary);
+    background-image: none;
   }
 
   /* Cursor system — every interactive element feels alive */

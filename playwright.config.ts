@@ -78,7 +78,7 @@ export default defineConfig({
     },
     {
       name: "chromium-smoke",
-      testMatch: /(smoke|public-nav-anonymous)\.spec\.ts/,
+      testMatch: /(smoke|public-nav-anonymous|light-mode-frontend-integrity)\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
   ],
