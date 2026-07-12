@@ -1,10 +1,23 @@
-import { isAppLocale, type AppLocale } from "@/lib/i18n/types";
+import { DEFAULT_LOCALE, isAppLocale, type AppLocale } from "@/lib/i18n/types";
 
 export type ResolveLocaleInput = {
   organizationLanguage?: string | null;
   customerLanguage?: string | null;
   browserLanguage?: string | null;
 };
+
+/**
+ * Read the persisted organization language for settings UI.
+ * Never applies browser or customer fallbacks — only the stored DB value.
+ */
+export function getStoredOrganizationLanguage(organization: {
+  language?: string | null;
+}): AppLocale {
+  if (isAppLocale(organization.language)) {
+    return organization.language;
+  }
+  return DEFAULT_LOCALE;
+}
 
 /**
  * Resolve the active locale.

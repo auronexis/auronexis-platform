@@ -386,17 +386,30 @@ export async function updateOrganizationAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid organization name." };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase
+  const admin = createAdminClient();
+  const { data, error } = await admin
     .from("organizations")
     .update({
       name: parsed.data.name,
       language: parsed.data.language,
     } as never)
-    .eq("id", session.organization.id);
+    .eq("id", session.organization.id)
+    .select("id, name, language")
+    .single();
 
   if (error) {
+    if (error.message.includes("language") || error.code === "42703" || error.code === "PGRST204") {
+      return {
+        error:
+          "Organization language could not be saved. Apply the latest database migration and try again.",
+      };
+    }
     return { error: "Unable to update organization." };
+  }
+
+  const savedLanguage = (data as { language?: string } | null)?.language;
+  if (savedLanguage !== parsed.data.language) {
+    return { error: "Organization language did not persist. Please try again." };
   }
 
   await recordActivityEvent({

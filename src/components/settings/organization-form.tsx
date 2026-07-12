@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { FormFooter, FormRoot, FormSection } from "@/components/ui/form-section";
@@ -26,12 +27,19 @@ export function OrganizationForm({
   organizationName,
   organizationLanguage,
 }: OrganizationFormProps) {
+  const router = useRouter();
   const [state, formAction, isPending] = useActionState(updateOrganizationAction, initialState);
 
   useFormActionFeedback(state, isPending, { successMessage: "Organization updated" });
 
+  useEffect(() => {
+    if (state.success) {
+      router.refresh();
+    }
+  }, [state.success, router]);
+
   return (
-    <form action={formAction}>
+    <form action={formAction} key={`${organizationName}-${organizationLanguage}`}>
       <FormRoot className="max-w-lg">
         <FormSection
           title="Organization"

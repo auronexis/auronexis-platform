@@ -41,7 +41,7 @@ async function loadSessionContext(
 
   const { data: organizationData, error: orgError } = await supabase
     .from("organizations")
-    .select("*")
+    .select("id, name, slug, plan, language, created_at, updated_at")
     .eq("id", appUser.organization_id)
     .maybeSingle();
 

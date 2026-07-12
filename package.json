@@ -19,6 +19,7 @@
     "test:final-founder-qa": "node --test scripts/final-founder-enterprise-qa.test.mjs",
     "test:light-mode-integrity": "node --test scripts/light-mode-frontend-integrity.test.mjs",
     "test:phase-28": "node --test scripts/phase-28-international-billing-enterprise-integration.test.mjs",
+    "test:phase-28-1": "node --test scripts/phase-28-1-organization-language-persistence.test.mjs",
     "test:clarity-csp": "node --test scripts/clarity-csp-integration.test.mjs",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",

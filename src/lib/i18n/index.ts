@@ -2,6 +2,7 @@ export { DEFAULT_LOCALE, APP_LOCALES, isAppLocale, type AppLocale } from "@/lib/
 export {
   resolveLocale,
   resolveLocaleFromOrganization,
+  getStoredOrganizationLanguage,
   toIntlLocale,
   type ResolveLocaleInput,
 } from "@/lib/i18n/resolve-locale";

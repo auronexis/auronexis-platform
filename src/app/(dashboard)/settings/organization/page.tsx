@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { OrganizationForm } from "@/components/settings/organization-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
-import { resolveLocaleFromOrganization } from "@/lib/i18n";
+import { getStoredOrganizationLanguage } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
@@ -22,7 +22,7 @@ export default async function OrganizationSettingsPage() {
     redirect("/dashboard");
   }
 
-  const locale = resolveLocaleFromOrganization(session.organization);
+  const organizationLanguage = getStoredOrganizationLanguage(session.organization);
 
   return (
     <>
@@ -42,7 +42,7 @@ export default async function OrganizationSettingsPage() {
       <PageSurface>
         <OrganizationForm
           organizationName={session.organization.name}
-          organizationLanguage={locale}
+          organizationLanguage={organizationLanguage}
         />
       </PageSurface>
     </>
