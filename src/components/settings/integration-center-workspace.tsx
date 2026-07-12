@@ -7,6 +7,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { testOpenAIConnectionAction } from "@/lib/integrations/center/actions";
 import type { IntegrationCenterSnapshot } from "@/lib/integrations/center/types";
+import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -31,14 +32,17 @@ function formatTimestamp(value: string | null): string {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const connected = status === "Connected";
+  const positive = status === "Connected";
+  const warning = status === "Degraded" || status === "Configured";
   return (
     <span
       className={cn(
         "inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold",
-        connected
+        positive
           ? "border-success/25 bg-success/10 text-success"
-          : "border-border bg-muted/10 text-muted",
+          : warning
+            ? "border-warning/25 bg-warning/10 text-warning"
+            : "border-border bg-muted/10 text-muted",
       )}
     >
       {status}
@@ -96,12 +100,18 @@ export function IntegrationCenterWorkspace({ snapshot }: IntegrationCenterWorksp
   const handleTestOpenAI = () => {
     setTestResult(null);
     setTestError(null);
+    trackAnalyticsEvent("ai_connection_test_started", { provider: "openai" });
     startTest(async () => {
       const result = await testOpenAIConnectionAction();
       if (!result.ok && result.message.includes("permission")) {
         setTestError(result.message);
+        trackAnalyticsEvent("ai_connection_test_failed", { provider: "openai", code: "access_denied" });
         return;
       }
+      trackAnalyticsEvent(
+        result.ok ? "ai_connection_test_succeeded" : "ai_connection_test_failed",
+        { provider: "openai", state: result.state ?? "unknown" },
+      );
       setTestResult(result);
     });
   };
@@ -114,16 +124,19 @@ export function IntegrationCenterWorkspace({ snapshot }: IntegrationCenterWorksp
           description="Primary AI provider for report assistant and automation features."
           configureHref="/settings/diagnostics"
           actions={
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={handleTestOpenAI}
-              loading={isTesting}
-              loadingText="Testing…"
-            >
-              Test connection
-            </Button>
+            snapshot.openai.canTestConnection ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleTestOpenAI}
+                loading={isTesting}
+                loadingText="Testing…"
+                aria-label="Test OpenAI connection"
+              >
+                Test connection
+              </Button>
+            ) : null
           }
         >
           <IntegrationRow
@@ -136,13 +149,25 @@ export function IntegrationCenterWorkspace({ snapshot }: IntegrationCenterWorksp
             value={snapshot.openai.currentModel ?? NO_DATA}
           />
           <IntegrationRow
-            label="Last successful request"
-            value={formatTimestamp(snapshot.openai.lastSuccessfulRequest)}
+            label="Last successful check"
+            value={formatTimestamp(snapshot.openai.lastSuccessfulCheck)}
           />
           <IntegrationRow
-            label="Usage"
-            value={snapshot.openai.usageSummary ?? NO_DATA}
+            label="Last failed check"
+            value={formatTimestamp(snapshot.openai.lastFailedCheck)}
           />
+          <IntegrationRow
+            label="Latency"
+            value={
+              snapshot.openai.lastLatencyMs != null
+                ? `${snapshot.openai.lastLatencyMs} ms`
+                : NO_DATA
+            }
+          />
+          <IntegrationRow label="Usage" value={snapshot.openai.usageSummary ?? NO_DATA} />
+          {snapshot.openai.sanitizedError ? (
+            <IntegrationRow label="Last error" value={snapshot.openai.sanitizedError} />
+          ) : null}
         </IntegrationCard>
 
         <IntegrationCard
@@ -250,7 +275,7 @@ export function IntegrationCenterWorkspace({ snapshot }: IntegrationCenterWorksp
         <PageSurface>
           <PageSurfaceHeading
             title="OpenAI connection test"
-            description="Result from the latest provider health check."
+            description="Result from the latest Responses API health probe."
           />
           <div className="mt-4">
             {testResult ? (

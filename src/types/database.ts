@@ -1967,6 +1967,128 @@ export type Database = {
           },
         ];
       };
+      ai_request_logs: {
+        Row: {
+          id: string;
+          organization_id: string;
+          user_id: string;
+          client_id: string | null;
+          report_id: string | null;
+          provider: string;
+          model: string;
+          feature: string;
+          status: string;
+          prompt_version: string | null;
+          input_tokens: number | null;
+          output_tokens: number | null;
+          total_tokens: number | null;
+          latency_ms: number | null;
+          provider_request_id: string | null;
+          error_code: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          user_id: string;
+          client_id?: string | null;
+          report_id?: string | null;
+          provider?: string;
+          model: string;
+          feature: string;
+          status: string;
+          prompt_version?: string | null;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          total_tokens?: number | null;
+          latency_ms?: number | null;
+          provider_request_id?: string | null;
+          error_code?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          user_id?: string;
+          client_id?: string | null;
+          report_id?: string | null;
+          provider?: string;
+          model?: string;
+          feature?: string;
+          status?: string;
+          prompt_version?: string | null;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          total_tokens?: number | null;
+          latency_ms?: number | null;
+          provider_request_id?: string | null;
+          error_code?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_request_logs_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_request_logs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_request_logs_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_request_logs_report_id_fkey";
+            columns: ["report_id"];
+            isOneToOne: false;
+            referencedRelation: "reports";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      platform_openai_health_checks: {
+        Row: {
+          id: string;
+          ok: boolean;
+          model: string | null;
+          latency_ms: number | null;
+          provider_request_id: string | null;
+          error_code: string | null;
+          sanitized_message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          ok: boolean;
+          model?: string | null;
+          latency_ms?: number | null;
+          provider_request_id?: string | null;
+          error_code?: string | null;
+          sanitized_message?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          ok?: boolean;
+          model?: string | null;
+          latency_ms?: number | null;
+          provider_request_id?: string | null;
+          error_code?: string | null;
+          sanitized_message?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       ai_usage_events: {
         Row: {
           id: string;
@@ -5213,6 +5335,9 @@ export type ClientFinancial = Database["public"]["Tables"]["client_financials"][
 export type TeamInvitation = Database["public"]["Tables"]["team_invitations"]["Row"];
 export type ActivityEvent = Database["public"]["Tables"]["activity_events"]["Row"];
 export type AIUsageEvent = Database["public"]["Tables"]["ai_usage_events"]["Row"];
+export type AIRequestLog = Database["public"]["Tables"]["ai_request_logs"]["Row"];
+export type PlatformOpenAIHealthCheck =
+  Database["public"]["Tables"]["platform_openai_health_checks"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type AutomationWorkflow = Database["public"]["Tables"]["automation_workflows"]["Row"];
 export type AutomationWorkflowVersion =

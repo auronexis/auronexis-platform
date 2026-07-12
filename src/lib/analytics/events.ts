@@ -73,7 +73,15 @@ export type AnalyticsEventName =
   | "executive_report_draft_created"
   | "ai_narrative_generated"
   | "ai_narrative_failed"
-  | "intelligence_period_changed";
+  | "intelligence_period_changed"
+  | "ai_connection_test_started"
+  | "ai_connection_test_succeeded"
+  | "ai_connection_test_failed"
+  | "ai_summary_generation_started"
+  | "ai_summary_generation_succeeded"
+  | "ai_summary_generation_failed"
+  | "ai_summary_saved"
+  | "ai_rate_limit_reached";
 
 export type AnalyticsEventProps = Record<string, string | number | boolean>;
 

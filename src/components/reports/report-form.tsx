@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useActionState } from "react";
 import { ReportAIFieldLabel } from "@/components/reports/ai/report-ai-section-button";
+import { ExecutiveSummaryGenerator } from "@/components/reports/ai/executive-summary-generator";
 import { useOptionalReportAI } from "@/components/reports/ai/report-ai-provider";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -328,6 +329,17 @@ export function ReportForm({
         </FormSection>
 
         <FormSection title="Report content" description="Executive narrative and operational highlights.">
+          {useAIFields && reportAI ? (
+            <ExecutiveSummaryGenerator
+              aiEnabled={aiEnabled}
+              reportId={report?.id}
+              clientId={report?.client_id ?? reportAI.baseContext.clientId}
+              reportTitle={report?.title ?? reportAI.baseContext.reportTitle}
+              reportingPeriodStart={reportAI.baseContext.reportingPeriodStart}
+              reportingPeriodEnd={reportAI.baseContext.reportingPeriodEnd}
+              existingSummary={reportAI.fieldValues.executive_summary}
+            />
+          ) : null}
           {contentFields.map((field) =>
             useAIFields && reportAI ? (
               <ReportAIContentField

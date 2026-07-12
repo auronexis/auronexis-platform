@@ -50,7 +50,7 @@ async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>
     getQueueDiagnosticsSnapshot(),
   ]);
 
-  const aiStatus = resolvePublicAiStatus();
+  const aiStatus = await resolvePublicAiStatus();
 
   return {
     Platform: {

@@ -1,4 +1,10 @@
+import "server-only";
+
 import type { StatusLevel } from "@/components/marketing/status-badge";
+import {
+  getOpenAIPlatformStatus,
+  mapOpenAIStateToPublicDetail,
+} from "@/lib/ai/openai/status";
 
 export type PublicStatusComponent = {
   name: string;
@@ -28,12 +34,11 @@ const INTERNAL_STATUS_LABELS = new Set([
   "monitoring optional in development",
 ]);
 
-export function resolvePublicAiStatus(): Pick<PublicStatusComponent, "status" | "detail"> {
-  if (process.env.OPENAI_API_KEY) {
-    return { status: "operational", detail: "Operational" };
-  }
-
-  return { status: "maintenance", detail: "Not Enabled" };
+export async function resolvePublicAiStatus(): Promise<
+  Pick<PublicStatusComponent, "status" | "detail">
+> {
+  const platform = await getOpenAIPlatformStatus();
+  return mapOpenAIStateToPublicDetail(platform.state);
 }
 
 function sanitizePublicDetail(detail: string): string {
@@ -58,7 +63,7 @@ function sanitizePublicDetail(detail: string): string {
 
 export function sanitizePublicStatusComponent(component: PublicStatusComponent): PublicStatusComponent {
   if (component.name === "AI") {
-    return { ...component, ...resolvePublicAiStatus() };
+    return component;
   }
 
   return {

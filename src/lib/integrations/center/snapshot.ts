@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getApiDashboardSnapshot } from "@/lib/api/diagnostics";
-import { getAIConfig } from "@/lib/ai/server/config";
+import { getOpenAIIntegrationSnapshot } from "@/lib/ai/openai";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
 import { countCustomerInvoices } from "@/lib/billing/invoices";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
@@ -14,11 +14,12 @@ import type {
 } from "@/lib/integrations/center/types";
 import { getOrganizationPlanContextForSession } from "@/lib/plans/queries";
 import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
+import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 const NO_DATA = "No data available";
+const NO_USAGE = "No usage recorded yet";
 
 function connectionLabel(connected: boolean): IntegrationConnectionLabel {
   return connected ? "Connected" : "Not Connected";
@@ -36,23 +37,6 @@ function resolveStripeMode(): string | null {
     return "Test";
   }
   return null;
-}
-
-async function getLastSuccessfulAiRequest(organizationId: string): Promise<string | null> {
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("ai_usage_events")
-    .select("created_at")
-    .eq("organization_id", organizationId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return (data as { created_at: string }).created_at;
 }
 
 async function getLastReportEmail(organizationId: string): Promise<string | null> {
@@ -149,13 +133,11 @@ export async function getIntegrationCenterSnapshot(
   session: SessionContext,
 ): Promise<IntegrationCenterSnapshot> {
   const plan = await getOrganizationPlanContextForSession(session);
-  const aiConfig = getAIConfig();
-  const openaiConnected = Boolean(aiConfig.openaiApiKey);
   const anthropicConnected = Boolean(process.env.ANTHROPIC_API_KEY?.trim());
 
   const [
+    openaiSnapshot,
     aiUsage,
-    lastAiRequest,
     slackConnection,
     apiSnapshot,
     stripeWebhooks,
@@ -165,8 +147,8 @@ export async function getIntegrationCenterSnapshot(
     lastWebhookDelivery,
     webhookFailures,
   ] = await Promise.all([
+    getOpenAIIntegrationSnapshot(session.organization.id),
     getAIUsageSummaryForSession(session, plan.planKey),
-    getLastSuccessfulAiRequest(session.organization.id),
     getConnectorConnectionByConnectorId(session, "slack"),
     getApiDashboardSnapshot(session),
     getStripeWebhookDiagnostics(),
@@ -191,13 +173,22 @@ export async function getIntegrationCenterSnapshot(
   const emailProvider = getEmailProviderId();
   const emailConfigured = isEmailConfigured();
 
+  const usageSummary =
+    openaiSnapshot.usageSummary ??
+    (aiUsage.callsThisMonth > 0 ? formatUsageSummary(aiUsage) : NO_USAGE);
+
   return {
     openai: {
-      connectionStatus: connectionLabel(openaiConnected),
-      provider: "OpenAI",
-      currentModel: openaiConnected ? aiConfig.openaiModel : null,
-      lastSuccessfulRequest: lastAiRequest,
-      usageSummary: formatUsageSummary(aiUsage),
+      connectionStatus: openaiSnapshot.connectionStatus as IntegrationConnectionLabel,
+      state: openaiSnapshot.state,
+      provider: openaiSnapshot.provider,
+      currentModel: openaiSnapshot.currentModel,
+      lastSuccessfulCheck: openaiSnapshot.lastSuccessfulCheck,
+      lastFailedCheck: openaiSnapshot.lastFailedCheck,
+      lastLatencyMs: openaiSnapshot.lastLatencyMs,
+      sanitizedError: openaiSnapshot.sanitizedError,
+      usageSummary,
+      canTestConnection: canManageOrganizationSettings(session),
     },
     anthropic: {
       connectionStatus: connectionLabel(anthropicConnected),

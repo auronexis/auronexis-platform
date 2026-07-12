@@ -5,6 +5,7 @@ export {
   ReportAIFieldLabel,
   ReportAIFloatingTrigger,
 } from "@/components/reports/ai/report-ai-section-button";
+export { ExecutiveSummaryGenerator } from "@/components/reports/ai/executive-summary-generator";
 export { ReportAIUsageCard, ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
 export { ReportEditableWithAI } from "@/components/reports/ai/report-editable-with-ai";
 export { ReportAIDiffPreview } from "@/components/reports/ai/report-ai-diff-preview";

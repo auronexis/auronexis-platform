@@ -1,11 +1,23 @@
-export type IntegrationConnectionLabel = "Connected" | "Not Connected" | "Partially configured";
+export type IntegrationConnectionLabel =
+  | "Connected"
+  | "Not Connected"
+  | "Partially configured"
+  | "Configured"
+  | "Degraded"
+  | "Disabled"
+  | "Not configured";
 
 export type IntegrationCenterOpenAI = {
   connectionStatus: IntegrationConnectionLabel;
+  state: string;
   provider: string;
   currentModel: string | null;
-  lastSuccessfulRequest: string | null;
+  lastSuccessfulCheck: string | null;
+  lastFailedCheck: string | null;
+  lastLatencyMs: number | null;
+  sanitizedError: string | null;
   usageSummary: string | null;
+  canTestConnection: boolean;
 };
 
 export type IntegrationCenterAnthropic = {
@@ -58,4 +70,7 @@ export type OpenAIConnectionTestResult = {
   ok: boolean;
   message: string;
   latencyMs: number | null;
+  state?: string;
+  model?: string | null;
+  errorCode?: string | null;
 };

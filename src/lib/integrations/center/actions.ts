@@ -1,13 +1,14 @@
 "use server";
 
-import { createOpenAIProvider } from "@/lib/ai/providers/openai";
-import { getAIConfig } from "@/lib/ai/server/config";
+import { recordActivityEvent } from "@/lib/activity/record";
+import { runOpenAIConnectionTest } from "@/lib/ai/openai";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
 import type { OpenAIConnectionTestResult } from "@/lib/integrations/center/types";
+import { assertCanUseFeature } from "@/lib/plans/guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
-/** Test OpenAI connectivity using the existing provider health check. */
+/** Test OpenAI connectivity via a minimal Responses API health probe. */
 export async function testOpenAIConnectionAction(): Promise<OpenAIConnectionTestResult> {
   const session = await requireSession();
 
@@ -15,22 +16,49 @@ export async function testOpenAIConnectionAction(): Promise<OpenAIConnectionTest
     return { ok: false, message: ACTION_DENIED_MESSAGE, latencyMs: null };
   }
 
-  const config = getAIConfig();
-
-  if (!config.openaiApiKey) {
+  try {
+    await assertCanUseFeature(session.organization.id, "ai_report_assistant");
+  } catch {
     return {
       ok: false,
-      message: "OPENAI_API_KEY is not configured.",
+      message: "AI features are not available on your current plan.",
       latencyMs: null,
     };
   }
 
-  const provider = createOpenAIProvider(config.openaiApiKey, config.openaiModel);
-  const health = await provider.health();
+  await recordActivityEvent({
+    organizationId: session.organization.id,
+    actorUserId: session.user.id,
+    entityType: "organization",
+    action: "ai_connection_test_started",
+    title: "OpenAI connection test started",
+    metadata: { provider: "openai" },
+  });
+
+  const result = await runOpenAIConnectionTest({
+    organizationId: session.organization.id,
+    userId: session.user.id,
+  });
+
+  await recordActivityEvent({
+    organizationId: session.organization.id,
+    actorUserId: session.user.id,
+    entityType: "organization",
+    action: result.ok ? "ai_connection_test_succeeded" : "ai_connection_test_failed",
+    title: result.ok ? "OpenAI connection verified" : "OpenAI connection test failed",
+    metadata: {
+      provider: "openai",
+      state: result.state,
+      error_code: result.errorCode ?? undefined,
+    },
+  });
 
   return {
-    ok: health.ok,
-    message: health.message,
-    latencyMs: health.latencyMs ?? null,
+    ok: result.ok,
+    message: result.message,
+    latencyMs: result.latencyMs,
+    state: result.state,
+    model: result.model,
+    errorCode: result.errorCode,
   };
 }

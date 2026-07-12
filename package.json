@@ -21,6 +21,7 @@
     "test:phase-28": "node --test scripts/phase-28-international-billing-enterprise-integration.test.mjs",
     "test:phase-28-1": "node --test scripts/phase-28-1-organization-language-persistence.test.mjs",
     "test:clarity-csp": "node --test scripts/clarity-csp-integration.test.mjs",
+    "test:openai-integration": "node --test scripts/openai-integration.test.mjs",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "seed:pilot": "node scripts/seed-pilot-environment.mjs"

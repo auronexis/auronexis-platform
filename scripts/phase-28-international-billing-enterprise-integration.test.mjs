@@ -56,18 +56,17 @@ test("integration center uses real snapshot queries without placeholder values",
   const snapshot = readSource("src/lib/integrations/center/snapshot.ts");
   const workspace = readSource("src/components/settings/integration-center-workspace.tsx");
   assert.match(snapshot, /getIntegrationCenterSnapshot/);
-  assert.match(snapshot, /ai_usage_events/);
-  assert.match(snapshot, /openaiApiKey/);
+  assert.match(snapshot, /getOpenAIIntegrationSnapshot/);
   assert.match(workspace, /No data available/);
   assert.doesNotMatch(workspace, /placeholder/i);
   assert.doesNotMatch(workspace, /fake/i);
 });
 
-test("OpenAI test connection uses provider health check", () => {
+test("OpenAI test connection uses Responses API platform probe", () => {
   const actions = readSource("src/lib/integrations/center/actions.ts");
-  assert.match(actions, /createOpenAIProvider/);
-  assert.match(actions, /provider\.health\(\)/);
-  assert.match(actions, /OPENAI_API_KEY/);
+  assert.match(actions, /runOpenAIConnectionTest/);
+  assert.doesNotMatch(actions, /provider\.health\(\)/);
+  assert.doesNotMatch(actions, /OPENAI_API_KEY/);
 });
 
 test("settings hub links to integration center", () => {
