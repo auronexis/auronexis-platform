@@ -8,6 +8,7 @@ import {
 import { getBillingDashboardData } from "@/lib/billing/queries";
 import { getStripeBillingUiStatusWithPortalFeatures } from "@/lib/billing/stripe-config";
 import { syncCheckoutSessionForOrganization } from "@/lib/stripe/checkout-sync";
+import { resolveLocaleFromOrganization } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getOrganizationPlanUsageSummary } from "@/lib/plans/queries";
@@ -66,6 +67,8 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
     seatUsage.limit,
   );
 
+  const locale = resolveLocaleFromOrganization(session.organization);
+
   return (
     <>
       <PageHeader
@@ -94,6 +97,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
         billingContactCard={resolveBillingContactCard(params.contact === "support" ? "support" : undefined)}
         enterpriseStatus={enterpriseStatus}
         enterpriseAutoOpen={params.contact === "enterprise"}
+        locale={locale}
       />
     </>
   );

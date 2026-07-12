@@ -56,6 +56,7 @@ const acceptInviteSchema = z.object({
 
 const organizationSchema = z.object({
   name: z.string().trim().min(2, "Organization name is required."),
+  language: z.enum(["de", "en"] as const),
 });
 
 function assertInvitableRole(
@@ -378,6 +379,7 @@ export async function updateOrganizationAction(
 
   const parsed = organizationSchema.safeParse({
     name: formData.get("name"),
+    language: formData.get("language"),
   });
 
   if (!parsed.success) {
@@ -387,7 +389,10 @@ export async function updateOrganizationAction(
   const supabase = await createClient();
   const { error } = await supabase
     .from("organizations")
-    .update({ name: parsed.data.name } as never)
+    .update({
+      name: parsed.data.name,
+      language: parsed.data.language,
+    } as never)
     .eq("id", session.organization.id);
 
   if (error) {
@@ -401,12 +406,13 @@ export async function updateOrganizationAction(
     entityId: session.organization.id,
     eventType: "settings.updated",
     action: "organization_updated",
-    title: "Organization name updated",
+    title: "Organization settings updated",
     description: parsed.data.name,
-    metadata: { name: parsed.data.name },
+    metadata: { name: parsed.data.name, language: parsed.data.language },
   });
 
   revalidatePath("/settings/organization");
+  revalidatePath("/settings/billing");
   revalidatePath("/activity");
   revalidatePath("/", "layout");
   return { success: "Organization updated." };

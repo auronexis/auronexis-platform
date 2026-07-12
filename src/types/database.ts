@@ -240,6 +240,7 @@ export type Database = {
           name: string;
           slug: string;
           plan: string;
+          language: string;
           created_at: string;
           updated_at: string;
         };
@@ -248,6 +249,7 @@ export type Database = {
           name: string;
           slug: string;
           plan?: string;
+          language?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -256,6 +258,7 @@ export type Database = {
           name?: string;
           slug?: string;
           plan?: string;
+          language?: string;
           created_at?: string;
           updated_at?: string;
         };

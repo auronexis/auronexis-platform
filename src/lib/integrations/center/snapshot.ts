@@ -1,0 +1,233 @@
+import "server-only";
+
+import { getApiDashboardSnapshot } from "@/lib/api/diagnostics";
+import { getAIConfig } from "@/lib/ai/server/config";
+import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
+import { countCustomerInvoices } from "@/lib/billing/invoices";
+import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
+import { getConnectorConnectionByConnectorId } from "@/lib/connectors/queries";
+import { checkSlackHealth } from "@/lib/connectors/slack/health";
+import { getEmailProviderId, isEmailConfigured } from "@/lib/env/email";
+import type {
+  IntegrationCenterSnapshot,
+  IntegrationConnectionLabel,
+} from "@/lib/integrations/center/types";
+import { getOrganizationPlanContextForSession } from "@/lib/plans/queries";
+import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import type { SessionContext } from "@/lib/tenancy/context";
+
+const NO_DATA = "No data available";
+
+function connectionLabel(connected: boolean): IntegrationConnectionLabel {
+  return connected ? "Connected" : "Not Connected";
+}
+
+function resolveStripeMode(): string | null {
+  const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
+  if (!secretKey) {
+    return null;
+  }
+  if (secretKey.startsWith("sk_live_")) {
+    return "Live";
+  }
+  if (secretKey.startsWith("sk_test_")) {
+    return "Test";
+  }
+  return null;
+}
+
+async function getLastSuccessfulAiRequest(organizationId: string): Promise<string | null> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("ai_usage_events")
+    .select("created_at")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return (data as { created_at: string }).created_at;
+}
+
+async function getLastReportEmail(organizationId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("report_email_deliveries")
+    .select("sent_at, created_at, status")
+    .eq("organization_id", organizationId)
+    .eq("status", "sent")
+    .order("sent_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  const row = data as { sent_at: string | null; created_at: string };
+  return row.sent_at ?? row.created_at;
+}
+
+async function getLastApiUsage(organizationId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("api_request_logs")
+    .select("created_at")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return (data as { created_at: string }).created_at;
+}
+
+async function getLastWebhookDelivery(organizationId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("webhook_deliveries")
+    .select("delivered_at, created_at, status")
+    .eq("organization_id", organizationId)
+    .eq("status", "delivered")
+    .order("delivered_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  const row = data as { delivered_at: string | null; created_at: string };
+  return row.delivered_at ?? row.created_at;
+}
+
+async function countWebhookFailures(organizationId: string): Promise<number | null> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("webhook_deliveries")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    .eq("status", "failed");
+
+  if (error) {
+    return null;
+  }
+
+  return count ?? 0;
+}
+
+function formatUsageSummary(input: {
+  callsThisMonth: number;
+  limit: number;
+  unlimitedCredits?: boolean;
+  totalTokensThisMonth: number | null;
+}): string | null {
+  if (!input.callsThisMonth) {
+    return null;
+  }
+
+  const limitLabel = input.unlimitedCredits ? "unlimited" : String(input.limit);
+  const tokens =
+    input.totalTokensThisMonth !== null
+      ? `, ${input.totalTokensThisMonth.toLocaleString()} tokens`
+      : "";
+
+  return `${input.callsThisMonth.toLocaleString()} calls this month (${limitLabel} limit${tokens})`;
+}
+
+/** Operational integration status for the Enterprise Integration Center. */
+export async function getIntegrationCenterSnapshot(
+  session: SessionContext,
+): Promise<IntegrationCenterSnapshot> {
+  const plan = await getOrganizationPlanContextForSession(session);
+  const aiConfig = getAIConfig();
+  const openaiConnected = Boolean(aiConfig.openaiApiKey);
+  const anthropicConnected = Boolean(process.env.ANTHROPIC_API_KEY?.trim());
+
+  const [
+    aiUsage,
+    lastAiRequest,
+    slackConnection,
+    apiSnapshot,
+    stripeWebhooks,
+    invoiceCount,
+    lastEmail,
+    lastApiUsage,
+    lastWebhookDelivery,
+    webhookFailures,
+  ] = await Promise.all([
+    getAIUsageSummaryForSession(session, plan.planKey),
+    getLastSuccessfulAiRequest(session.organization.id),
+    getConnectorConnectionByConnectorId(session, "slack"),
+    getApiDashboardSnapshot(session),
+    getStripeWebhookDiagnostics(),
+    countCustomerInvoices(session.organization.id),
+    getLastReportEmail(session.organization.id),
+    getLastApiUsage(session.organization.id),
+    getLastWebhookDelivery(session.organization.id),
+    countWebhookFailures(session.organization.id),
+  ]);
+
+  const stripeStatus = getStripeBillingUiStatus();
+  const stripeConnected = stripeStatus.portalAvailable || stripeStatus.checkoutAvailable;
+
+  let slackStatus = NO_DATA;
+  if (slackConnection) {
+    const health = await checkSlackHealth(session.organization.id, slackConnection.id);
+    slackStatus = health.status === "healthy" ? "Connected" : health.status;
+  } else {
+    slackStatus = "Not connected";
+  }
+
+  const emailProvider = getEmailProviderId();
+  const emailConfigured = isEmailConfigured();
+
+  return {
+    openai: {
+      connectionStatus: connectionLabel(openaiConnected),
+      provider: "OpenAI",
+      currentModel: openaiConnected ? aiConfig.openaiModel : null,
+      lastSuccessfulRequest: lastAiRequest,
+      usageSummary: formatUsageSummary(aiUsage),
+    },
+    anthropic: {
+      connectionStatus: connectionLabel(anthropicConnected),
+    },
+    slack: {
+      workspace: slackConnection?.displayName ?? null,
+      connectedChannels: null,
+      status: slackStatus,
+    },
+    stripe: {
+      connectionStatus: connectionLabel(stripeConnected),
+      mode: resolveStripeMode(),
+      customerPortal: stripeStatus.portalAvailable ? "Available" : "Not available",
+      invoices: invoiceCount > 0 ? `${invoiceCount} synced` : NO_DATA,
+    },
+    webhooks: {
+      activeWebhooks: apiSnapshot.webhookEndpointCount,
+      lastDelivery: lastWebhookDelivery ?? (stripeWebhooks.lastWebhookReceivedAt ?? null),
+      failures: webhookFailures,
+    },
+    resend: {
+      domainStatus: emailConfigured ? `${emailProvider} configured` : "Not configured",
+      verified: emailProvider === "resend" ? NO_DATA : NO_DATA,
+      lastEmail,
+    },
+    restApi: {
+      activeKeyCount: apiSnapshot.activeKeyCount,
+      requestsToday: apiSnapshot.requestsToday,
+      lastUsage: lastApiUsage,
+      documentationUrl: "/api/docs",
+    },
+  };
+}

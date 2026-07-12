@@ -1,21 +1,27 @@
 "use client";
 
 import type { CustomerInvoiceView } from "@/lib/billing/types";
-import { formatInvoiceDueLabel } from "@/lib/billing/types";
 import {
   billingStatusToneToBadge,
-  formatMoneyFromCents,
-  getInvoiceDisplayLabel,
   getInvoiceStatusTone,
   isUnpaidInvoice,
   shortenStripeId,
 } from "@/lib/billing/status";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
+import {
+  formatLocalizedInvoiceDueLabel,
+  formatMoneyFromCentsLocale,
+  formatShowingLatestMessage,
+  getInvoiceTranslations,
+  getLocalizedInvoiceDisplayLabel,
+  type AppLocale,
+} from "@/lib/i18n";
 import { cn } from "@/lib/utils/cn";
 
 type InvoiceCenterPanelProps = {
   invoices: CustomerInvoiceView[];
   canManage: boolean;
+  locale: AppLocale;
   limit?: number;
 };
 
@@ -30,7 +36,13 @@ const BADGE_STYLES = {
   slate: "border-border bg-muted/10 text-muted",
 } as const;
 
-export function InvoiceCenterPanel({ invoices, canManage, limit = 5 }: InvoiceCenterPanelProps) {
+export function InvoiceCenterPanel({
+  invoices,
+  canManage,
+  locale,
+  limit = 5,
+}: InvoiceCenterPanelProps) {
+  const t = getInvoiceTranslations(locale);
   const visibleInvoices = invoices.slice(0, limit);
   const paid = invoices.filter((invoice) => invoice.status === "paid");
   const open = invoices.filter(
@@ -42,41 +54,36 @@ export function InvoiceCenterPanel({ invoices, canManage, limit = 5 }: InvoiceCe
 
   return (
     <PageSurface>
-      <PageSurfaceHeading
-        title="Latest invoices"
-        description="Stripe-synchronized invoice history. Open invoices with no payment yet are normal for SEPA or pending checkout."
-      />
+      <PageSurfaceHeading title={t.latestInvoices} description={t.latestInvoicesDescription} />
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border/70 p-4">
-          <p className="text-xs uppercase tracking-wide text-muted">Total invoices</p>
+          <p className="text-xs uppercase tracking-wide text-muted">{t.totalInvoices}</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{invoices.length}</p>
         </div>
         <div className="rounded-xl border border-border/70 p-4">
-          <p className="text-xs uppercase tracking-wide text-muted">Paid</p>
+          <p className="text-xs uppercase tracking-wide text-muted">{t.paid}</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{paid.length}</p>
         </div>
         <div className="rounded-xl border border-border/70 p-4">
-          <p className="text-xs uppercase tracking-wide text-muted">Open / unpaid</p>
+          <p className="text-xs uppercase tracking-wide text-muted">{t.openUnpaid}</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{open.length}</p>
         </div>
       </div>
 
       {visibleInvoices.length === 0 ? (
-        <p className="mt-6 text-sm text-muted">
-          No invoices synced yet. Invoices appear after Stripe checkout and webhook processing.
-        </p>
+        <p className="mt-6 text-sm text-muted">{t.noInvoicesSynced}</p>
       ) : (
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-border/70 text-left text-muted">
-                <th className="py-2 pr-4 font-medium">Invoice</th>
-                <th className="py-2 pr-4 font-medium">Status</th>
-                <th className="py-2 pr-4 font-medium">Amount due</th>
-                <th className="py-2 pr-4 font-medium">Amount paid</th>
-                <th className="py-2 pr-4 font-medium">Period</th>
-                <th className="py-2 pr-4 font-medium">Due / paid</th>
-                <th className="py-2 font-medium">Actions</th>
+                <th className="py-2 pr-4 font-medium">{t.invoice}</th>
+                <th className="py-2 pr-4 font-medium">{t.status}</th>
+                <th className="py-2 pr-4 font-medium">{t.amountDue}</th>
+                <th className="py-2 pr-4 font-medium">{t.amountPaid}</th>
+                <th className="py-2 pr-4 font-medium">{t.period}</th>
+                <th className="py-2 pr-4 font-medium">{t.duePaid}</th>
+                <th className="py-2 font-medium">{t.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -94,17 +101,21 @@ export function InvoiceCenterPanel({ invoices, canManage, limit = 5 }: InvoiceCe
                           BADGE_STYLES[tone],
                         )}
                       >
-                        {getInvoiceDisplayLabel(invoice)}
+                        {getLocalizedInvoiceDisplayLabel(invoice, locale)}
                       </span>
                     </td>
                     <td className="py-3 pr-4 text-foreground">
-                      {formatMoneyFromCents(invoice.amountDue, invoice.currency)}
+                      {formatMoneyFromCentsLocale(invoice.amountDue, invoice.currency, locale)}
                     </td>
                     <td className="py-3 pr-4 text-foreground">
-                      {formatMoneyFromCents(invoice.amountPaid, invoice.currency)}
+                      {formatMoneyFromCentsLocale(invoice.amountPaid, invoice.currency, locale)}
                     </td>
-                    <td className="py-3 pr-4 text-muted">{invoice.periodLabel ?? "—"}</td>
-                    <td className="py-3 pr-4 text-muted">{formatInvoiceDueLabel(invoice)}</td>
+                    <td className="py-3 pr-4 text-muted">
+                      {invoice.periodLabel ?? t.emDash}
+                    </td>
+                    <td className="py-3 pr-4 text-muted">
+                      {formatLocalizedInvoiceDueLabel(invoice, locale)}
+                    </td>
                     <td className="py-3">
                       <div className="flex flex-wrap gap-2">
                         {invoice.invoicePdfUrl ? (
@@ -114,7 +125,7 @@ export function InvoiceCenterPanel({ invoices, canManage, limit = 5 }: InvoiceCe
                             rel="noreferrer"
                             className="inline-flex rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-muted/10"
                           >
-                            Download invoice PDF
+                            {t.downloadPdf}
                           </a>
                         ) : null}
                         {isUnpaidInvoice(invoice) && invoice.hostedInvoiceUrl ? (
@@ -124,7 +135,7 @@ export function InvoiceCenterPanel({ invoices, canManage, limit = 5 }: InvoiceCe
                             rel="noreferrer"
                             className="inline-flex rounded-md px-2 py-1 text-xs font-medium text-primary hover:underline"
                           >
-                            Open invoice
+                            {t.openInvoice}
                           </a>
                         ) : null}
                       </div>
@@ -138,13 +149,11 @@ export function InvoiceCenterPanel({ invoices, canManage, limit = 5 }: InvoiceCe
       )}
 
       {invoices.length > limit ? (
-        <p className="mt-4 text-xs text-muted">Showing the latest {limit} invoices.</p>
+        <p className="mt-4 text-xs text-muted">{formatShowingLatestMessage(t, limit)}</p>
       ) : null}
 
       {canManage ? (
-        <p className="mt-4 text-xs text-muted">
-          Manage payment methods and download additional invoices in the Stripe customer portal.
-        </p>
+        <p className="mt-4 text-xs text-muted">{t.manageInPortal}</p>
       ) : null}
     </PageSurface>
   );

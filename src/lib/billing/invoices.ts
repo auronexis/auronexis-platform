@@ -1,59 +1,59 @@
 import "server-only";
 
 import type { BillingEventRecord, CustomerInvoiceView } from "@/lib/billing/types";
-import { formatBillingDate, formatBillingDateTime } from "@/lib/billing/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  formatInvoicePeriodLabel,
+  formatMoneyFromCentsLocale,
+  getInvoiceStatusLabel,
+  resolveLocaleFromOrganization,
+} from "@/lib/i18n";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type Stripe from "stripe";
 
-const INVOICE_STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  open: "Open",
-  paid: "Paid",
-  uncollectible: "Uncollectible",
-  void: "Void",
-};
 
-function formatMoney(amountCents: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: 2,
-  }).format(amountCents / 100);
-}
-
-function mapInvoiceRow(row: {
-  id: string;
-  stripe_invoice_id: string;
-  status: string;
-  amount_due: number;
-  amount_paid: number;
-  currency: string;
-  due_at: string | null;
-  paid_at: string | null;
-  invoice_pdf_url: string | null;
-  hosted_invoice_url: string | null;
-  period_start: string | null;
-  period_end: string | null;
-}): CustomerInvoiceView {
-  const periodStart = formatBillingDate(row.period_start);
-  const periodEnd = formatBillingDate(row.period_end);
+function mapInvoiceRow(
+  row: {
+    id: string;
+    stripe_invoice_id: string;
+    status: string;
+    amount_due: number;
+    amount_paid: number;
+    currency: string;
+    due_at: string | null;
+    paid_at: string | null;
+    invoice_pdf_url: string | null;
+    hosted_invoice_url: string | null;
+    period_start: string | null;
+    period_end: string | null;
+  },
+  locale: ReturnType<typeof resolveLocaleFromOrganization>,
+): CustomerInvoiceView {
+  const periodLabel = formatInvoicePeriodLabel(
+    row.period_start,
+    row.period_end,
+    locale,
+  );
 
   return {
     id: row.id,
     stripeInvoiceId: row.stripe_invoice_id,
     status: row.status,
-    statusLabel: INVOICE_STATUS_LABELS[row.status] ?? row.status,
+    statusLabel: getInvoiceStatusLabel(row.status, locale),
     amountDue: row.amount_due,
     amountPaid: row.amount_paid,
     currency: row.currency,
-    formattedAmount: formatMoney(row.amount_due || row.amount_paid, row.currency),
+    formattedAmount: formatMoneyFromCentsLocale(
+      row.amount_due || row.amount_paid,
+      row.currency,
+      locale,
+    ),
     dueAt: row.due_at,
     paidAt: row.paid_at,
     invoicePdfUrl: row.invoice_pdf_url,
     hostedInvoiceUrl: row.hosted_invoice_url,
-    periodLabel: periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : null,
+    periodLabel,
     isFuture: row.status === "draft",
   };
 }
@@ -62,6 +62,7 @@ export async function listCustomerInvoices(
   session: SessionContext,
   limit = 24,
 ): Promise<CustomerInvoiceView[]> {
+  const locale = resolveLocaleFromOrganization(session.organization);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("customer_invoices")
@@ -75,7 +76,7 @@ export async function listCustomerInvoices(
   }
 
   return ((data ?? []) as Array<Record<string, unknown>>).map((row) =>
-    mapInvoiceRow(row as never),
+    mapInvoiceRow(row as never, locale),
   );
 }
 

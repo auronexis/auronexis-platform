@@ -28,6 +28,7 @@ import {
   formatProrationSummary,
 } from "@/lib/billing/messages";
 import type { BillingDashboardData, StripeBillingUiStatus } from "@/lib/billing/types";
+import type { AppLocale } from "@/lib/i18n";
 import { formatBillingDateTime } from "@/lib/billing/types";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
 import type { OrganizationSeatUsage } from "@/lib/seats/types";
@@ -42,6 +43,7 @@ type BillingSettingsPanelProps = {
   planUsage: OrganizationPlanUsageSummary;
   canManage: boolean;
   stripeStatus: StripeBillingUiStatus;
+  locale: AppLocale;
   success?: boolean;
   successMessage?: string | null;
   cancelled?: boolean;
@@ -125,6 +127,7 @@ export function BillingSettingsPanel({
   planUsage,
   canManage,
   stripeStatus,
+  locale,
   success,
   successMessage,
   cancelled,
@@ -412,7 +415,7 @@ export function BillingSettingsPanel({
         </p>
       </PageSurface>
 
-      <InvoiceCenterPanel invoices={dashboard.invoices} canManage={canManage} />
+      <InvoiceCenterPanel invoices={dashboard.invoices} canManage={canManage} locale={locale} />
 
       {showPromotions ? (
         <PageSurface>

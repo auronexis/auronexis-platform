@@ -8,6 +8,7 @@ import {
   LifeBuoy,
   Mail,
   Palette,
+  Plug,
   Scale,
   ShieldAlert,
   Stethoscope,
@@ -96,6 +97,12 @@ const SETTINGS_LINKS = [
 ] as const;
 
 const ADMIN_SETTINGS_LINKS = [
+  {
+    href: "/settings/integrations",
+    title: "Integration Center",
+    description: "Operational status for OpenAI, Stripe, Slack, Resend, webhooks, and REST API.",
+    icon: Plug,
+  },
   {
     href: "/settings/enterprise",
     title: "Enterprise",
