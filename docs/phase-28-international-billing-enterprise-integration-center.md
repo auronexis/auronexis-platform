@@ -95,12 +95,14 @@ Production build completed successfully. New page: `/settings/integrations` (4.7
 
 ## Git
 
-- Commit: `Phase 28 international billing and enterprise integration center`
-- Push: `origin/main`
+- Commit: `8e49a46` — `Phase 28 international billing and enterprise integration center`
+- Push: `origin/main` — succeeded (`6b6811a..8e49a46`)
 
 ## Vercel
 
-Deployment verification pending CLI/production check at commit time.
+- `gh` and `vercel` CLI unavailable in this environment.
+- Production URL `https://app.auroranexis.com/login` responded HTTP 200 after push (Vercel edge: `fra1::iad1`).
+- Explicit READY/CURRENT/PRODUCTION deployment state could not be confirmed via CLI.
 
 ## Remaining Limitations
 
