@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { SUPPORT_EMAIL } from "@/lib/company/contact";
+import { createPageMetadataForPath } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = {
+  ...createPageMetadataForPath("/404", {
+    title: "Page Not Found",
+    description: "The requested Auroranexis page could not be found.",
+    noIndex: true,
+  }),
+};
 
 export default function NotFound() {
   return (

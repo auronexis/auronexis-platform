@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { PLATFORM_NAME } from "@/lib/branding/defaults";
 import { COMPANY_INFORMATION } from "@/lib/company/company-information";
-import { COMPANY_SEO, getCanonicalUrl, getPageTitle } from "@/lib/company";
-import { NOINDEX_ROUTES, PAGE_SEO } from "@/lib/seo/routes";
+import {
+  COMPANY_SEO,
+  getCanonicalUrl,
+  getPageTitle,
+  resolveCanonicalBaseUrl,
+} from "@/lib/company";
+import { isPrivateRoute, NOINDEX_ROUTES, PAGE_SEO } from "@/lib/seo/routes";
 
 export type PageMetadataInput = {
   title: string;
@@ -13,13 +18,23 @@ export type PageMetadataInput = {
   keywords?: string[];
 };
 
-/** Resolve metadataBase — production URL or canonical fallback for previews. */
-export function resolveMetadataBase(): URL {
-  const raw = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (!raw || /localhost|127\.0\.0\.1|\.vercel\.app/i.test(raw)) {
-    return new URL(COMPANY_SEO.canonicalBaseUrl);
+/** True when running on preview, localhost, or Vercel preview URLs. */
+export function isPreviewDeployment(): boolean {
+  if (process.env.VERCEL_ENV === "preview") {
+    return true;
   }
-  return new URL(raw);
+
+  const raw = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (!raw) {
+    return process.env.NODE_ENV !== "production";
+  }
+
+  return /localhost|127\.0\.0\.1|\.vercel\.app/i.test(raw);
+}
+
+/** Resolve metadataBase — public marketing canonical host (www). */
+export function resolveMetadataBase(): URL {
+  return new URL(resolveCanonicalBaseUrl());
 }
 
 const DEFAULT_KEYWORDS = [
@@ -36,7 +51,11 @@ const DEFAULT_KEYWORDS = [
 
 /** Resolve whether a path should be excluded from search indexing. */
 export function shouldNoIndex(path: string): boolean {
-  return (NOINDEX_ROUTES as readonly string[]).includes(path);
+  return (
+    (NOINDEX_ROUTES as readonly string[]).includes(path) ||
+    isPrivateRoute(path) ||
+    isPreviewDeployment()
+  );
 }
 
 /** Site verification tags for Google Search Console and Bing Webmaster Tools. */
@@ -55,6 +74,14 @@ export function getSiteVerificationMetadata(): Pick<Metadata, "verification" | "
   }
 
   return metadata;
+}
+
+function resolveOpenGraphImageUrl(): string {
+  return new URL(BRANDING_ASSETS.openGraph, resolveMetadataBase()).toString();
+}
+
+function resolveTwitterImageUrl(): string {
+  return new URL(BRANDING_ASSETS.linkedinBanner, resolveMetadataBase()).toString();
 }
 
 /** Canonical metadata builder for public marketing, legal, and docs pages. */
@@ -76,7 +103,7 @@ export function createPageMetadata({
     creator: COMPANY_INFORMATION.legalName,
     publisher: COMPANY_INFORMATION.legalName,
     keywords: keywords ?? [...DEFAULT_KEYWORDS],
-    alternates: { canonical: url.pathname },
+    alternates: { canonical: url.toString() },
     openGraph: {
       type: COMPANY_SEO.openGraph.type,
       locale: COMPANY_SEO.openGraph.locale,
@@ -86,7 +113,7 @@ export function createPageMetadata({
       url: url.toString(),
       images: [
         {
-          url: BRANDING_ASSETS.openGraph,
+          url: resolveOpenGraphImageUrl(),
           width: 1200,
           height: 630,
           alt: `${COMPANY_SEO.productName} — ${title}`,
@@ -97,7 +124,7 @@ export function createPageMetadata({
       card: COMPANY_SEO.twitter.card,
       title: getPageTitle(title),
       description,
-      images: [BRANDING_ASSETS.linkedinBanner],
+      images: [resolveTwitterImageUrl()],
     },
     robots: indexable ? { index: true, follow: true } : { index: false, follow: false },
   };
@@ -115,7 +142,15 @@ export function createPageMetadataForPath(path: string, overrides?: Partial<Page
   });
 }
 
+/** Metadata for authenticated application surfaces — always noindex. */
+export function createPrivateAppMetadata(title: string): Metadata {
+  return {
+    title,
+    robots: { index: false, follow: false },
+  };
+}
+
 /** Resolve the canonical site base URL for sitemap and robots. */
 export function getSeoBaseUrl(): string {
-  return COMPANY_SEO.canonicalBaseUrl;
+  return resolveCanonicalBaseUrl();
 }

@@ -1,7 +1,15 @@
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { COMPANY_CONTACT } from "@/lib/company/company-contact";
 import { COMPANY_INFORMATION } from "@/lib/company/company-information";
-import { COMPANY_SEO } from "@/lib/company/company-seo";
+import { getCanonicalUrl, resolveCanonicalBaseUrl } from "@/lib/company/company-seo";
+import {
+  PUBLIC_SELF_SERVE_PLAN_KEYS,
+  getPlanByKey,
+} from "@/lib/billing/plans";
+
+function absoluteAsset(path: string): string {
+  return new URL(path, resolveCanonicalBaseUrl()).toString();
+}
 
 export function organizationJsonLd() {
   return {
@@ -9,8 +17,8 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: COMPANY_INFORMATION.legalName,
     legalName: COMPANY_INFORMATION.legalName,
-    url: COMPANY_SEO.canonicalBaseUrl,
-    logo: new URL(BRANDING_ASSETS.approvedCompositeLogo, COMPANY_SEO.canonicalBaseUrl).toString(),
+    url: resolveCanonicalBaseUrl(),
+    logo: absoluteAsset(BRANDING_ASSETS.approvedCompositeLogo),
     email: COMPANY_CONTACT.supportEmail,
     telephone: COMPANY_CONTACT.phone,
     address: {
@@ -33,12 +41,29 @@ export function websiteJsonLd() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: COMPANY_INFORMATION.productName,
-    url: COMPANY_SEO.canonicalBaseUrl,
+    url: resolveCanonicalBaseUrl(),
     publisher: {
       "@type": "Organization",
       name: COMPANY_INFORMATION.legalName,
     },
   };
+}
+
+function buildPlanOffers() {
+  const pricingUrl = getCanonicalUrl("/pricing").toString();
+
+  return PUBLIC_SELF_SERVE_PLAN_KEYS.map((planKey) => {
+    const plan = getPlanByKey(planKey);
+    return {
+      "@type": "Offer",
+      name: plan.name,
+      price: String(plan.priceMonthly),
+      priceCurrency: plan.currency,
+      availability: "https://schema.org/InStock",
+      url: pricingUrl,
+      description: plan.description,
+    };
+  });
 }
 
 export function softwareApplicationJsonLd() {
@@ -49,16 +74,27 @@ export function softwareApplicationJsonLd() {
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description: COMPANY_INFORMATION.shortDescription,
-    offers: {
-      "@type": "Offer",
-      price: "149",
-      priceCurrency: "EUR",
-    },
+    offers: buildPlanOffers(),
     provider: {
       "@type": "Organization",
       name: COMPANY_INFORMATION.legalName,
-      url: COMPANY_SEO.canonicalBaseUrl,
+      url: resolveCanonicalBaseUrl(),
     },
+  };
+}
+
+/** Product schema for the public pricing page — matches live self-serve plan prices. */
+export function pricingPageJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: COMPANY_INFORMATION.productName,
+    description: COMPANY_INFORMATION.shortDescription,
+    brand: {
+      "@type": "Brand",
+      name: COMPANY_INFORMATION.productName,
+    },
+    offers: buildPlanOffers(),
   };
 }
 
@@ -102,7 +138,7 @@ export function enterpriseOfferJsonLd() {
     provider: {
       "@type": "Organization",
       name: COMPANY_INFORMATION.legalName,
-      url: COMPANY_SEO.canonicalBaseUrl,
+      url: resolveCanonicalBaseUrl(),
     },
     areaServed: "Worldwide",
     audience: {

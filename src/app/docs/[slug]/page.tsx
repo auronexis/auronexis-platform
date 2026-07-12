@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DocPageLayout } from "@/components/docs/doc-page-layout";
+import { JsonLdScript } from "@/lib/marketing/seo";
 import { getAllDocSlugs, getDocPage } from "@/lib/docs/registry";
-import { createPageMetadata } from "@/lib/seo";
+import { createPageMetadata, techArticleJsonLd } from "@/lib/seo";
 
 type DocTopicPageProps = {
   params: Promise<{ slug: string }>;
@@ -35,5 +36,16 @@ export default async function DocTopicPage({ params }: DocTopicPageProps) {
     notFound();
   }
 
-  return <DocPageLayout doc={doc} />;
+  return (
+    <>
+      <JsonLdScript
+        data={techArticleJsonLd({
+          title: doc.title,
+          description: doc.description,
+          path: `/docs/${slug}`,
+        })}
+      />
+      <DocPageLayout doc={doc} />
+    </>
+  );
 }

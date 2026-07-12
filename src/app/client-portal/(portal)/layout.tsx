@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
 import type { PortalNavItem } from "@/components/client-portal/portal-shell";
 import { PortalShell, PORTAL_NAV_ITEMS } from "@/components/client-portal/portal-shell";
 import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
 import { getOrganizationBrandingForOrganization } from "@/lib/branding/queries";
 import { requireClientPortalSession } from "@/lib/client-portal/session";
+import { createPrivateAppMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = createPrivateAppMetadata("Client Portal");
 
 type PortalAuthenticatedLayoutProps = {
   children: React.ReactNode;

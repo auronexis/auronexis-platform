@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { getClientPortalSession } from "@/lib/client-portal/session";
+import { createPrivateAppMetadata } from "@/lib/seo/metadata";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
 import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
@@ -15,6 +17,8 @@ import { getUnreadNotificationCount } from "@/lib/notifications/queries";
 type DashboardLayoutProps = {
   children: React.ReactNode;
 };
+
+export const metadata: Metadata = createPrivateAppMetadata("Workspace");
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
   const session = await getSession();

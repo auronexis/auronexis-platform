@@ -15,19 +15,22 @@ import {
   PUBLIC_PRICING_PLANS,
 } from "@/lib/marketing/content";
 import { MARKETING_ROUTES, SALES_EMAIL } from "@/lib/company/contact";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
+import {
+  JsonLdScript,
+  createMarketingMetadata,
+  pricingPageJsonLd,
+} from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
 export const metadata: Metadata = createMarketingMetadata({
-  title: "Pricing",
-  description: "Compare Auroranexis plans for agencies and service providers.",
   path: "/pricing",
 });
 
 export default function PublicPricingPage() {
   return (
     <MarketingShell>
+      <JsonLdScript data={pricingPageJsonLd()} />
       <ConversionTracker event="pricing_viewed" />
       <MarketingHero
         eyebrow="Pricing"

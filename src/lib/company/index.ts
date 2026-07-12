@@ -47,14 +47,17 @@ export {
 
 export {
   COMPANY_SEO,
+  PUBLIC_CANONICAL_ORIGIN,
   getCanonicalUrl,
   getPageTitle,
+  resolveCanonicalBaseUrl,
 } from "@/lib/company/company-seo";
 
 export {
   faqJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,
+  pricingPageJsonLd,
   softwareApplicationJsonLd,
   websiteJsonLd,
 } from "@/lib/company/company-schema";

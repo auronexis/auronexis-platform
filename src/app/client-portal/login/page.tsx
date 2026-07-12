@@ -8,9 +8,9 @@ import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-th
 import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { getClientPortalSession } from "@/lib/client-portal/session";
 
-export const metadata: Metadata = {
-  title: "Client Portal Login",
-};
+import { createPrivateAppMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = createPrivateAppMetadata("Client Portal Login");
 
 export default async function ClientPortalLoginPage() {
   const session = await getClientPortalSession();

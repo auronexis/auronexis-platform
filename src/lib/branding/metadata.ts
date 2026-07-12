@@ -6,9 +6,7 @@ import {
   PLATFORM_THEME_COLOR,
 } from "@/lib/branding/icons";
 import { COMPANY_SEO } from "@/lib/company/company-seo";
-import { getSiteVerificationMetadata } from "@/lib/seo/metadata";
-
-import { resolveMetadataBase } from "@/lib/seo/metadata";
+import { getSiteVerificationMetadata, isPreviewDeployment, resolveMetadataBase } from "@/lib/seo/metadata";
 
 const metadataBase = resolveMetadataBase();
 
@@ -57,7 +55,7 @@ export const PLATFORM_METADATA: Metadata = {
     description: COMPANY_SEO.defaultDescription,
     images: [
       {
-        url: "/branding/opengraph-1200x630.png",
+        url: new URL("/branding/opengraph-1200x630.png", metadataBase).toString(),
         width: 1200,
         height: 630,
         alt: `${PLATFORM_NAME} — Operations Command Center`,
@@ -68,12 +66,11 @@ export const PLATFORM_METADATA: Metadata = {
     card: "summary_large_image",
     title: PLATFORM_NAME,
     description: COMPANY_SEO.defaultDescription,
-    images: ["/branding/linkedin-banner.png"],
+    images: [new URL("/branding/linkedin-banner.png", metadataBase).toString()],
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: isPreviewDeployment()
+    ? { index: false, follow: false }
+    : { index: true, follow: true },
 };
 
 /** Browser chrome theme colors — Next.js 15 requires viewport export, not metadata. */

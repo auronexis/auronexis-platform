@@ -12,7 +12,7 @@ export const COMPANY_INFORMATION = {
   city: "Althütte",
   country: "Germany",
   vatId: "DE449657077",
-  website: "https://auroranexis.com",
+  website: "https://www.auroranexis.com",
   shortDescription:
     "Auroranexis is an AI-powered B2B SaaS platform for client intelligence, risk monitoring, reports, incidents, and executive operational insights.",
 } as const;

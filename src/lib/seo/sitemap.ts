@@ -20,11 +20,9 @@ function resolveChangeFrequency(route: string): MetadataRoute.Sitemap[number]["c
 /** Build the public sitemap — authenticated routes are excluded by design. */
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const baseUrl = getSeoBaseUrl();
-  const lastModified = new Date();
 
   return PUBLIC_SITEMAP_ROUTES.map((route) => ({
     url: `${baseUrl}${route === "/" ? "" : route}`,
-    lastModified,
     changeFrequency: resolveChangeFrequency(route),
     priority: resolvePriority(route),
   }));

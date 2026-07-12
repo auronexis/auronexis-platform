@@ -41,8 +41,6 @@ import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
 export const metadata = createMarketingMetadata({
-  title: "Operations Command Center",
-  description: COMPANY_SEO.defaultDescription,
   path: "/",
 });
 

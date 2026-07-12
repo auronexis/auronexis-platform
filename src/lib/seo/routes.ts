@@ -7,8 +7,41 @@ import {
 } from "@/lib/company/company-links";
 
 /**
+ * Authenticated and internal route prefixes excluded from crawling and indexing.
+ * Keep aligned with robots.txt disallow rules.
+ */
+export const PRIVATE_ROUTE_PREFIXES = [
+  "/dashboard",
+  "/settings",
+  "/client-portal",
+  "/api/",
+  "/sales",
+  "/invite",
+  "/profile",
+  "/clients",
+  "/reports",
+  "/incidents",
+  "/risks",
+  "/automation",
+  "/monitoring",
+  "/predictive",
+  "/profitability",
+  "/knowledge",
+  "/notifications",
+  "/activity",
+  "/onboarding",
+  "/copilot",
+  "/intelligence",
+  "/customer-success",
+  "/adoption",
+  "/billing",
+  "/invoices",
+  "/team",
+] as const;
+
+/**
  * Routes that must not be indexed (auth flows, password reset).
- * Authenticated app surfaces are excluded via robots.txt disallow rules.
+ * Authenticated app surfaces use PRIVATE_ROUTE_PREFIXES + layout noindex.
  */
 export const NOINDEX_ROUTES = [
   "/login",
@@ -21,22 +54,29 @@ export { PUBLIC_SITEMAP_ROUTES, SOLUTION_ROUTES, TEMPLATE_ROUTES };
 
 export type PublicSitemapRoute = (typeof PUBLIC_SITEMAP_ROUTES)[number];
 
-/** Page-specific SEO titles and descriptions for key public routes. */
+/** True when a path belongs to a private authenticated or internal surface. */
+export function isPrivateRoute(path: string): boolean {
+  return PRIVATE_ROUTE_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(prefix),
+  );
+}
+
+/** Page-specific SEO titles and descriptions for public indexable routes. */
 export const PAGE_SEO: Record<string, { title: string; description: string }> = {
   [MARKETING_ROUTES.home]: {
     title: "Operations Command Center",
     description:
       "Auroranexis is an AI-powered B2B SaaS platform for client intelligence, risk monitoring, reports, incidents, and executive operational insights.",
   },
-  [MARKETING_ROUTES.about]: {
-    title: "About",
+  [MARKETING_ROUTES.features]: {
+    title: "Features",
     description:
-      "About Auroranexis — the Operations Command Center for AI automation agencies, MSPs, and service providers.",
+      "Explore Auroranexis features for agency operations — reporting, automation, risk management, integrations, and executive intelligence.",
   },
-  [MARKETING_ROUTES.security]: {
-    title: "Security",
+  [MARKETING_ROUTES.useCases]: {
+    title: "Use Cases",
     description:
-      "Security practices, encryption, access controls, and responsible disclosure for the Auroranexis B2B SaaS platform.",
+      "See how MSPs and agencies use Auroranexis for client health, risk registers, incident response, and executive reporting.",
   },
   [MARKETING_ROUTES.pricing]: {
     title: "Pricing",
@@ -48,9 +88,59 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     description:
       "Enterprise-grade client operations for MSPs and agencies — security, scale, AI copilot, and dedicated support.",
   },
+  [MARKETING_ROUTES.security]: {
+    title: "Security",
+    description:
+      "Security practices, encryption, access controls, and responsible disclosure for the Auroranexis B2B SaaS platform.",
+  },
+  [MARKETING_ROUTES.compliance]: {
+    title: "Compliance",
+    description:
+      "Compliance workflows, audit trails, and governance capabilities for agencies managing regulated client operations.",
+  },
+  [MARKETING_ROUTES.integrations]: {
+    title: "Integrations",
+    description:
+      "Connect Auroranexis with Stripe, Slack, email, REST API, webhooks, and AI providers for agency operations.",
+  },
+  [MARKETING_ROUTES.documentation]: {
+    title: "Documentation",
+    description:
+      "Product documentation for Auroranexis — getting started, clients, reports, security, and API reference.",
+  },
+  [MARKETING_ROUTES.contact]: {
+    title: "Contact",
+    description:
+      "Contact Auroranexis for sales, support, and security inquiries for agency and MSP operations teams.",
+  },
+  [MARKETING_ROUTES.pilotProgram]: {
+    title: "Pilot Program",
+    description:
+      "Invite-only Pilot Partner program for qualified MSPs and agencies evaluating Auroranexis.",
+  },
   [MARKETING_ROUTES.status]: {
     title: "Platform Status",
     description: "Current operational status and availability of the Auroranexis platform.",
+  },
+  [MARKETING_ROUTES.about]: {
+    title: "About",
+    description:
+      "About Auroranexis — the Operations Command Center for AI automation agencies, MSPs, and service providers.",
+  },
+  [MARKETING_ROUTES.careers]: {
+    title: "Careers",
+    description:
+      "Careers at Auroranexis — build enterprise operations software for agencies and managed service providers.",
+  },
+  [MARKETING_ROUTES.help]: {
+    title: "Help Center",
+    description:
+      "Help resources for Auroranexis customers — documentation, support, and platform guidance.",
+  },
+  [MARKETING_ROUTES.support]: {
+    title: "Support",
+    description:
+      "Customer support for Auroranexis workspace users — documentation, status, and contact options.",
   },
   [LEGAL_ROUTES.privacy]: {
     title: "Privacy Policy",
@@ -84,8 +174,36 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "Acceptable Use Policy",
     description: "Rules governing lawful and secure use of the Auroranexis B2B SaaS platform.",
   },
+  "/docs": {
+    title: "Documentation Hub",
+    description: "Auroranexis documentation hub for product guides, API reference, and release notes.",
+  },
+  "/docs/release-notes": {
+    title: "Release Notes",
+    description: "Auroranexis product release notes and platform updates.",
+  },
   "/docs/api": {
     title: "API Documentation",
     description: "Auroranexis REST API reference for integrations, webhooks, and automation.",
+  },
+  "/docs/getting-started": {
+    title: "Getting Started",
+    description: "Get started with Auroranexis — workspace setup, clients, and first reports.",
+  },
+  "/docs/clients": {
+    title: "Client Management",
+    description: "Manage clients, health scores, and operational context in Auroranexis.",
+  },
+  "/docs/reports": {
+    title: "Reports",
+    description: "Create, schedule, and deliver client reports with Auroranexis.",
+  },
+  "/docs/security": {
+    title: "Security Documentation",
+    description: "Security architecture, access controls, and data handling in Auroranexis.",
+  },
+  "/docs/compliance": {
+    title: "Compliance Documentation",
+    description: "Compliance workflows, audit trails, and governance in Auroranexis.",
   },
 };

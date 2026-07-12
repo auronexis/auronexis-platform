@@ -3,10 +3,12 @@ export {
   faqJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,
+  pricingPageJsonLd,
   softwareApplicationJsonLd,
   websiteJsonLd,
 } from "@/lib/company/company-schema";
 
+import { resolveCanonicalBaseUrl } from "@/lib/company/company-seo";
 import { COMPANY_SEO } from "@/lib/company";
 
 type BreadcrumbItem = {
@@ -23,7 +25,7 @@ export function breadcrumbJsonLd(items: readonly BreadcrumbItem[]) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: new URL(item.path, COMPANY_SEO.canonicalBaseUrl).toString(),
+      item: new URL(item.path, resolveCanonicalBaseUrl()).toString(),
     })),
   };
 }
@@ -40,7 +42,28 @@ export function articleJsonLd(input: {
     "@type": "Article",
     headline: input.title,
     description: input.description,
-    url: new URL(input.path, COMPANY_SEO.canonicalBaseUrl).toString(),
+    url: new URL(input.path, resolveCanonicalBaseUrl()).toString(),
+    dateModified: input.dateModified,
+    publisher: {
+      "@type": "Organization",
+      name: COMPANY_SEO.companyName,
+    },
+  };
+}
+
+/** TechArticle schema for product documentation pages. */
+export function techArticleJsonLd(input: {
+  title: string;
+  description: string;
+  path: string;
+  dateModified?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: input.title,
+    description: input.description,
+    url: new URL(input.path, resolveCanonicalBaseUrl()).toString(),
     dateModified: input.dateModified,
     publisher: {
       "@type": "Organization",

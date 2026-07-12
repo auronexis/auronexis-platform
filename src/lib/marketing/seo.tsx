@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 import { COMPANY_CONTACT } from "@/lib/company";
-import { createPageMetadata } from "@/lib/seo/metadata";
+import { createPageMetadataForPath } from "@/lib/seo/metadata";
 
 type MarketingMetadataInput = {
-  title: string;
+  title?: string;
   description?: string;
   path: string;
   noIndex?: boolean;
 };
 
-/** @deprecated Use createPageMetadata from @/lib/seo — kept for backward compatibility. */
+/** @deprecated Use createPageMetadataForPath from @/lib/seo — kept for backward compatibility. */
 export function createMarketingMetadata(input: MarketingMetadataInput): Metadata {
-  return createPageMetadata(input);
+  return createPageMetadataForPath(input.path, {
+    title: input.title,
+    description: input.description,
+    noIndex: input.noIndex,
+  });
 }
 
 export {
@@ -21,7 +25,9 @@ export {
   faqJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,
+  pricingPageJsonLd,
   softwareApplicationJsonLd,
+  techArticleJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/structured-data";
 

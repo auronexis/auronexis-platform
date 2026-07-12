@@ -1,8 +1,10 @@
 export {
   createPageMetadata,
   createPageMetadataForPath,
+  createPrivateAppMetadata,
   getSeoBaseUrl,
   getSiteVerificationMetadata,
+  isPreviewDeployment,
   resolveMetadataBase,
   shouldNoIndex,
   type PageMetadataInput,
@@ -11,9 +13,11 @@ export {
 export {
   NOINDEX_ROUTES,
   PAGE_SEO,
+  PRIVATE_ROUTE_PREFIXES,
   PUBLIC_SITEMAP_ROUTES,
   SOLUTION_ROUTES,
   TEMPLATE_ROUTES,
+  isPrivateRoute,
 } from "@/lib/seo/routes";
 
 export {
@@ -23,7 +27,9 @@ export {
   faqJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,
+  pricingPageJsonLd,
   softwareApplicationJsonLd,
+  techArticleJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/structured-data";
 
