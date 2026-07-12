@@ -62,7 +62,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
       "Compliance center",
       "Risk and incident management",
       "Automation engine",
-      "Priority support options",
+      "Advanced AI knowledge features",
     ],
   },
   {
