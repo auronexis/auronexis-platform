@@ -103,7 +103,10 @@ export function createPageMetadata({
     creator: COMPANY_INFORMATION.legalName,
     publisher: COMPANY_INFORMATION.legalName,
     keywords: keywords ?? [...DEFAULT_KEYWORDS],
-    alternates: { canonical: url.toString() },
+    alternates: {
+      canonical: url.toString(),
+      languages: { en: url.toString() },
+    },
     openGraph: {
       type: COMPANY_SEO.openGraph.type,
       locale: COMPANY_SEO.openGraph.locale,

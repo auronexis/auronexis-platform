@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { COMPLIANCE_READINESS } from "@/lib/marketing/content";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Compliance",
-  description: "GDPR support and compliance readiness for Auroranexis.",
-  path: "/compliance",
-});
+export const metadata: Metadata = createPageMetadataForPath("/compliance");
 
 export default function CompliancePage() {
   return (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { PilotApplicationForm } from "@/components/marketing/pilot-application-form";
 import { MarketingCta } from "@/components/marketing/marketing-cta";
@@ -6,17 +7,9 @@ import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { PILOT_PROGRAM } from "@/lib/marketing/content";
 import { MARKETING_ROUTES } from "@/lib/company/contact";
-import {
-  JsonLdScript,
-  createMarketingMetadata,
-  pilotProgramJsonLd,
-} from "@/lib/marketing/seo";
+import { JsonLdScript, pilotProgramJsonLd } from "@/lib/marketing/seo";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Pilot Partner Program",
-  description: "Invite-only Pilot Partner program for qualified agencies — dedicated onboarding and approved beta pricing.",
-  path: "/pilot-program",
-});
+export const metadata: Metadata = createPageMetadataForPath("/pilot-program");
 
 export default function PilotProgramPage() {
   return (

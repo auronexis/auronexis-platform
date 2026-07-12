@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { ContactForm } from "@/components/marketing/contact-form";
 import { DemoBookingForm } from "@/components/marketing/demo-booking-form";
@@ -7,17 +8,21 @@ import { ReferralLeadForm } from "@/components/marketing/referral-lead-form";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { CONTACT_EMAILS } from "@/lib/marketing/content";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
+import { JsonLdScript, contactPageJsonLd } from "@/lib/marketing/seo";
+import { PAGE_SEO } from "@/lib/seo/routes";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Contact",
-  description: "Contact Auroranexis sales, support, and security teams.",
-  path: "/contact",
-});
+export const metadata: Metadata = createPageMetadataForPath("/contact");
 
 export default function ContactPage() {
+  const contactSeo = PAGE_SEO["/contact"];
   return (
     <MarketingShell>
+      <JsonLdScript
+        data={contactPageJsonLd({
+          title: contactSeo.title,
+          description: contactSeo.description,
+        })}
+      />
       <MarketingHero
         eyebrow="Contact"
         title="Talk to our team"

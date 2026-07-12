@@ -149,3 +149,88 @@ test("package.json exposes technical SEO test script", () => {
   const pkg = readSource("package.json");
   assert.match(pkg, /test:technical-seo/);
 });
+
+test("metadata sets English language alternates", () => {
+  const metadata = readSource("src/lib/seo/metadata.ts");
+  assert.match(metadata, /languages:\s*\{\s*en:/);
+});
+
+test("webhook routes are blocked in robots policy", () => {
+  const routes = readSource("src/lib/seo/routes.ts");
+  assert.match(routes, /\/webhooks/);
+  assert.match(routes, /\/api\//);
+});
+
+test("about and contact pages emit allowed structured data types", () => {
+  const about = readSource("src/app/(marketing)/about/page.tsx");
+  const contact = readSource("src/app/(marketing)/contact/page.tsx");
+  const structured = readSource("src/lib/seo/structured-data.ts");
+  assert.match(about, /aboutPageJsonLd/);
+  assert.match(contact, /contactPageJsonLd/);
+  assert.match(structured, /AboutPage/);
+  assert.match(structured, /ContactPage/);
+  assert.match(structured, /WebPage/);
+});
+
+test("public marketing pages use centralized PAGE_SEO metadata registry", () => {
+  const marketingDir = "src/app/(marketing)";
+  const pages = [
+    "page.tsx",
+    "features/page.tsx",
+    "pricing/page.tsx",
+    "enterprise/page.tsx",
+    "about/page.tsx",
+    "contact/page.tsx",
+    "status/page.tsx",
+    "integrations/page.tsx",
+    "security/page.tsx",
+    "privacy/page.tsx",
+  ];
+  for (const page of pages) {
+    const source = readSource(`${marketingDir}/${page}`);
+    assert.match(source, /createPageMetadataForPath\(/, `${page} must use registry metadata`);
+    assert.doesNotMatch(source, /createMarketingMetadata/, `${page} must not override registry metadata`);
+  }
+});
+
+test("auth pages use registry metadata with noindex policy", () => {
+  for (const page of ["login/page.tsx", "signup/page.tsx", "forgot-password/page.tsx", "reset-password/page.tsx"]) {
+    const source = readSource(`src/app/(auth)/${page}`);
+    assert.match(source, /createPageMetadataForPath\(/);
+    assert.doesNotMatch(source, /createMarketingMetadata/);
+  }
+  const routes = readSource("src/lib/seo/routes.ts");
+  assert.match(routes, /"\/login":/);
+  assert.match(routes, /"\/signup":/);
+});
+
+test("solution and template pages resolve metadata from PAGE_SEO registry", () => {
+  const solutions = readSource("src/app/(marketing)/solutions/[slug]/page.tsx");
+  const templates = readSource("src/app/(marketing)/templates/[slug]/page.tsx");
+  const routes = readSource("src/lib/seo/routes.ts");
+  assert.match(solutions, /createPageMetadataForPath\(content\.path\)/);
+  assert.match(templates, /createPageMetadataForPath\(content\.path\)/);
+  assert.match(routes, /buildLandingPageSeo/);
+  assert.match(routes, /SOLUTION_PAGES/);
+  assert.match(routes, /TEMPLATE_PAGES/);
+});
+
+test("sitemap validation guards canonical host and private routes", () => {
+  const sitemap = readSource("src/lib/seo/sitemap.ts");
+  assert.match(sitemap, /validateSitemapEntries/);
+  assert.match(sitemap, /PUBLIC_CANONICAL_ORIGIN/);
+  assert.match(sitemap, /isPrivateRoute/);
+  assert.match(sitemap, /duplicate sitemap URL/);
+});
+
+test("middleware preserves apex to www canonical redirect", () => {
+  const middleware = readSource("src/middleware.ts");
+  const routing = readSource("src/lib/deployment/middleware-routing.ts");
+  assert.match(middleware, /shouldRedirectApexToWww/);
+  assert.match(routing, /buildWwwRedirectUrl/);
+});
+
+test("root layout sets document language to English", () => {
+  const layout = readSource("src/app/layout.tsx");
+  assert.match(layout, /lang="en"/);
+});

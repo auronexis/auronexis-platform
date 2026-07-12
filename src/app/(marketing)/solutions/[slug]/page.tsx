@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SolutionPageView } from "@/components/marketing/solution-page-view";
-import { createPageMetadata } from "@/lib/seo";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { SOLUTION_PAGES, SOLUTION_SLUGS } from "@/lib/seo/landing-content";
 
 type SolutionPageProps = {
@@ -17,11 +17,7 @@ export async function generateMetadata({ params }: SolutionPageProps): Promise<M
   const content = SOLUTION_PAGES[slug];
   if (!content) return { title: "Solution" };
 
-  return createPageMetadata({
-    title: content.title,
-    description: content.metaDescription,
-    path: content.path,
-  });
+  return createPageMetadataForPath(content.path);
 }
 
 export default async function SolutionPage({ params }: SolutionPageProps) {

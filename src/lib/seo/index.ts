@@ -21,8 +21,10 @@ export {
 } from "@/lib/seo/routes";
 
 export {
+  aboutPageJsonLd,
   articleJsonLd,
   breadcrumbJsonLd,
+  contactPageJsonLd,
   enterpriseOfferJsonLd,
   faqJsonLd,
   organizationJsonLd,
@@ -30,10 +32,11 @@ export {
   pricingPageJsonLd,
   softwareApplicationJsonLd,
   techArticleJsonLd,
+  webPageJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/structured-data";
 
-export { buildSitemapEntries } from "@/lib/seo/sitemap";
+export { buildSitemapEntries, validateSitemapEntries } from "@/lib/seo/sitemap";
 export { buildRobotsConfig } from "@/lib/seo/robots";
 export {
   trackAnalyticsEvent,

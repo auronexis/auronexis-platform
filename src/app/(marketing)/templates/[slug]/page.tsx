@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TemplatePageView } from "@/components/marketing/template-page-view";
-import { createPageMetadata } from "@/lib/seo";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { TEMPLATE_PAGES, TEMPLATE_SLUGS } from "@/lib/seo/landing-content";
 
 type TemplatePageProps = {
@@ -17,11 +17,7 @@ export async function generateMetadata({ params }: TemplatePageProps): Promise<M
   const content = TEMPLATE_PAGES[slug];
   if (!content) return { title: "Template" };
 
-  return createPageMetadata({
-    title: content.title,
-    description: content.metaDescription,
-    path: content.path,
-  });
+  return createPageMetadataForPath(content.path);
 }
 
 export default async function TemplatePage({ params }: TemplatePageProps) {

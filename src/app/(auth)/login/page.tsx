@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
@@ -7,15 +8,9 @@ import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-th
 import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { getSession } from "@/lib/auth/session";
 import { AUTH_MESSAGES } from "@/lib/auth/messages";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 import { headers } from "next/headers";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Sign in",
-  description: "Sign in to your Auroranexis workspace.",
-  path: "/login",
-  noIndex: true,
-});
+export const metadata: Metadata = createPageMetadataForPath("/login");
 
 type LoginPageProps = {
   searchParams: Promise<{ error?: string; redirect?: string; reset?: string }>;

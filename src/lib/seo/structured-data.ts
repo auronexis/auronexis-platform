@@ -8,7 +8,8 @@ export {
   websiteJsonLd,
 } from "@/lib/company/company-schema";
 
-import { resolveCanonicalBaseUrl } from "@/lib/company/company-seo";
+import { COMPANY_INFORMATION } from "@/lib/company/company-information";
+import { getCanonicalUrl, resolveCanonicalBaseUrl } from "@/lib/company/company-seo";
 import { COMPANY_SEO } from "@/lib/company";
 
 type BreadcrumbItem = {
@@ -49,6 +50,46 @@ export function articleJsonLd(input: {
       name: COMPANY_SEO.companyName,
     },
   };
+}
+
+/** Generic WebPage schema for public marketing surfaces. */
+export function webPageJsonLd(input: {
+  title: string;
+  description: string;
+  path: string;
+  pageType?: "WebPage" | "AboutPage" | "ContactPage";
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": input.pageType ?? "WebPage",
+    name: input.title,
+    description: input.description,
+    url: getCanonicalUrl(input.path).toString(),
+    inLanguage: "en",
+    isPartOf: {
+      "@type": "WebSite",
+      name: COMPANY_INFORMATION.productName,
+      url: resolveCanonicalBaseUrl(),
+    },
+  };
+}
+
+/** AboutPage schema for the public company page. */
+export function aboutPageJsonLd(input: { title: string; description: string }) {
+  return webPageJsonLd({
+    ...input,
+    path: "/about",
+    pageType: "AboutPage",
+  });
+}
+
+/** ContactPage schema for the public contact surface. */
+export function contactPageJsonLd(input: { title: string; description: string }) {
+  return webPageJsonLd({
+    ...input,
+    path: "/contact",
+    pageType: "ContactPage",
+  });
 }
 
 /** TechArticle schema for product documentation pages. */

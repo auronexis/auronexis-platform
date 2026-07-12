@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { headers } from "next/headers";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
@@ -8,14 +9,8 @@ import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { AUTH_MESSAGES } from "@/lib/auth/messages";
 import { createClient } from "@/lib/supabase/server";
 
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Reset password",
-  description: "Choose a new password for your Auroranexis account.",
-  path: "/reset-password",
-  noIndex: true,
-});
+export const metadata: Metadata = createPageMetadataForPath("/reset-password");
 
 type ResetPasswordPageProps = {
   searchParams: Promise<{ code?: string; error?: string; error_description?: string }>;

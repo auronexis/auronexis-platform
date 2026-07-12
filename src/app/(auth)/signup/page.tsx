@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import { SignUpForm } from "@/components/auth/signup-form";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
 import { getSession } from "@/lib/auth/session";
 
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Create account",
-  description: "Create your Auroranexis agency workspace.",
-  path: "/signup",
-  noIndex: true,
-});
+export const metadata: Metadata = createPageMetadataForPath("/signup");
 
 export default async function SignUpPage() {
   const session = await getSession();

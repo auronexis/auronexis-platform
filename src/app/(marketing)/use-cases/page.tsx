@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingCardGrid, MarketingSection } from "@/components/marketing/marketing-sections";
 import { USE_CASES } from "@/lib/marketing/content";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Use Cases",
-  description: "How MSPs, agencies, consultancies, and automation firms use Auroranexis.",
-  path: "/use-cases",
-});
+export const metadata: Metadata = createPageMetadataForPath("/use-cases");
 
 export default function UseCasesPage() {
   return (

@@ -1,23 +1,20 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import {
   COMPANY_NAME,
-  COMPANY_SEO,
   LEGAL_ROUTES,
   MARKETING_ROUTES,
   SALES_EMAIL,
   SUPPORT_EMAIL,
 } from "@/lib/company";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
+import { JsonLdScript, aboutPageJsonLd } from "@/lib/marketing/seo";
+import { PAGE_SEO } from "@/lib/seo/routes";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "About",
-  description: `About ${COMPANY_NAME} — ${COMPANY_SEO.defaultDescription}`,
-  path: "/about",
-});
+export const metadata: Metadata = createPageMetadataForPath("/about");
 
 const VALUES = [
   {
@@ -35,8 +32,15 @@ const VALUES = [
 ] as const;
 
 export default function AboutPage() {
+  const aboutSeo = PAGE_SEO["/about"];
   return (
     <MarketingShell>
+      <JsonLdScript
+        data={aboutPageJsonLd({
+          title: aboutSeo.title,
+          description: aboutSeo.description,
+        })}
+      />
       <MarketingHero
         eyebrow="Company"
         title={`About ${COMPANY_NAME}`}

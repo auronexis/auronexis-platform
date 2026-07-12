@@ -5,6 +5,7 @@ import {
   SOLUTION_ROUTES,
   TEMPLATE_ROUTES,
 } from "@/lib/company/company-links";
+import { SOLUTION_PAGES, TEMPLATE_PAGES } from "@/lib/seo/landing-content";
 
 /**
  * Authenticated and internal route prefixes excluded from crawling and indexing.
@@ -15,6 +16,7 @@ export const PRIVATE_ROUTE_PREFIXES = [
   "/settings",
   "/client-portal",
   "/api/",
+  "/webhooks",
   "/sales",
   "/invite",
   "/profile",
@@ -61,8 +63,21 @@ export function isPrivateRoute(path: string): boolean {
   );
 }
 
-/** Page-specific SEO titles and descriptions for public indexable routes. */
-export const PAGE_SEO: Record<string, { title: string; description: string }> = {
+function buildLandingPageSeo(): Record<string, { title: string; description: string }> {
+  const entries: Record<string, { title: string; description: string }> = {};
+
+  for (const page of Object.values(SOLUTION_PAGES)) {
+    entries[page.path] = { title: page.title, description: page.metaDescription };
+  }
+
+  for (const page of Object.values(TEMPLATE_PAGES)) {
+    entries[page.path] = { title: page.title, description: page.metaDescription };
+  }
+
+  return entries;
+}
+
+const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = {
   [MARKETING_ROUTES.home]: {
     title: "Operations Command Center",
     description:
@@ -114,7 +129,7 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
       "Contact Auroranexis for sales, support, and security inquiries for agency and MSP operations teams.",
   },
   [MARKETING_ROUTES.pilotProgram]: {
-    title: "Pilot Program",
+    title: "Pilot Partner Program",
     description:
       "Invite-only Pilot Partner program for qualified MSPs and agencies evaluating Auroranexis.",
   },
@@ -206,4 +221,26 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "Compliance Documentation",
     description: "Compliance workflows, audit trails, and governance in Auroranexis.",
   },
+  "/login": {
+    title: "Sign in",
+    description: "Sign in to your Auroranexis workspace.",
+  },
+  "/signup": {
+    title: "Sign up",
+    description: "Create your Auroranexis workspace for agency and MSP operations.",
+  },
+  "/forgot-password": {
+    title: "Forgot password",
+    description: "Request a password reset link for your Auroranexis account.",
+  },
+  "/reset-password": {
+    title: "Reset password",
+    description: "Set a new password for your Auroranexis account.",
+  },
+};
+
+/** Page-specific SEO titles and descriptions for public indexable routes. */
+export const PAGE_SEO: Record<string, { title: string; description: string }> = {
+  ...STATIC_PAGE_SEO,
+  ...buildLandingPageSeo(),
 };

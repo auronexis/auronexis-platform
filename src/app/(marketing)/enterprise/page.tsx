@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { DemoBookingForm } from "@/components/marketing/demo-booking-form";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
@@ -10,21 +11,10 @@ import { MarketingPace } from "@/components/marketing/marketing-pace";
 import { MarketingFaq, MarketingSection } from "@/components/marketing/marketing-sections";
 import { MarketingStats } from "@/components/marketing/marketing-stats";
 import { MARKETING_ROUTES } from "@/lib/company";
-import {
-  JsonLdScript,
-  breadcrumbJsonLd,
-  createMarketingMetadata,
-  enterpriseOfferJsonLd,
-  faqJsonLd,
-  organizationJsonLd,
-} from "@/lib/marketing/seo";
+import { JsonLdScript, breadcrumbJsonLd, enterpriseOfferJsonLd, faqJsonLd, organizationJsonLd } from "@/lib/marketing/seo";
 import { ENTERPRISE_CONTENT } from "@/lib/marketing/enterprise-content";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Enterprise",
-  description: ENTERPRISE_CONTENT.description,
-  path: MARKETING_ROUTES.enterprise,
-});
+export const metadata: Metadata = createPageMetadataForPath("/enterprise");
 
 export default function EnterprisePage() {
   return (

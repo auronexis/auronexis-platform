@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { SECURITY_HIGHLIGHTS } from "@/lib/marketing/content";
 import { LEGAL_ROUTES, MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company/contact";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Security",
-  description: "Security practices and trust posture for Auroranexis.",
-  path: "/security",
-});
+export const metadata: Metadata = createPageMetadataForPath("/security");
 
 export default function SecurityPage() {
   return (

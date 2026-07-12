@@ -19,8 +19,10 @@ export function createMarketingMetadata(input: MarketingMetadataInput): Metadata
 }
 
 export {
+  aboutPageJsonLd,
   articleJsonLd,
   breadcrumbJsonLd,
+  contactPageJsonLd,
   enterpriseOfferJsonLd,
   faqJsonLd,
   organizationJsonLd,
@@ -28,6 +30,7 @@ export {
   pricingPageJsonLd,
   softwareApplicationJsonLd,
   techArticleJsonLd,
+  webPageJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/structured-data";
 

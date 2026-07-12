@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { Suspense } from "react";
 import { Activity } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
@@ -16,14 +17,9 @@ import { checkDatabaseHealth, type DatabaseHealthLevel } from "@/lib/diagnostics
 import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
 import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
 import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "System Status",
-  description: `${COMPANY_NAME} platform status and component health.`,
-  path: "/status",
-});
+export const metadata: Metadata = createPageMetadataForPath("/status");
 
 /** Live probes require runtime env — skip static prerender at build time. */
 export const dynamic = "force-dynamic";

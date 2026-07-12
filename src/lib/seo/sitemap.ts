@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { PUBLIC_SITEMAP_ROUTES } from "@/lib/seo/routes";
+import { isPrivateRoute, PUBLIC_SITEMAP_ROUTES } from "@/lib/seo/routes";
 import { getSeoBaseUrl } from "@/lib/seo/metadata";
+import { PUBLIC_CANONICAL_ORIGIN } from "@/lib/company/company-seo";
 
 function resolvePriority(route: string): number {
   if (route === "/") return 1;
@@ -26,4 +27,37 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
     changeFrequency: resolveChangeFrequency(route),
     priority: resolvePriority(route),
   }));
+}
+
+export type SitemapValidationResult = {
+  valid: boolean;
+  errors: string[];
+};
+
+/** Validate sitemap entries for duplicates, private routes, and canonical host. */
+export function validateSitemapEntries(entries: MetadataRoute.Sitemap): SitemapValidationResult {
+  const errors: string[] = [];
+  const seen = new Set<string>();
+
+  for (const entry of entries) {
+    if (seen.has(entry.url)) {
+      errors.push(`duplicate sitemap URL: ${entry.url}`);
+    }
+    seen.add(entry.url);
+
+    if (!entry.url.startsWith(PUBLIC_CANONICAL_ORIGIN)) {
+      errors.push(`non-canonical sitemap host: ${entry.url}`);
+    }
+
+    try {
+      const pathname = new URL(entry.url).pathname || "/";
+      if (isPrivateRoute(pathname)) {
+        errors.push(`private route in sitemap: ${entry.url}`);
+      }
+    } catch {
+      errors.push(`invalid sitemap URL: ${entry.url}`);
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
 }

@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { HELP_TOPICS } from "@/lib/marketing/content";
 import { MARKETING_ROUTES, SUPPORT_EMAIL } from "@/lib/company/contact";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Help Center",
-  description: "Auroranexis help center — documentation, status, and support.",
-  path: "/help",
-});
+export const metadata: Metadata = createPageMetadataForPath("/help");
 
 export default function HelpPage() {
   return (

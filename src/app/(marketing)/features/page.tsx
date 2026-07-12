@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingCtaSection } from "@/components/marketing/marketing-cta-section";
@@ -7,12 +8,9 @@ import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { FEATURES } from "@/lib/marketing/content";
 import { SOLUTION_ROUTES } from "@/lib/company/company-links";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 import Link from "next/link";
 
-export const metadata: Metadata = createMarketingMetadata({
-  path: "/features",
-});
+export const metadata: Metadata = createPageMetadataForPath("/features");
 
 export default function FeaturesPage() {
   return (

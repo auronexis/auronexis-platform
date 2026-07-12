@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
 import { ContactForm } from "@/components/marketing/contact-form";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { MARKETING_ROUTES, SUPPORT_EMAIL } from "@/lib/company/contact";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 import {
   SUPPORT_CHANNELS,
   SUPPORT_RESPONSE_EXPECTATIONS,
@@ -14,11 +14,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Support",
-  description: "Auroranexis product support and customer success.",
-  path: "/support",
-});
+export const metadata: Metadata = createPageMetadataForPath("/support");
 
 export default function SupportPage() {
   return (

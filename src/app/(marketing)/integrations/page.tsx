@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
 import { IntegrationCatalogGrid } from "@/components/marketing/integration-catalog-grid";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { INTEGRATION_CATALOG } from "@/lib/marketing/integrations-catalog";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Integrations",
-  description: "Connect Auroranexis with billing, AI, messaging, webhooks, and enterprise APIs.",
-  path: "/integrations",
-});
+export const metadata: Metadata = createPageMetadataForPath("/integrations");
 
 export default function IntegrationsPage() {
   return (

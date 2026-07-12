@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingPlanCta } from "@/components/marketing/marketing-plan-cta";
@@ -29,20 +30,12 @@ import {
 } from "@/lib/marketing/content";
 import { MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company";
 import { COMPANY_SEO } from "@/lib/company/company-seo";
-import {
-  JsonLdScript,
-  createMarketingMetadata,
-  faqJsonLd,
-  organizationJsonLd,
-  softwareApplicationJsonLd,
-  websiteJsonLd,
-} from "@/lib/marketing/seo";
+import { createPageMetadataForPath } from "@/lib/seo";
+import { JsonLdScript, faqJsonLd, organizationJsonLd, softwareApplicationJsonLd, websiteJsonLd } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
-export const metadata = createMarketingMetadata({
-  path: "/",
-});
+export const metadata: Metadata = createPageMetadataForPath("/");
 
 export default async function MarketingHomePage() {
   const session = await getSession();

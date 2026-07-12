@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
@@ -8,14 +9,8 @@ import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-th
 import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { getSession } from "@/lib/auth/session";
 
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Forgot password",
-  description: "Reset your Auroranexis account password.",
-  path: "/forgot-password",
-  noIndex: true,
-});
+export const metadata: Metadata = createPageMetadataForPath("/forgot-password");
 
 export default async function ForgotPasswordPage() {
   const session = await getSession();

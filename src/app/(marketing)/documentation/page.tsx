@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
 import { ArrowRight, BookOpen, FileCode2, ScrollText } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
@@ -6,16 +7,11 @@ import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { HELP_TOPICS } from "@/lib/marketing/content";
 import { DOCS_URL } from "@/lib/company/contact";
-import { createMarketingMetadata } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { getAuroraModule, auroraSurfaceInteractive } from "@/lib/ui/aurora";
 import { focusRing } from "@/lib/ui/tokens";
 
-export const metadata: Metadata = createMarketingMetadata({
-  title: "Documentation",
-  description: "Auroranexis product documentation and API reference.",
-  path: "/documentation",
-});
+export const metadata: Metadata = createPageMetadataForPath("/documentation");
 
 const DOC_LINKS = [
   { href: "/docs", label: "Documentation hub", icon: BookOpen, module: "dashboard" as const },

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { AuthAwareMarketingLink } from "@/components/marketing/auth-aware-marketing-link";
@@ -15,17 +16,11 @@ import {
   PUBLIC_PRICING_PLANS,
 } from "@/lib/marketing/content";
 import { MARKETING_ROUTES, SALES_EMAIL } from "@/lib/company/contact";
-import {
-  JsonLdScript,
-  createMarketingMetadata,
-  pricingPageJsonLd,
-} from "@/lib/marketing/seo";
+import { JsonLdScript, pricingPageJsonLd } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
-export const metadata: Metadata = createMarketingMetadata({
-  path: "/pricing",
-});
+export const metadata: Metadata = createPageMetadataForPath("/pricing");
 
 export default function PublicPricingPage() {
   return (
