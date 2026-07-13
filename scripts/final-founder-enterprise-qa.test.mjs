@@ -102,9 +102,10 @@ test("about and security pages link to /api/docs not stale paths only", () => {
 
 test("robots blocks private application routes", () => {
   const robots = readSource("src/lib/seo/robots.ts");
-  const blocked = ["/dashboard", "/settings", "/client-portal", "/api/", "/clients", "/reports"];
-  for (const prefix of blocked) {
-    assert.match(robots, new RegExp(prefix.replace(/\//g, "\\/")));
+  const routes = readSource("src/lib/seo/routes.ts");
+  assert.match(robots, /PRIVATE_ROUTE_PREFIXES/);
+  for (const prefix of ["/dashboard", "/settings", "/client-portal", "/api/", "/clients", "/reports"]) {
+    assert.match(routes, new RegExp(prefix.replace(/\//g, "\\/")));
   }
 });
 

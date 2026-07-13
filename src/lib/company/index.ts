@@ -5,9 +5,11 @@ export {
   DASHBOARD_ROUTES,
   DOCS_URL,
   EXTERNAL_LINKS,
+  FEATURE_ROUTES,
   FOOTER_LINKS,
   FOOTER_SECTIONS,
   HELP_LINKS,
+  INDUSTRY_ROUTES,
   LEGACY_LEGAL_ROUTES,
   LEGAL_ROUTES,
   MARKETING_ROUTES,
@@ -18,6 +20,7 @@ export {
   SOLUTION_ROUTES,
   STATUS_URL,
   TEMPLATE_ROUTES,
+  USE_CASE_ROUTES,
 } from "@/lib/company/company-links";
 
 export {
@@ -27,10 +30,23 @@ export {
   LEGAL_EMAIL,
   LEGAL_PHONE,
   NO_REPLY_EMAIL,
+  PARTNERS_EMAIL,
+  PRESS_EMAIL,
+  PRIVACY_EMAIL,
   SALES_EMAIL,
   SECURITY_EMAIL,
   SUPPORT_EMAIL,
 } from "@/lib/company/company-contact";
+
+export {
+  ACTIVE_ENTERPRISE_CONTACT_CHANNELS,
+  ENTERPRISE_CONTACT_CHANNELS,
+  FUTURE_ENTERPRISE_CONTACT_CHANNELS,
+  PRIMARY_CONTACT_EMAILS,
+  type ContactChannelCategory,
+  type ContactChannelIcon,
+  type EnterpriseContactChannel,
+} from "@/lib/company/contact-channels";
 
 export {
   COMPANY_INFORMATION,

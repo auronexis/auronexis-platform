@@ -2,18 +2,18 @@ import {
   COMPANY_NAME,
   LEGAL_ROUTES,
   MARKETING_ROUTES,
-  SALES_EMAIL,
+  PRIMARY_CONTACT_EMAILS,
   SECURITY_EMAIL,
   SUPPORT_EMAIL,
 } from "@/lib/company/contact";
 
 export const MARKETING_NAV = [
   { label: "Features", href: MARKETING_ROUTES.features },
+  { label: "Solutions", href: MARKETING_ROUTES.solutions },
+  { label: "Industries", href: MARKETING_ROUTES.industries },
   { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
-  { label: "Use Cases", href: MARKETING_ROUTES.useCases },
   { label: "Pricing", href: MARKETING_ROUTES.pricing },
   { label: "Security", href: MARKETING_ROUTES.security },
-  { label: "Pilot Program", href: MARKETING_ROUTES.pilotProgram },
   { label: "Documentation", href: MARKETING_ROUTES.documentation },
 ] as const;
 
@@ -133,7 +133,7 @@ export const FEATURES: readonly MarketingFeature[] = [
     outcome: "Earlier intervention on at-risk clients and clearer executive narratives.",
     enterpriseValue: "Deterministic intelligence with evidence-backed findings and optional AI assistance.",
     ctaLabel: "See executive intelligence",
-    ctaHref: "/intelligence",
+    ctaHref: "/features/executive-dashboards",
     planNote: "Advanced AI narrative features are plan-gated.",
   },
 ];
@@ -275,14 +275,10 @@ export const PILOT_PROGRAM = {
     "Invite-only pricing terms",
     "Early access to new capabilities",
   ],
-  emails: [SUPPORT_EMAIL, SALES_EMAIL],
+  emails: PRIMARY_CONTACT_EMAILS.map((entry) => entry.email),
 } as const;
 
-export const CONTACT_EMAILS = [
-  { label: "Support", email: SUPPORT_EMAIL, description: "Product support, onboarding, and general inquiries" },
-  { label: "Sales", email: SALES_EMAIL, description: "Pricing, pilots, and partnerships" },
-  { label: "Security", email: SECURITY_EMAIL, description: "Security reports and trust inquiries" },
-] as const;
+export const CONTACT_EMAILS = PRIMARY_CONTACT_EMAILS;
 
 export const STATUS_COMPONENTS_STATIC = [
   { name: "Platform", status: "operational" as const, detail: "Application and web services" },
@@ -299,6 +295,7 @@ export const STATUS_COMPONENTS_STATIC = [
 ] as const;
 
 export const HELP_TOPICS = [
+  { title: "FAQ", href: MARKETING_ROUTES.faq, description: "Billing, security, AI, reports, and enterprise questions." },
   { title: "Getting started", href: "/docs/getting-started", description: "Account setup and first workspace." },
   { title: "Documentation hub", href: "/docs", description: "Module guides and API reference." },
   { title: "Release notes", href: "/docs/release-notes", description: "Product updates and changes." },

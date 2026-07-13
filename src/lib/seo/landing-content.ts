@@ -305,6 +305,13 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
 
 export const SOLUTION_SLUGS = Object.keys(SOLUTION_PAGES);
 
+export const SOLUTION_HUB_ENTRIES = Object.values(SOLUTION_PAGES).map((page) => ({
+  slug: page.slug,
+  path: page.path,
+  title: page.title,
+  description: page.description,
+}));
+
 export type TemplatePageContent = {
   slug: string;
   path: string;

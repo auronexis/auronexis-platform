@@ -63,6 +63,46 @@ export const MARKETING_CTA_PRESETS = {
     analyticsEvent: "cta_clicked",
     analyticsProps: { intent: "learn_more" },
   },
+  exploreFeatures: {
+    id: "explore_features",
+    label: "Explore features",
+    href: "/features",
+    variant: "secondary",
+    analyticsEvent: "cta_clicked",
+    analyticsProps: { intent: "explore_features" },
+  },
+  comparePlans: {
+    id: "compare_plans",
+    label: "Compare plans",
+    href: "/pricing",
+    variant: "secondary",
+    analyticsEvent: "pricing_view",
+    analyticsProps: { source: "cta" },
+  },
+  viewDocumentation: {
+    id: "view_documentation",
+    label: "View documentation",
+    href: "/documentation",
+    variant: "outline",
+    analyticsEvent: "cta_clicked",
+    analyticsProps: { intent: "documentation" },
+  },
+  joinPilotProgram: {
+    id: "join_pilot_program",
+    label: "Join pilot program",
+    href: "/pilot-program",
+    variant: "primary",
+    analyticsEvent: "cta_clicked",
+    analyticsProps: { intent: "pilot_program" },
+  },
+  enterpriseInquiry: {
+    id: "enterprise_inquiry",
+    label: "Enterprise inquiry",
+    href: "/contact",
+    variant: "primary",
+    analyticsEvent: "contact_clicked",
+    analyticsProps: { intent: "enterprise" },
+  },
 } as const satisfies Record<string, MarketingCtaPreset>;
 
 export type MarketingCtaPresetKey = keyof typeof MARKETING_CTA_PRESETS;

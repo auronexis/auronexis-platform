@@ -20,7 +20,7 @@ export function SolutionPageView({ content }: SolutionPageViewProps) {
         data={[
           breadcrumbJsonLd([
             { name: "Home", path: "/" },
-            { name: "Solutions", path: MARKETING_ROUTES.features },
+            { name: "Solutions", path: MARKETING_ROUTES.solutions },
             { name: content.title, path: content.path },
           ]),
           faqJsonLd(content.faq),

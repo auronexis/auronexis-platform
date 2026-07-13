@@ -5,7 +5,11 @@ import {
   SOLUTION_ROUTES,
   TEMPLATE_ROUTES,
 } from "@/lib/company/company-links";
+import { AUDIENCE_PAGES } from "@/lib/seo/audience-content";
+import { FEATURE_PAGES } from "@/lib/seo/feature-content";
+import { INDUSTRY_PAGES } from "@/lib/seo/industry-content";
 import { SOLUTION_PAGES, TEMPLATE_PAGES } from "@/lib/seo/landing-content";
+import type { LandingPageContent } from "@/lib/seo/landing-page-types";
 
 /**
  * Authenticated and internal route prefixes excluded from crawling and indexing.
@@ -63,6 +67,14 @@ export function isPrivateRoute(path: string): boolean {
   );
 }
 
+function buildRegistrySeo(pages: Record<string, LandingPageContent>): Record<string, { title: string; description: string }> {
+  const entries: Record<string, { title: string; description: string }> = {};
+  for (const page of Object.values(pages)) {
+    entries[page.path] = { title: page.title, description: page.metaDescription };
+  }
+  return entries;
+}
+
 function buildLandingPageSeo(): Record<string, { title: string; description: string }> {
   const entries: Record<string, { title: string; description: string }> = {};
 
@@ -74,7 +86,12 @@ function buildLandingPageSeo(): Record<string, { title: string; description: str
     entries[page.path] = { title: page.title, description: page.metaDescription };
   }
 
-  return entries;
+  return {
+    ...entries,
+    ...buildRegistrySeo(FEATURE_PAGES),
+    ...buildRegistrySeo(AUDIENCE_PAGES),
+    ...buildRegistrySeo(INDUSTRY_PAGES),
+  };
 }
 
 const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = {
@@ -88,10 +105,25 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description:
       "Explore Auroranexis features for agency operations — reporting, automation, risk management, integrations, and executive intelligence.",
   },
+  [MARKETING_ROUTES.solutions]: {
+    title: "Solutions",
+    description:
+      "Operational solutions for agencies — customer health, risk management, incidents, SLA tracking, executive dashboards, and AI reporting.",
+  },
   [MARKETING_ROUTES.useCases]: {
     title: "Use Cases",
     description:
-      "See how MSPs and agencies use Auroranexis for client health, risk registers, incident response, and executive reporting.",
+      "See how MSPs, agencies, and enterprise teams use Auroranexis for client health, risk registers, incident response, and executive reporting.",
+  },
+  [MARKETING_ROUTES.industries]: {
+    title: "Industries",
+    description:
+      "Industry-focused client operations for marketing, IT, finance, healthcare, legal, and technology service providers.",
+  },
+  [MARKETING_ROUTES.faq]: {
+    title: "FAQ",
+    description:
+      "Frequently asked questions about Auroranexis — billing, security, AI, client portal, reports, integrations, and enterprise plans.",
   },
   [MARKETING_ROUTES.pricing]: {
     title: "Pricing",

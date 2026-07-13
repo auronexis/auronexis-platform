@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
+import { MarketingCtaSection } from "@/components/marketing/marketing-cta-section";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
@@ -19,13 +20,17 @@ export default function HelpPage() {
         title="Help Center"
         description="Documentation, status updates, pilot program, and support channels."
         primaryHref={MARKETING_ROUTES.documentation}
-        primaryLabel="Documentation"
+        primaryLabel="View documentation"
         secondaryHref={MARKETING_ROUTES.support}
         secondaryLabel="Support"
       />
       <MarketingSection title="Browse help topics">
         <p className="mb-4 max-w-2xl text-sm text-muted">
-          Browse topics below or email{" "}
+          Browse topics below, read the{" "}
+          <Link href={MARKETING_ROUTES.faq} className="font-medium text-primary hover:underline">
+            FAQ
+          </Link>
+          , or email{" "}
           <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-primary hover:underline">
             {SUPPORT_EMAIL}
           </a>{" "}
@@ -42,6 +47,12 @@ export default function HelpPage() {
           ))}
         </div>
       </MarketingSection>
+      <MarketingCtaSection
+        title="Need more help?"
+        description="Visit support for contact channels or book a demo for enterprise onboarding."
+        primaryPreset="bookDemo"
+        secondaryPreset="viewDocumentation"
+      />
     </MarketingShell>
   );
 }

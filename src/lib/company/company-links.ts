@@ -18,7 +18,9 @@ export const STATUS_URL = EXTERNAL_LINKS.status;
 export const MARKETING_ROUTES = {
   home: "/",
   features: "/features",
+  solutions: "/solutions",
   useCases: "/use-cases",
+  industries: "/industries",
   pricing: "/pricing",
   enterprise: "/enterprise",
   security: "/security",
@@ -32,6 +34,48 @@ export const MARKETING_ROUTES = {
   careers: "/careers",
   help: "/help",
   support: "/support",
+  faq: "/faq",
+} as const;
+
+export const FEATURE_ROUTES = {
+  aiExecutiveReports: "/features/ai-executive-reports",
+  clientPortal: "/features/client-portal",
+  automation: "/features/automation",
+  monitoring: "/features/monitoring",
+  riskIntelligence: "/features/risk-intelligence",
+  healthMonitoring: "/features/health-monitoring",
+  executiveDashboards: "/features/executive-dashboards",
+  knowledgeBase: "/features/knowledge-base",
+  incidents: "/features/incidents",
+  profitability: "/features/profitability",
+  customerSuccess: "/features/customer-success",
+  reports: "/features/reports",
+  activityTimeline: "/features/activity-timeline",
+  integrations: "/features/integrations",
+} as const;
+
+export const USE_CASE_ROUTES = {
+  marketingAgencies: "/use-cases/marketing-agencies",
+  itServiceProviders: "/use-cases/it-service-providers",
+  msps: "/use-cases/msps",
+  consultancies: "/use-cases/consultancies",
+  cybersecurityCompanies: "/use-cases/cybersecurity-companies",
+  digitalAgencies: "/use-cases/digital-agencies",
+  softwareAgencies: "/use-cases/software-agencies",
+  automationAgencies: "/use-cases/automation-agencies",
+  enterpriseTeams: "/use-cases/enterprise-teams",
+} as const;
+
+export const INDUSTRY_ROUTES = {
+  marketing: "/industries/marketing",
+  it: "/industries/it",
+  cybersecurity: "/industries/cybersecurity",
+  consulting: "/industries/consulting",
+  healthcare: "/industries/healthcare",
+  finance: "/industries/finance",
+  legal: "/industries/legal",
+  manufacturing: "/industries/manufacturing",
+  technology: "/industries/technology",
 } as const;
 
 export const SOLUTION_ROUTES = {
@@ -93,6 +137,8 @@ export const HELP_LINKS = {
 export const FOOTER_SECTIONS = {
   product: [
     { label: "Features", href: MARKETING_ROUTES.features },
+    { label: "Solutions", href: MARKETING_ROUTES.solutions },
+    { label: "Industries", href: MARKETING_ROUTES.industries },
     { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     { label: "Pricing", href: MARKETING_ROUTES.pricing },
     { label: "Integrations", href: MARKETING_ROUTES.integrations },
@@ -117,6 +163,8 @@ export const FOOTER_SECTIONS = {
     { label: "About", href: MARKETING_ROUTES.about },
     { label: "Careers", href: MARKETING_ROUTES.careers },
     { label: "Contact", href: MARKETING_ROUTES.contact },
+    { label: "FAQ", href: MARKETING_ROUTES.faq },
+    { label: "Use cases", href: MARKETING_ROUTES.useCases },
   ],
 } as const;
 
@@ -140,6 +188,9 @@ export const PUBLIC_DOC_ROUTES = [
 export const PUBLIC_SITEMAP_ROUTES = [
   ...Object.values(MARKETING_ROUTES),
   ...Object.values(LEGAL_ROUTES),
+  ...Object.values(FEATURE_ROUTES),
+  ...Object.values(USE_CASE_ROUTES),
+  ...Object.values(INDUSTRY_ROUTES),
   ...Object.values(SOLUTION_ROUTES),
   ...Object.values(TEMPLATE_ROUTES),
   "/docs",

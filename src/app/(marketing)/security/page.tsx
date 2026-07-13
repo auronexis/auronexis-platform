@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
+import { MarketingCtaSection } from "@/components/marketing/marketing-cta-section";
+import { MarketingFaq, MarketingSection } from "@/components/marketing/marketing-sections";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
-import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { SECURITY_HIGHLIGHTS } from "@/lib/marketing/content";
+import { FAQ_TOPICS } from "@/lib/marketing/faq-content";
 import { LEGAL_ROUTES, MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company/contact";
 
 export const metadata: Metadata = createPageMetadataForPath("/security");
+
+const SECURITY_FAQ = FAQ_TOPICS.find((topic) => topic.id === "security")?.items ?? [];
 
 export default function SecurityPage() {
   return (
@@ -39,6 +43,10 @@ export default function SecurityPage() {
             compliance readiness
           </Link>
           ,{" "}
+          <Link href={MARKETING_ROUTES.faq} className="font-medium text-primary hover:underline">
+            FAQ
+          </Link>
+          ,{" "}
           <Link href={MARKETING_ROUTES.status} className="font-medium text-primary hover:underline">
             platform status
           </Link>
@@ -47,16 +55,21 @@ export default function SecurityPage() {
             sub-processors
           </Link>
           ,{" "}
-          <Link href={LEGAL_ROUTES.dataProcessingAgreement} className="font-medium text-primary hover:underline">
-            DPA summary
-          </Link>
-          ,{" "}
           <Link href="/api/docs" className="font-medium text-primary hover:underline">
             API documentation
           </Link>
           .
         </p>
       </MarketingSection>
+      <MarketingSection title="Security FAQ" className="border-t border-border/70 bg-surface-2/30">
+        <MarketingFaq items={SECURITY_FAQ} />
+      </MarketingSection>
+      <MarketingCtaSection
+        title="Evaluate Auroranexis for your security requirements"
+        description="Review documentation, request an enterprise demo, or contact sales for procurement support."
+        primaryPreset="viewDocumentation"
+        secondaryPreset="contactSales"
+      />
     </MarketingShell>
   );
 }

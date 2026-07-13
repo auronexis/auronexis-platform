@@ -1,25 +1,22 @@
 import type { Metadata } from "next";
 import { createPageMetadataForPath } from "@/lib/seo";
-import { MarketingShell } from "@/components/marketing/marketing-shell";
-import { MarketingHero } from "@/components/marketing/marketing-hero";
-import { MarketingCardGrid, MarketingSection } from "@/components/marketing/marketing-sections";
-import { USE_CASES } from "@/lib/marketing/content";
+import { LandingHubView } from "@/components/marketing/landing-hub-view";
+import { AUDIENCE_HUB_ENTRIES } from "@/lib/seo/audience-content";
+import { MARKETING_ROUTES } from "@/lib/company/company-links";
 
-export const metadata: Metadata = createPageMetadataForPath("/use-cases");
+export const metadata: Metadata = createPageMetadataForPath(MARKETING_ROUTES.useCases);
 
 export default function UseCasesPage() {
   return (
-    <MarketingShell>
-      <MarketingHero
-        eyebrow="Use Cases"
-        title="Built for multi-client operators"
-        description="Standardize delivery, prove value, and scale operations across your client portfolio."
-        primaryHref="/pilot-program"
-        primaryLabel="Apply for Pilot"
-      />
-      <MarketingSection title="Who we serve">
-        <MarketingCardGrid items={USE_CASES} />
-      </MarketingSection>
-    </MarketingShell>
+    <LandingHubView
+      eyebrow="Use cases"
+      title="Built for multi-client operators"
+      description="Dedicated pages for MSPs, agencies, consultancies, and enterprise teams that manage client portfolios at scale."
+      entries={AUDIENCE_HUB_ENTRIES}
+      primaryHref={MARKETING_ROUTES.pilotProgram}
+      primaryLabel="Join pilot program"
+      secondaryHref={MARKETING_ROUTES.pricing}
+      secondaryLabel="Compare plans"
+    />
   );
 }
