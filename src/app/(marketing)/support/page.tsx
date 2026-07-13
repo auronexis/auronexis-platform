@@ -2,14 +2,19 @@ import type { Metadata } from "next";
 import { createPageMetadataForPath } from "@/lib/seo";
 import Link from "next/link";
 import { ContactForm } from "@/components/marketing/contact-form";
+import { EnterpriseContactCard } from "@/components/marketing/enterprise-contact-card";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
-import { MARKETING_ROUTES, SUPPORT_EMAIL } from "@/lib/company/contact";
 import {
-  SUPPORT_CHANNELS,
+  ENTERPRISE_CONTACT_CHANNELS,
+  MARKETING_ROUTES,
+  SUPPORT_EMAIL,
+} from "@/lib/company";
+import {
   SUPPORT_RESPONSE_EXPECTATIONS,
-  SUPPORT_SECURITY_NOTE,
+  SUPPORT_SECURITY_EMAIL,
+  SUPPORT_SELF_SERVICE_LINKS,
 } from "@/lib/support/content";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
@@ -29,35 +34,49 @@ export default function SupportPage() {
         secondaryLabel="Documentation"
       />
 
-      <MarketingSection title="Support channels">
-        <div className="grid gap-4 md:grid-cols-2">
-          {SUPPORT_CHANNELS.map((channel) => (
-            <article
-              key={channel.id}
-              className={cn(
-                "rounded-2xl border border-border-subtle bg-surface-1 p-5 shadow-sm",
-                focusRing,
-              )}
-            >
-              <h3 className="font-semibold text-foreground">{channel.title}</h3>
-              <p className="mt-2 text-sm text-muted">{channel.description}</p>
-              <Link
-                href={channel.href}
-                className={cn("mt-4 inline-block text-sm font-medium text-primary hover:underline", focusRing, "rounded")}
-              >
-                {channel.linkLabel}
-              </Link>
-            </article>
+      <MarketingSection title="Contact channels">
+        <p className="mb-6 max-w-3xl text-sm text-muted">
+          Reach the right team directly. Each channel is dedicated to a specific responsibility so
+          your request is routed efficiently.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {ENTERPRISE_CONTACT_CHANNELS.map((channel) => (
+            <EnterpriseContactCard key={channel.id} channel={channel} variant="marketing" />
           ))}
         </div>
         <p className="mt-6 text-sm text-muted">{SUPPORT_RESPONSE_EXPECTATIONS}</p>
         <p className="mt-3 text-sm text-muted">
-          <Link href={MARKETING_ROUTES.status} className="font-medium text-primary hover:underline">
-            System status
+          Security vulnerabilities:{" "}
+          <Link
+            href={`mailto:${SUPPORT_SECURITY_EMAIL}`}
+            className="font-medium text-primary hover:underline"
+          >
+            {SUPPORT_SECURITY_EMAIL}
           </Link>
-          {" · "}
-          {SUPPORT_SECURITY_NOTE}
         </p>
+      </MarketingSection>
+
+      <MarketingSection title="Self-service resources" className="border-t border-border/70 bg-surface-2/30">
+        <div className="grid gap-4 md:grid-cols-2">
+          {SUPPORT_SELF_SERVICE_LINKS.map((link) => (
+            <article
+              key={link.id}
+              className={cn(
+                "flex h-full flex-col rounded-2xl border border-border-subtle bg-surface-1 p-5 shadow-sm",
+                focusRing,
+              )}
+            >
+              <h3 className="font-semibold text-foreground">{link.title}</h3>
+              <p className="mt-2 flex-1 text-sm text-muted">{link.description}</p>
+              <Link
+                href={link.href}
+                className={cn("mt-4 inline-block text-sm font-medium text-primary hover:underline", focusRing, "rounded")}
+              >
+                {link.linkLabel}
+              </Link>
+            </article>
+          ))}
+        </div>
       </MarketingSection>
 
       <MarketingSection title="Send a message" className="border-t border-border/70 bg-surface-2/30">

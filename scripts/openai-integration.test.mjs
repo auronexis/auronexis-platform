@@ -51,7 +51,7 @@ test("public AI status uses persisted health state not env presence alone", () =
   const publicStatus = readSource("src/lib/marketing/public-status.ts");
   const statusPage = readSource("src/app/(marketing)/status/page.tsx");
   assert.match(publicStatus, /getOpenAIPlatformStatus/);
-  assert.match(publicStatus, /mapOpenAIStateToPublicDetail/);
+  assert.match(publicStatus, /getOpenAIPlatformConfig/);
   assert.doesNotMatch(publicStatus, /process\.env\.OPENAI_API_KEY/);
   assert.match(statusPage, /await resolvePublicAiStatus/);
 });

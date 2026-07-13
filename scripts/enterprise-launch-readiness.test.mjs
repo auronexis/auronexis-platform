@@ -18,10 +18,11 @@ test("public status page does not expose Development label", () => {
   assert.doesNotMatch(publicStatus, /Development/);
 });
 
-test("public AI status uses Not Enabled when OpenAI key missing", () => {
+test("public AI status uses explicit missing-key detail without env exposure", () => {
   const source = readSource("src/lib/marketing/public-status.ts");
-  assert.match(source, /Not Enabled/);
-  assert.match(source, /OPENAI_API_KEY/);
+  assert.match(source, /Missing API Key/);
+  assert.match(source, /getOpenAIPlatformConfig/);
+  assert.doesNotMatch(source, /process\.env\.OPENAI_API_KEY/);
 });
 
 test("marketing CTA uses Create workspace instead of free trial", () => {

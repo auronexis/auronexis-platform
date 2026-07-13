@@ -1,9 +1,10 @@
 import "server-only";
 
 import type { StatusLevel } from "@/components/marketing/status-badge";
+import { getOpenAIPlatformConfig } from "@/lib/ai/openai/config";
 import {
   getOpenAIPlatformStatus,
-  mapOpenAIStateToPublicDetail,
+  type OpenAIPlatformStatus,
 } from "@/lib/ai/openai/status";
 
 export type PublicStatusComponent = {
@@ -34,11 +35,75 @@ const INTERNAL_STATUS_LABELS = new Set([
   "monitoring optional in development",
 ]);
 
-export async function resolvePublicAiStatus(): Promise<
-  Pick<PublicStatusComponent, "status" | "detail">
-> {
-  const platform = await getOpenAIPlatformStatus();
-  return mapOpenAIStateToPublicDetail(platform.state);
+type PublicAiStatus = Pick<PublicStatusComponent, "status" | "detail">;
+
+function resolveConfigurationDetail(config: ReturnType<typeof getOpenAIPlatformConfig>): string {
+  if (!config.enabled) {
+    return "Provider Disabled";
+  }
+  if (config.provider !== "openai") {
+    return "Invalid Configuration";
+  }
+  if (!config.apiKey) {
+    return "Missing API Key";
+  }
+  return "Operational";
+}
+
+function resolveDegradedDetail(platform: OpenAIPlatformStatus): string {
+  const error = platform.sanitizedError?.trim();
+  if (!error) {
+    return "Provider Unavailable";
+  }
+
+  const normalized = error.toLowerCase();
+  if (normalized.includes("timeout") || normalized.includes("timed out")) {
+    return "API Timeout";
+  }
+  if (normalized.includes("unavailable") || normalized.includes("503") || normalized.includes("502")) {
+    return "Provider Unavailable";
+  }
+
+  return error;
+}
+
+function mapPlatformToPublicAi(platform: OpenAIPlatformStatus): PublicAiStatus {
+  const config = getOpenAIPlatformConfig();
+
+  if (!config.enabled) {
+    return { status: "maintenance", detail: "Provider Disabled" };
+  }
+
+  if (config.provider !== "openai") {
+    return { status: "maintenance", detail: "Invalid Configuration" };
+  }
+
+  if (!config.apiKey) {
+    return { status: "maintenance", detail: "Missing API Key" };
+  }
+
+  switch (platform.state) {
+    case "connected":
+    case "configured":
+      return { status: "operational", detail: "Operational" };
+    case "degraded":
+      return { status: "degraded", detail: resolveDegradedDetail(platform) };
+    case "disabled":
+      return { status: "maintenance", detail: "Provider Disabled" };
+    case "not_configured":
+      return { status: "maintenance", detail: resolveConfigurationDetail(config) };
+    default:
+      return { status: "operational", detail: "Operational" };
+  }
+}
+
+export async function resolvePublicAiStatus(): Promise<PublicAiStatus> {
+  try {
+    const platform = await getOpenAIPlatformStatus();
+    return mapPlatformToPublicAi(platform);
+  } catch {
+    return { status: "degraded", detail: "Status check unavailable" };
+  }
 }
 
 function sanitizePublicDetail(detail: string): string {
