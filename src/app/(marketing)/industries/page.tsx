@@ -13,6 +13,7 @@ export default function IndustriesHubPage() {
       title="Industry-focused client operations"
       description="See how Auroranexis supports regulated, multi-client delivery across marketing, IT, finance, healthcare, and other sectors."
       entries={INDUSTRY_HUB_ENTRIES}
+      hubPath={MARKETING_ROUTES.industries}
       secondaryHref={MARKETING_ROUTES.useCases}
       secondaryLabel="View use cases"
     />

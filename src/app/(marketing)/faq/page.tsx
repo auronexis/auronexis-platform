@@ -6,6 +6,7 @@ import { MarketingCtaSection } from "@/components/marketing/marketing-cta-sectio
 import { MarketingFaq, MarketingSection } from "@/components/marketing/marketing-sections";
 import { FAQ_TOPICS } from "@/lib/marketing/faq-content";
 import { JsonLdScript, faqJsonLd } from "@/lib/marketing/seo";
+import { collectionPageGraphJsonLd } from "@/lib/seo/geo-schema";
 import { MARKETING_ROUTES } from "@/lib/company/company-links";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
@@ -14,9 +15,26 @@ import { focusRing } from "@/lib/ui/tokens";
 export const metadata: Metadata = createPageMetadataForPath(MARKETING_ROUTES.faq);
 
 export default function FaqPage() {
+  const allFaqItems = FAQ_TOPICS.flatMap((topic) => topic.items);
+
   return (
     <MarketingShell>
-      <JsonLdScript data={faqJsonLd(FAQ_TOPICS.flatMap((topic) => topic.items))} />
+      <JsonLdScript
+        data={[
+          collectionPageGraphJsonLd({
+            title: "Frequently asked questions",
+            description:
+              "Authoritative answers about billing, security, AI, client portal, reports, integrations, and enterprise plans.",
+            path: MARKETING_ROUTES.faq,
+            items: FAQ_TOPICS.map((topic) => ({
+              name: topic.title,
+              path: `${MARKETING_ROUTES.faq}#${topic.id}`,
+              description: topic.items[0]?.question ?? topic.title,
+            })),
+          }),
+          faqJsonLd(allFaqItems),
+        ]}
+      />
       <MarketingHero
         eyebrow="FAQ"
         title="Frequently asked questions"

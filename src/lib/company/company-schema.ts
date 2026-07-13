@@ -6,6 +6,11 @@ import {
   PUBLIC_SELF_SERVE_PLAN_KEYS,
   getPlanByKey,
 } from "@/lib/billing/plans";
+import {
+  GRAPH_ENTITY_IDS,
+  capabilityKnowsAbout,
+  pageEntityId,
+} from "@/lib/seo/entity-graph";
 
 function absoluteAsset(path: string): string {
   return new URL(path, resolveCanonicalBaseUrl()).toString();
@@ -15,12 +20,14 @@ export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": GRAPH_ENTITY_IDS.organization,
     name: COMPANY_INFORMATION.legalName,
     legalName: COMPANY_INFORMATION.legalName,
     url: resolveCanonicalBaseUrl(),
     logo: absoluteAsset(BRANDING_ASSETS.approvedCompositeLogo),
     email: COMPANY_CONTACT.supportEmail,
     telephone: COMPANY_CONTACT.phone,
+    knowsAbout: capabilityKnowsAbout(),
     address: {
       "@type": "PostalAddress",
       streetAddress: COMPANY_INFORMATION.street,
@@ -40,12 +47,11 @@ export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": GRAPH_ENTITY_IDS.website,
     name: COMPANY_INFORMATION.productName,
     url: resolveCanonicalBaseUrl(),
-    publisher: {
-      "@type": "Organization",
-      name: COMPANY_INFORMATION.legalName,
-    },
+    publisher: { "@id": GRAPH_ENTITY_IDS.organization },
+    inLanguage: "en",
   };
 }
 
@@ -70,16 +76,14 @@ export function softwareApplicationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
+    "@id": GRAPH_ENTITY_IDS.softwareApplication,
     name: COMPANY_INFORMATION.productName,
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description: COMPANY_INFORMATION.shortDescription,
+    featureList: capabilityKnowsAbout(),
     offers: buildPlanOffers(),
-    provider: {
-      "@type": "Organization",
-      name: COMPANY_INFORMATION.legalName,
-      url: resolveCanonicalBaseUrl(),
-    },
+    provider: { "@id": GRAPH_ENTITY_IDS.organization },
   };
 }
 
@@ -88,6 +92,7 @@ export function pricingPageJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": GRAPH_ENTITY_IDS.product,
     name: COMPANY_INFORMATION.productName,
     description: COMPANY_INFORMATION.shortDescription,
     brand: {
@@ -95,6 +100,7 @@ export function pricingPageJsonLd() {
       name: COMPANY_INFORMATION.productName,
     },
     offers: buildPlanOffers(),
+    isRelatedTo: { "@id": GRAPH_ENTITY_IDS.softwareApplication },
   };
 }
 
@@ -132,14 +138,12 @@ export function enterpriseOfferJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": pageEntityId("/enterprise"),
     name: `${COMPANY_INFORMATION.productName} Enterprise`,
     description:
       "Enterprise client operations platform with unlimited AI credits, custom limits, priority support, and advanced security controls.",
-    provider: {
-      "@type": "Organization",
-      name: COMPANY_INFORMATION.legalName,
-      url: resolveCanonicalBaseUrl(),
-    },
+    url: getCanonicalUrl("/enterprise").toString(),
+    provider: { "@id": GRAPH_ENTITY_IDS.organization },
     areaServed: "Worldwide",
     audience: {
       "@type": "BusinessAudience",

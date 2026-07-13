@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, LifeBuoy } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/company/contact";
+import { getDocMarketingLinks } from "@/lib/docs/marketing-cross-links";
 import { getDocPageSections } from "@/lib/docs/build-page";
 import type { DocContentBlock, DocPageContent, DocSubsection, DocTable } from "@/lib/docs/types";
 import { cn } from "@/lib/utils/cn";
@@ -108,6 +109,7 @@ type DocPageLayoutProps = {
 
 export function DocPageLayout({ doc }: DocPageLayoutProps) {
   const sections = getDocPageSections(doc);
+  const marketingLinks = getDocMarketingLinks(doc.slug);
 
   return (
     <MarketingShell>
@@ -180,6 +182,13 @@ export function DocPageLayout({ doc }: DocPageLayoutProps) {
                     Related documentation
                   </a>
                 </li>
+                {marketingLinks.length ? (
+                  <li>
+                    <a href="#related-product" className="text-primary-foreground/85 hover:text-white hover:underline">
+                      Related product pages
+                    </a>
+                  </li>
+                ) : null}
               </ul>
             </nav>
           ) : null}
@@ -234,6 +243,27 @@ export function DocPageLayout({ doc }: DocPageLayoutProps) {
               ))}
             </ul>
           </section>
+
+          {marketingLinks.length ? (
+            <section
+              id="related-product"
+              className="mt-6 scroll-mt-24 rounded-xl border border-white/10 bg-white/[0.03] p-5"
+            >
+              <h2 className="text-base font-semibold text-white">Related product pages</h2>
+              <p className="mt-2 text-sm leading-7 text-primary-foreground/80">
+                Public marketing pages that describe the same capabilities covered in this guide.
+              </p>
+              <ul className="mt-3 space-y-2 text-sm">
+                {marketingLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="text-primary-foreground/90 hover:text-white hover:underline">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
         </div>
       </div>
     </MarketingShell>

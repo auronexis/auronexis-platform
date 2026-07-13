@@ -4,7 +4,8 @@ import { MarketingCtaSection } from "@/components/marketing/marketing-cta-sectio
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingFaq, MarketingSection } from "@/components/marketing/marketing-sections";
 import { MARKETING_CTA_PRESETS } from "@/lib/marketing/cta";
-import { JsonLdScript, breadcrumbJsonLd, faqJsonLd } from "@/lib/marketing/seo";
+import { JsonLdScript } from "@/lib/marketing/seo";
+import { landingPageGraphJsonLd } from "@/lib/seo/geo-schema";
 import type { LandingPageContent } from "@/lib/seo/landing-page-types";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
@@ -37,17 +38,16 @@ export function LandingPageView({ content, breadcrumbParent }: LandingPageViewPr
   const primary = MARKETING_CTA_PRESETS[content.primaryCta ?? "startFreeTrial"];
   const secondary = MARKETING_CTA_PRESETS[content.secondaryCta ?? "seePricing"];
 
+  const breadcrumbs = [
+    { name: "Home", path: "/" },
+    { name: breadcrumbParent.name, path: breadcrumbParent.path },
+    { name: content.title, path: content.path },
+  ] as const;
+
   return (
     <MarketingShell>
       <JsonLdScript
-        data={[
-          breadcrumbJsonLd([
-            { name: "Home", path: "/" },
-            { name: breadcrumbParent.name, path: breadcrumbParent.path },
-            { name: content.title, path: content.path },
-          ]),
-          faqJsonLd(content.faq),
-        ]}
+        data={landingPageGraphJsonLd({ content, breadcrumbs })}
       />
 
       <MarketingHero
@@ -59,6 +59,15 @@ export function LandingPageView({ content, breadcrumbParent }: LandingPageViewPr
         secondaryHref={secondary.href}
         secondaryLabel={secondary.label}
       />
+
+      <MarketingSection title="Definition">
+        <p className="max-w-3xl text-base leading-relaxed text-primary-foreground/80">
+          <dfn className="font-semibold text-white">{content.title}</dfn> — {content.description}
+        </p>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-primary-foreground/75">
+          {content.businessValue}
+        </p>
+      </MarketingSection>
 
       <MarketingSection title="The problem">
         <p className="max-w-3xl text-base leading-relaxed text-primary-foreground/80">{content.problem}</p>

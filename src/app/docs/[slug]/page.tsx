@@ -4,7 +4,7 @@ import { DocPageLayout } from "@/components/docs/doc-page-layout";
 import { DocsViewTracker } from "@/components/analytics/docs-view-tracker";
 import { JsonLdScript } from "@/lib/marketing/seo";
 import { getAllDocSlugs, getDocPage } from "@/lib/docs/registry";
-import { createPageMetadata, techArticleJsonLd } from "@/lib/seo";
+import { createPageMetadata, docPageGraphJsonLd } from "@/lib/seo";
 
 type DocTopicPageProps = {
   params: Promise<{ slug: string }>;
@@ -40,10 +40,16 @@ export default async function DocTopicPage({ params }: DocTopicPageProps) {
   return (
     <>
       <JsonLdScript
-        data={techArticleJsonLd({
+        data={docPageGraphJsonLd({
           title: doc.title,
           description: doc.description,
           path: `/docs/${slug}`,
+          faq: doc.faq,
+          breadcrumbs: [
+            { name: "Home", path: "/" },
+            { name: "Documentation", path: "/docs" },
+            { name: doc.title, path: `/docs/${slug}` },
+          ],
         })}
       />
       <DocsViewTracker slug={slug} />

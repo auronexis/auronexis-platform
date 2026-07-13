@@ -4,7 +4,8 @@ import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingCta } from "@/components/marketing/marketing-cta";
 import { MarketingFaq, MarketingSection } from "@/components/marketing/marketing-sections";
 import { MARKETING_ROUTES } from "@/lib/company";
-import { JsonLdScript, breadcrumbJsonLd, faqJsonLd } from "@/lib/marketing/seo";
+import { JsonLdScript } from "@/lib/marketing/seo";
+import { solutionPageGraphJsonLd } from "@/lib/seo/geo-schema";
 import type { SolutionPageContent } from "@/lib/seo/landing-content";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
@@ -14,18 +15,15 @@ type SolutionPageViewProps = {
 };
 
 export function SolutionPageView({ content }: SolutionPageViewProps) {
+  const breadcrumbs = [
+    { name: "Home", path: "/" },
+    { name: "Solutions", path: MARKETING_ROUTES.solutions },
+    { name: content.title, path: content.path },
+  ] as const;
+
   return (
     <MarketingShell>
-      <JsonLdScript
-        data={[
-          breadcrumbJsonLd([
-            { name: "Home", path: "/" },
-            { name: "Solutions", path: MARKETING_ROUTES.solutions },
-            { name: content.title, path: content.path },
-          ]),
-          faqJsonLd(content.faq),
-        ]}
-      />
+      <JsonLdScript data={solutionPageGraphJsonLd({ content, breadcrumbs })} />
 
       <MarketingHero
         eyebrow={content.eyebrow}
@@ -36,6 +34,12 @@ export function SolutionPageView({ content }: SolutionPageViewProps) {
         secondaryHref="/pricing"
         secondaryLabel="View pricing"
       />
+
+      <MarketingSection title="Definition">
+        <p className="max-w-3xl text-base leading-relaxed text-primary-foreground/80">
+          <dfn className="font-semibold text-white">{content.title}</dfn> — {content.description}
+        </p>
+      </MarketingSection>
 
       <MarketingSection title="Overview">
         <p className="max-w-3xl text-base leading-relaxed text-primary-foreground/80">{content.intro}</p>

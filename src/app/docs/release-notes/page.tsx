@@ -3,10 +3,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { COMPANY_NAME } from "@/lib/company/contact";
+import { createPageMetadataForPath } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Release Notes",
-};
+export const metadata: Metadata = createPageMetadataForPath("/docs/release-notes");
 
 const RELEASES = [
   {

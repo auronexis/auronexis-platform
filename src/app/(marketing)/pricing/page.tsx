@@ -17,6 +17,7 @@ import {
 } from "@/lib/marketing/content";
 import { MARKETING_ROUTES, SALES_EMAIL } from "@/lib/company/contact";
 import { JsonLdScript, pricingPageJsonLd } from "@/lib/marketing/seo";
+import { pricingGraphJsonLd } from "@/lib/seo/geo-schema";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
@@ -25,7 +26,7 @@ export const metadata: Metadata = createPageMetadataForPath("/pricing");
 export default function PublicPricingPage() {
   return (
     <MarketingShell>
-      <JsonLdScript data={pricingPageJsonLd()} />
+      <JsonLdScript data={pricingGraphJsonLd(pricingPageJsonLd())} />
       <ConversionTracker event="pricing_view" />
       <MarketingHero
         eyebrow="Pricing"

@@ -10,6 +10,8 @@ import { MarketingCtaSection } from "@/components/marketing/marketing-cta-sectio
 import { MarketingFeatureDetails } from "@/components/marketing/marketing-feature-details";
 import { FEATURES } from "@/lib/marketing/content";
 import { ConversionTracker } from "@/components/analytics/conversion-tracker";
+import { JsonLdScript } from "@/lib/marketing/seo";
+import { collectionPageGraphJsonLd } from "@/lib/seo/geo-schema";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
@@ -27,6 +29,19 @@ const SOLUTION_LINKS = [
 export default function FeaturesPage() {
   return (
     <MarketingShell>
+      <JsonLdScript
+        data={collectionPageGraphJsonLd({
+          title: "Platform features",
+          description:
+            "Reporting, automation, risk management, integrations, and executive intelligence in one workspace.",
+          path: "/features",
+          items: FEATURE_HUB_ENTRIES.map((entry) => ({
+            name: entry.title,
+            path: entry.path,
+            description: entry.description,
+          })),
+        })}
+      />
       <ConversionTracker event="cta_clicked" props={{ surface: "features" }} />
       <MarketingHero
         eyebrow="Features"

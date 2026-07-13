@@ -13,6 +13,7 @@ export default function UseCasesPage() {
       title="Built for multi-client operators"
       description="Dedicated pages for MSPs, agencies, consultancies, and enterprise teams that manage client portfolios at scale."
       entries={AUDIENCE_HUB_ENTRIES}
+      hubPath={MARKETING_ROUTES.useCases}
       primaryHref={MARKETING_ROUTES.pilotProgram}
       primaryLabel="Join pilot program"
       secondaryHref={MARKETING_ROUTES.pricing}

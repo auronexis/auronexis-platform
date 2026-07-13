@@ -31,7 +31,8 @@ import {
 import { MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company";
 import { COMPANY_SEO } from "@/lib/company/company-seo";
 import { createPageMetadataForPath } from "@/lib/seo";
-import { JsonLdScript, faqJsonLd, organizationJsonLd, softwareApplicationJsonLd, websiteJsonLd } from "@/lib/marketing/seo";
+import { homePageGraphJsonLd } from "@/lib/seo/geo-schema";
+import { JsonLdScript, organizationJsonLd, softwareApplicationJsonLd, websiteJsonLd } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
@@ -46,7 +47,12 @@ export default async function MarketingHomePage() {
   return (
     <MarketingShell>
       <JsonLdScript
-        data={[organizationJsonLd(), websiteJsonLd(), softwareApplicationJsonLd(), faqJsonLd(FAQ_ITEMS)]}
+        data={homePageGraphJsonLd(
+          FAQ_ITEMS,
+          organizationJsonLd(),
+          websiteJsonLd(),
+          softwareApplicationJsonLd(),
+        )}
       />
 
       <MarketingHero

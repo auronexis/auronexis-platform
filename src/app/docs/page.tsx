@@ -8,7 +8,9 @@ import { PublicAppLink } from "@/components/marketing/public-app-link";
 import { COMPANY_NAME, DOCS_URL, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { DOCS_HUB_DOC, DOC_HUB_CARDS } from "@/lib/docs/registry";
+import { JsonLdScript } from "@/lib/marketing/seo";
 import { createPageMetadata } from "@/lib/seo";
+import { collectionPageGraphJsonLd } from "@/lib/seo/geo-schema";
 import { cn } from "@/lib/utils/cn";
 import { getAuroraModule, auroraSurfaceInteractive } from "@/lib/ui/aurora";
 import { focusRing } from "@/lib/ui/tokens";
@@ -25,8 +27,29 @@ const HUB_ICONS = {
 } as const;
 
 export default function DocsHubPage() {
+  const docItems = [
+    ...DOC_HUB_CARDS.map((card) => ({
+      name: card.title,
+      path: card.href ?? `/docs/${card.slug}`,
+      description: card.description,
+    })),
+    {
+      name: "Release Notes",
+      path: "/docs/release-notes",
+      description: "Product updates and platform changes.",
+    },
+  ];
+
   return (
     <MarketingShell>
+      <JsonLdScript
+        data={collectionPageGraphJsonLd({
+          title: "Documentation",
+          description: `${COMPANY_NAME} product documentation hub for agencies and operations teams.`,
+          path: "/docs",
+          items: docItems,
+        })}
+      />
       <DocsViewTracker />
       <section className="relative overflow-hidden border-b border-white/10">
         <div

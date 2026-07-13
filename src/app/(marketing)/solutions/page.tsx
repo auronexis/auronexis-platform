@@ -13,6 +13,7 @@ export default function SolutionsHubPage() {
       title="Operational solutions for agency delivery"
       description="Capability-focused pages for customer health, risk, incidents, SLA management, executive dashboards, and AI reporting."
       entries={SOLUTION_HUB_ENTRIES}
+      hubPath={MARKETING_ROUTES.solutions}
       secondaryHref={MARKETING_ROUTES.features}
       secondaryLabel="Explore features"
     />

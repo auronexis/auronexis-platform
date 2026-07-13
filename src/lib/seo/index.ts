@@ -39,6 +39,26 @@ export {
 export { buildSitemapEntries, validateSitemapEntries } from "@/lib/seo/sitemap";
 export { buildRobotsConfig } from "@/lib/seo/robots";
 export {
+  collectionPageGraphJsonLd,
+  docPageGraphJsonLd,
+  homePageGraphJsonLd,
+  landingPageGraphJsonLd,
+  pricingGraphJsonLd,
+  solutionPageGraphJsonLd,
+  PLATFORM_DEFINITION,
+} from "@/lib/seo/geo-schema";
+export { buildLlmsTxt } from "@/lib/seo/llms-txt";
+export {
+  CANONICAL_CAPABILITIES,
+  CANONICAL_SOLUTIONS,
+  ENTITY_FRAGMENTS,
+  GRAPH_ENTITY_IDS,
+  capabilityKnowsAbout,
+  entityId,
+  pageEntityId,
+  productSummary,
+} from "@/lib/seo/entity-graph";
+export {
   trackAnalyticsEvent,
   type AnalyticsEventName,
   type AnalyticsEventProps,

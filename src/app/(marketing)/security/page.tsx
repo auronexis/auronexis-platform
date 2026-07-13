@@ -7,6 +7,7 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { SECURITY_HIGHLIGHTS } from "@/lib/marketing/content";
 import { FAQ_TOPICS } from "@/lib/marketing/faq-content";
+import { JsonLdScript, faqJsonLd } from "@/lib/marketing/seo";
 import { LEGAL_ROUTES, MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company/contact";
 
 export const metadata: Metadata = createPageMetadataForPath("/security");
@@ -16,6 +17,7 @@ const SECURITY_FAQ = FAQ_TOPICS.find((topic) => topic.id === "security")?.items 
 export default function SecurityPage() {
   return (
     <MarketingShell>
+      <JsonLdScript data={faqJsonLd(SECURITY_FAQ)} />
       <MarketingHero
         eyebrow="Security"
         title="Security-first operations platform"

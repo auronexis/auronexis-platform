@@ -3,6 +3,8 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingCtaSection } from "@/components/marketing/marketing-cta-section";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
+import { JsonLdScript } from "@/lib/marketing/seo";
+import { collectionPageGraphJsonLd } from "@/lib/seo/geo-schema";
 import type { LandingHubEntry } from "@/lib/seo/landing-page-types";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
@@ -13,6 +15,7 @@ type LandingHubViewProps = {
   title: string;
   description: string;
   entries: ReadonlyArray<LandingHubEntry>;
+  hubPath: string;
   primaryHref?: string;
   primaryLabel?: string;
   secondaryHref?: string;
@@ -24,6 +27,7 @@ export function LandingHubView({
   title,
   description,
   entries,
+  hubPath,
   primaryHref = "/signup",
   primaryLabel = "Create workspace",
   secondaryHref = "/pricing",
@@ -31,6 +35,18 @@ export function LandingHubView({
 }: LandingHubViewProps) {
   return (
     <MarketingShell>
+      <JsonLdScript
+        data={collectionPageGraphJsonLd({
+          title,
+          description,
+          path: hubPath,
+          items: entries.map((entry) => ({
+            name: entry.title,
+            path: entry.path,
+            description: entry.description,
+          })),
+        })}
+      />
       <MarketingHero
         eyebrow={eyebrow}
         title={title}
