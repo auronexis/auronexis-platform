@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { createPageMetadataForPath } from "@/lib/seo";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { SignUpForm } from "@/components/auth/signup-form";
+import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
+import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
+import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { getSession } from "@/lib/auth/session";
-
 
 export const metadata: Metadata = createPageMetadataForPath("/signup");
 
@@ -15,19 +18,22 @@ export default async function SignUpPage() {
   if (session) {
     redirect("/dashboard");
   }
+
+  const host = (await headers()).get("host") ?? "";
+  const branding = await resolveAuthBranding(host);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-navy-950 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-navy-950">Create your agency</h1>
-          <p className="mt-2 text-sm text-muted">
-            Create a free workspace to explore the platform, then choose a paid plan when you are ready to scale.
-          </p>
-        </div>
+    <>
+      <WhiteLabelThemeInjector branding={branding} scopeId="signup-root" />
+      <div id="signup-root" className="white-label-scope contents">
         <ConversionTracker event="signup_started" props={{ surface: "signup_page" }} />
-        <SignUpForm />
-        <LegalLinksInline className="mt-8 border-t border-border/60 pt-4" />
+        <LoginBrandingShell
+          branding={branding}
+          footer={<LegalLinksInline className="mt-8 px-4" />}
+        >
+          <SignUpForm />
+        </LoginBrandingShell>
       </div>
-    </div>
+    </>
   );
 }

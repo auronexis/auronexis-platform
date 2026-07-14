@@ -98,6 +98,15 @@ test("signup password uses new-password autocomplete", () => {
   assert.match(source, /name="password"[\s\S]*autoComplete="new-password"/);
 });
 
+test("signup page avoids dark-on-dark heading regression", () => {
+  const page = readSource("src/app/(auth)/signup/page.tsx");
+  const form = readSource("src/components/auth/signup-form.tsx");
+  assert.match(page, /LoginBrandingShell/);
+  assert.doesNotMatch(page, /text-navy-950/);
+  assert.match(form, /<h1[^>]*className="[^"]*text-slate-950/);
+  assert.match(form, /\[color-scheme:light\]/);
+});
+
 test("reset password fields use new-password autocomplete", () => {
   const source = readSource("src/components/auth/reset-password-form.tsx");
   assert.match(source, /name="password"/);

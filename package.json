@@ -15,6 +15,7 @@
     "test:customer-success": "node --test scripts/customer-success-operations.test.mjs",
     "test:executive-intelligence": "node --test scripts/executive-intelligence-ai-copilot.test.mjs",
     "test:production-polish": "node --test scripts/production-polish.test.mjs",
+    "test:signup-contrast": "node --test scripts/signup-page-contrast.test.mjs",
     "test:enterprise-launch": "node --test scripts/enterprise-launch-readiness.test.mjs",
     "test:final-founder-qa": "node --test scripts/final-founder-enterprise-qa.test.mjs",
     "test:light-mode-integrity": "node --test scripts/light-mode-frontend-integrity.test.mjs",
