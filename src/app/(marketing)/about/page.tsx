@@ -5,6 +5,7 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import {
+  COMPANY_INFORMATION,
   COMPANY_NAME,
   LEGAL_ROUTES,
   MARKETING_ROUTES,
@@ -50,6 +51,40 @@ export default function AboutPage() {
         secondaryHref="/contact"
         secondaryLabel="Contact us"
       />
+      <MarketingSection title="Company identity">
+        <dl className="grid max-w-3xl gap-4 sm:grid-cols-2">
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Legal entity</dt>
+            <dd className="mt-1 text-sm text-foreground">{COMPANY_INFORMATION.legalName}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Product</dt>
+            <dd className="mt-1 text-sm text-foreground">{COMPANY_INFORMATION.productName}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Founder</dt>
+            <dd className="mt-1 text-sm text-foreground">{COMPANY_INFORMATION.owner}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Headquarters</dt>
+            <dd className="mt-1 text-sm text-foreground">
+              {COMPANY_INFORMATION.city}, {COMPANY_INFORMATION.country}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Business type</dt>
+            <dd className="mt-1 text-sm text-foreground">{COMPANY_INFORMATION.businessType}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Imprint</dt>
+            <dd className="mt-1 text-sm">
+              <Link href={LEGAL_ROUTES.imprint} className="font-medium text-primary hover:underline">
+                Legal provider identification
+              </Link>
+            </dd>
+          </div>
+        </dl>
+      </MarketingSection>
       <MarketingSection title="Our mission">
         <p className="max-w-3xl text-base leading-relaxed text-muted">
           {COMPANY_NAME} helps agencies monitor client operations, detect risks early, automate delivery,
@@ -102,6 +137,18 @@ export default function AboutPage() {
             </Link>
           </li>
         </ul>
+      </MarketingSection>
+      <MarketingSection title="Evaluate Auroranexis">
+        <p className="max-w-3xl text-sm leading-relaxed text-muted">
+          Enterprise buyers can review security practices, compliance readiness, platform status,
+          subprocessors, API documentation, and pricing before creating a workspace.
+        </p>
+        <ol className="mt-6 max-w-3xl list-decimal space-y-2 pl-5 text-sm text-muted">
+          <li>Review <Link href={MARKETING_ROUTES.security} className="font-medium text-primary hover:underline">security</Link> and <Link href={MARKETING_ROUTES.compliance} className="font-medium text-primary hover:underline">compliance readiness</Link></li>
+          <li>Check <Link href={MARKETING_ROUTES.status} className="font-medium text-primary hover:underline">platform status</Link> and <Link href={LEGAL_ROUTES.subprocessors} className="font-medium text-primary hover:underline">sub-processors</Link></li>
+          <li>Read <Link href="/docs" className="font-medium text-primary hover:underline">product documentation</Link> and <Link href={MARKETING_ROUTES.faq} className="font-medium text-primary hover:underline">FAQ</Link></li>
+          <li>Compare <Link href={MARKETING_ROUTES.pricing} className="font-medium text-primary hover:underline">plans</Link> or <Link href={MARKETING_ROUTES.contact} className="font-medium text-primary hover:underline">contact sales</Link> for enterprise procurement</li>
+        </ol>
       </MarketingSection>
       <MarketingSection title="Contact">
         <p className="text-sm text-muted">

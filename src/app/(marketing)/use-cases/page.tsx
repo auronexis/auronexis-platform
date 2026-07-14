@@ -15,7 +15,7 @@ export default function UseCasesPage() {
       entries={AUDIENCE_HUB_ENTRIES}
       hubPath={MARKETING_ROUTES.useCases}
       primaryHref={MARKETING_ROUTES.pilotProgram}
-      primaryLabel="Join pilot program"
+      primaryLabel="Request invitation"
       secondaryHref={MARKETING_ROUTES.pricing}
       secondaryLabel="Compare plans"
     />

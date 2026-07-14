@@ -6,6 +6,7 @@ import {
   TEMPLATE_ROUTES,
 } from "@/lib/company/company-links";
 import { AUDIENCE_PAGES } from "@/lib/seo/audience-content";
+import { DOC_PAGES } from "@/lib/docs/registry";
 import { FEATURE_PAGES } from "@/lib/seo/feature-content";
 import { INDUSTRY_PAGES } from "@/lib/seo/industry-content";
 import { SOLUTION_PAGES, TEMPLATE_PAGES } from "@/lib/seo/landing-content";
@@ -71,6 +72,14 @@ function buildRegistrySeo(pages: Record<string, LandingPageContent>): Record<str
   const entries: Record<string, { title: string; description: string }> = {};
   for (const page of Object.values(pages)) {
     entries[page.path] = { title: page.title, description: page.metaDescription };
+  }
+  return entries;
+}
+
+function buildDocPageSeo(): Record<string, { title: string; description: string }> {
+  const entries: Record<string, { title: string; description: string }> = {};
+  for (const doc of DOC_PAGES) {
+    entries[`/docs/${doc.slug}`] = { title: doc.title, description: doc.description };
   }
   return entries;
 }
@@ -229,30 +238,6 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "Release Notes",
     description: "Auroranexis product release notes and platform updates.",
   },
-  "/docs/api": {
-    title: "API Documentation",
-    description: "Auroranexis REST API reference for integrations, webhooks, and automation.",
-  },
-  "/docs/getting-started": {
-    title: "Getting Started",
-    description: "Get started with Auroranexis — workspace setup, clients, and first reports.",
-  },
-  "/docs/clients": {
-    title: "Client Management",
-    description: "Manage clients, health scores, and operational context in Auroranexis.",
-  },
-  "/docs/reports": {
-    title: "Reports",
-    description: "Create, schedule, and deliver client reports with Auroranexis.",
-  },
-  "/docs/security": {
-    title: "Security Documentation",
-    description: "Security architecture, access controls, and data handling in Auroranexis.",
-  },
-  "/docs/compliance": {
-    title: "Compliance Documentation",
-    description: "Compliance workflows, audit trails, and governance in Auroranexis.",
-  },
   "/login": {
     title: "Sign in",
     description: "Sign in to your Auroranexis workspace.",
@@ -274,5 +259,6 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
 /** Page-specific SEO titles and descriptions for public indexable routes. */
 export const PAGE_SEO: Record<string, { title: string; description: string }> = {
   ...STATIC_PAGE_SEO,
+  ...buildDocPageSeo(),
   ...buildLandingPageSeo(),
 };

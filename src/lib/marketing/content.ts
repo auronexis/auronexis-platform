@@ -21,7 +21,7 @@ export const MARKETING_STATS = [
   { value: "6", label: "Solution areas", detail: "Health, risk, incident, SLA, executive, and AI reporting." },
   { value: "3", label: "Public plan tiers", detail: "Professional, Business, and Enterprise subscriptions." },
   { value: "EU", label: "Deployment posture", detail: "EU-capable hosting with enterprise security controls." },
-  { value: "24/7", label: "Operational visibility", detail: "Portfolio command center for multi-client delivery teams." },
+  { value: "24/7", label: "Portfolio visibility", detail: "Continuous operational dashboards — not 24/7 human support." },
 ] as const;
 
 export const MARKETING_LOGO_CLOUD = [
@@ -202,7 +202,7 @@ export const COMPLIANCE_READINESS = [
   {
     framework: "GDPR",
     status: "Supported",
-    detail: "Data subject request tooling, retention controls, and privacy documentation.",
+    detail: "Platform supports GDPR workflows and privacy documentation — not a certification claim.",
   },
   {
     framework: "SOC 2",

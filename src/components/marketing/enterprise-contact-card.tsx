@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import type { ContactChannelIcon, EnterpriseContactChannel } from "@/lib/company/contact-channels";
+import { SUPPORT_EMAIL } from "@/lib/company/company-contact";
 import { cn } from "@/lib/utils/cn";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 
@@ -65,7 +66,14 @@ export function EnterpriseContactCard({
           <Icon className="h-5 w-5" strokeWidth={1.75} />
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold">{channel.title}</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-semibold">{channel.title}</h3>
+            {channel.category === "future" ? (
+              <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
+                Mailbox pending
+              </span>
+            ) : null}
+          </div>
           <p
             className={cn(
               "mt-1 text-sm leading-relaxed",
@@ -89,6 +97,25 @@ export function EnterpriseContactCard({
       >
         {channel.email}
       </Link>
+
+      {channel.category === "future" ? (
+        <p
+          className={cn(
+            "mt-3 text-xs leading-relaxed",
+            isMarketing ? "text-muted" : "text-primary-foreground/60",
+          )}
+        >
+          Dedicated mailbox reserved. Until monitoring begins, contact{" "}
+          <Link href={`mailto:${channel.email}`} className="font-medium hover:underline">
+            {channel.email}
+          </Link>{" "}
+          or use{" "}
+          <Link href={`mailto:${SUPPORT_EMAIL}`} className="font-medium hover:underline">
+            {SUPPORT_EMAIL}
+          </Link>
+          .
+        </p>
+      ) : null}
 
       {channel.responseExpectation ? (
         <p

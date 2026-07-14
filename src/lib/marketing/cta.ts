@@ -89,7 +89,7 @@ export const MARKETING_CTA_PRESETS = {
   },
   joinPilotProgram: {
     id: "join_pilot_program",
-    label: "Join pilot program",
+    label: "Request invitation",
     href: "/pilot-program",
     variant: "primary",
     analyticsEvent: "cta_clicked",

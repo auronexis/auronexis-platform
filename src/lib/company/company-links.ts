@@ -1,5 +1,6 @@
 import { COMPANY_CONTACT } from "@/lib/company/company-contact";
 import { COMPANY_INFORMATION } from "@/lib/company/company-information";
+import { DOC_PAGE_SLUGS } from "@/lib/docs/registry";
 
 export { PRODUCTION_DOMAINS, PRODUCTION_DOMAIN_LIST } from "@/lib/deployment/production-domains";
 
@@ -163,6 +164,7 @@ export const FOOTER_SECTIONS = {
     { label: "About", href: MARKETING_ROUTES.about },
     { label: "Careers", href: MARKETING_ROUTES.careers },
     { label: "Contact", href: MARKETING_ROUTES.contact },
+    { label: "Help", href: MARKETING_ROUTES.help },
     { label: "FAQ", href: MARKETING_ROUTES.faq },
     { label: "Use cases", href: MARKETING_ROUTES.useCases },
   ],
@@ -176,14 +178,7 @@ export const FOOTER_LINKS = [
   { label: "Pilot Program", href: MARKETING_ROUTES.pilotProgram },
 ] as const;
 
-export const PUBLIC_DOC_ROUTES = [
-  "/docs/getting-started",
-  "/docs/api",
-  "/docs/security",
-  "/docs/compliance",
-  "/docs/clients",
-  "/docs/reports",
-] as const;
+export const PUBLIC_DOC_ROUTES = DOC_PAGE_SLUGS.map((slug) => `/docs/${slug}`) as readonly string[];
 
 export const PUBLIC_SITEMAP_ROUTES = [
   ...Object.values(MARKETING_ROUTES),

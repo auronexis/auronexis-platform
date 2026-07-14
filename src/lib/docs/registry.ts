@@ -78,6 +78,9 @@ export function getAllDocSlugs(): string[] {
   return DOC_PAGES.map((page) => page.slug);
 }
 
+/** Public documentation slugs for sitemap and SEO registry. */
+export const DOC_PAGE_SLUGS = DOC_PAGES.map((page) => page.slug) as readonly string[];
+
 export type DocHubCard = {
   slug: string;
   title: string;

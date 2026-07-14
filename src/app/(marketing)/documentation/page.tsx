@@ -26,7 +26,7 @@ export default function DocumentationPage() {
       <MarketingHero
         eyebrow="Documentation"
         title="Product documentation"
-        description="Guides for workspace setup, modules, integrations, billing, and API usage."
+        description="Guides for workspace setup, modules, integrations, billing, and API usage. The full product documentation hub lives at /docs."
         primaryHref="/docs"
         primaryLabel="Open docs hub"
         secondaryHref="/docs/getting-started"
@@ -52,6 +52,9 @@ export default function DocumentationPage() {
           })}
         </div>
         <p className="mt-6 text-sm text-muted">
+          The documentation hub at <Link href="/docs" className="font-medium text-primary hover:underline">/docs</Link> contains
+          the complete product guides. This page is the marketing entry point for evaluation and onboarding.
+          {" "}
           Full documentation is also published at{" "}
           <a href={DOCS_URL} className="font-medium text-primary hover:underline" target="_blank" rel="noopener noreferrer">
             {DOCS_URL.replace("https://", "")}

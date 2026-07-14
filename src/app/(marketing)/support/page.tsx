@@ -7,7 +7,8 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import {
-  ENTERPRISE_CONTACT_CHANNELS,
+  ACTIVE_ENTERPRISE_CONTACT_CHANNELS,
+  FUTURE_ENTERPRISE_CONTACT_CHANNELS,
   MARKETING_ROUTES,
   SUPPORT_EMAIL,
 } from "@/lib/company";
@@ -34,13 +35,13 @@ export default function SupportPage() {
         secondaryLabel="Documentation"
       />
 
-      <MarketingSection title="Contact channels">
+      <MarketingSection title="Primary contact channels">
         <p className="mb-6 max-w-3xl text-sm text-muted">
-          Reach the right team directly. Each channel is dedicated to a specific responsibility so
-          your request is routed efficiently.
+          Reach the active support, sales, and security teams directly. Each channel is dedicated to a
+          specific responsibility so your request is routed efficiently.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {ENTERPRISE_CONTACT_CHANNELS.map((channel) => (
+        <div className="grid gap-4 md:grid-cols-3">
+          {ACTIVE_ENTERPRISE_CONTACT_CHANNELS.map((channel) => (
             <EnterpriseContactCard key={channel.id} channel={channel} variant="marketing" />
           ))}
         </div>
@@ -54,6 +55,18 @@ export default function SupportPage() {
             {SUPPORT_SECURITY_EMAIL}
           </Link>
         </p>
+      </MarketingSection>
+
+      <MarketingSection title="Additional enterprise channels" className="border-t border-border/70 bg-surface-2/30">
+        <p className="mb-6 max-w-3xl text-sm text-muted">
+          Reserved mailboxes for legal, privacy, partnerships, and media inquiries. Channels marked
+          pending are not yet monitored — use support@ for urgent requests.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {FUTURE_ENTERPRISE_CONTACT_CHANNELS.map((channel) => (
+            <EnterpriseContactCard key={channel.id} channel={channel} variant="marketing" />
+          ))}
+        </div>
       </MarketingSection>
 
       <MarketingSection title="Self-service resources" className="border-t border-border/70 bg-surface-2/30">

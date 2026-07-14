@@ -40,7 +40,8 @@ test("enterprise contact channels define active and future mailboxes", () => {
   assert.match(channels, /PARTNERS_EMAIL/);
   assert.match(channels, /PRESS_EMAIL/);
   assert.match(channels, /mailto:/);
-  assert.match(supportPage, /ENTERPRISE_CONTACT_CHANNELS/);
+  assert.match(supportPage, /ACTIVE_ENTERPRISE_CONTACT_CHANNELS/);
+  assert.match(supportPage, /FUTURE_ENTERPRISE_CONTACT_CHANNELS/);
   assert.match(supportPage, /EnterpriseContactCard/);
   assert.match(contactPage, /ACTIVE_ENTERPRISE_CONTACT_CHANNELS/);
   assert.match(contactPage, /FUTURE_ENTERPRISE_CONTACT_CHANNELS/);

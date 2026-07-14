@@ -22,6 +22,9 @@ export function MarketingTestimonials({
   return (
     <section aria-label={title} className={cn("space-y-8", className)}>
       <h3 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{title}</h3>
+      <p className="max-w-3xl text-sm text-primary-foreground/70">
+        Representative buyer priorities — not customer testimonials or reviews.
+      </p>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
           <article

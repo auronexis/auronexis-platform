@@ -10,8 +10,8 @@ import {
 
   FOOTER_SECTIONS,
 
+  SALES_EMAIL,
   SUPPORT_EMAIL,
-
 } from "@/lib/company/contact";
 
 import { AdaptiveBrandLogo, BrandLogo } from "@/components/branding/brand-logo";
@@ -178,6 +178,12 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
                 {SUPPORT_EMAIL}
 
               </a>
+              <p className="mt-2 text-xs text-primary-foreground/60">
+                Sales:{" "}
+                <a href={`mailto:${SALES_EMAIL}`} className="hover:text-white hover:underline">
+                  {SALES_EMAIL}
+                </a>
+              </p>
 
             </div>
 
