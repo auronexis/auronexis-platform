@@ -28,12 +28,16 @@ test("support and contact pages split active and future enterprise channels", ()
   const support = readSource("src/app/(marketing)/support/page.tsx");
   const contact = readSource("src/app/(marketing)/contact/page.tsx");
   const card = readSource("src/components/marketing/enterprise-contact-card.tsx");
+  const channels = readSource("src/lib/company/contact-channels.ts");
+  assert.match(channels, /id: "legal"[\s\S]*category: "active"/);
+  assert.match(channels, /id: "general"[\s\S]*category: "active"/);
   assert.match(support, /ACTIVE_ENTERPRISE_CONTACT_CHANNELS/);
   assert.match(support, /FUTURE_ENTERPRISE_CONTACT_CHANNELS/);
   assert.match(contact, /ACTIVE_ENTERPRISE_CONTACT_CHANNELS/);
   assert.match(contact, /FUTURE_ENTERPRISE_CONTACT_CHANNELS/);
-  assert.match(card, /Mailbox pending/);
-  assert.match(card, /category === "future"/);
+  assert.doesNotMatch(card, /Mailbox pending/i);
+  assert.doesNotMatch(card, /reserved/i);
+  assert.doesNotMatch(card, /until monitoring begins/i);
 });
 
 test("footer and navigation include help and trust surfaces", () => {

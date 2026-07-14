@@ -35,12 +35,12 @@ export default function SupportPage() {
         secondaryLabel="Documentation"
       />
 
-      <MarketingSection title="Primary contact channels">
+      <MarketingSection title="Contact channels">
         <p className="mb-6 max-w-3xl text-sm text-muted">
-          Reach the active support, sales, and security teams directly. Each channel is dedicated to a
-          specific responsibility so your request is routed efficiently.
+          Reach support, sales, security, legal, and general inquiries directly. Each channel is
+          dedicated to a specific responsibility so your request is routed efficiently.
         </p>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ACTIVE_ENTERPRISE_CONTACT_CHANNELS.map((channel) => (
             <EnterpriseContactCard key={channel.id} channel={channel} variant="marketing" />
           ))}
@@ -57,17 +57,18 @@ export default function SupportPage() {
         </p>
       </MarketingSection>
 
-      <MarketingSection title="Additional enterprise channels" className="border-t border-border/70 bg-surface-2/30">
+      {FUTURE_ENTERPRISE_CONTACT_CHANNELS.length > 0 ? (
+      <MarketingSection title="Additional contact channels" className="border-t border-border/70 bg-surface-2/30">
         <p className="mb-6 max-w-3xl text-sm text-muted">
-          Reserved mailboxes for legal, privacy, partnerships, and media inquiries. Channels marked
-          pending are not yet monitored — use support@ for urgent requests.
+          Dedicated channels for privacy, partnerships, and media inquiries.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FUTURE_ENTERPRISE_CONTACT_CHANNELS.map((channel) => (
             <EnterpriseContactCard key={channel.id} channel={channel} variant="marketing" />
           ))}
         </div>
       </MarketingSection>
+      ) : null}
 
       <MarketingSection title="Self-service resources" className="border-t border-border/70 bg-surface-2/30">
         <div className="grid gap-4 md:grid-cols-2">

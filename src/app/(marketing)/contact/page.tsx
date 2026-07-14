@@ -30,23 +30,24 @@ export default function ContactPage() {
       <MarketingHero
         eyebrow="Contact"
         title="Talk to our team"
-        description="Sales, support, and security — reach the right team at Auroranexis."
+        description="Sales, support, security, legal, and general inquiries — reach the right team at Auroranexis."
         primaryHref="#message"
         primaryLabel="Send a message"
       />
-      <MarketingSection title="Primary contact channels">
-        <div className="grid gap-4 md:grid-cols-3">
+      <MarketingSection title="Contact channels">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ACTIVE_ENTERPRISE_CONTACT_CHANNELS.map((channel) => (
             <EnterpriseContactCard key={channel.id} channel={channel} variant="marketing" />
           ))}
         </div>
       </MarketingSection>
+      {FUTURE_ENTERPRISE_CONTACT_CHANNELS.length > 0 ? (
       <MarketingSection
-        title="Enterprise contact channels"
+        title="Additional contact channels"
         className="border-t border-border/70 bg-surface-2/30"
       >
         <p className="mb-6 max-w-3xl text-sm text-muted">
-          Additional dedicated channels for legal, privacy, partnerships, and media inquiries.
+          Dedicated channels for privacy, partnerships, and media inquiries.
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FUTURE_ENTERPRISE_CONTACT_CHANNELS.map((channel) => (
@@ -54,6 +55,7 @@ export default function ContactPage() {
           ))}
         </div>
       </MarketingSection>
+      ) : null}
       <HideWhenAuthenticated>
         <MarketingSection title="Book a demo" className="border-t border-border/70 bg-surface-2/30">
           <div className="max-w-2xl">

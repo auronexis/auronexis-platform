@@ -92,7 +92,7 @@ export const ENTERPRISE_CONTACT_CHANNELS: readonly EnterpriseContactChannel[] = 
     title: "Legal",
     purpose: "Legal requests and compliance",
     email: LEGAL_EMAIL,
-    category: "future",
+    category: "active",
   }),
   contactChannel({
     id: "general",
@@ -100,7 +100,7 @@ export const ENTERPRISE_CONTACT_CHANNELS: readonly EnterpriseContactChannel[] = 
     title: "General",
     purpose: "General inquiries",
     email: INFO_EMAIL,
-    category: "future",
+    category: "active",
   }),
   contactChannel({
     id: "privacy",

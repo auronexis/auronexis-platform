@@ -67,6 +67,42 @@ test("public AI status maps configured provider to operational with explicit fai
   assert.match(statusPage, /await resolvePublicAiStatus/);
 });
 
+test("public contact surfaces do not expose internal mailbox pending state", () => {
+  const channels = readSource("src/lib/company/contact-channels.ts");
+  const card = readSource("src/components/marketing/enterprise-contact-card.tsx");
+  const contactPage = readSource("src/app/(marketing)/contact/page.tsx");
+  const supportPage = readSource("src/app/(marketing)/support/page.tsx");
+
+  assert.match(channels, /id: "legal"[\s\S]*category: "active"/);
+  assert.match(channels, /id: "general"[\s\S]*category: "active"/);
+  assert.match(channels, /id: "privacy"[\s\S]*category: "future"/);
+  assert.match(channels, /FUTURE_ENTERPRISE_CONTACT_CHANNELS/);
+  assert.doesNotMatch(card, /Mailbox pending/i);
+  assert.doesNotMatch(card, /reserved/i);
+  assert.doesNotMatch(card, /until monitoring begins/i);
+  assert.doesNotMatch(card, /category === "future"/);
+  assert.doesNotMatch(contactPage, /Mailbox pending/i);
+  assert.doesNotMatch(contactPage, /reserved/i);
+  assert.doesNotMatch(contactPage, /until monitoring begins/i);
+  assert.doesNotMatch(supportPage, /Mailbox pending/i);
+  assert.doesNotMatch(supportPage, /reserved/i);
+  assert.doesNotMatch(supportPage, /until monitoring begins/i);
+});
+
+test("active contact mailto links map to dedicated mailboxes", () => {
+  const channels = readSource("src/lib/company/contact-channels.ts");
+  const companyContact = readSource("src/lib/company/company-contact.ts");
+
+  assert.match(channels, /id: "support"[\s\S]*email: SUPPORT_EMAIL/);
+  assert.match(channels, /id: "sales"[\s\S]*email: SALES_EMAIL/);
+  assert.match(channels, /id: "security"[\s\S]*email: SECURITY_EMAIL/);
+  assert.match(channels, /id: "legal"[\s\S]*email: LEGAL_EMAIL/);
+  assert.match(channels, /id: "general"[\s\S]*email: INFO_EMAIL/);
+  assert.match(companyContact, /legalEmail: "legal@auroranexis\.com"/);
+  assert.match(companyContact, /infoEmail: "info@auroranexis\.com"/);
+  assert.doesNotMatch(channels, /id: "sales"[\s\S]*email: SUPPORT_EMAIL/);
+});
+
 test("support page routes sales and security to dedicated mailboxes", () => {
   const channels = readSource("src/lib/company/contact-channels.ts");
   const companyContact = readSource("src/lib/company/company-contact.ts");
