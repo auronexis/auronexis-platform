@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { PricingGrid } from "@/components/pricing/pricing-grid";
 import { PricingHero } from "@/components/pricing/pricing-hero";
+import { FormAlert } from "@/components/ui/form-alert";
 import { getPublicSelfServePlans } from "@/lib/billing/plans";
 import { getPlansPageBillingState } from "@/lib/billing/queries";
 import { resolveCheckoutBlockState } from "@/lib/billing/checkout-block";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
 import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getClientLimitUsageForSession } from "@/lib/plans/queries";
@@ -19,6 +21,7 @@ import {
   FALLBACK_STRIPE_BILLING_UI_STATUS,
   normalizeStripeBillingUiStatus,
 } from "@/lib/pricing/safe-stripe-status";
+import { getPaddleEnvironment, isPaddleConfigured } from "@/lib/paddle/env";
 
 export const metadata: Metadata = {
   title: "Plans & Pricing",
@@ -35,6 +38,18 @@ export default async function WorkspacePlansPage() {
   let clientUsage = { used: 0 };
   let stripeStatus = FALLBACK_STRIPE_BILLING_UI_STATUS;
   const enterpriseContactHref = resolveEnterpriseContactHref(session.role);
+
+  let sandboxCheckoutNotice: string | null = null;
+  try {
+    if (getActiveBillingProvider() === "paddle" && isPaddleConfigured()) {
+      if (getPaddleEnvironment() === "sandbox") {
+        sandboxCheckoutNotice =
+          "Sandbox checkout is active for billing tests. This is not a live production payment flow.";
+      }
+    }
+  } catch {
+    sandboxCheckoutNotice = null;
+  }
 
   try {
     stripeStatus = normalizeStripeBillingUiStatus(getStripeBillingUiStatus());
@@ -100,6 +115,7 @@ export default async function WorkspacePlansPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-1 py-2">
       <PricingHero />
+      {sandboxCheckoutNotice ? <FormAlert variant="warning">{sandboxCheckoutNotice}</FormAlert> : null}
       <PricingGrid
         plans={getPublicSelfServePlans()}
         selection={selection}

@@ -244,6 +244,7 @@ export function canOpenBillingPortal(input: {
   hasPaymentProblem: boolean;
   isPaymentPending: boolean;
   stripeCustomerId: string | null | undefined;
+  providerCustomerId?: string | null | undefined;
 }): boolean {
   if (!input.canManage || !input.portalAvailable) {
     return false;
@@ -253,7 +254,7 @@ export function canOpenBillingPortal(input: {
     return true;
   }
 
-  return Boolean(input.stripeCustomerId);
+  return Boolean(input.providerCustomerId || input.stripeCustomerId);
 }
 
 export function isUnpaidInvoice(invoice: CustomerInvoiceView): boolean {

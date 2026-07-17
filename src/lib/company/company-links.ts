@@ -105,6 +105,7 @@ export const LEGAL_ROUTES = {
   subprocessors: "/subprocessors",
   dataProcessingAgreement: "/data-processing-agreement",
   acceptableUse: "/acceptable-use",
+  refundPolicy: "/refund-policy",
 } as const;
 
 export const LEGACY_LEGAL_ROUTES = {
@@ -153,6 +154,7 @@ export const FOOTER_SECTIONS = {
   legal: [
     { label: "Privacy", href: LEGAL_ROUTES.privacy },
     { label: "Terms", href: LEGAL_ROUTES.terms },
+    { label: "Refund Policy", href: LEGAL_ROUTES.refundPolicy },
     { label: "Cookies", href: LEGAL_ROUTES.cookies },
     { label: "Imprint", href: LEGAL_ROUTES.imprint },
     { label: "Security Policy", href: LEGAL_ROUTES.securityPolicy },

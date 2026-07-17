@@ -152,6 +152,7 @@ export function BillingSettingsPanel({
     hasPaymentProblem: overview.hasPaymentProblem,
     isPaymentPending: overview.isPaymentPending,
     stripeCustomerId: overview.subscription?.stripe_customer_id,
+    providerCustomerId: overview.subscription?.provider_customer_id,
   });
   const showPromotions = canManage && !enterpriseAutoOpen;
   const usingStarterFallback =
@@ -303,6 +304,23 @@ export function BillingSettingsPanel({
             <span>{overview.statusLabel}</span>
             <StatusBadge tone={resolveStatusTone(overview)} label={overview.statusLabel} />
           </div>
+          {overview.subscription?.billing_provider ? (
+            <p className="text-muted">
+              Provider:{" "}
+              <span className="font-medium text-foreground">
+                {overview.subscription.billing_provider === "paddle" ? "Paddle" : "Stripe"}
+              </span>
+              {overview.subscription.provider_status
+                ? ` · provider status: ${overview.subscription.provider_status}`
+                : null}
+            </p>
+          ) : null}
+          {overview.subscription?.sync_pending ? (
+            <p className="text-muted">
+              Payment confirmation is syncing. Access updates after the billing provider confirms the
+              transaction.
+            </p>
+          ) : null}
           {overview.isCanceled ? <p className="text-muted">Subscription canceled</p> : null}
           {overview.trialEndsAt ? <p>Trial ends {formatBillingDateTime(overview.trialEndsAt) ?? "—"}</p> : null}
         </BillingCard>

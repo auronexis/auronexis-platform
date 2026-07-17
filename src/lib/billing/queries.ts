@@ -9,8 +9,7 @@ import { listProrationPreviews } from "@/lib/billing/proration";
 import { getCurrentUsageSummary } from "@/lib/billing/usage";
 import {
   maskStripePriceId,
-  safeGetPlanByStripePriceId,
-  safeGetPlanKeyByStripePriceId,
+  safeGetPlanKeyFromSubscriptionPrice,
 } from "@/lib/billing/plans.server";
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import {
@@ -28,7 +27,7 @@ import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selec
 export { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 
 const SUBSCRIPTION_SELECT =
-  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
+  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
 
 /** Load the current organization's subscription record. */
 export async function getOrganizationSubscription(
@@ -69,25 +68,32 @@ export async function getBillingOverview(session: SessionContext): Promise<Billi
   }
 
   const rawStatus = subscription?.status;
+  const billingProvider = subscription?.billing_provider ?? "stripe";
   const stripePriceId = subscription?.stripe_price_id ?? null;
+  const providerPriceId = subscription?.provider_price_id ?? null;
+  const effectivePriceId =
+    billingProvider === "paddle" ? providerPriceId : (stripePriceId ?? providerPriceId);
   const showPlanFromSubscription =
-    Boolean(stripePriceId) &&
+    Boolean(effectivePriceId) &&
     (isSubscriptionUsable(rawStatus) ||
       isPaymentProblem(rawStatus) ||
       isPaymentPending(rawStatus));
+  const resolvedPlanKey = safeGetPlanKeyFromSubscriptionPrice({
+    billingProvider,
+    stripePriceId,
+    providerPriceId,
+  });
   const currentPlan =
-    showPlanFromSubscription && stripePriceId
-      ? safeGetPlanByStripePriceId(stripePriceId)
-      : null;
+    showPlanFromSubscription && resolvedPlanKey ? safeGetPlanByKey(resolvedPlanKey) : null;
 
-  if (showPlanFromSubscription && stripePriceId && !currentPlan) {
-    console.warn("[billing] Unmapped stripe_price_id for subscription", {
-      maskedPriceId: maskStripePriceId(stripePriceId),
+  if (showPlanFromSubscription && effectivePriceId && !currentPlan) {
+    console.warn("[billing] Unmapped provider price id for subscription", {
+      billingProvider,
+      maskedPriceId: maskStripePriceId(effectivePriceId),
       status: rawStatus ?? null,
     });
   }
 
-  const resolvedPlanKey = stripePriceId ? safeGetPlanKeyByStripePriceId(stripePriceId) : null;
   const displayPlanKey =
     isSubscriptionUsable(rawStatus) && resolvedPlanKey ? resolvedPlanKey : currentPlan?.key ?? null;
 
@@ -172,25 +178,32 @@ export async function getPlansPageBillingState(
     }
 
     const rawStatus = subscription?.status ?? null;
+    const billingProvider = subscription?.billing_provider ?? "stripe";
     const stripePriceId = subscription?.stripe_price_id ?? null;
-    const resolvedPlanKey = stripePriceId ? safeGetPlanKeyByStripePriceId(stripePriceId) : null;
+    const providerPriceId = subscription?.provider_price_id ?? null;
+    const effectivePriceId =
+      billingProvider === "paddle" ? providerPriceId : (stripePriceId ?? providerPriceId);
+    const resolvedPlanKey = safeGetPlanKeyFromSubscriptionPrice({
+      billingProvider,
+      stripePriceId,
+      providerPriceId,
+    });
 
-    if (stripePriceId && !resolvedPlanKey) {
-      console.warn("[plans] Unmapped stripe_price_id", {
-        maskedPriceId: maskStripePriceId(stripePriceId),
+    if (effectivePriceId && !resolvedPlanKey) {
+      console.warn("[plans] Unmapped provider price id", {
+        billingProvider,
+        maskedPriceId: maskStripePriceId(effectivePriceId),
         subscriptionStatus: rawStatus,
       });
     }
 
     const showPlanFromSubscription =
-      Boolean(stripePriceId) &&
+      Boolean(effectivePriceId) &&
       (isSubscriptionUsable(rawStatus) ||
         isPaymentProblem(rawStatus) ||
         isPaymentPending(rawStatus));
     const mappedPlan =
-      showPlanFromSubscription && stripePriceId
-        ? safeGetPlanByStripePriceId(stripePriceId)
-        : null;
+      showPlanFromSubscription && resolvedPlanKey ? safeGetPlanByKey(resolvedPlanKey) : null;
     const displayPlanKey =
       isSubscriptionUsable(rawStatus) && resolvedPlanKey
         ? resolvedPlanKey

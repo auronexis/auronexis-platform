@@ -104,3 +104,7 @@ See `docs/07_RBAC_BLUEPRINT_V1.md` and `docs/10_ARCHITECTURE_RECONCILIATION_V1.m
 ## Documentation
 
 All development decisions follow `docs/00` through `docs/10`.
+
+Billing dual-provider (Stripe + Paddle sandbox): see `docs/paddle-billing.md`.
+Legal pages: `/terms`, `/refund-policy`, `/privacy`, `/imprint`.
+Production Paddle cutover must not be automated — owner approval required.

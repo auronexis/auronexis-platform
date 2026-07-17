@@ -18,7 +18,8 @@ export type LegalPageKey =
   | "securityPolicy"
   | "subprocessors"
   | "dataProcessingAgreement"
-  | "acceptableUse";
+  | "acceptableUse"
+  | "refundPolicy";
 
 export type LegalPageContent = {
   title: string;
@@ -177,22 +178,27 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "11. Prices, payment, invoices, and taxes",
         body:
-          "Prices are shown at checkout and in billing settings, plus applicable taxes (including VAT where required). Invoices are issued electronically. Payment is processed through Stripe or other payment processors we designate. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
+          "Listed self-serve plans: Professional €149/month; Business €499/month; Enterprise from €1,499/month subject to individual quotation. Prices shown at checkout and in billing settings apply. Applicable taxes (including VAT where required) are calculated and displayed by the payment processor at checkout. Invoices or receipts are issued electronically by the relevant payment processor. Payment may be processed through Stripe, Paddle, or other processors we designate. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
+      },
+      {
+        heading: "11a. Paddle as Merchant of Record",
+        body:
+          "For purchases completed through Paddle Checkout, Paddle acts as Merchant of Record and authorized reseller for the payment transaction. The buyer purchases through Paddle while Auroranexis supplies and licenses software access. Paddle's Buyer Terms, checkout terms, privacy notice, and Refund Policy govern payment processing, Paddle-handled taxes, payment methods, refunds, and mandatory buyer rights for those transactions. These Terms continue to govern use of Auroranexis. Paddle Buyer Terms: https://www.paddle.com/legal/checkout-buyer-terms — Paddle Refund Policy: https://www.paddle.com/legal/refund-policy.",
       },
       {
         heading: "12. Upgrades, downgrades, and renewal",
         body:
-          "Upgrades take effect according to the workflow shown in billing settings and Stripe checkout. Downgrades may take effect at the next billing period unless otherwise stated at checkout. Subscriptions renew automatically for the selected billing interval unless cancelled before the renewal date. The customer portal and billing settings are the primary source for managing subscriptions where available.",
+          "Upgrades take effect according to the workflow shown in billing settings and the active checkout provider. Downgrades may take effect at the next billing period unless otherwise stated at checkout. Subscriptions renew automatically for the selected billing interval unless cancelled before the renewal date. The customer portal and billing settings are the primary source for managing subscriptions where available.",
       },
       {
         heading: "13. Cancellation and termination",
         body:
-          "You may cancel future renewals via billing settings or the Stripe customer portal where available. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
+          "You may cancel future renewals via billing settings or the customer portal of the payment provider that processed your subscription (Stripe or Paddle) where available, or by contacting support. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
       },
       {
         heading: "14. Refunds and withdrawal rights",
         body:
-          `Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply because services are directed exclusively at entrepreneurs. Paid subscription fees are generally non-refundable once the billing period has started, except where mandatory law requires otherwise or the Provider expressly agrees in writing (e.g., duplicate charge or material service unavailability attributable to us). If the platform is materially unavailable due to our responsibility, contact ${COMPANY_CONTACT.supportEmail} for review; we may grant credits or refunds where legally required or commercially reasonable. Cancellation prevents future renewals only.`,
+          `Refund and cancellation details are published in our Refund and Cancellation Policy at /refund-policy. Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply where services are directed exclusively at entrepreneurs; where a buyer qualifies as a consumer and mandatory law applies, statutory rights remain unaffected. For Paddle-processed purchases, Paddle's Buyer Terms and Refund Policy also apply. For billing errors or material service issues, contact ${COMPANY_CONTACT.supportEmail}. Cancellation prevents future renewals and is distinct from a refund.`,
       },
       {
         heading: "15. Data protection and DPA",
@@ -212,7 +218,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "18. Third-party services",
         body:
-          "The platform integrates third-party services (e.g., Stripe, Supabase, Vercel, connectors, optional AI providers). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
+          "The platform integrates third-party services (e.g., Stripe, Paddle, Supabase, Vercel, connectors, optional AI providers). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
       },
       {
         heading: "19. Service changes",
@@ -457,6 +463,48 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Contact",
         body: `Acceptable use questions: ${COMPANY_CONTACT.legalEmail}. Security incidents: ${COMPANY_CONTACT.securityEmail}. Support: ${COMPANY_CONTACT.supportEmail}.`,
+      },
+    ],
+  },
+  refundPolicy: {
+    title: "Refund and Cancellation Policy",
+    description: `Refund and cancellation rules for ${productName} subscriptions, including purchases processed by Paddle as Merchant of Record.`,
+    lastUpdated: LEGAL_LAST_UPDATED,
+    showCompanyCard: true,
+    companyCardTitle: "Provider",
+    sections: [
+      {
+        heading: "1. Scope",
+        body: `${productName} is primarily offered to businesses, professional users, AI agencies, managed service providers, IT service providers, and enterprise organizations.\n\nPayments for subscriptions purchased through Paddle Checkout are processed by Paddle, which acts as Merchant of Record and authorized reseller for the transaction. Paddle's Buyer Terms and Refund Policy apply to payments, refunds, and mandatory buyer rights handled by Paddle.\n\nPaddle Buyer Terms: https://www.paddle.com/legal/checkout-buyer-terms\nPaddle Refund Policy: https://www.paddle.com/legal/refund-policy`,
+      },
+      {
+        heading: "2. Business customers",
+        body:
+          "Unless otherwise agreed in writing or required by mandatory law, business customers do not have a statutory consumer right of withdrawal. Subscription fees already paid are generally non-refundable for the current billing period.\n\nNothing in this policy excludes rights that cannot legally be excluded.",
+      },
+      {
+        heading: "3. Consumers",
+        body:
+          "Auroranexis is designed primarily for business use. Where a buyer qualifies as a consumer and mandatory consumer-protection law applies, the buyer retains all statutory withdrawal and refund rights.\n\nConsumer refund or withdrawal requests for purchases processed by Paddle are handled in accordance with Paddle's Buyer Terms, Paddle's Refund Policy, and applicable law.",
+      },
+      {
+        heading: "4. Cancellation",
+        body:
+          "Customers may cancel an automatically renewing subscription through the available billing portal or by contacting support.\n\nUnless mandatory law or applicable purchase terms require otherwise, cancellation prevents the next renewal and access continues until the end of the paid billing period.\n\nCancellation is different from a refund. Canceling a subscription does not automatically refund charges already paid.",
+      },
+      {
+        heading: "5. Billing errors and service issues",
+        body:
+          "Auroranexis reviews requests involving duplicate charges, incorrect charges, confirmed billing errors, unauthorized transactions, or material technical failure that prevented access to the purchased service.\n\nA review does not guarantee a refund. Where Paddle processed the payment, any approved refund is issued through Paddle.",
+      },
+      {
+        heading: "6. Requesting assistance",
+        body: `Contact support at ${COMPANY_CONTACT.supportEmail} or legal at ${COMPANY_CONTACT.legalEmail}. For purchases processed by Paddle, buyers may also use Paddle buyer support and Paddle's available cancellation/refund options.\n\nPlease provide account email, organization name, transaction reference where available, and a description of the issue. Never send full payment-card details.`,
+      },
+      {
+        heading: "7. Changes",
+        body:
+          "Auroranexis may update this policy to reflect changes to the service, payment provider, or applicable requirements. The latest version is published on this page.",
       },
     ],
   },

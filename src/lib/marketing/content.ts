@@ -308,6 +308,7 @@ export const LEGAL_NAV = [
   { label: "Imprint", href: LEGAL_ROUTES.imprint },
   { label: "Privacy", href: LEGAL_ROUTES.privacy },
   { label: "Terms", href: LEGAL_ROUTES.terms },
+  { label: "Refund Policy", href: LEGAL_ROUTES.refundPolicy },
   { label: "Cookies", href: LEGAL_ROUTES.cookies },
   { label: "Security Policy", href: LEGAL_ROUTES.securityPolicy },
   { label: "Sub-processors", href: LEGAL_ROUTES.subprocessors },

@@ -1,5 +1,8 @@
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import { getPlanByPriceId, safeGetPlanKeyByStripePriceId } from "@/lib/billing/plans.server";
+import {
+  getPlanByPriceId,
+  safeGetPlanKeyFromSubscriptionPrice,
+} from "@/lib/billing/plans.server";
 import { selectPreferredSubscriptionSummaryRow } from "@/lib/billing/subscription-selection";
 import { applyPlanOverride } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";
@@ -18,7 +21,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 
-const SUBSCRIPTION_SELECT = "stripe_price_id, status";
+const SUBSCRIPTION_SELECT =
+  "stripe_price_id, provider_price_id, billing_provider, status";
 
 /** Resolve the effective plan key for an organization. */
 export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {
@@ -29,7 +33,7 @@ export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {
 /** Alias for effective plan resolution. */
 export const getEffectivePlan = getCurrentPlan;
 
-/** Full plan context for an organization — override > Stripe > starter fallback. */
+/** Full plan context for an organization — override > Stripe/Paddle > starter fallback. */
 export async function getOrganizationPlanContext(
   organizationId: string,
 ): Promise<OrganizationPlanContext> {
@@ -49,9 +53,18 @@ export async function getOrganizationPlanContext(
   }
 
   const subscription = selectPreferredSubscriptionSummaryRow(
-    (data ?? []) as Array<{ stripe_price_id: string | null; status: string }>,
+    (data ?? []) as Array<{
+      stripe_price_id: string | null;
+      provider_price_id: string | null;
+      billing_provider: string | null;
+      status: string;
+    }>,
   );
-  const subscriptionPriceId = subscription?.stripe_price_id ?? null;
+  const billingProvider = subscription?.billing_provider ?? "stripe";
+  const subscriptionPriceId =
+    billingProvider === "paddle"
+      ? (subscription?.provider_price_id ?? null)
+      : (subscription?.stripe_price_id ?? subscription?.provider_price_id ?? null);
   const subscriptionStatus = subscription?.status ?? null;
   const isActiveSubscription = Boolean(
     subscriptionPriceId && subscriptionStatus && isActiveSubscriptionStatus(subscriptionStatus),
@@ -62,8 +75,16 @@ export async function getOrganizationPlanContext(
   let mappedPlanKeyFromPriceId: PlanKey | null = null;
 
   if (isActiveSubscription && subscriptionPriceId) {
-    mappedPlanKeyFromPriceId = safeGetPlanKeyByStripePriceId(subscriptionPriceId);
-    const plan = getPlanByPriceId(subscriptionPriceId);
+    mappedPlanKeyFromPriceId = safeGetPlanKeyFromSubscriptionPrice({
+      billingProvider,
+      stripePriceId: subscription?.stripe_price_id,
+      providerPriceId: subscription?.provider_price_id ?? subscriptionPriceId,
+    });
+    const plan = mappedPlanKeyFromPriceId
+      ? safeGetPlanByKey(mappedPlanKeyFromPriceId)
+      : billingProvider === "paddle"
+        ? null
+        : getPlanByPriceId(subscriptionPriceId);
 
     if (plan) {
       basePlanKey = plan.key;

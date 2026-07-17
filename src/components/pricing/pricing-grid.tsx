@@ -27,6 +27,7 @@ import { createFallbackPricingSelection } from "@/lib/pricing/selection-context"
 import { normalizeStripeBillingUiStatus } from "@/lib/pricing/safe-stripe-status";
 import { FormAlert } from "@/components/ui/form-alert";
 import { trackConversionEvent } from "@/lib/analytics/events";
+import { openPaddleCheckout } from "@/lib/paddle/browser-checkout";
 
 export type { PricingSelectionContext } from "@/lib/pricing/selection-context";
 export { buildPricingSelectionContext, createFallbackPricingSelection } from "@/lib/pricing/selection-context";
@@ -50,6 +51,7 @@ export function PricingGrid({
 }: PricingGridProps) {
   const [pendingPlanKey, setPendingPlanKey] = useState<PlanKey | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingSyncMessage, setPendingSyncMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isPortalPending, startPortalTransition] = useTransition();
   const safeStripeStatus = normalizeStripeBillingUiStatus(stripeStatus);
@@ -69,6 +71,7 @@ export function PricingGrid({
     }
 
     setError(null);
+    setPendingSyncMessage(null);
     setPendingPlanKey(planKey);
     trackConversionEvent("subscription_checkout_started", {
       surface: "pricing_grid",
@@ -79,6 +82,20 @@ export function PricingGrid({
       if (result?.error) {
         setError(sanitizeBillingCustomerError(new Error(result.error), "Unable to start checkout."));
         setPendingPlanKey(null);
+        return;
+      }
+
+      if (result?.paddleCheckout) {
+        try {
+          await openPaddleCheckout(result.paddleCheckout);
+          setPendingSyncMessage(result.paddleCheckout.pendingSyncMessage);
+        } catch (checkoutError) {
+          setError(
+            sanitizeBillingCustomerError(checkoutError, "Unable to open Paddle checkout."),
+          );
+        } finally {
+          setPendingPlanKey(null);
+        }
       }
     });
   };
@@ -174,6 +191,7 @@ export function PricingGrid({
         })}
       </div>
 
+      {pendingSyncMessage ? <FormAlert variant="success">{pendingSyncMessage}</FormAlert> : null}
       {error ? <FormAlert variant="warning">{error}</FormAlert> : null}
     </div>
   );

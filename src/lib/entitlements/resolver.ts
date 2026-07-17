@@ -3,7 +3,7 @@ import "server-only";
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import {
   maskStripePriceId,
-  safeGetPlanKeyByStripePriceId,
+  safeGetPlanKeyFromSubscriptionPrice,
 } from "@/lib/billing/plans.server";
 import {
   getOrganizationSubscription,
@@ -24,7 +24,7 @@ import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
 
 const SUBSCRIPTION_SELECT =
-  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
+  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
 
 export type EntitlementFallbackPath = "paid_plan" | "minimal_access" | "starter_default";
 
@@ -60,14 +60,19 @@ function resolveMappedPlanKey(
 ): PlanKey | null {
   let planKey: PlanKey | null = null;
 
-  if (subscription?.stripe_price_id) {
-    planKey = safeGetPlanKeyByStripePriceId(subscription.stripe_price_id);
+  planKey = safeGetPlanKeyFromSubscriptionPrice({
+    billingProvider: subscription?.billing_provider,
+    stripePriceId: subscription?.stripe_price_id,
+    providerPriceId: subscription?.provider_price_id,
+  });
 
-    if (!planKey) {
-      console.warn("[entitlements] Unmapped stripe_price_id", {
-        maskedPriceId: maskStripePriceId(subscription.stripe_price_id),
-      });
-    }
+  if (subscription && !planKey && (subscription.stripe_price_id || subscription.provider_price_id)) {
+    console.warn("[entitlements] Unmapped provider price id", {
+      billingProvider: subscription.billing_provider,
+      maskedPriceId: maskStripePriceId(
+        subscription.provider_price_id ?? subscription.stripe_price_id ?? "",
+      ),
+    });
   }
 
   const devOverride = getDevForcePlanOverride();

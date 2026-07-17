@@ -230,6 +230,11 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "Acceptable Use Policy",
     description: "Rules governing lawful and secure use of the Auroranexis B2B SaaS platform.",
   },
+  [LEGAL_ROUTES.refundPolicy]: {
+    title: "Refund and Cancellation Policy",
+    description:
+      "Refund and cancellation rules for Auroranexis subscriptions, including Paddle Merchant of Record purchases.",
+  },
   "/docs": {
     title: "Documentation Hub",
     description: "Auroranexis documentation hub for product guides, API reference, and release notes.",

@@ -5,6 +5,7 @@ import {
   type PlanKey,
   type SubscriptionPlanDefinition,
 } from "@/lib/billing/plans";
+import { resolveInternalPlanFromPaddlePriceId } from "@/lib/paddle/prices";
 
 const PLAN_PRICE_ENV_KEYS: Record<PlanKey, string> = {
   starter: "STRIPE_STARTER_PRICE_ID",
@@ -81,4 +82,28 @@ export function getPlanKeyByPriceId(priceId: string): PlanKey | null {
 
 export function safeGetPlanKeyByStripePriceId(priceId: string | null | undefined): PlanKey | null {
   return safeGetPlanByStripePriceId(priceId)?.key ?? null;
+}
+
+/**
+ * Resolve plan key from a subscription row that may be Stripe- or Paddle-backed.
+ * Unknown price IDs return null (fail closed — caller must not invent a plan).
+ */
+export function safeGetPlanKeyFromSubscriptionPrice(input: {
+  billingProvider?: string | null;
+  stripePriceId?: string | null;
+  providerPriceId?: string | null;
+}): PlanKey | null {
+  if (input.billingProvider === "paddle") {
+    const priceId = input.providerPriceId?.trim();
+    if (!priceId) {
+      return null;
+    }
+    try {
+      return resolveInternalPlanFromPaddlePriceId(priceId);
+    } catch {
+      return null;
+    }
+  }
+
+  return safeGetPlanKeyByStripePriceId(input.stripePriceId ?? input.providerPriceId);
 }

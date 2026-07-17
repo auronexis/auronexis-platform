@@ -1,6 +1,11 @@
 /**
  * Single source of truth for Content-Security-Policy.
  * Used by middleware, next.config headers, and vercel.json (keep in sync).
+ *
+ * Paddle Billing domains (minimum required for Paddle.js overlay checkout):
+ * - script-src / connect-src / frame-src: cdn.paddle.com, sandbox-cdn.paddle.com
+ * - connect-src: api.paddle.com, sandbox-api.paddle.com
+ * - frame-src: buy.paddle.com, sandbox-buy.paddle.com
  */
 export function buildContentSecurityPolicy(): string {
   return [
@@ -20,6 +25,8 @@ export function buildContentSecurityPolicy(): string {
       "https://*.clarity.ms",
       "https://www.googletagmanager.com",
       "https://challenges.cloudflare.com",
+      "https://cdn.paddle.com",
+      "https://sandbox-cdn.paddle.com",
     ].join(" "),
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
@@ -29,6 +36,10 @@ export function buildContentSecurityPolicy(): string {
       "https://*.supabase.co",
       "wss://*.supabase.co",
       "https://api.stripe.com",
+      "https://api.paddle.com",
+      "https://sandbox-api.paddle.com",
+      "https://cdn.paddle.com",
+      "https://sandbox-cdn.paddle.com",
       "https://us.i.posthog.com",
       "https://eu.i.posthog.com",
       "https://*.sentry.io",
@@ -45,6 +56,10 @@ export function buildContentSecurityPolicy(): string {
       "https://challenges.cloudflare.com",
       "https://js.stripe.com",
       "https://hooks.stripe.com",
+      "https://buy.paddle.com",
+      "https://sandbox-buy.paddle.com",
+      "https://cdn.paddle.com",
+      "https://sandbox-cdn.paddle.com",
     ].join(" "),
   ].join("; ");
 }

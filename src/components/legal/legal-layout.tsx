@@ -13,6 +13,31 @@ type LegalLayoutProps = {
 };
 
 const legalNav = LEGAL_NAV;
+const EXTERNAL_URL_PATTERN = /(https?:\/\/[^\s]+)/g;
+
+function renderBodyWithSafeLinks(body: string): ReactNode {
+  const parts = body.split(EXTERNAL_URL_PATTERN);
+  return parts.map((part, index) => {
+    if (/^https?:\/\//.test(part)) {
+      const href = part.replace(/[.,;:)]+$/, "");
+      const trailing = part.slice(href.length);
+      return (
+        <span key={`link-${index}`}>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn("font-medium text-primary underline underline-offset-2", focusRing, "rounded")}
+          >
+            {href}
+          </a>
+          {trailing}
+        </span>
+      );
+    }
+    return <span key={`text-${index}`}>{part}</span>;
+  });
+}
 
 export function LegalLayout({ content, children, showNav = true }: LegalLayoutProps) {
   return (
@@ -55,7 +80,7 @@ export function LegalLayout({ content, children, showNav = true }: LegalLayoutPr
             <section key={section.heading}>
               <h2 className="text-lg font-semibold text-white">{section.heading}</h2>
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-primary-foreground/75">
-                {section.body}
+                {renderBodyWithSafeLinks(section.body)}
               </p>
             </section>
           ))}

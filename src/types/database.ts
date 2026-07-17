@@ -1057,6 +1057,12 @@ export type Database = {
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
           stripe_price_id: string | null;
+          billing_provider: "stripe" | "paddle";
+          provider_customer_id: string | null;
+          provider_subscription_id: string | null;
+          provider_price_id: string | null;
+          provider_status: string | null;
+          sync_pending: boolean;
           status: string;
           current_period_start: string | null;
           current_period_end: string | null;
@@ -1071,6 +1077,12 @@ export type Database = {
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
           stripe_price_id?: string | null;
+          billing_provider?: "stripe" | "paddle";
+          provider_customer_id?: string | null;
+          provider_subscription_id?: string | null;
+          provider_price_id?: string | null;
+          provider_status?: string | null;
+          sync_pending?: boolean;
           status?: string;
           current_period_start?: string | null;
           current_period_end?: string | null;
@@ -1085,6 +1097,12 @@ export type Database = {
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
           stripe_price_id?: string | null;
+          billing_provider?: "stripe" | "paddle";
+          provider_customer_id?: string | null;
+          provider_subscription_id?: string | null;
+          provider_price_id?: string | null;
+          provider_status?: string | null;
+          sync_pending?: boolean;
           status?: string;
           current_period_start?: string | null;
           current_period_end?: string | null;
@@ -4209,6 +4227,121 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "stripe_webhook_events_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      paddle_webhook_events: {
+        Row: {
+          id: string;
+          provider: string;
+          provider_event_id: string;
+          event_type: string;
+          occurred_at: string | null;
+          received_at: string;
+          processed_at: string | null;
+          status: "processing" | "processed" | "failed" | "duplicate" | "ignored";
+          last_error: string | null;
+          payload_hash: string | null;
+          organization_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          provider?: string;
+          provider_event_id: string;
+          event_type: string;
+          occurred_at?: string | null;
+          received_at?: string;
+          processed_at?: string | null;
+          status?: "processing" | "processed" | "failed" | "duplicate" | "ignored";
+          last_error?: string | null;
+          payload_hash?: string | null;
+          organization_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          provider?: string;
+          provider_event_id?: string;
+          event_type?: string;
+          occurred_at?: string | null;
+          received_at?: string;
+          processed_at?: string | null;
+          status?: "processing" | "processed" | "failed" | "duplicate" | "ignored";
+          last_error?: string | null;
+          payload_hash?: string | null;
+          organization_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "paddle_webhook_events_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      billing_provider_transactions: {
+        Row: {
+          id: string;
+          organization_id: string;
+          billing_provider: "stripe" | "paddle";
+          provider_transaction_id: string;
+          provider_customer_id: string | null;
+          provider_subscription_id: string | null;
+          provider_price_id: string | null;
+          status: string;
+          amount_total: number | null;
+          currency: string;
+          occurred_at: string | null;
+          paid_at: string | null;
+          invoice_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          billing_provider: "stripe" | "paddle";
+          provider_transaction_id: string;
+          provider_customer_id?: string | null;
+          provider_subscription_id?: string | null;
+          provider_price_id?: string | null;
+          status: string;
+          amount_total?: number | null;
+          currency?: string;
+          occurred_at?: string | null;
+          paid_at?: string | null;
+          invoice_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          billing_provider?: "stripe" | "paddle";
+          provider_transaction_id?: string;
+          provider_customer_id?: string | null;
+          provider_subscription_id?: string | null;
+          provider_price_id?: string | null;
+          status?: string;
+          amount_total?: number | null;
+          currency?: string;
+          occurred_at?: string | null;
+          paid_at?: string | null;
+          invoice_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "billing_provider_transactions_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
