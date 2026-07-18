@@ -6,6 +6,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import {
   clearStaleLocalInvoicesAction,
   markInvoiceIgnoredAction,
+  neutralizeStaleStripeCheckoutAction,
   refreshBillingFromStripeAction,
   resyncCurrentSubscriptionAction,
   resyncInvoicesAction,
@@ -15,6 +16,7 @@ import type { CleanupRecommendation } from "@/lib/billing/cleanup-recommendation
 
 type BillingMaintenanceActionsProps = {
   recommendations: CleanupRecommendation[];
+  activeProvider?: "stripe" | "paddle";
 };
 
 function ActionResultAlert({ result }: { result: BillingMaintenanceActionState | null }) {
@@ -36,7 +38,10 @@ function ActionResultAlert({ result }: { result: BillingMaintenanceActionState |
   );
 }
 
-export function BillingMaintenanceActions({ recommendations }: BillingMaintenanceActionsProps) {
+export function BillingMaintenanceActions({
+  recommendations,
+  activeProvider = "stripe",
+}: BillingMaintenanceActionsProps) {
   const [result, setResult] = useState<BillingMaintenanceActionState | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -51,6 +56,38 @@ export function BillingMaintenanceActions({ recommendations }: BillingMaintenanc
   const ignorableInvoice = recommendations.find(
     (item) => item.code === "open_unpaid_invoice" && item.stripeId,
   );
+
+  if (activeProvider === "paddle") {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-muted">
+          Paddle is the active billing provider. Stripe sync actions are disabled. Use neutralization
+          only for abandoned Stripe checkout remnants that must not block Paddle.
+        </p>
+
+        <ActionResultAlert result={result} />
+
+        <div className="flex flex-wrap gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isPending}
+            loading={isPending}
+            onClick={() => run(neutralizeStaleStripeCheckoutAction)}
+          >
+            Neutralize stale Stripe checkout remnants
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted">
+          Neutralization marks abandoned incomplete Stripe rows inactive, clears{" "}
+          <code className="font-mono">sync_pending</code>, and preserves{" "}
+          <code className="font-mono">stripe_customer_id</code> for audit. It never deletes invoices
+          or calls Stripe APIs.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -114,7 +151,8 @@ export function BillingMaintenanceActions({ recommendations }: BillingMaintenanc
       <p className="text-xs text-muted">
         Clear stale local invoices only removes mirror rows after Stripe confirms{" "}
         <code className="font-mono">void</code> or <code className="font-mono">uncollectible</code>.
-        Ignored invoices affect checkout diagnostics only — Stripe remains authoritative.
+        Ignored invoices affect checkout diagnostics only — Stripe remains authoritative in Stripe
+        mode.
       </p>
     </div>
   );

@@ -26,3 +26,8 @@ export function getActiveBillingProvider(): BillingProvider {
 export function isPaddleCheckoutEnabled(): boolean {
   return getActiveBillingProvider() === "paddle";
 }
+
+/** True when env BILLING_PROVIDER selects Paddle as the sole active billing provider. */
+export function isPaddleActiveBillingProvider(): boolean {
+  return getActiveBillingProvider() === "paddle";
+}

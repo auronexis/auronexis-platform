@@ -1,13 +1,13 @@
 import "server-only";
 
-import { getAppUrl } from "@/lib/env";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { createPaddlePortalSession } from "@/lib/paddle/portal";
+import { getAppUrl } from "@/lib/env";
 import { createPortalSession as createStripePortalSession } from "@/lib/stripe/subscriptions";
 
 /**
- * Open the customer portal for the organization's verified billing provider.
- * Stripe-backed orgs keep Stripe portal; Paddle-backed orgs use Paddle portal.
+ * Open the customer portal for the configured active billing provider.
+ * When BILLING_PROVIDER=paddle, never falls back to Stripe portal.
  */
 export async function openCustomerPortal(input: {
   organizationId: string;
@@ -15,14 +15,7 @@ export async function openCustomerPortal(input: {
   email: string;
   returnUrl?: string;
 }): Promise<string> {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("organization_subscriptions")
-    .select("billing_provider")
-    .eq("organization_id", input.organizationId)
-    .maybeSingle();
-
-  const provider = (data as { billing_provider?: string } | null)?.billing_provider ?? "stripe";
+  const provider = getActiveBillingProvider();
 
   if (provider === "paddle") {
     return createPaddlePortalSession({ organizationId: input.organizationId });

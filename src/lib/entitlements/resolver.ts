@@ -8,8 +8,12 @@ import {
 import {
   getOrganizationSubscription,
 } from "@/lib/billing/queries";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
-import { isSubscriptionUsable } from "@/lib/billing/status";
+import {
+  isPaddleBackedSubscription,
+  resolveActiveBillingStatusFlags,
+} from "@/lib/billing/active-billing";
 import { getEffectiveLimits } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";
 import {
@@ -36,6 +40,8 @@ async function loadOrganizationSubscription(
   organizationId: string,
   session?: SessionContext,
 ): Promise<OrganizationSubscription | null> {
+  const activeProvider = getActiveBillingProvider();
+
   if (session && session.organization.id === organizationId) {
     return getOrganizationSubscription(session);
   }
@@ -51,24 +57,41 @@ async function loadOrganizationSubscription(
     throw new Error(error.message);
   }
 
-  return selectPreferredSubscriptionRow((data ?? []) as OrganizationSubscription[]);
+  return selectPreferredSubscriptionRow(
+    (data ?? []) as OrganizationSubscription[],
+    activeProvider,
+  );
 }
 
 function resolveMappedPlanKey(
   subscription: OrganizationSubscription | null,
   planOverride: Awaited<ReturnType<typeof getPlanOverride>>,
+  activeProvider: ReturnType<typeof getActiveBillingProvider>,
 ): PlanKey | null {
   let planKey: PlanKey | null = null;
 
-  planKey = safeGetPlanKeyFromSubscriptionPrice({
-    billingProvider: subscription?.billing_provider,
-    stripePriceId: subscription?.stripe_price_id,
-    providerPriceId: subscription?.provider_price_id,
-  });
+  if (activeProvider === "paddle") {
+    if (!isPaddleBackedSubscription(subscription)) {
+      planKey = null;
+    } else {
+      planKey = safeGetPlanKeyFromSubscriptionPrice({
+        billingProvider: "paddle",
+        stripePriceId: null,
+        providerPriceId: subscription?.provider_price_id,
+      });
+    }
+  } else {
+    planKey = safeGetPlanKeyFromSubscriptionPrice({
+      billingProvider: subscription?.billing_provider,
+      stripePriceId: subscription?.stripe_price_id,
+      providerPriceId: subscription?.provider_price_id,
+    });
+  }
 
   if (subscription && !planKey && (subscription.stripe_price_id || subscription.provider_price_id)) {
     console.warn("[entitlements] Unmapped provider price id", {
       billingProvider: subscription.billing_provider,
+      activeProvider,
       maskedPriceId: maskStripePriceId(
         subscription.provider_price_id ?? subscription.stripe_price_id ?? "",
       ),
@@ -87,19 +110,21 @@ function resolveMappedPlanKey(
   return planKey;
 }
 
-/** Resolve live entitlements from subscription state — never from organizations.plan alone. */
+/** Resolve live entitlements from verified active-provider subscription state. */
 export async function resolveOrganizationEntitlements(
   organizationId: string,
   options?: ResolveOrganizationEntitlementsOptions,
 ): Promise<ResolvedEntitlements> {
+  const activeProvider = getActiveBillingProvider();
   const [subscription, planOverride] = await Promise.all([
     loadOrganizationSubscription(organizationId, options?.session),
     getPlanOverride(organizationId),
   ]);
 
-  const status = subscription?.status ?? null;
-  const activeAccess = isSubscriptionUsable(status);
-  const mappedPlanKey = resolveMappedPlanKey(subscription, planOverride);
+  const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
+  const status = flags.rawStatus;
+  const activeAccess = flags.isUsable;
+  const mappedPlanKey = resolveMappedPlanKey(subscription, planOverride, activeProvider);
 
   let fallbackPath: EntitlementFallbackPath = "minimal_access";
 

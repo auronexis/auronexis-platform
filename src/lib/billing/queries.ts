@@ -12,16 +12,13 @@ import {
   safeGetPlanKeyFromSubscriptionPrice,
 } from "@/lib/billing/plans.server";
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import {
-  isPaymentPending,
-  isPaymentProblem,
-  isSubscriptionUsable,
-} from "@/lib/billing/status";
 import { ensureSubscriptionCustomer, subscriptionRequiresCustomerId } from "@/lib/stripe/customers";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
 import { getDefaultPlanKey } from "@/lib/plans/features";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
+import { resolveActiveBillingStatusFlags } from "@/lib/billing/active-billing";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 
 export { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
@@ -29,11 +26,12 @@ export { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selec
 const SUBSCRIPTION_SELECT =
   "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
 
-/** Load the current organization's subscription record. */
+/** Load the current organization's subscription record for the active billing provider. */
 export async function getOrganizationSubscription(
   session: SessionContext,
 ): Promise<OrganizationSubscription | null> {
   const supabase = await createClient();
+  const activeProvider = getActiveBillingProvider();
 
   const { data, error } = await supabase
     .from("organization_subscriptions")
@@ -45,14 +43,19 @@ export async function getOrganizationSubscription(
     throw new Error(error.message);
   }
 
-  return selectPreferredSubscriptionRow((data ?? []) as OrganizationSubscription[]);
+  return selectPreferredSubscriptionRow(
+    (data ?? []) as OrganizationSubscription[],
+    activeProvider,
+  );
 }
 
 /** Billing overview for settings UI. */
 export async function getBillingOverview(session: SessionContext): Promise<BillingOverview> {
+  const activeProvider = getActiveBillingProvider();
   let subscription = await getOrganizationSubscription(session);
 
   if (
+    activeProvider === "stripe" &&
     subscription &&
     subscriptionRequiresCustomerId(subscription.status) &&
     !subscription.stripe_customer_id
@@ -67,17 +70,17 @@ export async function getBillingOverview(session: SessionContext): Promise<Billi
     subscription = await getOrganizationSubscription(session);
   }
 
-  const rawStatus = subscription?.status;
-  const billingProvider = subscription?.billing_provider ?? "stripe";
-  const stripePriceId = subscription?.stripe_price_id ?? null;
+  const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
+  const rawStatus = flags.rawStatus;
+  const billingProvider =
+    activeProvider === "paddle" ? "paddle" : (subscription?.billing_provider ?? "stripe");
+  const stripePriceId = activeProvider === "paddle" ? null : (subscription?.stripe_price_id ?? null);
   const providerPriceId = subscription?.provider_price_id ?? null;
   const effectivePriceId =
     billingProvider === "paddle" ? providerPriceId : (stripePriceId ?? providerPriceId);
   const showPlanFromSubscription =
     Boolean(effectivePriceId) &&
-    (isSubscriptionUsable(rawStatus) ||
-      isPaymentProblem(rawStatus) ||
-      isPaymentPending(rawStatus));
+    (flags.isUsable || flags.hasPaymentProblem || flags.isPaymentPending);
   const resolvedPlanKey = safeGetPlanKeyFromSubscriptionPrice({
     billingProvider,
     stripePriceId,
@@ -95,13 +98,14 @@ export async function getBillingOverview(session: SessionContext): Promise<Billi
   }
 
   const displayPlanKey =
-    isSubscriptionUsable(rawStatus) && resolvedPlanKey ? resolvedPlanKey : currentPlan?.key ?? null;
+    flags.isUsable && resolvedPlanKey ? resolvedPlanKey : currentPlan?.key ?? null;
 
   return buildBillingOverview(
     subscription,
     session.organization.plan,
     currentPlan?.name ?? null,
     displayPlanKey,
+    activeProvider,
   );
 }
 
@@ -136,6 +140,7 @@ export async function getBillingDashboardData(
     overview,
     invoices: filterCustomerFacingInvoices(invoices),
     ignoredStripeInvoiceIds,
+    activeProvider: getActiveBillingProvider(),
   });
 
   return {
@@ -177,9 +182,13 @@ export async function getPlansPageBillingState(
       });
     }
 
-    const rawStatus = subscription?.status ?? null;
-    const billingProvider = subscription?.billing_provider ?? "stripe";
-    const stripePriceId = subscription?.stripe_price_id ?? null;
+    const activeProvider = getActiveBillingProvider();
+    const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
+    const rawStatus = flags.rawStatus;
+    const billingProvider =
+      activeProvider === "paddle" ? "paddle" : (subscription?.billing_provider ?? "stripe");
+    const stripePriceId =
+      activeProvider === "paddle" ? null : (subscription?.stripe_price_id ?? null);
     const providerPriceId = subscription?.provider_price_id ?? null;
     const effectivePriceId =
       billingProvider === "paddle" ? providerPriceId : (stripePriceId ?? providerPriceId);
@@ -199,21 +208,18 @@ export async function getPlansPageBillingState(
 
     const showPlanFromSubscription =
       Boolean(effectivePriceId) &&
-      (isSubscriptionUsable(rawStatus) ||
-        isPaymentProblem(rawStatus) ||
-        isPaymentPending(rawStatus));
+      (flags.isUsable || flags.hasPaymentProblem || flags.isPaymentPending);
     const mappedPlan =
       showPlanFromSubscription && resolvedPlanKey ? safeGetPlanByKey(resolvedPlanKey) : null;
     const displayPlanKey =
-      isSubscriptionUsable(rawStatus) && resolvedPlanKey
-        ? resolvedPlanKey
-        : mappedPlan?.key ?? null;
+      flags.isUsable && resolvedPlanKey ? resolvedPlanKey : mappedPlan?.key ?? null;
 
     const overview = buildBillingOverview(
       subscription,
       "starter",
       mappedPlan?.name ?? null,
       displayPlanKey,
+      activeProvider,
     );
 
     const currentPlanKey = overview.isUsable && resolvedPlanKey ? resolvedPlanKey : null;
@@ -241,6 +247,7 @@ export async function getPlansPageBillingState(
       overview,
       invoices,
       ignoredStripeInvoiceIds,
+      activeProvider,
     });
 
     return {
@@ -263,7 +270,8 @@ export async function getPlansPageBillingState(
       message: error instanceof Error ? error.message : String(error),
     });
 
-    const fallbackOverview = buildBillingOverview(null, "starter", null, null);
+    const activeProvider = getActiveBillingProvider();
+    const fallbackOverview = buildBillingOverview(null, "starter", null, null, activeProvider);
     return {
       overview: fallbackOverview,
       invoices: [],
@@ -274,6 +282,7 @@ export async function getPlansPageBillingState(
       checkoutBlock: resolveCheckoutBlockState({
         overview: fallbackOverview,
         invoices: [],
+        activeProvider,
       }),
       ignoredStripeInvoiceIds: new Set<string>(),
     };

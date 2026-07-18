@@ -22,11 +22,22 @@ import {
   type BillingProductionHealth,
   type CheckoutBlockState,
 } from "@/lib/billing/checkout-block";
+import {
+  hasVerifiedPaddleCustomer,
+  hasVerifiedPaddleSubscription,
+  isStaleStripeAbandonedCheckout,
+  paddleSubscriptionBlocksCheckout,
+} from "@/lib/billing/active-billing";
 import { listIgnoredStripeInvoiceIds } from "@/lib/billing/invoices";
 import { getBillingOverview } from "@/lib/billing/queries";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 import type { CustomerInvoiceView } from "@/lib/billing/types";
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import { safeGetPlanKeyByStripePriceId } from "@/lib/billing/plans.server";
+import {
+  safeGetPlanKeyByStripePriceId,
+  safeGetPlanKeyFromSubscriptionPrice,
+} from "@/lib/billing/plans.server";
 import { listCustomerInvoices } from "@/lib/billing/invoices";
 import { listAllOrganizationSubscriptions } from "@/lib/billing/maintenance";
 import { isDevForcePlanConfigured } from "@/lib/plans/dev-override";
@@ -41,17 +52,32 @@ export type BillingInvoiceDiagnosticView = CustomerInvoiceView & {
   hygieneLabel: string;
 };
 
+export type PaddleWebhookDiagnosticView = {
+  id: string;
+  providerEventId: string;
+  eventType: string;
+  status: string;
+  receivedAt: string;
+  lastError: string | null;
+};
+
 export type BillingProductionDiagnostics = {
   organizationId: string;
   organizationName: string;
+  activeProvider: BillingProvider;
   subscription: OrganizationSubscription | null;
   allSubscriptions: OrganizationSubscription[];
   resolvedPlanKey: PlanKey | null;
   resolvedPlanLabel: string | null;
   hasStripeCustomerId: boolean;
   hasStripeSubscriptionId: boolean;
+  hasPaddleCustomerId: boolean;
+  hasPaddleSubscriptionId: boolean;
+  paddleCheckoutAllowed: boolean;
+  paddleCheckoutBlockReason: string | null;
   invoices: BillingInvoiceDiagnosticView[];
   webhookEvents: BillingWebhookEventDiagnosticView[];
+  paddleWebhookEvents: PaddleWebhookDiagnosticView[];
   billingEvents: BillingEventDiagnosticView[];
   hygieneFlags: BillingHygieneFlag[];
   sanityWarnings: BillingHygieneFlag[];
@@ -59,6 +85,7 @@ export type BillingProductionDiagnostics = {
   productionHealth: BillingProductionHealth;
   cleanupRecommendations: CleanupRecommendation[];
   ignoredStripeInvoiceIds: string[];
+  staleStripeRemnantCount: number;
 };
 
 async function listBillingEventsForOrganization(
@@ -128,6 +155,40 @@ async function listStripeWebhookEventsForOrganization(
     .slice(0, limit);
 }
 
+async function listPaddleWebhookEventsForOrganization(
+  organizationId: string,
+  limit: number,
+): Promise<PaddleWebhookDiagnosticView[]> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("paddle_webhook_events")
+    .select("id, provider_event_id, event_type, status, received_at, last_error")
+    .eq("organization_id", organizationId)
+    .order("received_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[billing][diagnostics] paddle_webhook_events query failed:", error.message);
+    return [];
+  }
+
+  return ((data ?? []) as Array<{
+    id: string;
+    provider_event_id: string;
+    event_type: string;
+    status: string;
+    received_at: string;
+    last_error: string | null;
+  }>).map((row) => ({
+    id: row.id,
+    providerEventId: row.provider_event_id,
+    eventType: row.event_type,
+    status: row.status,
+    receivedAt: row.received_at,
+    lastError: row.last_error,
+  }));
+}
+
 function mapInvoiceDiagnostics(invoices: CustomerInvoiceView[]): BillingInvoiceDiagnosticView[] {
   return invoices.map((invoice) => ({
     ...invoice,
@@ -141,19 +202,29 @@ export async function getBillingProductionDiagnostics(
   session: SessionContext,
 ): Promise<BillingProductionDiagnostics> {
   const organizationId = session.organization.id;
+  const activeProvider = getActiveBillingProvider();
 
-  const [overview, invoices, billingEventRows, allSubscriptions, ignoredSet] = await Promise.all([
-    getBillingOverview(session),
-    listCustomerInvoices(session, LIST_LIMIT),
-    listBillingEventsForOrganization(organizationId, LIST_LIMIT),
-    listAllOrganizationSubscriptions(organizationId),
-    listIgnoredStripeInvoiceIds(organizationId),
-  ]);
+  const [overview, invoices, billingEventRows, allSubscriptions, ignoredSet, paddleWebhookEvents] =
+    await Promise.all([
+      getBillingOverview(session),
+      listCustomerInvoices(session, LIST_LIMIT),
+      listBillingEventsForOrganization(organizationId, LIST_LIMIT),
+      listAllOrganizationSubscriptions(organizationId),
+      listIgnoredStripeInvoiceIds(organizationId),
+      listPaddleWebhookEventsForOrganization(organizationId, LIST_LIMIT),
+    ]);
 
   const subscription = overview.subscription;
-  const resolvedPlanKey = subscription?.stripe_price_id
-    ? safeGetPlanKeyByStripePriceId(subscription.stripe_price_id)
-    : overview.currentPlanKey;
+  const resolvedPlanKey =
+    activeProvider === "paddle"
+      ? safeGetPlanKeyFromSubscriptionPrice({
+          billingProvider: "paddle",
+          stripePriceId: null,
+          providerPriceId: subscription?.provider_price_id,
+        })
+      : subscription?.stripe_price_id
+        ? safeGetPlanKeyByStripePriceId(subscription.stripe_price_id)
+        : overview.currentPlanKey;
   const resolvedPlanLabel = resolvedPlanKey
     ? (safeGetPlanByKey(resolvedPlanKey)?.name ?? null)
     : null;
@@ -188,6 +259,7 @@ export async function getBillingProductionDiagnostics(
     overview,
     invoices,
     ignoredStripeInvoiceIds: ignoredSet,
+    activeProvider,
   });
 
   const cleanupRecommendations = collectCleanupRecommendations({
@@ -207,17 +279,31 @@ export async function getBillingProductionDiagnostics(
     dangerRecommendationCount: severityCounts.danger,
   });
 
+  const paddleCheckoutAllowed = activeProvider === "paddle" ? !checkoutBlock.blocked : false;
+  const paddleCheckoutBlockReason =
+    activeProvider === "paddle" && checkoutBlock.blocked
+      ? (checkoutBlock.message ?? checkoutBlock.bannerMessage)
+      : activeProvider === "paddle" && paddleSubscriptionBlocksCheckout(subscription)
+        ? "Verified Paddle subscription state blocks checkout."
+        : null;
+
   return {
     organizationId,
     organizationName: session.organization.name,
+    activeProvider,
     subscription,
     allSubscriptions,
     resolvedPlanKey,
     resolvedPlanLabel,
     hasStripeCustomerId: Boolean(subscription?.stripe_customer_id),
     hasStripeSubscriptionId: Boolean(subscription?.stripe_subscription_id),
+    hasPaddleCustomerId: hasVerifiedPaddleCustomer(subscription),
+    hasPaddleSubscriptionId: hasVerifiedPaddleSubscription(subscription),
+    paddleCheckoutAllowed,
+    paddleCheckoutBlockReason,
     invoices: invoiceDiagnostics,
     webhookEvents,
+    paddleWebhookEvents,
     billingEvents,
     hygieneFlags,
     sanityWarnings,
@@ -225,5 +311,7 @@ export async function getBillingProductionDiagnostics(
     productionHealth,
     cleanupRecommendations,
     ignoredStripeInvoiceIds: Array.from(ignoredSet),
+    staleStripeRemnantCount: allSubscriptions.filter((row) => isStaleStripeAbandonedCheckout(row))
+      .length,
   };
 }

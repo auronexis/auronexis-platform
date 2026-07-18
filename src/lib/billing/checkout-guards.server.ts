@@ -2,15 +2,17 @@ import "server-only";
 
 import type { PlanKey } from "@/lib/billing/plans";
 import { listCustomerInvoices, listIgnoredStripeInvoiceIds } from "@/lib/billing/invoices";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { getBillingOverview } from "@/lib/billing/queries";
 import type { SessionContext } from "@/lib/tenancy/context";
 import { evaluateCheckoutGuard } from "@/lib/billing/checkout-guards";
 
-/** Enforce checkout rules before creating a Stripe Checkout session. */
+/** Enforce checkout rules before creating a provider checkout session. */
 export async function assertCheckoutAllowed(
   session: SessionContext,
   targetPlanKey: PlanKey,
 ): Promise<void> {
+  const activeProvider = getActiveBillingProvider();
   const [overview, invoices, ignoredStripeInvoiceIds] = await Promise.all([
     getBillingOverview(session),
     listCustomerInvoices(session, 24),
@@ -22,6 +24,7 @@ export async function assertCheckoutAllowed(
     invoices,
     targetPlanKey,
     ignoredStripeInvoiceIds,
+    activeProvider,
   });
 
   if (!result.allowed) {

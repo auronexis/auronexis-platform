@@ -1,13 +1,15 @@
 import type { OrganizationSubscription } from "@/types/database";
+import {
+  isActiveBillingSubscriptionRow,
+  resolveActiveBillingStatusFlags,
+} from "@/lib/billing/active-billing";
 import type { PlanKey } from "@/lib/billing/plans";
 import type { CheckoutBlockState } from "@/lib/billing/checkout-block";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 import {
   getBillingStatusLabel,
   getPaymentSummaryLabel,
-  isPaymentPending,
-  isPaymentProblem,
   isSubscriptionInactive,
-  isSubscriptionUsable,
   isSubscriptionCanceled,
 } from "@/lib/billing/status";
 import { isActiveSubscriptionStatus } from "@/lib/stripe/types";
@@ -223,13 +225,21 @@ export function buildBillingOverview(
   _organizationPlan: string,
   currentPlanName: string | null,
   currentPlanKey: PlanKey | null,
+  activeProvider: BillingProvider = "stripe",
 ): BillingOverview {
-  const rawStatus = subscription?.status;
-  const isUsable = isSubscriptionUsable(rawStatus);
-  const hasPaymentProblem = isPaymentProblem(rawStatus);
-  const paymentPending = isPaymentPending(rawStatus);
-  const isInactive = isSubscriptionInactive(rawStatus);
-  const isActive = isActiveSubscriptionStatus(rawStatus);
+  const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
+  const displaySubscription =
+    flags.rawStatus !== null || isActiveBillingSubscriptionRow(subscription, activeProvider)
+      ? subscription
+      : null;
+  const rawStatus = flags.rawStatus ?? (displaySubscription ? displaySubscription.status : null);
+  const isUsable = flags.isUsable;
+  const hasPaymentProblem = flags.hasPaymentProblem;
+  const paymentPending = flags.isPaymentPending;
+  const isInactive = displaySubscription
+    ? isSubscriptionInactive(rawStatus)
+    : true;
+  const isActive = isUsable || isActiveSubscriptionStatus(rawStatus);
   const isCanceled = isSubscriptionCanceled(rawStatus);
 
   const planLabel = isUsable
@@ -238,16 +248,16 @@ export function buildBillingOverview(
       ? (currentPlanName ?? "Subscription")
       : "No active subscription";
 
-  const billingPeriodStart = formatBillingDate(subscription?.current_period_start);
-  const billingPeriodEnd = formatBillingDate(subscription?.current_period_end);
+  const billingPeriodStart = formatBillingDate(displaySubscription?.current_period_start);
+  const billingPeriodEnd = formatBillingDate(displaySubscription?.current_period_end);
   const billingPeriodLabel =
     billingPeriodStart && billingPeriodEnd
       ? `${billingPeriodStart} – ${billingPeriodEnd}`
       : null;
 
   return {
-    subscription,
-    hasSubscription: Boolean(subscription?.stripe_subscription_id),
+    subscription: displaySubscription,
+    hasSubscription: flags.hasSubscription,
     isActive,
     isUsable,
     hasPaymentProblem,
@@ -259,10 +269,10 @@ export function buildBillingOverview(
     paymentStatusLabel: getPaymentSummaryLabel(rawStatus),
     renewalDate: billingPeriodEnd,
     billingPeriodLabel,
-    trialEndsAt: subscription?.trial_ends_at ?? null,
-    cancelAtPeriodEnd: subscription?.cancel_at_period_end ?? false,
+    trialEndsAt: displaySubscription?.trial_ends_at ?? null,
+    cancelAtPeriodEnd: displaySubscription?.cancel_at_period_end ?? false,
     scheduledCancellationDate:
-      subscription?.cancel_at_period_end && billingPeriodEnd ? billingPeriodEnd : null,
+      displaySubscription?.cancel_at_period_end && billingPeriodEnd ? billingPeriodEnd : null,
     isCanceled,
   };
 }

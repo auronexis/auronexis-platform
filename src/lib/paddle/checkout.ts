@@ -31,16 +31,18 @@ export async function createPaddleCheckoutPayload(
   const admin = createAdminClient();
   const { data: existing } = await admin
     .from("organization_subscriptions")
-    .select("billing_provider, stripe_subscription_id")
+    .select("billing_provider, stripe_subscription_id, provider_subscription_id, sync_pending")
     .eq("organization_id", input.organizationId)
     .maybeSingle();
 
   const row = existing as {
     billing_provider?: string;
     stripe_subscription_id?: string | null;
+    provider_subscription_id?: string | null;
+    sync_pending?: boolean;
   } | null;
 
-  if (row?.billing_provider === "stripe" && row.stripe_subscription_id) {
+  if (row?.billing_provider === "stripe" && row.stripe_subscription_id?.trim()) {
     throw new Error(
       "This organization already has a Stripe subscription. Manage billing through the Stripe portal.",
     );

@@ -78,12 +78,22 @@ export async function upsertPaddleOrganizationSubscription(
 
   const { data: existing } = await admin
     .from("organization_subscriptions")
-    .select("id, billing_provider")
+    .select("id, billing_provider, stripe_subscription_id, status")
     .eq("organization_id", input.organizationId)
     .maybeSingle();
 
-  const existingProvider = (existing as { billing_provider?: string } | null)?.billing_provider;
-  if (existingProvider === "stripe") {
+  const existingRow = existing as {
+    billing_provider?: string;
+    stripe_subscription_id?: string | null;
+    status?: string | null;
+  } | null;
+
+  // Refuse only when a real Stripe subscription id exists. Abandoned Stripe
+  // incomplete remnants (customer id only) may be reclaimed by verified Paddle state.
+  if (
+    existingRow?.billing_provider === "stripe" &&
+    existingRow.stripe_subscription_id?.trim()
+  ) {
     console.error("[paddle] refusing to overwrite Stripe-backed subscription", {
       organizationId: input.organizationId,
     });

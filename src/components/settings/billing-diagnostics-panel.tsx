@@ -160,12 +160,22 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
     mappedPlanKey: data.resolvedPlanKey,
   });
   const statusLabel = getSubscriptionHygieneLabel(subscription);
+  const isPaddleMode = data.activeProvider === "paddle";
 
   return (
     <div className="space-y-6">
       <FormAlert variant="warning">
-        Internal billing maintenance and diagnostics only. No records are deleted automatically.
-        Stripe remains the source of truth. Customer-facing billing remains on{" "}
+        Internal billing maintenance and diagnostics only. No records are deleted automatically.{" "}
+        {isPaddleMode ? (
+          <>
+            Paddle is the active billing provider. Historical Stripe data is read-only and never blocks
+            checkout. Customer-facing billing remains on{" "}
+          </>
+        ) : (
+          <>
+            Stripe remains the source of truth in Stripe mode. Customer-facing billing remains on{" "}
+          </>
+        )}
         <Link href="/settings/billing" className="font-medium underline">
           Subscription &amp; Billing
         </Link>
@@ -177,6 +187,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
         description="Whether this workspace can safely start new checkout and what is blocking it."
       >
         <dl>
+          <Row
+            label="Active configured provider"
+            value={isPaddleMode ? "Paddle" : "Stripe"}
+          />
           <Row label="Status" value={<HealthBadge health={data.productionHealth} />} />
           <Row
             label="Checkout blocked"
@@ -186,22 +200,41 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
             label="Blocking reason"
             value={data.checkoutBlock.message ?? "None"}
           />
-          <Row
-            label="Blocking invoice"
-            value={
-              data.checkoutBlock.blockingInvoiceStripeId
-                ? maskStripeId(data.checkoutBlock.blockingInvoiceStripeId)
-                : "—"
-            }
-          />
-          <Row
-            label="Ignored invoices (diagnostic)"
-            value={
-              data.ignoredStripeInvoiceIds.length > 0
-                ? data.ignoredStripeInvoiceIds.map((id) => maskStripeId(id)).join(", ")
-                : "None"
-            }
-          />
+          {isPaddleMode ? (
+            <>
+              <Row
+                label="Paddle checkout allowed"
+                value={data.paddleCheckoutAllowed ? "Yes" : "No"}
+              />
+              <Row
+                label="Paddle blocking reason"
+                value={data.paddleCheckoutBlockReason ?? "None"}
+              />
+              <Row
+                label="Stale Stripe remnants"
+                value={String(data.staleStripeRemnantCount)}
+              />
+            </>
+          ) : (
+            <>
+              <Row
+                label="Blocking invoice"
+                value={
+                  data.checkoutBlock.blockingInvoiceStripeId
+                    ? maskStripeId(data.checkoutBlock.blockingInvoiceStripeId)
+                    : "—"
+                }
+              />
+              <Row
+                label="Ignored invoices (diagnostic)"
+                value={
+                  data.ignoredStripeInvoiceIds.length > 0
+                    ? data.ignoredStripeInvoiceIds.map((id) => maskStripeId(id)).join(", ")
+                    : "None"
+                }
+              />
+            </>
+          )}
         </dl>
         {data.checkoutBlock.blocked ? (
           <div className="mt-4">
@@ -221,7 +254,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
         title="Billing maintenance"
         description="Explicit owner/admin actions — each requires a button click and writes a billing_events audit row."
       >
-        <BillingMaintenanceActions recommendations={data.cleanupRecommendations} />
+        <BillingMaintenanceActions
+          recommendations={data.cleanupRecommendations}
+          activeProvider={data.activeProvider}
+        />
       </DiagnosticsSection>
 
       <DiagnosticsSection
@@ -245,38 +281,88 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
       </DiagnosticsSection>
 
       <DiagnosticsSection
-        title="organization_subscriptions"
-        description={`Preferred subscription row synced from Stripe. ${data.allSubscriptions.length} row(s) found for this workspace.`}
+        title={isPaddleMode ? "Active Paddle subscription" : "organization_subscriptions"}
+        description={
+          isPaddleMode
+            ? `Preferred Paddle-backed subscription for active billing. ${data.allSubscriptions.length} row(s) found for this workspace.`
+            : `Preferred subscription row synced from Stripe. ${data.allSubscriptions.length} row(s) found for this workspace.`
+        }
       >
         {subscription ? (
           <dl>
             <Row label="Row kind" value={<RowKindBadge kind={subscriptionKind} />} />
             <Row label="Status label" value={statusLabel} />
             <Row label="Raw status" value={subscription.status} />
-            <Row
-              label="Stripe customer ID"
-              value={
-                <span className="inline-flex flex-wrap items-center gap-2">
-                  <PresenceBadge present={data.hasStripeCustomerId} />
-                  <code className="font-mono text-xs">{maskStripeId(subscription.stripe_customer_id)}</code>
-                </span>
-              }
-            />
-            <Row
-              label="Stripe subscription ID"
-              value={
-                <span className="inline-flex flex-wrap items-center gap-2">
-                  <PresenceBadge present={data.hasStripeSubscriptionId} />
-                  <code className="font-mono text-xs">
-                    {maskStripeId(subscription.stripe_subscription_id)}
-                  </code>
-                </span>
-              }
-            />
-            <Row
-              label="Stripe price ID"
-              value={<code className="font-mono text-xs">{maskStripeId(subscription.stripe_price_id)}</code>}
-            />
+            <Row label="Billing provider" value={subscription.billing_provider ?? "—"} />
+            {isPaddleMode ? (
+              <>
+                <Row
+                  label="Paddle customer ID"
+                  value={
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      <PresenceBadge present={data.hasPaddleCustomerId} />
+                      <code className="font-mono text-xs">
+                        {maskStripeId(subscription.provider_customer_id)}
+                      </code>
+                    </span>
+                  }
+                />
+                <Row
+                  label="Paddle subscription ID"
+                  value={
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      <PresenceBadge present={data.hasPaddleSubscriptionId} />
+                      <code className="font-mono text-xs">
+                        {maskStripeId(subscription.provider_subscription_id)}
+                      </code>
+                    </span>
+                  }
+                />
+                <Row
+                  label="Provider price ID"
+                  value={
+                    <code className="font-mono text-xs">
+                      {maskStripeId(subscription.provider_price_id)}
+                    </code>
+                  }
+                />
+                <Row label="Provider status" value={subscription.provider_status ?? "—"} />
+                <Row label="sync_pending" value={subscription.sync_pending ? "true" : "false"} />
+              </>
+            ) : (
+              <>
+                <Row
+                  label="Stripe customer ID"
+                  value={
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      <PresenceBadge present={data.hasStripeCustomerId} />
+                      <code className="font-mono text-xs">
+                        {maskStripeId(subscription.stripe_customer_id)}
+                      </code>
+                    </span>
+                  }
+                />
+                <Row
+                  label="Stripe subscription ID"
+                  value={
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      <PresenceBadge present={data.hasStripeSubscriptionId} />
+                      <code className="font-mono text-xs">
+                        {maskStripeId(subscription.stripe_subscription_id)}
+                      </code>
+                    </span>
+                  }
+                />
+                <Row
+                  label="Stripe price ID"
+                  value={
+                    <code className="font-mono text-xs">
+                      {maskStripeId(subscription.stripe_price_id)}
+                    </code>
+                  }
+                />
+              </>
+            )}
             <Row label="Resolved plan" value={data.resolvedPlanLabel ?? "—"} />
             <Row label="Resolved plan key" value={data.resolvedPlanKey ?? "—"} />
             <Row
@@ -293,13 +379,65 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
             />
           </dl>
         ) : (
-          <p className="text-sm text-muted">No organization_subscriptions row found.</p>
+          <p className="text-sm text-muted">
+            {isPaddleMode
+              ? "No active Paddle subscription row selected for this workspace."
+              : "No organization_subscriptions row found."}
+          </p>
         )}
       </DiagnosticsSection>
 
+      {isPaddleMode ? (
+        <DiagnosticsSection
+          title="Latest paddle_webhook_events"
+          description={`Latest ${data.paddleWebhookEvents.length} Paddle webhook rows for this workspace.`}
+        >
+          {data.paddleWebhookEvents.length === 0 ? (
+            <p className="text-sm text-muted">No paddle_webhook_events rows for this organization yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/70 text-left text-muted">
+                    <th className="py-2 pr-4 font-medium">Event ID</th>
+                    <th className="py-2 pr-4 font-medium">Type</th>
+                    <th className="py-2 pr-4 font-medium">Status</th>
+                    <th className="py-2 pr-4 font-medium">Received</th>
+                    <th className="py-2 pr-4 font-medium">Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.paddleWebhookEvents.map((event) => (
+                    <tr key={event.id} className="border-b border-border/40">
+                      <td className="py-3 pr-4 font-mono text-xs">
+                        {shortenStripeId(event.providerEventId)}
+                      </td>
+                      <td className="py-3 pr-4">{event.eventType}</td>
+                      <td className="py-3 pr-4">{event.status}</td>
+                      <td className="py-3 pr-4 text-muted">
+                        {formatBillingDateTime(event.receivedAt) ?? "—"}
+                      </td>
+                      <td className="py-3 pr-4 text-muted">{event.lastError ? "Yes" : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </DiagnosticsSection>
+      ) : null}
+
       <DiagnosticsSection
-        title="Latest customer_invoices"
-        description={`Latest ${data.invoices.length} invoice rows — stale/demo rows are labeled, never deleted.`}
+        title={
+          isPaddleMode
+            ? "Legacy Stripe history — not used for active billing"
+            : "Latest customer_invoices"
+        }
+        description={
+          isPaddleMode
+            ? "Historical Stripe invoice and webhook rows are preserved for audit and never drive checkout or entitlements."
+            : `Latest ${data.invoices.length} invoice rows — stale/demo rows are labeled, never deleted.`
+        }
       >
         {data.invoices.length === 0 ? (
           <p className="text-sm text-muted">No customer_invoices rows synced yet.</p>

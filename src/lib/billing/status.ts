@@ -245,9 +245,19 @@ export function canOpenBillingPortal(input: {
   isPaymentPending: boolean;
   stripeCustomerId: string | null | undefined;
   providerCustomerId?: string | null | undefined;
+  /** When paddle, only a verified Paddle customer id opens the portal. */
+  activeProvider?: "stripe" | "paddle";
+  billingProvider?: string | null;
 }): boolean {
   if (!input.canManage || !input.portalAvailable) {
     return false;
+  }
+
+  if (input.activeProvider === "paddle") {
+    const paddleCustomer = input.providerCustomerId?.trim() ?? "";
+    return (
+      input.billingProvider === "paddle" && paddleCustomer.startsWith("ctm_")
+    );
   }
 
   if (input.isUsable || input.hasPaymentProblem || input.isPaymentPending) {

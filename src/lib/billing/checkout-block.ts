@@ -1,3 +1,7 @@
+import {
+  paddleSubscriptionBlocksCheckout,
+} from "@/lib/billing/active-billing";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 import type { BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
 import { findLatestOpenInvoice } from "@/lib/billing/status";
 
@@ -38,11 +42,58 @@ function isBlockingOpenInvoice(
   return invoice.status === "open" && invoice.amountPaid === 0;
 }
 
+/**
+ * Resolve whether checkout should be blocked.
+ * When activeProvider is paddle, Stripe invoices and Stripe subscription remnants
+ * never block — only verified Paddle state may block.
+ */
 export function resolveCheckoutBlockState(input: {
   overview: BillingOverview;
   invoices: CustomerInvoiceView[];
   ignoredStripeInvoiceIds?: ReadonlySet<string>;
+  activeProvider?: BillingProvider;
 }): CheckoutBlockState {
+  const activeProvider = input.activeProvider ?? "stripe";
+
+  if (activeProvider === "paddle") {
+    const subscription = input.overview.subscription;
+
+    if (paddleSubscriptionBlocksCheckout(subscription)) {
+      if (input.overview.hasPaymentProblem) {
+        return {
+          blocked: true,
+          code: "payment_problem",
+          message: PAYMENT_PROBLEM_CHECKOUT_BLOCK_MESSAGE,
+          bannerMessage: PAYMENT_PROBLEM_CHECKOUT_BLOCK_MESSAGE,
+          blockingInvoice: null,
+          blockingInvoiceStripeId: null,
+          hostedInvoiceUrl: null,
+        };
+      }
+
+      return {
+        blocked: true,
+        code: "payment_pending",
+        message: PAYMENT_PENDING_CHECKOUT_BLOCK_MESSAGE,
+        bannerMessage: PAYMENT_PENDING_CHECKOUT_BLOCK_MESSAGE,
+        blockingInvoice: null,
+        blockingInvoiceStripeId: null,
+        hostedInvoiceUrl: null,
+      };
+    }
+
+    // Stripe open invoices and incomplete Stripe rows never block Paddle checkout.
+    return {
+      blocked: false,
+      code: "none",
+      message: null,
+      bannerMessage: null,
+      blockingInvoice: null,
+      blockingInvoiceStripeId: null,
+      hostedInvoiceUrl: null,
+    };
+  }
+
   const invoices = Array.isArray(input.invoices) ? input.invoices : [];
   const blockingInvoice =
     invoices.find((invoice) => isBlockingOpenInvoice(invoice, input.ignoredStripeInvoiceIds)) ??

@@ -95,6 +95,13 @@ export default async function WorkspacePlansPage() {
       checkoutBlock: resolveCheckoutBlockState({
         overview: createFallbackPricingSelection(canManage).overview,
         invoices: [],
+        activeProvider: (() => {
+          try {
+            return getActiveBillingProvider();
+          } catch {
+            return "stripe";
+          }
+        })(),
       }),
       ignoredStripeInvoiceIds: new Set<string>(),
     };

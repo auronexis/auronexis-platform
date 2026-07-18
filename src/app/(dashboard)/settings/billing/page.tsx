@@ -6,6 +6,7 @@ import {
   SUPPORT_CONTACT_CARD,
 } from "@/lib/billing/billing-contact";
 import { getBillingDashboardData } from "@/lib/billing/queries";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { getStripeBillingUiStatusWithPortalFeatures } from "@/lib/billing/stripe-config";
 import { syncCheckoutSessionForOrganization } from "@/lib/stripe/checkout-sync";
 import { resolveLocaleFromOrganization } from "@/lib/i18n";
@@ -42,16 +43,22 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
   const session = await requireSession();
   const canManage = canManageOrganizationSettings(session);
   const params = await searchParams;
+  const activeProvider = getActiveBillingProvider();
   const stripeStatus = await getStripeBillingUiStatusWithPortalFeatures();
 
   let checkoutSuccessMessage: string | null = null;
 
   if (params.success === "1" && canManage) {
-    const syncResult = await syncCheckoutSessionForOrganization(
-      session.organization.id,
-      params.session_id ?? null,
-    );
-    checkoutSuccessMessage = syncResult.message;
+    if (activeProvider === "stripe") {
+      const syncResult = await syncCheckoutSessionForOrganization(
+        session.organization.id,
+        params.session_id ?? null,
+      );
+      checkoutSuccessMessage = syncResult.message;
+    } else {
+      checkoutSuccessMessage =
+        "Payment received. Your plan updates after Paddle confirms the transaction.";
+    }
   } else if (params.success === "1") {
     checkoutSuccessMessage = "Payment received. Your plan may update shortly.";
   }
@@ -91,6 +98,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
         planUsage={planUsage}
         canManage={canManage}
         stripeStatus={stripeStatus}
+        activeProvider={activeProvider}
         success={params.success === "1"}
         successMessage={checkoutSuccessMessage}
         cancelled={params.cancelled === "1"}

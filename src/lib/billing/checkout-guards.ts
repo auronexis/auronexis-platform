@@ -3,6 +3,7 @@ import {
   resolveCheckoutBlockState,
   type CheckoutBlockState,
 } from "@/lib/billing/checkout-block";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 import type { BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
 
 export const PENDING_PAYMENT_CHECKOUT_MESSAGE =
@@ -31,6 +32,7 @@ export function isCheckoutBlockedByPaymentState(input: {
   overview: BillingOverview;
   invoices: CustomerInvoiceView[];
   ignoredStripeInvoiceIds?: ReadonlySet<string>;
+  activeProvider?: BillingProvider;
 }): boolean {
   return resolveCheckoutBlockState(input).blocked;
 }
@@ -39,6 +41,7 @@ export function getCheckoutBlockState(input: {
   overview: BillingOverview;
   invoices: CustomerInvoiceView[];
   ignoredStripeInvoiceIds?: ReadonlySet<string>;
+  activeProvider?: BillingProvider;
 }): CheckoutBlockState {
   return resolveCheckoutBlockState(input);
 }
@@ -49,6 +52,7 @@ export function evaluateCheckoutGuard(input: {
   invoices: CustomerInvoiceView[];
   targetPlanKey: PlanKey;
   ignoredStripeInvoiceIds?: ReadonlySet<string>;
+  activeProvider?: BillingProvider;
 }): CheckoutGuardResult {
   if (isCheckoutBlockedByPaymentState(input)) {
     const block = getCheckoutBlockState(input);

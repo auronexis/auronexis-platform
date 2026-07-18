@@ -44,6 +44,8 @@ type BillingSettingsPanelProps = {
   planUsage: OrganizationPlanUsageSummary;
   canManage: boolean;
   stripeStatus: StripeBillingUiStatus;
+  /** Configured active billing provider (env BILLING_PROVIDER). */
+  activeProvider?: "stripe" | "paddle";
   locale: AppLocale;
   success?: boolean;
   successMessage?: string | null;
@@ -128,6 +130,7 @@ export function BillingSettingsPanel({
   planUsage,
   canManage,
   stripeStatus,
+  activeProvider = "stripe",
   locale,
   success,
   successMessage,
@@ -153,7 +156,11 @@ export function BillingSettingsPanel({
     isPaymentPending: overview.isPaymentPending,
     stripeCustomerId: overview.subscription?.stripe_customer_id,
     providerCustomerId: overview.subscription?.provider_customer_id,
+    activeProvider,
+    billingProvider: overview.subscription?.billing_provider,
   });
+  const showPortalUnavailableHint =
+    activeProvider === "paddle" && canManage && stripeStatus.portalAvailable && !showPortal;
   const showPromotions = canManage && !enterpriseAutoOpen;
   const usingStarterFallback =
     planUsage.plan.planSource === "starter_fallback" ||
@@ -378,7 +385,11 @@ export function BillingSettingsPanel({
         <PageSurface>
           <PageSurfaceHeading
             title="Subscription management"
-            description="Manage your subscription, payment methods, and invoices in the Stripe Customer Portal."
+            description={
+              activeProvider === "paddle"
+                ? "Manage your subscription, payment methods, and invoices in the Paddle customer portal."
+                : "Manage your subscription, payment methods, and invoices in the Stripe Customer Portal."
+            }
           />
           {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
           {!stripeStatus.portalCancellationAvailable ? (
@@ -500,8 +511,14 @@ export function BillingSettingsPanel({
           ) : null}
           {!showPortal && stripeStatus.portalAvailable && (overview.isInactive || usingStarterFallback) ? (
             <p className="text-sm text-muted">
-              Choose a plan to start a subscription. The billing portal opens after checkout or when a
-              subscription needs payment.
+              {showPortalUnavailableHint
+                ? "A billing portal will be available after your first completed subscription."
+                : "Choose a plan to start a subscription. The billing portal opens after checkout or when a subscription needs payment."}
+            </p>
+          ) : null}
+          {showPortalUnavailableHint && !(overview.isInactive || usingStarterFallback) ? (
+            <p className="text-sm text-muted">
+              A billing portal will be available after your first completed subscription.
             </p>
           ) : null}
           {showPortal && !overview.isUsable ? (

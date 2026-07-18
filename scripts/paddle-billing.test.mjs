@@ -80,7 +80,8 @@ test("checkout and portal route by billing provider", () => {
   assert.match(actions, /createPaddleCheckoutPayload/);
   assert.match(actions, /paddleCheckout/);
   assert.match(portal, /createPaddlePortalSession/);
-  assert.match(portal, /billing_provider/);
+  assert.match(portal, /getActiveBillingProvider/);
+  assert.match(portal, /provider === "paddle"/);
   assert.match(checkout, /markOrganizationSyncPending|pendingSyncMessage/);
   assert.match(checkout, /organization_id/);
   assert.match(checkout, /schema_version/);
@@ -159,4 +160,66 @@ test("subscription status mapping preserves raw paddle status separately", () =>
   assert.match(sync, /provider_status/);
   assert.match(sync, /billing_provider: "paddle"/);
   assert.match(sync, /refusing to overwrite Stripe/);
+  assert.match(sync, /stripe_subscription_id/);
+});
+
+test("paddle mode ignores stale Stripe incomplete rows for checkout and selection", () => {
+  const active = readSource("src/lib/billing/active-billing.ts");
+  const selection = readSource("src/lib/billing/subscription-selection.ts");
+  const block = readSource("src/lib/billing/checkout-block.ts");
+  const overview = readSource("src/lib/billing/types.ts");
+  const portal = readSource("src/lib/billing/customer-portal.ts");
+  const paddlePortal = readSource("src/lib/paddle/portal.ts");
+  const diagnostics = readSource("src/components/settings/billing-diagnostics-panel.tsx");
+  const maintenance = readSource("src/lib/billing/maintenance.ts");
+  const maintenanceUi = readSource("src/components/settings/billing-maintenance-actions.tsx");
+  const entitlements = readSource("src/lib/entitlements/resolver.ts");
+
+  assert.match(active, /isStaleStripeAbandonedCheckout/);
+  assert.match(active, /resolveActiveBillingStatusFlags/);
+  assert.match(active, /hasVerifiedPaddleCustomer/);
+  assert.match(active, /PADDLE_PORTAL_UNAVAILABLE_MESSAGE/);
+  assert.match(selection, /activeProvider === "paddle"/);
+  assert.match(selection, /do not fall back to stale Stripe/i);
+  assert.match(block, /activeProvider === "paddle"/);
+  assert.match(block, /Stripe open invoices and incomplete Stripe rows never block/);
+  assert.match(overview, /resolveActiveBillingStatusFlags/);
+  assert.match(portal, /getActiveBillingProvider/);
+  assert.doesNotMatch(portal, /billing_provider.*\?\? "stripe"/);
+  assert.match(paddlePortal, /hasVerifiedPaddleCustomer/);
+  assert.match(paddlePortal, /Never falls back to Stripe/);
+  assert.match(diagnostics, /Legacy Stripe history/);
+  assert.match(diagnostics, /Paddle is the active billing provider/);
+  assert.match(diagnostics, /isPaddleMode/);
+  assert.doesNotMatch(
+    diagnostics,
+    /Stripe remains the source of truth\. Customer-facing billing remains on/,
+  );
+  assert.match(maintenance, /neutralizeStaleStripeCheckoutRemnants/);
+  assert.match(maintenance, /abandoned_stripe_checkout/);
+  assert.match(maintenanceUi, /Neutralize stale Stripe checkout remnants/);
+  assert.match(maintenanceUi, /Stripe sync actions are disabled/);
+  assert.match(entitlements, /getActiveBillingProvider/);
+  assert.match(entitlements, /isPaddleBackedSubscription/);
+});
+
+test("paddle portal requires verified Paddle customer and never uses Stripe customer id", () => {
+  const status = readSource("src/lib/billing/status.ts");
+  const panel = readSource("src/components/settings/billing-settings-panel.tsx");
+  const active = readSource("src/lib/billing/active-billing.ts");
+  assert.match(status, /activeProvider === "paddle"/);
+  assert.match(status, /ctm_/);
+  assert.match(active, /startsWith\("ctm_"\)/);
+  assert.match(panel, /A billing portal will be available after your first completed subscription/);
+  assert.match(panel, /activeProvider/);
+});
+
+test("unknown paddle price and status fail closed for entitlements", () => {
+  const prices = readSource("src/lib/paddle/prices.ts");
+  const paddleStatus = readSource("src/lib/paddle/status.ts");
+  const sync = readSource("src/lib/paddle/sync.ts");
+  assert.match(prices, /Unknown Paddle price ID/);
+  assert.match(paddleStatus, /default:\s*return "inactive"/);
+  assert.match(sync, /resolveInternalPlanFromPaddlePriceId/);
+  assert.match(sync, /Fail closed/);
 });
