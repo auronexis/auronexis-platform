@@ -1,4 +1,6 @@
 import type { CustomerInvoiceView } from "@/lib/billing/types";
+import type { AppLocale } from "@/lib/i18n/types";
+import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 
 export type BillingStatusTone = "success" | "warning" | "danger" | "neutral";
 
@@ -166,12 +168,16 @@ export function billingStatusToneToBadge(
   }
 }
 
-export function formatMoneyFromCents(amountCents: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: 2,
-  }).format(amountCents / 100);
+/**
+ * Format billing amounts stored in cents.
+ * Delegates to the canonical locale-aware formatter (Build Bible V2 Ch1).
+ */
+export function formatMoneyFromCents(
+  amountCents: number,
+  currency: string,
+  locale: AppLocale = "en",
+): string {
+  return formatMoneyFromCentsLocale(amountCents, currency, locale);
 }
 
 export function shortenStripeId(value: string, visible = 10): string {

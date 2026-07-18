@@ -1,6 +1,7 @@
 import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import type { ProrationPreview } from "@/lib/billing/types";
 import { formatBillingDate } from "@/lib/billing/types";
+import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 
 function planPriceCents(planKey: PlanKey): number {
   return getPlanByKey(planKey).priceMonthly * 100;
@@ -31,6 +32,7 @@ export function calculateProrationPreview(input: {
     Math.ceil((input.periodEnd.getTime() - reference.getTime()) / msInDay),
   );
 
+  const targetPlan = getPlanByKey(input.toPlanKey);
   const currentPlanPriceCents = planPriceCents(input.fromPlanKey);
   const targetPlanPriceCents = planPriceCents(input.toPlanKey);
   const direction = resolveDirection(input.fromPlanKey, input.toPlanKey);
@@ -50,10 +52,7 @@ export function calculateProrationPreview(input: {
     creditCents: unusedCreditCents,
     chargeCents: newPlanChargeCents,
     netDueCents,
-    formattedNetDue: new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-    }).format(netDueCents / 100),
+    formattedNetDue: formatMoneyFromCentsLocale(netDueCents, targetPlan.currency, "en"),
     effectiveAt: formatBillingDate(reference.toISOString()) ?? reference.toISOString(),
   };
 }

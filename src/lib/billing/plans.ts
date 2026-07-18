@@ -1,3 +1,5 @@
+import { formatWorkspaceMoney } from "@/lib/i18n/format";
+
 export type PlanKey = "starter" | "professional" | "business" | "enterprise";
 
 export type PlanActionLabel = "current" | "choose" | "upgrade" | "downgrade";
@@ -159,21 +161,13 @@ export function getPublicSelfServePlans(): SubscriptionPlanDefinition[] {
 }
 
 export function formatPlanPrice(plan: SubscriptionPlanDefinition): string {
+  const formatted = formatWorkspaceMoney(plan.priceMonthly, plan.currency, "en");
+
   if (plan.key === "enterprise") {
-    return `From ${new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: plan.currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(plan.priceMonthly)}`;
+    return `From ${formatted}`;
   }
 
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: plan.currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(plan.priceMonthly);
+  return formatted;
 }
 
 export function getPlanActionButtonLabel(action: PlanActionLabel): string {

@@ -30,6 +30,7 @@
     "test:phase-32": "node --test scripts/phase-32-ai-search-geo.test.mjs",
     "test:phase-33": "node --test scripts/phase-33-enterprise-trust.test.mjs",
     "test:paddle-billing": "node --test scripts/paddle-billing.test.mjs scripts/paddle-sole-provider.test.mjs scripts/paddle-billing-v2.test.mjs",
+    "test:build-bible-ch1": "node --test scripts/build-bible-ch1.test.mjs",
     "test:workspace-currency": "node --test scripts/workspace-currency.test.mjs",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",

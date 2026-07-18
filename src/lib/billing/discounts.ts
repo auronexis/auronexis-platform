@@ -1,5 +1,6 @@
 import "server-only";
 
+import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 import { getDefaultPlanKey } from "@/lib/plans/features";
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import { BILLING_PROMO_MESSAGES } from "@/lib/billing/messages";
@@ -23,17 +24,11 @@ type DiscountRow = {
 function formatSavings(row: DiscountRow, planPriceCents: number): string {
   if (row.discount_type === "percentage" && row.percentage_off) {
     const savings = Math.round(planPriceCents * (row.percentage_off / 100));
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: row.currency.toUpperCase(),
-    }).format(savings / 100);
+    return formatMoneyFromCentsLocale(savings, row.currency, "en");
   }
 
   if (row.discount_type === "fixed" && row.amount_off) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: row.currency.toUpperCase(),
-    }).format(row.amount_off / 100);
+    return formatMoneyFromCentsLocale(row.amount_off, row.currency, "en");
   }
 
   return "—";

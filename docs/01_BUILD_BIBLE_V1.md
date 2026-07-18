@@ -2,9 +2,14 @@
 
 Version: 1.0
 
-Status: Active
+Status: Active — **product vision only**
 
 Last Updated: 2026
+
+> **Engineering note:** Technical, security, billing-runtime, and code-hygiene rules live in
+> [`docs/02_BUILD_BIBLE_V2_CHAPTER_01_FOUNDATION.md`](./02_BUILD_BIBLE_V2_CHAPTER_01_FOUNDATION.md)
+> (Build Bible V2 Chapter 1). This V1 document remains canonical for product positioning and ICP.
+> If an engineering claim here ever conflicts with V2, **V2 wins**.
 
 ---
 

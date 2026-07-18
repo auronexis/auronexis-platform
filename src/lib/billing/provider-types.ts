@@ -52,14 +52,6 @@ export type PaddleCheckoutCustomData = {
   schema_version: "1";
 };
 
-/**
- * @deprecated No longer used to validate BILLING_PROVIDER (Paddle is
- * unconditional). Kept only for labeling/validating archived Stripe data.
- */
-export function isBillingProvider(value: string | null | undefined): value is BillingProvider {
-  return value === "stripe" || value === "paddle";
-}
-
 export function isInternalPlan(value: string | null | undefined): value is InternalPlan {
   return value === "professional" || value === "business" || value === "enterprise";
 }

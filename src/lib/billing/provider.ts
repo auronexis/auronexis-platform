@@ -23,12 +23,3 @@ export function isPaddleCheckoutEnabled(): boolean {
 export function isPaddleActiveBillingProvider(): boolean {
   return true;
 }
-
-/**
- * @deprecated BILLING_PROVIDER is no longer read by {@link getActiveBillingProvider}.
- * Kept only for diagnostics/back-compat during the Stripe archive cleanup;
- * do not use this to branch active billing behavior.
- */
-export function readLegacyBillingProviderEnv(): string | undefined {
-  return process.env.BILLING_PROVIDER?.trim().toLowerCase();
-}
