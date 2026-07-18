@@ -53,7 +53,7 @@ export function resolveCheckoutBlockState(input: {
   ignoredStripeInvoiceIds?: ReadonlySet<string>;
   activeProvider?: BillingProvider;
 }): CheckoutBlockState {
-  const activeProvider = input.activeProvider ?? "stripe";
+  const activeProvider = input.activeProvider ?? "paddle";
 
   if (activeProvider === "paddle") {
     const subscription = input.overview.subscription;

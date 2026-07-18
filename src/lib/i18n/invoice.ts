@@ -60,12 +60,12 @@ const INVOICE_TRANSLATIONS: Record<AppLocale, InvoiceTranslations> = {
     thankYou: "Vielen Dank für Ihre Zahlung.",
     latestInvoices: "Aktuelle Rechnungen",
     latestInvoicesDescription:
-      "Stripe-synchronisierter Rechnungsverlauf. Offene Rechnungen ohne Zahlung sind bei SEPA oder ausstehendem Checkout normal.",
+      "Paddle-Rechnungshistorie. Steuerbeträge werden von Paddle als Merchant of Record bereitgestellt.",
     totalInvoices: "Rechnungen gesamt",
     paid: "Bezahlt",
     openUnpaid: "Offen / unbezahlt",
     noInvoicesSynced:
-      "Noch keine Rechnungen synchronisiert. Rechnungen erscheinen nach Stripe-Checkout und Webhook-Verarbeitung.",
+      "Noch keine Rechnungen verfügbar.",
     invoice: "Rechnung",
     status: "Status",
     amountDue: "Fälliger Betrag",
@@ -77,7 +77,7 @@ const INVOICE_TRANSLATIONS: Record<AppLocale, InvoiceTranslations> = {
     openInvoice: "Rechnung öffnen",
     showingLatest: "Die letzten {limit} Rechnungen werden angezeigt.",
     manageInPortal:
-      "Verwalten Sie Zahlungsmethoden und laden Sie weitere Rechnungen im Stripe-Kundenportal herunter.",
+      "Verwalten Sie Abonnement und Zahlungsmethoden im Paddle-Kundenportal.",
     statusDraft: "Entwurf",
     statusOpen: "Offen",
     statusPaid: "Bezahlt",
@@ -105,12 +105,12 @@ const INVOICE_TRANSLATIONS: Record<AppLocale, InvoiceTranslations> = {
     thankYou: "Thank you for your payment.",
     latestInvoices: "Latest invoices",
     latestInvoicesDescription:
-      "Stripe-synchronized invoice history. Open invoices with no payment yet are normal for SEPA or pending checkout.",
+      "Paddle billing history. Tax amounts are provided by Paddle as Merchant of Record.",
     totalInvoices: "Total invoices",
     paid: "Paid",
     openUnpaid: "Open / unpaid",
     noInvoicesSynced:
-      "No invoices synced yet. Invoices appear after Stripe checkout and webhook processing.",
+      "No invoices are available yet.",
     invoice: "Invoice",
     status: "Status",
     amountDue: "Amount due",
@@ -122,7 +122,7 @@ const INVOICE_TRANSLATIONS: Record<AppLocale, InvoiceTranslations> = {
     openInvoice: "Open invoice",
     showingLatest: "Showing the latest {limit} invoices.",
     manageInPortal:
-      "Manage payment methods and download additional invoices in the Stripe customer portal.",
+      "Manage your subscription and payment methods in the Paddle customer portal.",
     statusDraft: "Draft",
     statusOpen: "Open",
     statusPaid: "Paid",

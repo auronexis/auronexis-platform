@@ -16,7 +16,7 @@ import type {
   OrganizationPlanUsageSummary,
   PlanResolutionSource,
 } from "@/lib/plans/types";
-import { isActiveSubscriptionStatus } from "@/lib/stripe/types";
+import { isActiveSubscriptionStatus } from "@/lib/billing/status";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";

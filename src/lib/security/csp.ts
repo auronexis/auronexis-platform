@@ -35,7 +35,6 @@ export function buildContentSecurityPolicy(): string {
       "connect-src 'self'",
       "https://*.supabase.co",
       "wss://*.supabase.co",
-      "https://api.stripe.com",
       "https://api.paddle.com",
       "https://sandbox-api.paddle.com",
       "https://cdn.paddle.com",
@@ -54,8 +53,6 @@ export function buildContentSecurityPolicy(): string {
     [
       "frame-src",
       "https://challenges.cloudflare.com",
-      "https://js.stripe.com",
-      "https://hooks.stripe.com",
       "https://buy.paddle.com",
       "https://sandbox-buy.paddle.com",
       "https://cdn.paddle.com",

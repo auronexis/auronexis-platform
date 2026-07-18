@@ -82,11 +82,8 @@ export function getGoLiveReadinessSnapshot(): GoLiveReadinessSnapshot {
 
   const sentryConfigured = Boolean(process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN);
   const posthogConfigured = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
-  const stripeTestMode =
-    process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ||
-    isDev ||
-    !process.env.STRIPE_SECRET_KEY;
-  const stripeWebhookSecret = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+  const paddleProductionMode = process.env.PADDLE_ENVIRONMENT === "production" || isDev;
+  const paddleWebhookSecret = Boolean(process.env.PADDLE_WEBHOOK_SECRET);
   const oauthConnectorsRegistered = ALL_CONNECTOR_CONFIGS.filter((c) => c.oauth === "oauth2").length;
 
   const deploymentChecks = [
@@ -115,12 +112,12 @@ export function getGoLiveReadinessSnapshot(): GoLiveReadinessSnapshot {
   const securityReady = securityReadiness.complete && securityScore >= 95;
 
   const billingChecks = [
-    stripeTestMode,
-    stripeWebhookSecret || isDev,
-    Boolean(process.env.STRIPE_STARTER_PRICE_ID),
-    Boolean(process.env.STRIPE_PROFESSIONAL_PRICE_ID),
-    Boolean(process.env.STRIPE_BUSINESS_PRICE_ID),
-    Boolean(process.env.STRIPE_ENTERPRISE_PRICE_ID),
+    paddleProductionMode,
+    paddleWebhookSecret || isDev,
+    Boolean(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN),
+    Boolean(process.env.PADDLE_PRICE_PROFESSIONAL_MONTHLY),
+    Boolean(process.env.PADDLE_PRICE_BUSINESS_MONTHLY),
+    Boolean(process.env.PADDLE_PRICE_ENTERPRISE_MONTHLY),
   ];
   const billingScore = scoreChecks(billingChecks);
   const billingReady = billingScore >= 95;

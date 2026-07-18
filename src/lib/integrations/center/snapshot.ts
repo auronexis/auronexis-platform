@@ -4,7 +4,7 @@ import { getApiDashboardSnapshot } from "@/lib/api/diagnostics";
 import { getOpenAIIntegrationSnapshot } from "@/lib/ai/openai";
 import { getAIUsageSummaryForSession } from "@/lib/ai/usage/queries";
 import { countCustomerInvoices } from "@/lib/billing/invoices";
-import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
+import { getBillingUiStatus } from "@/lib/billing/ui-status";
 import { getConnectorConnectionByConnectorId } from "@/lib/connectors/queries";
 import { checkSlackHealth } from "@/lib/connectors/slack/health";
 import { getEmailProviderId, isEmailConfigured } from "@/lib/env/email";
@@ -13,7 +13,7 @@ import type {
   IntegrationConnectionLabel,
 } from "@/lib/integrations/center/types";
 import { getOrganizationPlanContextForSession } from "@/lib/plans/queries";
-import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
+import { getStripeWebhookDiagnostics } from "@/lib/diagnostics/webhook-archive";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
@@ -25,15 +25,12 @@ function connectionLabel(connected: boolean): IntegrationConnectionLabel {
   return connected ? "Connected" : "Not Connected";
 }
 
-function resolveStripeMode(): string | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
-  if (!secretKey) {
-    return null;
-  }
-  if (secretKey.startsWith("sk_live_")) {
+function resolvePaddleMode(): string | null {
+  const environment = process.env.PADDLE_ENVIRONMENT?.trim().toLowerCase();
+  if (environment === "production") {
     return "Live";
   }
-  if (secretKey.startsWith("sk_test_")) {
+  if (environment === "sandbox") {
     return "Test";
   }
   return null;
@@ -159,8 +156,8 @@ export async function getIntegrationCenterSnapshot(
     countWebhookFailures(session.organization.id),
   ]);
 
-  const stripeStatus = getStripeBillingUiStatus();
-  const stripeConnected = stripeStatus.portalAvailable || stripeStatus.checkoutAvailable;
+  const paddleStatus = getBillingUiStatus();
+  const paddleConnected = paddleStatus.portalAvailable || paddleStatus.checkoutAvailable;
 
   let slackStatus = NO_DATA;
   if (slackConnection) {
@@ -198,10 +195,10 @@ export async function getIntegrationCenterSnapshot(
       connectedChannels: null,
       status: slackStatus,
     },
-    stripe: {
-      connectionStatus: connectionLabel(stripeConnected),
-      mode: resolveStripeMode(),
-      customerPortal: stripeStatus.portalAvailable ? "Available" : "Not available",
+    paddle: {
+      connectionStatus: connectionLabel(paddleConnected),
+      mode: resolvePaddleMode(),
+      customerPortal: paddleStatus.portalAvailable ? "Available" : "Not available",
       invoices: invoiceCount > 0 ? `${invoiceCount} synced` : NO_DATA,
     },
     webhooks: {

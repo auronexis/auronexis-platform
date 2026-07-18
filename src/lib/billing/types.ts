@@ -9,10 +9,12 @@ import type { BillingProvider } from "@/lib/billing/provider-types";
 import {
   getBillingStatusLabel,
   getPaymentSummaryLabel,
+  isActiveSubscriptionStatus,
   isSubscriptionInactive,
   isSubscriptionCanceled,
 } from "@/lib/billing/status";
-import { isActiveSubscriptionStatus } from "@/lib/stripe/types";
+import type { BillingHistoryItem } from "@/lib/billing/history-types";
+import type { PaddleBillingDetails } from "@/lib/paddle/subscription-details";
 
 export type UsageMetricKey =
   | "ai_generations"
@@ -75,7 +77,12 @@ export type BillingDashboardData = {
   overview: import("@/lib/billing/types").BillingOverview;
   usage: UsagePeriodSummary;
   limits: UsageMetricSnapshot[];
+  /** @deprecated Legacy Stripe invoice mirror — always empty now. Use billingHistory. */
   invoices: CustomerInvoiceView[];
+  /** Paddle transaction history — the sole active billing history source. */
+  billingHistory: BillingHistoryItem[];
+  /** Live Paddle subscription/payment details, when a verified Paddle subscription exists. */
+  paddleDetails: PaddleBillingDetails | null;
   discounts: DiscountPreview[];
   prorationPreviews: ProrationPreview[];
   forecastStatus: "healthy" | "warning" | "critical";
@@ -136,6 +143,7 @@ export type BillingDiagnosticsSnapshot = {
   platformVersion: string;
   currentPlanKey: PlanKey;
   subscriptionState: string | null;
+  /** @deprecated Field name kept for compat — now reflects Paddle configuration, not Stripe. */
   stripeConnected: boolean;
   usageMeteringEnabled: boolean;
   invoiceCount: number;
@@ -225,7 +233,7 @@ export function buildBillingOverview(
   _organizationPlan: string,
   currentPlanName: string | null,
   currentPlanKey: PlanKey | null,
-  activeProvider: BillingProvider = "stripe",
+  activeProvider: BillingProvider = "paddle",
 ): BillingOverview {
   const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
   const displaySubscription =
@@ -287,11 +295,14 @@ export function formatInvoiceDueLabel(invoice: CustomerInvoiceView): string {
   return invoice.statusLabel;
 }
 
-/** Customer-safe Stripe billing flags — no environment variable names. */
-export type StripeBillingUiStatus = {
+/** Customer-safe billing capability flags — no environment variable names. */
+export type BillingUiStatus = {
   checkoutAvailable: boolean;
   portalAvailable: boolean;
-  /** Stripe Customer Portal allows customers to cancel subscriptions. */
+  /** Whether the active provider's customer portal allows self-serve cancellation. */
   portalCancellationAvailable: boolean;
   planCheckoutReady: Record<PlanKey, boolean>;
 };
+
+/** @deprecated Renamed to {@link BillingUiStatus}. Kept for callers not yet migrated. */
+export type StripeBillingUiStatus = BillingUiStatus;

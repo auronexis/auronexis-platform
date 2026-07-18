@@ -1,33 +1,34 @@
 import "server-only";
 
-import {
-  isBillingProvider,
-  type BillingProvider,
-} from "@/lib/billing/provider-types";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 
 /**
  * Active checkout provider for new self-serve purchases.
- * Defaults to stripe so existing production behavior is preserved until
- * BILLING_PROVIDER=paddle is set deliberately.
+ *
+ * Stripe has been removed from active billing — Paddle is the sole active
+ * provider. Any Stripe code, rows, or env vars that still exist are a
+ * historical archive only and must never be selected here. This always
+ * returns "paddle" regardless of the BILLING_PROVIDER env value.
  */
 export function getActiveBillingProvider(): BillingProvider {
-  const raw = process.env.BILLING_PROVIDER?.trim().toLowerCase();
-  if (!raw) {
-    return "stripe";
-  }
-  if (!isBillingProvider(raw)) {
-    throw new Error(
-      `Invalid BILLING_PROVIDER "${raw}". Expected "stripe" or "paddle".`,
-    );
-  }
-  return raw;
+  return "paddle";
 }
 
+/** Paddle checkout is unconditionally enabled — there is no other active provider. */
 export function isPaddleCheckoutEnabled(): boolean {
-  return getActiveBillingProvider() === "paddle";
+  return true;
 }
 
-/** True when env BILLING_PROVIDER selects Paddle as the sole active billing provider. */
+/** Paddle is unconditionally the sole active billing provider. */
 export function isPaddleActiveBillingProvider(): boolean {
-  return getActiveBillingProvider() === "paddle";
+  return true;
+}
+
+/**
+ * @deprecated BILLING_PROVIDER is no longer read by {@link getActiveBillingProvider}.
+ * Kept only for diagnostics/back-compat during the Stripe archive cleanup;
+ * do not use this to branch active billing behavior.
+ */
+export function readLegacyBillingProviderEnv(): string | undefined {
+  return process.env.BILLING_PROVIDER?.trim().toLowerCase();
 }

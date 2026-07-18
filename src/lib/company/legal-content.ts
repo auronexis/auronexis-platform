@@ -83,7 +83,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Categories of data processed",
         body:
-          "We process: account and profile data (name, email, role, organization); operational data you enter (clients, reports, risks, incidents, knowledge, automation configurations); usage, audit, and security logs; billing and subscription identifiers processed via Stripe; connector and integration tokens (stored encrypted); support communications; and, where enabled, inputs/outputs for AI-assisted features.",
+          "We process: account and profile data (name, email, role, organization); operational data you enter (clients, reports, risks, incidents, knowledge, automation configurations); usage, audit, and security logs; billing and subscription identifiers processed via Paddle, our Merchant of Record; connector and integration tokens (stored encrypted); support communications; and, where enabled, inputs/outputs for AI-assisted features.",
       },
       {
         heading: "Purposes and legal bases",
@@ -98,7 +98,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Sub-processors and transfers",
         body:
-          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, Stripe, Resend, and optional AI providers when enabled). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
+          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, Paddle, Resend, and optional AI providers when enabled). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
       },
       {
         heading: "Your rights",
@@ -178,7 +178,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "11. Prices, payment, invoices, and taxes",
         body:
-          "Listed self-serve plans: Professional €149/month; Business €499/month; Enterprise from €1,499/month subject to individual quotation. Prices shown at checkout and in billing settings apply. Applicable taxes (including VAT where required) are calculated and displayed by the payment processor at checkout. Invoices or receipts are issued electronically by the relevant payment processor. Payment may be processed through Stripe, Paddle, or other processors we designate. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
+          "Listed self-serve plans: Professional €149/month; Business €499/month; Enterprise from €1,499/month subject to individual quotation. Prices shown at checkout and in billing settings apply. Applicable taxes (including VAT where required) are calculated and displayed by Paddle at checkout. Invoices or receipts are issued electronically by Paddle, our Merchant of Record. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
       },
       {
         heading: "11a. Paddle as Merchant of Record",
@@ -193,7 +193,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "13. Cancellation and termination",
         body:
-          "You may cancel future renewals via billing settings or the customer portal of the payment provider that processed your subscription (Stripe or Paddle) where available, or by contacting support. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
+          "You may cancel future renewals via billing settings or the Paddle customer portal where available, or by contacting support. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
       },
       {
         heading: "14. Refunds and withdrawal rights",
@@ -218,7 +218,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "18. Third-party services",
         body:
-          "The platform integrates third-party services (e.g., Stripe, Paddle, Supabase, Vercel, connectors, optional AI providers). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
+          "The platform integrates third-party services (e.g., Paddle, Supabase, Vercel, connectors, optional AI providers). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
       },
       {
         heading: "19. Service changes",
@@ -360,7 +360,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Current sub-processors",
         body:
-          "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nStripe — payment processing and subscription billing.\nResend — transactional email delivery.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
+          "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nPaddle — Merchant of Record for payment processing and subscription billing.\nResend — transactional email delivery.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
       },
       {
         heading: "International transfers",

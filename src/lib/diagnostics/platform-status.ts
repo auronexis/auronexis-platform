@@ -10,9 +10,9 @@ import {
 } from "@/lib/diagnostics/platform-readiness";
 import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
 import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
-import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
+import { getStripeWebhookDiagnostics } from "@/lib/diagnostics/webhook-archive";
 import { getCronSecret } from "@/lib/env";
-import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
+import { isPaddleConfigured } from "@/lib/paddle/env";
 
 export type PlatformStatusItem = {
   key: string;
@@ -35,12 +35,11 @@ export type PlatformStatusSnapshot = {
 
 /** Aggregated platform status for dashboard widget — owner/admin only. */
 export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapshot> {
-  const [database, stripeWebhook, cron, queue, stripeEnv] = await Promise.all([
+  const [database, stripeWebhook, cron, queue] = await Promise.all([
     checkDatabaseHealth(),
     getStripeWebhookDiagnostics(),
     getCronDiagnosticsSnapshot(),
     getQueueDiagnosticsSnapshot(),
-    Promise.resolve(getStripeEnvDiagnostics()),
   ]);
 
   const environment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
@@ -48,7 +47,8 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
   const cronOk = cron.tableReachable && cron.status !== "unavailable";
   const queueOk = queue.tableReachable && queue.status !== "unavailable";
   const cronSecretConfigured = Boolean(getCronSecret());
-  const stripeConfigured = stripeEnv.secretKey.present && stripeEnv.webhookSecret.present;
+  /** Field name kept for compat with platform-readiness scoring — now reflects Paddle, not Stripe. */
+  const stripeConfigured = isPaddleConfigured();
   const sentryConfigured = Boolean(process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN);
   const posthogConfigured = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
 
@@ -81,15 +81,13 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
     },
     {
       key: "stripe",
-      label: "Stripe",
+      label: "Billing (Paddle)",
       status: evaluateServiceStatus("stripe", readinessInput),
       detail: stripeConfigured
-        ? stripeWebhook.tableReachable
-          ? "Webhooks + env configured"
-          : "Webhook table unreachable"
+        ? "Paddle env configured"
         : nodeEnv === "development"
           ? "Not configured (optional in development)"
-          : "Missing Stripe env",
+          : "Missing Paddle env",
     },
     {
       key: "cron",

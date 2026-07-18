@@ -4298,10 +4298,17 @@ export type Database = {
           provider_price_id: string | null;
           status: string;
           amount_total: number | null;
+          amount_subtotal: number | null;
+          amount_tax: number | null;
           currency: string;
           occurred_at: string | null;
           paid_at: string | null;
           invoice_url: string | null;
+          invoice_number: string | null;
+          product_name: string | null;
+          payment_method_summary: string | null;
+          billing_period_start: string | null;
+          billing_period_end: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -4315,10 +4322,17 @@ export type Database = {
           provider_price_id?: string | null;
           status: string;
           amount_total?: number | null;
+          amount_subtotal?: number | null;
+          amount_tax?: number | null;
           currency?: string;
           occurred_at?: string | null;
           paid_at?: string | null;
           invoice_url?: string | null;
+          invoice_number?: string | null;
+          product_name?: string | null;
+          payment_method_summary?: string | null;
+          billing_period_start?: string | null;
+          billing_period_end?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -4332,10 +4346,17 @@ export type Database = {
           provider_price_id?: string | null;
           status?: string;
           amount_total?: number | null;
+          amount_subtotal?: number | null;
+          amount_tax?: number | null;
           currency?: string;
           occurred_at?: string | null;
           paid_at?: string | null;
           invoice_url?: string | null;
+          invoice_number?: string | null;
+          product_name?: string | null;
+          payment_method_summary?: string | null;
+          billing_period_start?: string | null;
+          billing_period_end?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -5461,6 +5482,8 @@ export type OrganizationEmailSettings =
 export type OrganizationBranding = Database["public"]["Tables"]["organization_branding"]["Row"];
 export type OrganizationSubscription =
   Database["public"]["Tables"]["organization_subscriptions"]["Row"];
+export type BillingProviderTransaction =
+  Database["public"]["Tables"]["billing_provider_transactions"]["Row"];
 export type SlaPolicy = Database["public"]["Tables"]["sla_policies"]["Row"];
 export type EscalationRule = Database["public"]["Tables"]["escalation_rules"]["Row"];
 export type EscalationExecution = Database["public"]["Tables"]["escalation_executions"]["Row"];

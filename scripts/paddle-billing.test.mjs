@@ -16,11 +16,12 @@ test("paddle packages are installed for Billing (not Classic)", () => {
   assert.ok(pkg.dependencies["@paddle/paddle-js"]);
 });
 
-test("billing provider abstraction exists and defaults safely", () => {
+test("billing provider abstraction is Paddle-only and unconditional", () => {
   const provider = readSource("src/lib/billing/provider.ts");
   const types = readSource("src/lib/billing/provider-types.ts");
-  assert.match(provider, /BILLING_PROVIDER/);
-  assert.match(provider, /return "stripe"/);
+  assert.match(provider, /return "paddle"/);
+  assert.match(provider, /Stripe has been removed from active billing/);
+  assert.doesNotMatch(provider, /return "stripe"/);
   assert.match(types, /BillingProvider = "stripe" \| "paddle"/);
   assert.match(types, /InternalPlan/);
 });
@@ -72,19 +73,20 @@ test("additive migration preserves stripe columns", () => {
   assert.match(migration, /billing_provider_transactions/);
 });
 
-test("checkout and portal route by billing provider", () => {
+test("checkout and portal are Paddle-unconditional", () => {
   const actions = readSource("src/lib/billing/actions.ts");
   const portal = readSource("src/lib/billing/customer-portal.ts");
   const checkout = readSource("src/lib/paddle/checkout.ts");
-  assert.match(actions, /getActiveBillingProvider/);
   assert.match(actions, /createPaddleCheckoutPayload/);
   assert.match(actions, /paddleCheckout/);
+  assert.doesNotMatch(actions, /createCheckoutSessionWithDiscount/);
+  assert.doesNotMatch(actions, /assertPlanCheckoutReady/);
   assert.match(portal, /createPaddlePortalSession/);
-  assert.match(portal, /getActiveBillingProvider/);
-  assert.match(portal, /provider === "paddle"/);
+  assert.doesNotMatch(portal, /createStripePortalSession/);
   assert.match(checkout, /markOrganizationSyncPending|pendingSyncMessage/);
   assert.match(checkout, /organization_id/);
   assert.match(checkout, /schema_version/);
+  assert.doesNotMatch(checkout, /stripe_subscription_id/);
 });
 
 test("custom checkout data excludes secrets", () => {
@@ -95,11 +97,18 @@ test("custom checkout data excludes secrets", () => {
   assert.doesNotMatch(types, /api_key|webhook_secret|password/i);
 });
 
-test("stripe webhook routes remain intact", () => {
-  assert.ok(existsSync(join(rootDir, "src/app/api/stripe/webhook/route.ts")));
-  assert.ok(existsSync(join(rootDir, "src/app/api/stripe/webhook-v2/route.ts")));
-  const stripeWebhook = readSource("src/app/api/stripe/webhook/route.ts");
-  assert.match(stripeWebhook, /constructEvent/);
+test("stripe runtime has been fully removed", () => {
+  assert.ok(!existsSync(join(rootDir, "src/app/api/stripe")));
+  assert.ok(!existsSync(join(rootDir, "src/app/api/stripe/webhook/route.ts")));
+  assert.ok(!existsSync(join(rootDir, "src/app/api/stripe/webhook-v2/route.ts")));
+  assert.ok(!existsSync(join(rootDir, "src/lib/stripe")));
+  assert.ok(!existsSync(join(rootDir, "src/lib/diagnostics/stripe-env.ts")));
+  assert.ok(!existsSync(join(rootDir, "src/lib/diagnostics/stripe-staging.ts")));
+  assert.ok(!existsSync(join(rootDir, "src/lib/pricing/safe-stripe-status.ts")));
+
+  const pkg = JSON.parse(readSource("package.json"));
+  assert.ok(!pkg.dependencies?.stripe);
+  assert.ok(!pkg.devDependencies?.stripe);
 });
 
 test("refund policy appears in legal nav and footer routes", () => {
@@ -159,8 +168,9 @@ test("subscription status mapping preserves raw paddle status separately", () =>
   assert.match(status, /mapPaddleSubscriptionStatus/);
   assert.match(sync, /provider_status/);
   assert.match(sync, /billing_provider: "paddle"/);
-  assert.match(sync, /refusing to overwrite Stripe/);
-  assert.match(sync, /stripe_subscription_id/);
+  assert.match(sync, /Stripe is gone from active billing/);
+  assert.doesNotMatch(sync, /refusing to overwrite Stripe/);
+  assert.doesNotMatch(sync, /stripe_subscription_id/);
 });
 
 test("paddle mode ignores stale Stripe incomplete rows for checkout and selection", () => {
@@ -184,7 +194,7 @@ test("paddle mode ignores stale Stripe incomplete rows for checkout and selectio
   assert.match(block, /activeProvider === "paddle"/);
   assert.match(block, /Stripe open invoices and incomplete Stripe rows never block/);
   assert.match(overview, /resolveActiveBillingStatusFlags/);
-  assert.match(portal, /getActiveBillingProvider/);
+  assert.match(portal, /createPaddlePortalSession/);
   assert.doesNotMatch(portal, /billing_provider.*\?\? "stripe"/);
   assert.match(paddlePortal, /hasVerifiedPaddleCustomer/);
   assert.match(paddlePortal, /Never falls back to Stripe/);
@@ -247,8 +257,7 @@ test("paddle checkout success closes overlay and redirects to billing", () => {
     /console\.error\("\[billing\]\[portal\] failed", error\)/,
   );
   assert.match(errors, /isExpectedPortalUnavailableError/);
-  assert.match(portal, /getActiveBillingProvider/);
-  assert.match(portal, /never falls back to Stripe portal/);
-  assert.match(portal, /if \(provider === "paddle"\)/);
+  assert.match(portal, /Never falls back to a Stripe portal/);
   assert.match(portal, /createPaddlePortalSession/);
+  assert.doesNotMatch(portal, /getActiveBillingProvider/);
 });

@@ -38,7 +38,7 @@ export function getAbuseProtectionSnapshot(): AbuseProtectionSnapshot {
     true, // sliding-window rate limits on auth/forms/API
     true, // 429 responses from API handler
     true, // queue dead-letter + diagnostics
-    Boolean(process.env.STRIPE_WEBHOOK_SECRET) || isDev,
+    Boolean(process.env.PADDLE_WEBHOOK_SECRET) || isDev,
     true, // login throttle flags suspicious activity
     unrestrictedPublicEndpoints === 0,
     PUBLIC_ENDPOINT_REGISTRY.length >= 5,
@@ -52,7 +52,7 @@ export function getAbuseProtectionSnapshot(): AbuseProtectionSnapshot {
     floodProtectionEnabled: true,
     burstTrafficHandlingEnabled: true,
     queueOverloadHandlingEnabled: true,
-    webhookAbusePreventionEnabled: Boolean(process.env.STRIPE_WEBHOOK_SECRET) || isDev,
+    webhookAbusePreventionEnabled: Boolean(process.env.PADDLE_WEBHOOK_SECRET) || isDev,
     returns429Responses: true,
     suspiciousActivityDetectionEnabled: true,
     unrestrictedPublicEndpoints,

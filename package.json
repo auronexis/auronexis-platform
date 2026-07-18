@@ -29,7 +29,7 @@
     "test:phase-31": "node --test scripts/phase-31-landing-pages.test.mjs",
     "test:phase-32": "node --test scripts/phase-32-ai-search-geo.test.mjs",
     "test:phase-33": "node --test scripts/phase-33-enterprise-trust.test.mjs",
-    "test:paddle-billing": "node --test scripts/paddle-billing.test.mjs scripts/paddle-sole-provider.test.mjs",
+    "test:paddle-billing": "node --test scripts/paddle-billing.test.mjs scripts/paddle-sole-provider.test.mjs scripts/paddle-billing-v2.test.mjs",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "seed:pilot": "node scripts/seed-pilot-environment.mjs"
@@ -49,7 +49,6 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "resend": "^6.14.0",
-    "stripe": "^22.3.0",
     "tailwind-merge": "^3.3.0",
     "zod": "^3.25.36"
   },

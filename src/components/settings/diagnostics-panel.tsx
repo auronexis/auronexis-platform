@@ -262,21 +262,6 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
       {data.isDevelopment ? (
         <>
           <DiagnosticsSection
-            title="Stripe environment"
-            description="Billing price IDs and Stripe credentials — secrets are never shown."
-          >
-            <EnvGrid>
-              <EnvRow {...data.stripeEnv.starterPriceId} />
-              <EnvRow {...data.stripeEnv.professionalPriceId} />
-              <EnvRow {...data.stripeEnv.businessPriceId} />
-              <EnvRow {...data.stripeEnv.enterprisePriceId} />
-              <EnvRow {...data.stripeEnv.webhookSecret} />
-              <EnvRow {...data.stripeEnv.secretKey} />
-              <EnvRow {...data.stripeEnv.publishableKey} />
-            </EnvGrid>
-          </DiagnosticsSection>
-
-          <DiagnosticsSection
             title="Supabase environment"
             description="Database and auth configuration — keys are masked."
           >
@@ -331,8 +316,8 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
 
       {data.isDevelopment ? (
         <DiagnosticsSection
-          title="Stripe webhooks"
-          description="Idempotent webhook processing — event IDs deduplicated, retries safe."
+          title="Legacy Stripe webhooks (archive)"
+          description="Read-only history from before the Paddle migration. Not used for active billing."
         >
         <dl>
           <Row
@@ -931,24 +916,6 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
             }
           />
           <Row label="Status" value={data.queue.status} />
-        </dl>
-      </DiagnosticsSection>
-
-      <DiagnosticsSection
-        title="Stripe staging readiness"
-        description="Checkout, portal, webhooks, invoices, and billing health for staging and production."
-      >
-        <dl>
-          <Row label="Stripe readiness" value={<BoolBadge value={data.stripeStaging.stripeReadiness} />} />
-          <Row label="Portal readiness" value={<BoolBadge value={data.stripeStaging.portalReadiness} />} />
-          <Row label="Webhook readiness" value={<BoolBadge value={data.stripeStaging.webhookReadiness} />} />
-          <Row label="Invoice readiness" value={<BoolBadge value={data.stripeStaging.invoiceReadiness} />} />
-          <Row label="Billing readiness" value={<BoolBadge value={data.stripeStaging.billingReadiness} />} />
-          <Row label="Checkout configured" value={<BoolBadge value={data.stripeStaging.checkoutConfigured} />} />
-          <Row label="Subscription active" value={<BoolBadge value={data.stripeStaging.subscriptionActive} />} />
-          <Row label="Processed webhooks" value={data.stripeStaging.processedWebhooks} />
-          <Row label="Failed webhooks" value={data.stripeStaging.failedWebhooks} />
-          <Row label="Invoice count" value={data.stripeStaging.invoiceCount} />
         </dl>
       </DiagnosticsSection>
 

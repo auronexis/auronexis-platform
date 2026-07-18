@@ -4,7 +4,7 @@ import { isAIProviderConfigured } from "@/lib/ai/provider-labels";
 import { resolveAIProvider } from "@/lib/ai/server/resolve-provider";
 import { APP_VERSION } from "@/lib/company/contact";
 import { checkDatabaseHealth } from "@/lib/diagnostics/platform-health";
-import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
+import { isPaddleConfigured } from "@/lib/paddle/env";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 
 export type PlatformHealthStatus = "healthy" | "degraded" | "unavailable";
@@ -17,6 +17,7 @@ export type PlatformHealthSnapshot = {
   configuration: {
     database: boolean;
     supabase: boolean;
+    /** @deprecated Field name kept for compat — now reflects Paddle, not Stripe. */
     stripe: boolean;
     ai: boolean;
   };
@@ -25,7 +26,6 @@ export type PlatformHealthSnapshot = {
 export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapshot> {
   const started = Date.now();
   const database = await checkDatabaseHealth();
-  const stripeEnv = getStripeEnvDiagnostics();
   const { provider } = resolveAIProvider();
 
   let supabaseConfigured = false;
@@ -37,10 +37,7 @@ export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapsho
     supabaseConfigured = false;
   }
 
-  const stripeConfigured =
-    stripeEnv.secretKey.present &&
-    stripeEnv.webhookSecret.present &&
-    stripeEnv.publishableKey.present;
+  const stripeConfigured = isPaddleConfigured();
 
   const aiConfigured = isAIProviderConfigured(provider.id);
 

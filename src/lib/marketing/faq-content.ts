@@ -40,7 +40,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "How is billing handled?",
-        answer: "Subscriptions are processed through Stripe. Workspace owners and billing admins manage plans, invoices, and payment methods in Settings → Billing.",
+        answer: "Subscriptions are processed through Paddle as Merchant of Record. Workspace owners and billing admins manage plans, invoices, and payment methods in Settings → Billing.",
       },
       {
         question: "Can I change plans later?",
@@ -144,7 +144,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
     items: [
       {
         question: "What integrations are available?",
-        answer: `See ${MARKETING_ROUTES.integrations} for the connector catalog including OAuth providers, Stripe, email, and REST API access.`,
+        answer: `See ${MARKETING_ROUTES.integrations} for the connector catalog including OAuth providers, email, and REST API access.`,
       },
       {
         question: "Is there a public API?",

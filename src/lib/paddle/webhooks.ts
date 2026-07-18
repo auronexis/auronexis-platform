@@ -8,6 +8,7 @@ import {
   upsertPaddleOrganizationSubscription,
   upsertPaddleTransaction,
 } from "@/lib/paddle/sync";
+import { parsePaddleMoneyToCents } from "@/lib/paddle/money";
 
 const HANDLED_EVENT_TYPES = new Set([
   "subscription.created",
@@ -32,10 +33,6 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
-}
-
-function asNumber(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 export type PaddleWebhookHandleResult = {
@@ -151,16 +148,69 @@ export async function handlePaddleWebhookEvent(event: {
   return { handled: false, ignored: true, organizationId: null };
 }
 
+/** Card brand + last4 only — never persist full card numbers or PANs. */
+function extractPaymentMethodSummary(data: Record<string, unknown>): string | null {
+  const payments = data.payments;
+  if (!Array.isArray(payments) || payments.length === 0) {
+    return null;
+  }
+
+  const firstPayment = asRecord(payments[0]);
+  const methodDetails = asRecord(firstPayment.methodDetails ?? firstPayment.method_details);
+  const type = asString(methodDetails.type);
+  const card = asRecord(methodDetails.card);
+  const brand = asString(card.type);
+  const last4 = asString(card.last4);
+
+  if (brand && last4) {
+    return `${brand} •••• ${last4}`;
+  }
+
+  return type;
+}
+
+/** Best-effort product/price name for invoice history display — never invents a name. */
+function extractProductName(data: Record<string, unknown>): string | null {
+  const items = data.items;
+  if (Array.isArray(items) && items.length > 0) {
+    const first = asRecord(items[0]);
+    const price = asRecord(first.price);
+    const fromPrice = asString(price.name) ?? asString(price.description);
+    if (fromPrice) {
+      return fromPrice;
+    }
+  }
+
+  const details = asRecord(data.details);
+  const lineItems = details.lineItems ?? details.line_items;
+  if (Array.isArray(lineItems) && lineItems.length > 0) {
+    const first = asRecord(lineItems[0]);
+    const product = asRecord(first.product);
+    const price = asRecord(first.price);
+    return asString(product.name) ?? asString(price.name) ?? asString(price.description);
+  }
+
+  return null;
+}
+
 async function persistTransaction(
   organizationId: string,
   data: Record<string, unknown>,
   transactionId: string,
 ): Promise<void> {
-  const totals = asRecord(data.details);
-  const totalsInner = asRecord(totals.totals);
-  const amount =
-    asNumber(totalsInner.grandTotal ?? totalsInner.grand_total ?? totalsInner.total) ??
-    asNumber(data.amount);
+  const details = asRecord(data.details);
+  const totals = asRecord(details.totals);
+  const billingPeriod = asRecord(data.billingPeriod ?? data.billing_period);
+
+  const total =
+    parsePaddleMoneyToCents(totals.grandTotal ?? totals.grand_total ?? totals.total) ??
+    parsePaddleMoneyToCents(data.amount);
+  const subtotal = parsePaddleMoneyToCents(totals.subtotal);
+  const tax = parsePaddleMoneyToCents(totals.tax);
+
+  const invoiceNumber = asString(
+    data.invoiceNumber ?? data.invoice_number ?? data.invoiceId ?? data.invoice_id,
+  );
 
   await upsertPaddleTransaction({
     organizationId,
@@ -169,7 +219,9 @@ async function persistTransaction(
     providerSubscriptionId: asString(data.subscriptionId ?? data.subscription_id),
     providerPriceId: extractPriceIdFromTransaction(data),
     status: asString(data.status) ?? "unknown",
-    amountTotal: amount,
+    amountTotal: total,
+    amountSubtotal: subtotal,
+    amountTax: tax,
     currency: asString(data.currencyCode ?? data.currency_code) ?? "EUR",
     occurredAt: asString(data.billedAt ?? data.billed_at ?? data.createdAt ?? data.created_at),
     paidAt:
@@ -177,6 +229,11 @@ async function persistTransaction(
         ? asString(data.updatedAt ?? data.updated_at) ?? new Date().toISOString()
         : null,
     invoiceUrl: asString(data.invoiceUrl ?? data.invoice_url),
+    invoiceNumber,
+    productName: extractProductName(data),
+    paymentMethodSummary: extractPaymentMethodSummary(data),
+    billingPeriodStart: asString(billingPeriod.startsAt ?? billingPeriod.starts_at),
+    billingPeriodEnd: asString(billingPeriod.endsAt ?? billingPeriod.ends_at),
   });
 }
 

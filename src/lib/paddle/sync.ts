@@ -63,7 +63,11 @@ export function extractPriceIdFromTransaction(data: Record<string, unknown>): st
   return null;
 }
 
-/** Upsert organization subscription from verified Paddle state. Fails closed on unknown prices. */
+/**
+ * Upsert organization subscription from verified Paddle state. Fails closed
+ * on unknown prices. Stripe is gone from active billing — abandoned Stripe
+ * remnants (historical archive only) never block a verified Paddle sync.
+ */
 export async function upsertPaddleOrganizationSubscription(
   input: PaddleSubscriptionSyncInput,
 ): Promise<void> {
@@ -75,32 +79,6 @@ export async function upsertPaddleOrganizationSubscription(
   const normalized = mapPaddleSubscriptionStatus(input.providerStatus);
   const admin = createAdminClient();
   const now = new Date().toISOString();
-
-  const { data: existing } = await admin
-    .from("organization_subscriptions")
-    .select("id, billing_provider, stripe_subscription_id, status")
-    .eq("organization_id", input.organizationId)
-    .maybeSingle();
-
-  const existingRow = existing as {
-    billing_provider?: string;
-    stripe_subscription_id?: string | null;
-    status?: string | null;
-  } | null;
-
-  // Refuse only when a real Stripe subscription id exists. Abandoned Stripe
-  // incomplete remnants (customer id only) may be reclaimed by verified Paddle state.
-  if (
-    existingRow?.billing_provider === "stripe" &&
-    existingRow.stripe_subscription_id?.trim()
-  ) {
-    console.error("[paddle] refusing to overwrite Stripe-backed subscription", {
-      organizationId: input.organizationId,
-    });
-    throw new Error(
-      "Organization already has a Stripe subscription. Paddle sync refused to overwrite Stripe records.",
-    );
-  }
 
   const row = {
     organization_id: input.organizationId,
@@ -165,6 +143,13 @@ export async function upsertPaddleTransaction(input: {
   occurredAt: string | null;
   paidAt: string | null;
   invoiceUrl: string | null;
+  amountSubtotal?: number | null;
+  amountTax?: number | null;
+  invoiceNumber?: string | null;
+  productName?: string | null;
+  paymentMethodSummary?: string | null;
+  billingPeriodStart?: string | null;
+  billingPeriodEnd?: string | null;
 }): Promise<void> {
   const admin = createAdminClient();
   const { error } = await admin.from("billing_provider_transactions").upsert(
@@ -177,10 +162,17 @@ export async function upsertPaddleTransaction(input: {
       provider_price_id: input.providerPriceId,
       status: mapPaddleTransactionStatus(input.status),
       amount_total: input.amountTotal,
+      amount_subtotal: input.amountSubtotal ?? null,
+      amount_tax: input.amountTax ?? null,
       currency: input.currency.toUpperCase(),
       occurred_at: input.occurredAt,
       paid_at: input.paidAt,
       invoice_url: input.invoiceUrl,
+      invoice_number: input.invoiceNumber ?? null,
+      product_name: input.productName ?? null,
+      payment_method_summary: input.paymentMethodSummary ?? null,
+      billing_period_start: input.billingPeriodStart ?? null,
+      billing_period_end: input.billingPeriodEnd ?? null,
       updated_at: new Date().toISOString(),
     } as never,
     { onConflict: "billing_provider,provider_transaction_id" },

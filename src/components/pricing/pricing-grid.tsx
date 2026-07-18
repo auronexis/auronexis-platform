@@ -10,7 +10,7 @@ import {
 import type { CheckoutBlockState } from "@/lib/billing/checkout-block";
 import { resolveCheckoutBlockState } from "@/lib/billing/checkout-block";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
-import type { StripeBillingUiStatus } from "@/lib/billing/types";
+import type { BillingUiStatus } from "@/lib/billing/types";
 import {
   resolvePlanActionLabel,
   type PlanKey,
@@ -24,7 +24,7 @@ import {
 import { getPricingPlanBlockReason } from "@/lib/plans/features";
 import type { PricingSelectionContext } from "@/lib/pricing/selection-context";
 import { createFallbackPricingSelection } from "@/lib/pricing/selection-context";
-import { normalizeStripeBillingUiStatus } from "@/lib/pricing/safe-stripe-status";
+import { normalizeBillingUiStatus } from "@/lib/billing/ui-status-client";
 import { FormAlert } from "@/components/ui/form-alert";
 import { trackConversionEvent } from "@/lib/analytics/events";
 import { openPaddleCheckout } from "@/lib/paddle/browser-checkout";
@@ -35,7 +35,7 @@ export { buildPricingSelectionContext, createFallbackPricingSelection } from "@/
 type PricingGridProps = {
   plans: SubscriptionPlanDefinition[];
   selection: PricingSelectionContext;
-  stripeStatus: StripeBillingUiStatus;
+  stripeStatus: BillingUiStatus;
   enterpriseContactHref: string;
   checkoutBlock?: CheckoutBlockState;
   canManage?: boolean;
@@ -57,7 +57,7 @@ export function PricingGrid({
   const [pendingSyncMessage, setPendingSyncMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isPortalPending, startPortalTransition] = useTransition();
-  const safeStripeStatus = normalizeStripeBillingUiStatus(stripeStatus);
+  const safeStripeStatus = normalizeBillingUiStatus(stripeStatus);
   const safeSelection = selection ?? createFallbackPricingSelection();
   const safePlans = Array.isArray(plans) ? plans : [];
   const unavailableMessage = getPricingUnavailableMessage(safeStripeStatus);

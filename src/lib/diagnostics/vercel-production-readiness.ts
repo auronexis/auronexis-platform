@@ -9,7 +9,7 @@ export type VercelProductionReadinessSnapshot = {
   productionConfigured: boolean;
   previewConfigured: boolean;
   developmentConfigured: boolean;
-  stripeEnvReady: boolean;
+  paddleEnvReady: boolean;
   oauthEnvReady: boolean;
   mailEnvReady: boolean;
   domainsDocumented: boolean;
@@ -25,10 +25,10 @@ const CORE_ENV_KEYS = [
   "NEXT_PUBLIC_APP_URL",
 ] as const;
 
-const STRIPE_ENV_KEYS = [
-  "STRIPE_SECRET_KEY",
-  "STRIPE_WEBHOOK_SECRET",
-  "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+const PADDLE_ENV_KEYS = [
+  "PADDLE_API_KEY",
+  "PADDLE_WEBHOOK_SECRET",
+  "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
 ] as const;
 
 const MAIL_ENV_KEYS = ["EMAIL_PROVIDER", "RESEND_API_KEY", "RESEND_FROM_EMAIL", "EMAIL_FROM"] as const;
@@ -57,7 +57,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
   const isDev = process.env.NODE_ENV !== "production";
   const scope = resolveVercelScope();
   const coreEnvReady = envPresent(CORE_ENV_KEYS) || isDev;
-  const stripeEnvReady = envPresent(STRIPE_ENV_KEYS) || isDev;
+  const paddleEnvReady = envPresent(PADDLE_ENV_KEYS) || isDev;
   const oauthEnvReady = envPresent(OAUTH_ENV_KEYS) || isDev;
   const mailEnvReady = isEmailConfigured() || isDev;
   const domainsDocumented = PRODUCTION_DOMAIN_LIST.length === 4;
@@ -72,7 +72,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
     productionConfigured,
     previewConfigured,
     developmentConfigured,
-    stripeEnvReady,
+    paddleEnvReady,
     oauthEnvReady,
     mailEnvReady,
     domainsDocumented,
@@ -86,7 +86,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
     productionConfigured,
     previewConfigured,
     developmentConfigured,
-    stripeEnvReady,
+    paddleEnvReady,
     oauthEnvReady,
     mailEnvReady,
     domainsDocumented,
@@ -98,7 +98,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
 
 export const VERCEL_ENV_GROUPS = {
   core: CORE_ENV_KEYS,
-  stripe: STRIPE_ENV_KEYS,
+  paddle: PADDLE_ENV_KEYS,
   oauth: OAUTH_ENV_KEYS,
   mail: MAIL_ENV_KEYS,
 } as const;

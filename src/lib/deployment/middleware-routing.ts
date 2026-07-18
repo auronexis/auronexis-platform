@@ -6,17 +6,13 @@ export function isApiRoute(pathname: string): boolean {
   return pathname === "/api" || pathname.startsWith("/api/");
 }
 
-export function isStripeWebhookRoute(pathname: string): boolean {
-  return (
-    pathname === "/api/stripe/webhook" ||
-    pathname === "/api/stripe/webhook-v2" ||
-    pathname.startsWith("/api/stripe/")
-  );
+export function isPaddleWebhookRoute(pathname: string): boolean {
+  return pathname === "/api/paddle/webhook" || pathname.startsWith("/api/paddle/");
 }
 
 export function isInboundWebhookRoute(pathname: string): boolean {
   return (
-    isStripeWebhookRoute(pathname) ||
+    isPaddleWebhookRoute(pathname) ||
     pathname === "/api/webhooks" ||
     pathname.startsWith("/api/webhooks/")
   );
@@ -39,7 +35,7 @@ export function shouldBypassSessionMiddleware(pathname: string): boolean {
 
 /**
  * Marketing apex → www redirect for HTML/marketing traffic only.
- * API routes stay on the requested host so Stripe and other POST webhooks never get 308.
+ * API routes stay on the requested host so Paddle and other POST webhooks never get 308.
  *
  * Requires removing the blanket apex redirect in Vercel Domains — use vercel.json redirects instead.
  */

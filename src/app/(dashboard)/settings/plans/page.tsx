@@ -5,7 +5,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { getPublicSelfServePlans } from "@/lib/billing/plans";
 import { getPlansPageBillingState } from "@/lib/billing/queries";
 import { resolveCheckoutBlockState } from "@/lib/billing/checkout-block";
-import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
+import { getBillingUiStatus } from "@/lib/billing/ui-status";
 import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { hasVerifiedPaddleCustomer } from "@/lib/billing/active-billing";
@@ -19,9 +19,9 @@ import {
   createFallbackPricingSelection,
 } from "@/lib/pricing/selection-context";
 import {
-  FALLBACK_STRIPE_BILLING_UI_STATUS,
-  normalizeStripeBillingUiStatus,
-} from "@/lib/pricing/safe-stripe-status";
+  FALLBACK_BILLING_UI_STATUS,
+  normalizeBillingUiStatus,
+} from "@/lib/billing/ui-status-client";
 import { getPaddleEnvironment, isPaddleConfigured } from "@/lib/paddle/env";
 
 export const metadata: Metadata = {
@@ -37,7 +37,7 @@ export default async function WorkspacePlansPage() {
   let billingState;
   let seatUsage = { used: 0 };
   let clientUsage = { used: 0 };
-  let stripeStatus = FALLBACK_STRIPE_BILLING_UI_STATUS;
+  let stripeStatus = FALLBACK_BILLING_UI_STATUS;
   const enterpriseContactHref = resolveEnterpriseContactHref(session.role);
 
   let sandboxCheckoutNotice: string | null = null;
@@ -53,7 +53,7 @@ export default async function WorkspacePlansPage() {
   }
 
   try {
-    stripeStatus = normalizeStripeBillingUiStatus(getStripeBillingUiStatus());
+    stripeStatus = normalizeBillingUiStatus(getBillingUiStatus());
   } catch (error) {
     console.warn("[plans] stripe status unavailable — using fallback flags", {
       message: error instanceof Error ? error.message : String(error),
@@ -100,7 +100,7 @@ export default async function WorkspacePlansPage() {
           try {
             return getActiveBillingProvider();
           } catch {
-            return "stripe";
+            return "paddle";
           }
         })(),
       }),
@@ -120,11 +120,11 @@ export default async function WorkspacePlansPage() {
     ignoredStripeInvoiceIds: billingState.ignoredStripeInvoiceIds,
   });
 
-  let activeProvider: "stripe" | "paddle" = "stripe";
+  let activeProvider: "stripe" | "paddle" = "paddle";
   try {
     activeProvider = getActiveBillingProvider();
   } catch {
-    activeProvider = "stripe";
+    activeProvider = "paddle";
   }
 
   const showPortalAction =

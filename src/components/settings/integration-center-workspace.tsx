@@ -204,17 +204,17 @@ export function IntegrationCenterWorkspace({ snapshot }: IntegrationCenterWorksp
         </IntegrationCard>
 
         <IntegrationCard
-          title="Stripe"
+          title="Paddle"
           description="Subscription billing, customer portal, and invoice synchronization."
           configureHref="/settings/billing"
         >
           <IntegrationRow
             label="Connection status"
-            value={<StatusBadge status={snapshot.stripe.connectionStatus} />}
+            value={<StatusBadge status={snapshot.paddle.connectionStatus} />}
           />
-          <IntegrationRow label="Mode" value={snapshot.stripe.mode ?? NO_DATA} />
-          <IntegrationRow label="Customer portal" value={snapshot.stripe.customerPortal} />
-          <IntegrationRow label="Invoices" value={snapshot.stripe.invoices} />
+          <IntegrationRow label="Mode" value={snapshot.paddle.mode ?? NO_DATA} />
+          <IntegrationRow label="Customer portal" value={snapshot.paddle.customerPortal} />
+          <IntegrationRow label="Invoices" value={snapshot.paddle.invoices} />
         </IntegrationCard>
 
         <IntegrationCard

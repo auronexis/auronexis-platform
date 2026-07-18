@@ -1,13 +1,11 @@
 import "server-only";
 
-import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { createPaddlePortalSession } from "@/lib/paddle/portal";
-import { getAppUrl } from "@/lib/env";
-import { createPortalSession as createStripePortalSession } from "@/lib/stripe/subscriptions";
 
 /**
- * Open the customer portal for the configured active billing provider.
- * When BILLING_PROVIDER=paddle, never falls back to Stripe portal.
+ * Open the Paddle customer portal — the sole active billing provider.
+ * Never falls back to a Stripe portal, regardless of legacy Stripe data on
+ * the org. Stripe removed from active billing; historical archive only.
  */
 export async function openCustomerPortal(input: {
   organizationId: string;
@@ -15,19 +13,5 @@ export async function openCustomerPortal(input: {
   email: string;
   returnUrl?: string;
 }): Promise<string> {
-  const provider = getActiveBillingProvider();
-
-  if (provider === "paddle") {
-    return createPaddlePortalSession({ organizationId: input.organizationId });
-  }
-
-  const appUrl = getAppUrl();
-  return createStripePortalSession({
-    organizationId: input.organizationId,
-    organizationName: input.organizationName,
-    email: input.email,
-    returnUrl: input.returnUrl ?? `${appUrl}/settings/billing`,
-  });
+  return createPaddlePortalSession({ organizationId: input.organizationId });
 }
-
-export { createPortalSession } from "@/lib/stripe/subscriptions";

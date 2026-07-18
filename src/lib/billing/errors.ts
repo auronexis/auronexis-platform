@@ -4,10 +4,13 @@ import {
 
 const INTERNAL_BILLING_PATTERNS = [
   /STRIPE_/i,
+  /PADDLE_/i,
   /environment variable/i,
   /Missing Stripe price ID/i,
+  /Missing Paddle price/i,
   /Set STRIPE_/i,
   /NEXT_PUBLIC_STRIPE/i,
+  /NEXT_PUBLIC_PADDLE/i,
   /discount code/i,
   /coupon invalid/i,
   /postgres/i,
@@ -43,6 +46,14 @@ export function sanitizeBillingCustomerError(error: unknown, fallback: string): 
 
   if (error.message === "Unable to load billing profile.") {
     return "Unable to load billing information. Try again later.";
+  }
+
+  if (
+    error.message === "Invoice not found." ||
+    error.message === "An invoice PDF is not available for this transaction." ||
+    error.message === "Unable to retrieve the invoice PDF right now. Try again later."
+  ) {
+    return error.message;
   }
 
   if (/invalid promo|promotion unavailable|unable to apply/i.test(error.message)) {

@@ -80,7 +80,7 @@ export {
   getPlanLimitsForOrganization,
 } from "./enforcement";
 export { recordBillingUsageEvent, getUsageLimit, getBillingPeriodBounds } from "./metering";
-export { listCustomerInvoices, syncCustomerInvoiceFromStripe, recordBillingEvent } from "./invoices";
+export { listCustomerInvoices, recordBillingEvent } from "./invoices";
 export { validateDiscountCode, listActiveDiscountPreviews } from "./discounts";
 export { calculateProrationPreview, listProrationPreviews } from "./proration";
 export { openCustomerPortal } from "./customer-portal";

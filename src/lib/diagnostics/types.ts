@@ -10,16 +10,6 @@ export type EnvVarStatus = {
   preview?: string;
 };
 
-export type StripeEnvDiagnostics = {
-  starterPriceId: EnvVarStatus;
-  professionalPriceId: EnvVarStatus;
-  businessPriceId: EnvVarStatus;
-  enterprisePriceId: EnvVarStatus;
-  webhookSecret: EnvVarStatus;
-  secretKey: EnvVarStatus;
-  publishableKey: EnvVarStatus;
-};
-
 export type PlatformEnvDiagnostics = import("@/lib/diagnostics/platform-env").PlatformEnvDiagnostics;
 
 export type SubscriptionDiagnostics = {
@@ -109,7 +99,7 @@ export type CompliancePlatformDiagnostics =
   import("@/lib/compliance/types").ComplianceDiagnosticsSnapshot;
 
 export type StripeWebhookDiagnostics =
-  import("@/lib/stripe/idempotency").StripeWebhookDiagnostics;
+  import("@/lib/diagnostics/webhook-archive").StripeWebhookDiagnostics;
 
 export type CronInfrastructureDiagnostics =
   import("@/lib/jobs/types").CronDiagnosticsSnapshot;
@@ -119,9 +109,6 @@ export type QueueInfrastructureDiagnostics =
 
 export type ProductionReadinessDiagnostics =
   import("@/lib/jobs/types").ProductionReadinessSnapshot;
-
-export type StripeStagingReadinessDiagnostics =
-  import("@/lib/diagnostics/stripe-staging").StripeStagingReadiness;
 
 export type LaunchPolishDiagnostics = import("@/lib/diagnostics/launch-polish").LaunchPolishSnapshot;
 
@@ -168,7 +155,6 @@ export type WorkspaceDiagnostics = {
   enabledFeatures: Array<{ key: PlanFeatureKey; enabled: boolean }>;
   lockedFeatures: LockedFeatureInfo[];
   subscription: SubscriptionDiagnostics;
-  stripeEnv: StripeEnvDiagnostics;
   platformEnv: PlatformEnvDiagnostics;
   matchedPlanFromSubscriptionPriceId: PlanKey | null;
   ai: AIReadinessDiagnostics;
@@ -197,7 +183,6 @@ export type WorkspaceDiagnostics = {
   acquisitionReadiness: AcquisitionReadinessDiagnostics;
   firstCustomerReadiness: FirstCustomerReadinessDiagnostics;
   launchCandidateReadiness: LaunchCandidateReadinessDiagnostics;
-  stripeStaging: StripeStagingReadinessDiagnostics;
   platform: PlatformDiagnostics;
   permissions: PermissionDiagnostics;
   devForcePlanEnvPresent: boolean;

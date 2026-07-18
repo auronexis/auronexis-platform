@@ -27,18 +27,16 @@ import { getSecurityReadinessSnapshot } from "@/lib/diagnostics/security-readine
 import { getLaunchPolishSnapshot } from "@/lib/diagnostics/launch-polish";
 import { getPilotExecutionReadinessSnapshot } from "@/lib/diagnostics/pilot-execution-readiness";
 import { getPilotAcquisitionSnapshot } from "@/lib/diagnostics/pilot-acquisition";
-import { getStripeStagingReadiness } from "@/lib/diagnostics/stripe-staging";
 import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
 import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
-import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
+import { getStripeWebhookDiagnostics } from "@/lib/diagnostics/webhook-archive";
 import {
   checkDatabaseHealth,
-  checkStripeHealth,
+  checkPaddleHealth,
   getBuildInfo,
 } from "@/lib/diagnostics/platform-health";
 import { getOrganizationSubscription } from "@/lib/billing/queries";
 import type { WorkspaceDiagnostics } from "@/lib/diagnostics/types";
-import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
 import { getPlatformEnvDiagnostics } from "@/lib/diagnostics/platform-env";
 import {
   getMinimumPlanForFeature,
@@ -98,7 +96,7 @@ export async function getWorkspaceDiagnostics(
     checkPlanFeatureForSession(session, "ai_report_assistant"),
   ]);
 
-  const [usageSummary, aiDiagnostics, databaseHealth, automationDiagnostics, automationEngine, integrationsDiagnostics, integrationRuntimeDiagnostics, predictiveDiagnostics, connectorsDiagnostics, publicApiDiagnostics, whiteLabelDiagnostics, billingDiagnostics, complianceDiagnostics, secretsDiagnostics, stripeWebhookDiagnostics, cronDiagnostics, queueDiagnostics, stripeStagingDiagnostics] =
+  const [usageSummary, aiDiagnostics, databaseHealth, automationDiagnostics, automationEngine, integrationsDiagnostics, integrationRuntimeDiagnostics, predictiveDiagnostics, connectorsDiagnostics, publicApiDiagnostics, whiteLabelDiagnostics, billingDiagnostics, complianceDiagnostics, secretsDiagnostics, stripeWebhookDiagnostics, cronDiagnostics, queueDiagnostics] =
     await Promise.all([
     getAIUsageSummaryForSession(session, plan.planKey),
     getAIDiagnosticsSnapshot(session, plan.planKey),
@@ -120,12 +118,10 @@ export async function getWorkspaceDiagnostics(
     getStripeWebhookDiagnostics(),
     getCronDiagnosticsSnapshot(),
     getQueueDiagnosticsSnapshot(),
-    getStripeStagingReadiness(session),
   ]);
-  const stripeEnv = getStripeEnvDiagnostics();
   const platformEnv = getPlatformEnvDiagnostics();
   const buildInfo = getBuildInfo();
-  const stripeHealth = checkStripeHealth(stripeEnv);
+  const stripeHealth = checkPaddleHealth();
 
   const enabledFeatures = listFeatureKeys().map((key) => ({
     key,
@@ -192,7 +188,6 @@ export async function getWorkspaceDiagnostics(
         ? null
         : "No subscription row found. This organization uses Professional limits until a plan is linked.",
     },
-    stripeEnv,
     platformEnv,
     matchedPlanFromSubscriptionPriceId,
     ai: {
@@ -220,7 +215,6 @@ export async function getWorkspaceDiagnostics(
     stripeWebhook: stripeWebhookDiagnostics,
     cron: cronDiagnostics,
     queue: queueDiagnostics,
-    stripeStaging: stripeStagingDiagnostics,
     platform: {
       buildVersion: buildInfo.version,
       environment: buildInfo.environment,
@@ -295,7 +289,6 @@ export async function getWorkspaceDiagnostics(
       acquisitionReadiness,
       firstCustomerReadiness,
       launchCandidateReadiness,
-      stripeStaging: stripeStagingDiagnostics,
     }),
   };
 }

@@ -10,8 +10,7 @@ import {
 } from "@/lib/billing/invoices";
 import { getBillingOverview } from "@/lib/billing/queries";
 import { getCurrentUsageSummary } from "@/lib/billing/usage";
-import { checkStripeHealth } from "@/lib/diagnostics/platform-health";
-import { getStripeEnvDiagnostics } from "@/lib/diagnostics/stripe-env";
+import { checkPaddleHealth } from "@/lib/diagnostics/platform-health";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 export async function getBillingDiagnosticsSnapshot(
@@ -25,7 +24,7 @@ export async function getBillingDiagnosticsSnapshot(
     countRecentBillingEvents(session.organization.id, 7),
   ]);
 
-  const stripeHealth = checkStripeHealth(getStripeEnvDiagnostics());
+  const stripeHealth = checkPaddleHealth();
   const approachingLimits = usage.metrics.filter((metric) => metric.approachingLimit).length;
   const reachedLimits = usage.metrics.filter((metric) => metric.atLimit).length;
 

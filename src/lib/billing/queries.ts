@@ -1,10 +1,7 @@
 import { buildBillingOverview } from "@/lib/billing/types";
 import type { BillingDashboardData, BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
 import { resolveCheckoutBlockState, type CheckoutBlockState } from "@/lib/billing/checkout-block";
-import { listIgnoredStripeInvoiceIds } from "@/lib/billing/invoices";
 import { listActiveDiscountPreviews } from "@/lib/billing/discounts";
-import { filterCustomerFacingInvoices } from "@/lib/billing/hygiene";
-import { listCustomerInvoices } from "@/lib/billing/invoices";
 import { listProrationPreviews } from "@/lib/billing/proration";
 import { getCurrentUsageSummary } from "@/lib/billing/usage";
 import {
@@ -12,7 +9,6 @@ import {
   safeGetPlanKeyFromSubscriptionPrice,
 } from "@/lib/billing/plans.server";
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import { ensureSubscriptionCustomer, subscriptionRequiresCustomerId } from "@/lib/stripe/customers";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
@@ -20,6 +16,8 @@ import { getDefaultPlanKey } from "@/lib/plans/features";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { resolveActiveBillingStatusFlags } from "@/lib/billing/active-billing";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
+import { listOrganizationBillingTransactions } from "@/lib/paddle/transactions";
+import { getPaddleBillingDetails } from "@/lib/paddle/subscription-details";
 
 export { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 
@@ -49,26 +47,10 @@ export async function getOrganizationSubscription(
   );
 }
 
-/** Billing overview for settings UI. */
+/** Billing overview for settings UI. Paddle is the sole active billing provider. */
 export async function getBillingOverview(session: SessionContext): Promise<BillingOverview> {
   const activeProvider = getActiveBillingProvider();
-  let subscription = await getOrganizationSubscription(session);
-
-  if (
-    activeProvider === "stripe" &&
-    subscription &&
-    subscriptionRequiresCustomerId(subscription.status) &&
-    !subscription.stripe_customer_id
-  ) {
-    await ensureSubscriptionCustomer({
-      organizationId: session.organization.id,
-      organizationName: session.organization.name,
-      email: session.email,
-      status: subscription.status,
-      stripeSubscriptionId: subscription.stripe_subscription_id,
-    });
-    subscription = await getOrganizationSubscription(session);
-  }
+  const subscription = await getOrganizationSubscription(session);
 
   const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
   const rawStatus = flags.rawStatus;
@@ -113,14 +95,20 @@ export async function getBillingOverview(session: SessionContext): Promise<Billi
 export async function getBillingDashboardData(
   session: SessionContext,
 ): Promise<BillingDashboardData> {
-  const [overview, usage, invoices] = await Promise.all([
+  const [overview, usage, billingHistory] = await Promise.all([
     getBillingOverview(session),
     getCurrentUsageSummary(session),
-    listCustomerInvoices(session),
+    listOrganizationBillingTransactions(session).catch((error) => {
+      console.warn("[billing] Failed to load Paddle billing history", {
+        organizationId: session.organization.id,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      return [];
+    }),
   ]);
 
   const currentPlanKey = overview.currentPlanKey ?? getDefaultPlanKey();
-  const [discounts, prorationPreviews] = await Promise.all([
+  const [discounts, prorationPreviews, paddleDetails] = await Promise.all([
     listActiveDiscountPreviews(currentPlanKey),
     Promise.resolve(
       listProrationPreviews({
@@ -129,17 +117,22 @@ export async function getBillingDashboardData(
         periodEnd: overview.subscription?.current_period_end ?? null,
       }),
     ),
+    getPaddleBillingDetails(session).catch((error) => {
+      console.warn("[billing] Failed to load Paddle billing details", {
+        organizationId: session.organization.id,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }),
   ]);
 
   const approaching = usage.metrics.filter((metric) => metric.approachingLimit).length;
   const reached = usage.metrics.filter((metric) => metric.atLimit).length;
   const forecastStatus =
     reached > 0 ? "critical" : approaching > 0 ? "warning" : "healthy";
-  const ignoredStripeInvoiceIds = await listIgnoredStripeInvoiceIds(session.organization.id);
   const checkoutBlock = resolveCheckoutBlockState({
     overview,
-    invoices: filterCustomerFacingInvoices(invoices),
-    ignoredStripeInvoiceIds,
+    invoices: [],
     activeProvider: getActiveBillingProvider(),
   });
 
@@ -147,7 +140,9 @@ export async function getBillingDashboardData(
     overview,
     usage,
     limits: usage.metrics.filter((metric) => metric.limit !== null),
-    invoices: filterCustomerFacingInvoices(invoices),
+    invoices: [],
+    billingHistory,
+    paddleDetails,
     discounts,
     prorationPreviews,
     forecastStatus,
@@ -226,27 +221,9 @@ export async function getPlansPageBillingState(
     const currentPlan = currentPlanKey ? safeGetPlanByKey(currentPlanKey) : null;
     const currentPlanName = currentPlan?.name ?? overview.planLabel ?? null;
 
-    let invoices: CustomerInvoiceView[] = [];
-    let ignoredStripeInvoiceIds = new Set<string>();
-
-    try {
-      ignoredStripeInvoiceIds = await listIgnoredStripeInvoiceIds(session.organization.id);
-    } catch {
-      ignoredStripeInvoiceIds = new Set();
-    }
-
-    try {
-      invoices = filterCustomerFacingInvoices(await listCustomerInvoices(session));
-    } catch (error) {
-      console.warn("[plans] Failed to load invoices for pricing page", {
-        message: error instanceof Error ? error.message : String(error),
-      });
-    }
-
     const checkoutBlock = resolveCheckoutBlockState({
       overview,
-      invoices,
-      ignoredStripeInvoiceIds,
+      invoices: [],
       activeProvider,
     });
 
@@ -256,13 +233,13 @@ export async function getPlansPageBillingState(
         currentPlanKey: overview.isUsable ? currentPlanKey : overview.currentPlanKey,
         planLabel: overview.isUsable ? (currentPlanName ?? overview.planLabel) : overview.planLabel,
       },
-      invoices,
+      invoices: [],
       resolvedPlanKey,
       currentPlanKey: overview.isUsable ? currentPlanKey : null,
       currentPlan,
       currentPlanName,
       checkoutBlock,
-      ignoredStripeInvoiceIds,
+      ignoredStripeInvoiceIds: new Set<string>(),
     };
   } catch (error) {
     console.error("[plans] getPlansPageBillingState failed — returning fallback billing state", {

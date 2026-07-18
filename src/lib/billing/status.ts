@@ -37,6 +37,13 @@ export function isSubscriptionUsable(status: string | null | undefined): boolean
   return USABLE_STATUSES.has(normalizeSubscriptionStatus(status));
 }
 
+/** Broader than {@link isSubscriptionUsable} — includes past_due, which is entitled but not "usable". */
+const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["trialing", "active", "past_due"]);
+
+export function isActiveSubscriptionStatus(status: string | null | undefined): boolean {
+  return ACTIVE_SUBSCRIPTION_STATUSES.has(normalizeSubscriptionStatus(status));
+}
+
 export function isSubscriptionInactive(status: string | null | undefined): boolean {
   const normalized = normalizeSubscriptionStatus(status);
   return INACTIVE_STATUSES.has(normalized) || normalized === "inactive";

@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
-import { createCheckoutSessionWithDiscount } from "@/lib/billing/checkout";
 import { assertCheckoutAllowed } from "@/lib/billing/checkout-guards.server";
 import { openCustomerPortal } from "@/lib/billing/customer-portal";
 import {
@@ -16,10 +15,8 @@ import { BILLING_PROMO_MESSAGES, formatPromoValidationSuccess } from "@/lib/bill
 import { validateDiscountCode } from "@/lib/billing/discounts";
 import { calculateProrationPreview } from "@/lib/billing/proration";
 import { getBillingOverview } from "@/lib/billing/queries";
-import { getActiveBillingProvider } from "@/lib/billing/provider";
 import type { PaddleCheckoutCustomData } from "@/lib/billing/provider-types";
 import { isInternalPlan } from "@/lib/billing/provider-types";
-import { assertPlanCheckoutReady } from "@/lib/billing/stripe-config";
 import type { PlanKey } from "@/lib/billing/plans";
 import { getDefaultPlanKey } from "@/lib/plans/features";
 import { createPaddleCheckoutPayload } from "@/lib/paddle/checkout";
@@ -43,10 +40,9 @@ export type CheckoutActionResult = BillingActionState & {
 
 const planKeySchema = z.enum(["starter", "professional", "business", "enterprise"]);
 
-/** Create checkout for the active billing provider — Owner/Admin only. */
+/** Create a Paddle checkout — the sole active billing provider. Owner/Admin only. */
 export async function createCheckoutSessionAction(
   planKey: string,
-  discountCode?: string | null,
 ): Promise<CheckoutActionResult> {
   const session = await requireSession();
 
@@ -72,42 +68,27 @@ export async function createCheckoutSessionAction(
     return { error: "Invalid subscription plan selected." };
   }
 
-  const provider = getActiveBillingProvider();
-
   try {
     await assertCheckoutAllowed(session, parsed.data);
 
-    if (provider === "paddle") {
-      const paddleCheckout = await createPaddleCheckoutPayload({
-        organizationId: session.organization.id,
-        userId: session.user.id,
-        planKey: parsed.data,
-        email: session.email,
-      });
-
-      return {
-        success: paddleCheckout.pendingSyncMessage,
-        paddleCheckout: {
-          priceId: paddleCheckout.priceId,
-          clientToken: paddleCheckout.clientToken,
-          environment: paddleCheckout.environment,
-          customData: paddleCheckout.customData,
-          pendingSyncMessage: paddleCheckout.pendingSyncMessage,
-          customerEmail: session.email,
-        },
-      };
-    }
-
-    assertPlanCheckoutReady(parsed.data);
-    const checkoutUrl = await createCheckoutSessionWithDiscount({
+    const paddleCheckout = await createPaddleCheckoutPayload({
       organizationId: session.organization.id,
-      organizationName: session.organization.name,
-      email: session.email,
-      planKey: parsed.data,
       userId: session.user.id,
-      discountCode,
+      planKey: parsed.data,
+      email: session.email,
     });
-    redirect(checkoutUrl);
+
+    return {
+      success: paddleCheckout.pendingSyncMessage,
+      paddleCheckout: {
+        priceId: paddleCheckout.priceId,
+        clientToken: paddleCheckout.clientToken,
+        environment: paddleCheckout.environment,
+        customData: paddleCheckout.customData,
+        pendingSyncMessage: paddleCheckout.pendingSyncMessage,
+        customerEmail: session.email,
+      },
+    };
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) {
       throw error;

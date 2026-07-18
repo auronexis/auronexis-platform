@@ -1,7 +1,6 @@
 import "server-only";
 
 import type { CheckoutResult, InternalPlan, PaddleCheckoutCustomData } from "@/lib/billing/provider-types";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getPaddleClientToken, getPaddleEnvironment, isPaddleConfigured } from "@/lib/paddle/env";
 import { getPaddlePriceIdForPlan } from "@/lib/paddle/prices";
 import { markOrganizationSyncPending } from "@/lib/paddle/sync";
@@ -15,7 +14,9 @@ export type CreatePaddleCheckoutInput = {
 
 /**
  * Prepare a Paddle.js overlay checkout payload.
- * Access is NOT granted here — webhook/server reconciliation grants access.
+ * Stripe removed from active billing — abandoned Stripe remnants (historical
+ * archive only) never block Paddle checkout. Access is NOT granted here —
+ * webhook/server reconciliation grants access.
  */
 export async function createPaddleCheckoutPayload(
   input: CreatePaddleCheckoutInput,
@@ -26,26 +27,6 @@ export async function createPaddleCheckoutPayload(
 
   if (input.planKey === "enterprise") {
     throw new Error("Contact sales for Enterprise plans.");
-  }
-
-  const admin = createAdminClient();
-  const { data: existing } = await admin
-    .from("organization_subscriptions")
-    .select("billing_provider, stripe_subscription_id, provider_subscription_id, sync_pending")
-    .eq("organization_id", input.organizationId)
-    .maybeSingle();
-
-  const row = existing as {
-    billing_provider?: string;
-    stripe_subscription_id?: string | null;
-    provider_subscription_id?: string | null;
-    sync_pending?: boolean;
-  } | null;
-
-  if (row?.billing_provider === "stripe" && row.stripe_subscription_id?.trim()) {
-    throw new Error(
-      "This organization already has a Stripe subscription. Manage billing through the Stripe portal.",
-    );
   }
 
   const priceId = getPaddlePriceIdForPlan(input.planKey);

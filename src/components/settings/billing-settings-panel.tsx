@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { CheckoutBlockBanner } from "@/components/billing/checkout-block-banner";
 import { BillingCheckoutSyncPoller } from "@/components/settings/billing-checkout-sync-poller";
-import { InvoiceCenterPanel } from "@/components/settings/invoice-center-panel";
+import { BillingHistoryPanel } from "@/components/settings/billing-history-panel";
 import { PlanUsageSummary } from "@/components/plans/plan-usage-summary";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
@@ -23,6 +23,7 @@ import type { PaddleCheckoutSyncStatus } from "@/lib/billing/checkout-sync-statu
 import {
   billingStatusToneToBadge,
   canOpenBillingPortal,
+  formatMoneyFromCents,
   getBillingStatusTone,
   getPaymentSummaryTone,
 } from "@/lib/billing/status";
@@ -30,7 +31,7 @@ import {
   formatForecastWarning,
   formatProrationSummary,
 } from "@/lib/billing/messages";
-import type { BillingDashboardData, StripeBillingUiStatus } from "@/lib/billing/types";
+import type { BillingDashboardData, BillingUiStatus } from "@/lib/billing/types";
 import type { AppLocale } from "@/lib/i18n";
 import { formatBillingDateTime } from "@/lib/billing/types";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
@@ -46,8 +47,8 @@ type BillingSettingsPanelProps = {
   seatUsage: OrganizationSeatUsage;
   planUsage: OrganizationPlanUsageSummary;
   canManage: boolean;
-  stripeStatus: StripeBillingUiStatus;
-  /** Configured active billing provider (env BILLING_PROVIDER). */
+  stripeStatus: BillingUiStatus;
+  /** Active billing provider — Paddle is the sole active provider. */
   activeProvider?: "stripe" | "paddle";
   locale: AppLocale;
   success?: boolean;
@@ -136,7 +137,7 @@ export function BillingSettingsPanel({
   planUsage,
   canManage,
   stripeStatus,
-  activeProvider = "stripe",
+  activeProvider = "paddle",
   locale,
   success,
   successMessage,
@@ -147,6 +148,7 @@ export function BillingSettingsPanel({
   enterpriseStatus,
   enterpriseAutoOpen = false,
 }: BillingSettingsPanelProps) {
+  void locale;
   const { overview } = dashboard;
   const [actionError, setActionError] = useState<string | null>(null);
   const [discountNotice, setDiscountNotice] = useState<{
@@ -471,7 +473,82 @@ export function BillingSettingsPanel({
         </p>
       </PageSurface>
 
-      <InvoiceCenterPanel invoices={dashboard.invoices} canManage={canManage} locale={locale} />
+      {dashboard.paddleDetails ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <BillingCard title="Payment method">
+            {dashboard.paddleDetails.paymentMethod?.brand ||
+            dashboard.paddleDetails.paymentMethod?.last4 ? (
+              <p className="text-foreground">
+                {[dashboard.paddleDetails.paymentMethod.brand, dashboard.paddleDetails.paymentMethod.last4
+                  ? `•••• ${dashboard.paddleDetails.paymentMethod.last4}`
+                  : null]
+                  .filter(Boolean)
+                  .join(" ")}
+                {dashboard.paddleDetails.paymentMethod.expMonth &&
+                dashboard.paddleDetails.paymentMethod.expYear
+                  ? ` · expires ${String(dashboard.paddleDetails.paymentMethod.expMonth).padStart(2, "0")}/${dashboard.paddleDetails.paymentMethod.expYear}`
+                  : null}
+              </p>
+            ) : (
+              <p className="text-muted">
+                No upcoming payment method summary is currently available.
+                {showPortal ? " Manage payment methods in the billing portal." : null}
+              </p>
+            )}
+            {showPortal ? (
+              <FormFooter className="border-t-0 pt-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={isPortalPending}
+                  loading={isPortalPending}
+                  onClick={runPortal}
+                >
+                  Manage payment method
+                </Button>
+              </FormFooter>
+            ) : null}
+          </BillingCard>
+          <BillingCard title="Next payment">
+            {dashboard.paddleDetails.nextPayment?.date ||
+            dashboard.paddleDetails.nextPayment?.total != null ? (
+              <>
+                <p className="text-foreground">
+                  {dashboard.paddleDetails.nextPayment.date
+                    ? formatBillingDateTime(dashboard.paddleDetails.nextPayment.date)
+                    : "Date unavailable"}
+                </p>
+                {dashboard.paddleDetails.nextPayment.total != null &&
+                dashboard.paddleDetails.nextPayment.currency ? (
+                  <p className="text-muted">
+                    Total{" "}
+                    {formatMoneyFromCents(
+                      dashboard.paddleDetails.nextPayment.total,
+                      dashboard.paddleDetails.nextPayment.currency,
+                    )}
+                    {dashboard.paddleDetails.nextPayment.subtotal != null
+                      ? ` · subtotal ${formatMoneyFromCents(dashboard.paddleDetails.nextPayment.subtotal, dashboard.paddleDetails.nextPayment.currency)}`
+                      : null}
+                    {dashboard.paddleDetails.nextPayment.tax != null
+                      ? ` · tax ${formatMoneyFromCents(dashboard.paddleDetails.nextPayment.tax, dashboard.paddleDetails.nextPayment.currency)}`
+                      : null}
+                  </p>
+                ) : (
+                  <p className="text-muted">No upcoming payment amount is currently available.</p>
+                )}
+              </>
+            ) : (
+              <p className="text-muted">No upcoming payment is currently available.</p>
+            )}
+          </BillingCard>
+        </div>
+      ) : null}
+
+      <BillingHistoryPanel
+        initialItems={dashboard.billingHistory}
+        canManage={canManage}
+        pageSize={10}
+      />
 
       {showPromotions ? (
         <PageSurface>

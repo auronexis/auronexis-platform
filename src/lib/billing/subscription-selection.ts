@@ -21,7 +21,7 @@ function sortByUpdatedAtDesc(
  */
 export function selectPreferredSubscriptionRow(
   rows: OrganizationSubscription[],
-  activeProvider: BillingProvider = "stripe",
+  activeProvider: BillingProvider = "paddle",
 ): OrganizationSubscription | null {
   if (rows.length === 0) {
     return null;
@@ -66,7 +66,7 @@ export function selectPreferredSubscriptionRow(
 
 export function selectPreferredSubscriptionSummaryRow<
   T extends { status: string | null; updated_at?: string },
->(rows: T[], activeProvider: BillingProvider = "stripe"): T | null {
+>(rows: T[], activeProvider: BillingProvider = "paddle"): T | null {
   if (rows.length === 0) {
     return null;
   }

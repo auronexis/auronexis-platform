@@ -46,24 +46,27 @@ export function getResendFromEmail(): string {
   return resolveDefaultFromEmail();
 }
 
-/** Stripe secret key — server-only. */
-export function getStripeSecretKey(): string {
-  return requireEnv("STRIPE_SECRET_KEY");
+/**
+ * @deprecated Stripe has been removed from active billing. Paddle is the sole
+ * active provider — see "@/lib/paddle/env". These always throw.
+ */
+export function getStripeSecretKey(): never {
+  throw new Error("Stripe removed — Paddle is the sole active billing provider.");
 }
 
-/** Stripe webhook signing secret — server-only. */
-export function getStripeWebhookSecret(): string {
-  return requireEnv("STRIPE_WEBHOOK_SECRET").trim();
+/** @deprecated Stripe removed — see {@link getStripeSecretKey}. */
+export function getStripeWebhookSecret(): never {
+  throw new Error("Stripe removed — Paddle is the sole active billing provider.");
 }
 
-/** Stripe webhook v2 signing secret — server-only. */
-export function getStripeWebhookSecretV2(): string {
-  return requireEnv("STRIPE_WEBHOOK_SECRET_V2").trim();
+/** @deprecated Stripe removed — see {@link getStripeSecretKey}. */
+export function getStripeWebhookSecretV2(): never {
+  throw new Error("Stripe removed — Paddle is the sole active billing provider.");
 }
 
-/** Stripe publishable key — safe for client checkout elements. */
-export function getStripePublishableKey(): string {
-  return requireEnv("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
+/** @deprecated Stripe removed — see {@link getStripeSecretKey}. */
+export function getStripePublishableKey(): never {
+  throw new Error("Stripe removed — Paddle is the sole active billing provider.");
 }
 
 /** Cron bearer secret for /api/cron/run — server-only. */
@@ -83,23 +86,6 @@ export function verifyCronAuthorization(request: Request): boolean {
     return false;
   }
   return header.slice("Bearer ".length) === secret;
-}
-
-/** Legacy fallback Stripe price ID — server-only. */
-export function getStripePriceIdFallback(): string | null {
-  const value = process.env.STRIPE_PRICE_ID;
-  return value && value.trim().length > 0 ? value.trim() : null;
-}
-
-/** @deprecated Use getPlanPriceId(planKey) from billing/plans.server instead. */
-export function getStripePriceId(): string {
-  const fallback = getStripePriceIdFallback();
-
-  if (fallback) {
-    return fallback;
-  }
-
-  throw new Error("Missing required environment variable: STRIPE_PRICE_ID");
 }
 
 /** Platform sales org for inbound lead routing — server-only. */

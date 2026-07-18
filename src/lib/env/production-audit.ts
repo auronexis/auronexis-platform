@@ -31,9 +31,9 @@ export function auditProductionEnvironment(): ProductionEnvAudit {
     { key: "NEXT_PUBLIC_SUPABASE_ANON_KEY", label: "Supabase anon key", severity: "required", configured: isSet("NEXT_PUBLIC_SUPABASE_ANON_KEY") },
     { key: "SUPABASE_SERVICE_ROLE_KEY", label: "Supabase service role", severity: "required", configured: isSet("SUPABASE_SERVICE_ROLE_KEY") },
     { key: "NEXT_PUBLIC_APP_URL", label: "Application URL", severity: "required", configured: isSet("NEXT_PUBLIC_APP_URL") },
-    { key: "STRIPE_SECRET_KEY", label: "Stripe secret key", severity: "required", configured: isSet("STRIPE_SECRET_KEY") },
-    { key: "STRIPE_WEBHOOK_SECRET", label: "Stripe webhook secret", severity: "required", configured: isSet("STRIPE_WEBHOOK_SECRET") },
-    { key: "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY", label: "Stripe publishable key", severity: "required", configured: isSet("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY") },
+    { key: "PADDLE_API_KEY", label: "Paddle API key", severity: "required", configured: isSet("PADDLE_API_KEY") },
+    { key: "PADDLE_WEBHOOK_SECRET", label: "Paddle webhook secret", severity: "required", configured: isSet("PADDLE_WEBHOOK_SECRET") },
+    { key: "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", label: "Paddle client token", severity: "required", configured: isSet("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN") },
     {
       key: "EMAIL_PROVIDER",
       label: `Email provider (${getEmailProviderId()})`,

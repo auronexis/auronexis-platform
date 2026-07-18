@@ -16,7 +16,7 @@ import { COMPANY_NAME } from "@/lib/company/contact";
 import { checkDatabaseHealth, type DatabaseHealthLevel } from "@/lib/diagnostics/platform-health";
 import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
 import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
-import { getStripeWebhookDiagnostics } from "@/lib/stripe/idempotency";
+import { isPaddleConfigured } from "@/lib/paddle/env";
 import { cn } from "@/lib/utils/cn";
 
 export const metadata: Metadata = createPageMetadataForPath("/status");
@@ -39,12 +39,12 @@ function mapDatabaseLevel(level: DatabaseHealthLevel): StatusLevel {
 }
 
 async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>> {
-  const [database, stripeWebhook, cron, queue] = await Promise.all([
+  const [database, cron, queue] = await Promise.all([
     checkDatabaseHealth(),
-    getStripeWebhookDiagnostics(),
     getCronDiagnosticsSnapshot(),
     getQueueDiagnosticsSnapshot(),
   ]);
+  const billingConfigured = isPaddleConfigured();
 
   const aiStatus = await resolvePublicAiStatus();
 
@@ -66,8 +66,8 @@ async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>
     },
     Billing: {
       name: "Billing",
-      status: process.env.STRIPE_SECRET_KEY ? "operational" : "degraded",
-      detail: process.env.STRIPE_SECRET_KEY
+      status: billingConfigured ? "operational" : "degraded",
+      detail: billingConfigured
         ? "Subscription billing available"
         : "Billing availability limited",
     },
@@ -85,11 +85,6 @@ async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>
       name: "Automation",
       status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
       detail: "Workflow execution services",
-    },
-    Stripe: {
-      name: "Stripe",
-      status: mapHealth(stripeWebhook.tableReachable, stripeWebhook.failedEvents > 0),
-      detail: "Payment processing",
     },
     Cron: {
       name: "Cron",

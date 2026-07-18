@@ -14,15 +14,9 @@ export const PUBLIC_ENDPOINT_REGISTRY: PublicEndpointProtection[] = [
     authenticated: false,
   },
   {
-    path: "/api/stripe/webhook",
+    path: "/api/paddle/webhook",
     methods: ["POST"],
-    protection: "Stripe signature + idempotency table",
-    authenticated: false,
-  },
-  {
-    path: "/api/stripe/webhook-v2",
-    methods: ["POST"],
-    protection: "Stripe signature (STRIPE_WEBHOOK_SECRET_V2) + idempotency table",
+    protection: "Paddle signature (PADDLE_WEBHOOK_SECRET) + idempotency table",
     authenticated: false,
   },
   {

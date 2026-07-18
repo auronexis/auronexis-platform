@@ -1,8 +1,13 @@
 /**
  * Neutral billing provider types — UI and business logic depend on these,
  * not on Stripe- or Paddle-specific shapes.
+ *
+ * Stripe has been removed from active billing. "stripe" remains in this
+ * union only to label historical/archived data (legacy subscription rows,
+ * invoices, webhook events) — it must never be returned by
+ * getActiveBillingProvider() and must never drive checkout, portal, or
+ * entitlement decisions. Paddle is the sole active billing provider.
  */
-
 export type BillingProvider = "stripe" | "paddle";
 
 /** Self-serve / commercial plans sold via checkout (excludes internal starter fallback). */
@@ -47,6 +52,10 @@ export type PaddleCheckoutCustomData = {
   schema_version: "1";
 };
 
+/**
+ * @deprecated No longer used to validate BILLING_PROVIDER (Paddle is
+ * unconditional). Kept only for labeling/validating archived Stripe data.
+ */
 export function isBillingProvider(value: string | null | undefined): value is BillingProvider {
   return value === "stripe" || value === "paddle";
 }

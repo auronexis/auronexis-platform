@@ -9,8 +9,8 @@ import {
 } from "@/lib/billing/plans";
 import { getPlanCheckoutHint } from "@/lib/diagnostics/pricing-reasons";
 import { getPricingHighlights } from "@/lib/plans/features";
-import type { StripeBillingUiStatus } from "@/lib/billing/types";
-import { normalizeStripeBillingUiStatus } from "@/lib/pricing/safe-stripe-status";
+import type { BillingUiStatus } from "@/lib/billing/types";
+import { normalizeBillingUiStatus } from "@/lib/billing/ui-status-client";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
@@ -24,7 +24,7 @@ type PricingCardProps = {
   blockedCheckoutMessage?: string | null;
   disabledReasons?: string[];
   isDisabled?: boolean;
-  stripeStatus: StripeBillingUiStatus;
+  stripeStatus: BillingUiStatus;
   enterpriseContactHref: string;
   onSelect: () => void;
 };
@@ -47,7 +47,7 @@ export function PricingCard({
   const isEnterprise = plan.key === "enterprise";
   const pricingHighlights = getPricingHighlights(plan.key);
   const buttonDisabled = isDisabled || isLoading;
-  const safeStripeStatus = normalizeStripeBillingUiStatus(stripeStatus);
+  const safeStripeStatus = normalizeBillingUiStatus(stripeStatus);
   const checkoutHint = getPlanCheckoutHint(plan.key, safeStripeStatus);
   const supplementalReasons = disabledReasons.filter(
     (reason) => !blockedCheckoutMessage || reason !== blockedCheckoutMessage,

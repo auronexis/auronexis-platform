@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isPaddleConfigured } from "@/lib/paddle/env";
 
 export type DatabaseHealthLevel = "healthy" | "degraded" | "unavailable";
 
@@ -121,21 +122,17 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
   }
 }
 
-export function checkStripeHealth(stripeEnv: {
-  secretKey: { present: boolean };
-  webhookSecret: { present: boolean };
-  publishableKey: { present: boolean };
-}): HealthCheckResult {
-  const missing: string[] = [];
-  if (!stripeEnv.secretKey.present) missing.push("STRIPE_SECRET_KEY");
-  if (!stripeEnv.webhookSecret.present) missing.push("STRIPE_WEBHOOK_SECRET");
-  if (!stripeEnv.publishableKey.present) missing.push("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
-
-  if (missing.length > 0) {
-    return { ok: false, level: "degraded", message: `Missing: ${missing.join(", ")}` };
+/**
+ * Paddle billing configuration health — Stripe has been removed from active
+ * billing. Field name kept as `stripeHealth` on diagnostics snapshots for
+ * backward compatibility with existing dashboards.
+ */
+export function checkPaddleHealth(): HealthCheckResult {
+  if (!isPaddleConfigured()) {
+    return { ok: false, level: "degraded", message: "Paddle environment not configured" };
   }
 
-  return { ok: true, level: "healthy", message: "Stripe environment configured" };
+  return { ok: true, level: "healthy", message: "Paddle environment configured" };
 }
 
 export function getBuildInfo() {
