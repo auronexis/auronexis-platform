@@ -22,25 +22,25 @@ test("organization settings page reads stored language without browser fallback"
 test("save action persists language with post-update verification", () => {
   const actions = readSource("src/lib/team/actions.ts");
   assert.match(actions, /language: parsed\.data\.language/);
-  assert.match(actions, /\.select\("id, name, language"\)/);
-  assert.match(actions, /savedLanguage !== parsed\.data\.language/);
+  assert.match(actions, /\.select\("id, name, language, currency"\)/);
+  assert.match(actions, /saved\?\.language !== parsed\.data\.language/);
   assert.match(actions, /createAdminClient/);
 });
 
 test("session load explicitly selects organization language", () => {
   const session = readSource("src/lib/auth/session.ts");
-  assert.match(session, /\.select\("id, name, slug, plan, language, created_at, updated_at"\)/);
+  assert.match(session, /\.select\("id, name, slug, plan, language, currency, created_at, updated_at"\)/);
 });
 
 test("organization form refreshes server state after successful save", () => {
   const form = readSource("src/components/settings/organization-form.tsx");
   assert.match(form, /router\.refresh/);
-  assert.match(form, /key=\{`\$\{organizationName\}-\$\{organizationLanguage\}`\}/);
+  assert.match(form, /organizationCurrency/);
 });
 
-test("billing invoices use organization language as source of truth", () => {
-  const invoices = readSource("src/lib/billing/invoices.ts");
-  assert.match(invoices, /resolveLocaleFromOrganization\(session\.organization\)/);
+test("billing surfaces use organization language as source of truth", () => {
+  const billingPage = readSource("src/app/(dashboard)/settings/billing/page.tsx");
+  assert.match(billingPage, /resolveLocaleFromOrganization\(session\.organization\)/);
 });
 
 test("canonical database field is organizations.language", () => {

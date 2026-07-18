@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { PRIVATE_ROUTE_PREFIXES } from "@/lib/seo/routes";
+import { PRIVATE_ROUTE_PREFIXES } from "@/lib/seo/private-routes";
 import { getSeoBaseUrl } from "@/lib/seo/metadata";
 
 export function buildRobotsConfig(): MetadataRoute.Robots {

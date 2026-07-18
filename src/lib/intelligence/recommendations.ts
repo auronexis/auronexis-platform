@@ -1,5 +1,6 @@
 import type { OperationalSnapshot } from "@/lib/ai/insights/queries";
 import { getFirstName, getTimeGreeting } from "@/lib/dashboard/display";
+import type { AppCurrency } from "@/lib/i18n/currency";
 import { formatCurrency } from "@/lib/profitability/types";
 import type {
   CustomerSuccessCategory,
@@ -27,6 +28,7 @@ const HIGH_PRIORITY_SCORE_THRESHOLD = 51;
 export function buildExecutiveBrief(
   snapshot: OperationalSnapshot,
   userFullName: string,
+  currency: AppCurrency,
 ): ExecutiveBrief {
   const priorities = rankClientPriorities(snapshot.clients);
   const clientsRequiringAttention = priorities.filter(isClientRequiringAttention).length;
@@ -61,13 +63,16 @@ export function buildExecutiveBrief(
     overdueReportsCount,
     criticalIncidentCount,
     revenueAtRisk,
-    revenueAtRiskFormatted: formatCurrency(revenueAtRisk),
+    revenueAtRiskFormatted: formatCurrency(revenueAtRisk, currency),
     highestPriorityClient,
     summaryLines,
   };
 }
 
-export function buildExecutiveInsights(snapshot: OperationalSnapshot): ExecutiveInsight[] {
+export function buildExecutiveInsights(
+  snapshot: OperationalSnapshot,
+  currency: AppCurrency,
+): ExecutiveInsight[] {
   const priorities = rankClientPriorities(snapshot.clients);
   const { dashboard } = snapshot;
 
@@ -128,7 +133,7 @@ export function buildExecutiveInsights(snapshot: OperationalSnapshot): Executive
     {
       id: "revenue-at-risk",
       title: "Revenue at risk",
-      value: formatCurrency(revenueAtRisk),
+      value: formatCurrency(revenueAtRisk, currency),
       description: "Monthly revenue tied to high-priority accounts.",
       href: "/profitability",
       tone: revenueAtRisk > 0 ? "warning" : "success",

@@ -17,6 +17,7 @@ import {
   buildSmartTimeline,
 } from "@/lib/intelligence/recommendations";
 import { buildPortfolioHealthDistribution } from "@/lib/intelligence/scoring";
+import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import type {
   ExecutiveIntelligence,
   HealthTrendPeriodDays,
@@ -145,13 +146,14 @@ export const getExecutiveIntelligence = cache(
       getRecentActivityEvents(session, 20).catch(() => []),
     ]);
 
-    const brief = buildExecutiveBrief(snapshot, session.user.full_name);
+    const currency = getStoredOrganizationCurrency(session.organization);
+    const brief = buildExecutiveBrief(snapshot, session.user.full_name, currency);
     const priorityClients = buildPriorityClientSummaries(snapshot);
     const portfolioHealth = buildPortfolioHealthDistribution(
       snapshot.dashboard.clientHealth,
       snapshot.dashboard.healthMetrics,
     );
-    const insights = buildExecutiveInsights(snapshot);
+    const insights = buildExecutiveInsights(snapshot, currency);
     const successCategories = buildCustomerSuccessCategories(snapshot);
     const healthTrends: OrganizationHealthTrend[] = [7, 30, 90].map((periodDays) =>
       buildPeriodTrend(periodDays as HealthTrendPeriodDays, healthSnapshots),

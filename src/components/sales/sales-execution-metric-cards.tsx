@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import type { SalesExecutionMetrics } from "@/lib/sales/sales-execution-metrics";
 
 export function SalesExecutionMetricCards({ metrics }: { metrics: SalesExecutionMetrics }) {
+  const { formatMoney } = useWorkspaceMoney();
+
   const cards = [
     { label: "Outreach sent", value: String(metrics.outreachSent) },
     { label: "Replies", value: String(metrics.replies) },
@@ -9,8 +14,8 @@ export function SalesExecutionMetricCards({ metrics }: { metrics: SalesExecution
     { label: "Discovery calls", value: String(metrics.discoveryCalls) },
     { label: "Pilots", value: String(metrics.pilots) },
     { label: "Won deals", value: String(metrics.wonDeals), href: "/sales/leads?stage=won" },
-    { label: "MRR", value: `$${metrics.mrr.toLocaleString()}` },
-    { label: "ARR", value: `$${metrics.arr.toLocaleString()}` },
+    { label: "MRR", value: formatMoney(metrics.mrr) },
+    { label: "ARR", value: formatMoney(metrics.arr) },
   ];
 
   return (

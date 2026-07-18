@@ -57,6 +57,7 @@ const acceptInviteSchema = z.object({
 const organizationSchema = z.object({
   name: z.string().trim().min(2, "Organization name is required."),
   language: z.enum(["de", "en"] as const),
+  currency: z.enum(["USD", "EUR", "GBP", "CAD", "AUD"] as const),
 });
 
 function assertInvitableRole(
@@ -380,6 +381,7 @@ export async function updateOrganizationAction(
   const parsed = organizationSchema.safeParse({
     name: formData.get("name"),
     language: formData.get("language"),
+    currency: formData.get("currency"),
   });
 
   if (!parsed.success) {
@@ -392,24 +394,33 @@ export async function updateOrganizationAction(
     .update({
       name: parsed.data.name,
       language: parsed.data.language,
+      currency: parsed.data.currency,
     } as never)
     .eq("id", session.organization.id)
-    .select("id, name, language")
+    .select("id, name, language, currency")
     .single();
 
   if (error) {
-    if (error.message.includes("language") || error.code === "42703" || error.code === "PGRST204") {
+    if (
+      error.message.includes("language") ||
+      error.message.includes("currency") ||
+      error.code === "42703" ||
+      error.code === "PGRST204"
+    ) {
       return {
         error:
-          "Organization language could not be saved. Apply the latest database migration and try again.",
+          "Organization settings could not be saved. Apply the latest database migration and try again.",
       };
     }
     return { error: "Unable to update organization." };
   }
 
-  const savedLanguage = (data as { language?: string } | null)?.language;
-  if (savedLanguage !== parsed.data.language) {
+  const saved = data as { language?: string; currency?: string } | null;
+  if (saved?.language !== parsed.data.language) {
     return { error: "Organization language did not persist. Please try again." };
+  }
+  if (saved?.currency !== parsed.data.currency) {
+    return { error: "Organization currency did not persist. Please try again." };
   }
 
   await recordActivityEvent({
@@ -421,7 +432,11 @@ export async function updateOrganizationAction(
     action: "organization_updated",
     title: "Organization settings updated",
     description: parsed.data.name,
-    metadata: { name: parsed.data.name, language: parsed.data.language },
+    metadata: {
+      name: parsed.data.name,
+      language: parsed.data.language,
+      currency: parsed.data.currency,
+    },
   });
 
   revalidatePath("/settings/organization");

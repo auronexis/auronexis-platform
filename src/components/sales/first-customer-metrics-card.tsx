@@ -1,11 +1,16 @@
+"use client";
+
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import type { FirstCustomerMetrics } from "@/lib/sales/execution-metrics";
 
 export function FirstCustomerMetricsCard({ metrics }: { metrics: FirstCustomerMetrics }) {
+  const { formatMoney } = useWorkspaceMoney();
+
   const items = [
     { label: "Time to close", value: metrics.timeToCloseDays ? `${metrics.timeToCloseDays} days` : "—" },
     { label: "Pilot conversion", value: `${metrics.pilotConversion}%` },
-    { label: "Average deal size", value: `$${metrics.averageDealSize.toLocaleString()}` },
-    { label: "Revenue forecast", value: `$${metrics.revenueForecast.toLocaleString()}` },
+    { label: "Average deal size", value: formatMoney(metrics.averageDealSize) },
+    { label: "Revenue forecast", value: formatMoney(metrics.revenueForecast) },
     { label: "Customer satisfaction", value: metrics.customerSatisfaction ? `${metrics.customerSatisfaction}%` : "—" },
   ];
 

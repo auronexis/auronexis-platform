@@ -16,6 +16,7 @@ import {
   listSalesLeads,
 } from "@/lib/sales/queries";
 import { requireSession } from "@/lib/auth/session";
+import { getStoredOrganizationCurrency, formatWorkspaceMoney } from "@/lib/i18n";
 import { canAccessModule } from "@/lib/rbac/permissions";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 
@@ -26,6 +27,8 @@ export const metadata: Metadata = {
 export default async function SalesDashboardPage() {
   await requireModuleAccess("sales");
   const session = await requireSession();
+  const currency = getStoredOrganizationCurrency(session.organization);
+  const formatMoney = (amount: number) => formatWorkspaceMoney(amount, currency);
   const canCreate = canAccessModule(session.role, "sales", "create");
   const [metrics, leads, outreach, booking] = await Promise.all([
     getPipelineDashboardMetrics(session),
@@ -79,12 +82,12 @@ export default async function SalesDashboardPage() {
         <section className="aurora-surface p-5">
           <h2 className="text-base font-semibold text-foreground">Revenue metrics</h2>
           <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div><dt className="text-xs uppercase tracking-wider text-muted">MRR</dt><dd className="text-lg font-semibold">${revenueMetrics.mrr.toLocaleString()}</dd></div>
-            <div><dt className="text-xs uppercase tracking-wider text-muted">ARR</dt><dd className="text-lg font-semibold">${revenueMetrics.arr.toLocaleString()}</dd></div>
+            <div><dt className="text-xs uppercase tracking-wider text-muted">MRR</dt><dd className="text-lg font-semibold">{formatMoney(revenueMetrics.mrr)}</dd></div>
+            <div><dt className="text-xs uppercase tracking-wider text-muted">ARR</dt><dd className="text-lg font-semibold">{formatMoney(revenueMetrics.arr)}</dd></div>
             <div><dt className="text-xs uppercase tracking-wider text-muted">Lead velocity (30d)</dt><dd className="text-lg font-semibold">{revenueMetrics.leadVelocity}</dd></div>
-            <div><dt className="text-xs uppercase tracking-wider text-muted">Pipeline value</dt><dd className="text-lg font-semibold">${revenueMetrics.pipelineValue.toLocaleString()}</dd></div>
+            <div><dt className="text-xs uppercase tracking-wider text-muted">Pipeline value</dt><dd className="text-lg font-semibold">{formatMoney(revenueMetrics.pipelineValue)}</dd></div>
             <div><dt className="text-xs uppercase tracking-wider text-muted">Conversion</dt><dd className="text-lg font-semibold">{revenueMetrics.conversionRate}%</dd></div>
-            <div><dt className="text-xs uppercase tracking-wider text-muted">CAC</dt><dd className="text-lg font-semibold">{revenueMetrics.cac ? `$${revenueMetrics.cac.toLocaleString()}` : "—"}</dd></div>
+            <div><dt className="text-xs uppercase tracking-wider text-muted">CAC</dt><dd className="text-lg font-semibold">{revenueMetrics.cac ? formatMoney(revenueMetrics.cac) : "—"}</dd></div>
           </dl>
         </section>
       </div>

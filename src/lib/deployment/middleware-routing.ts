@@ -1,5 +1,12 @@
 import { PRODUCTION_DOMAINS } from "@/lib/deployment/production-domains";
-import { normalizeHostname } from "@/lib/deployment/domain-routing";
+import {
+  isAppHost,
+  isAuthPath,
+  isPortalLoginPath,
+  normalizeHostname,
+  resolveDomainRole,
+} from "@/lib/deployment/domain-routing";
+import { isPrivateRoute } from "@/lib/seo/private-routes";
 
 /** API routes must never pass through auth redirects or marketing hostname hops. */
 export function isApiRoute(pathname: string): boolean {
@@ -52,4 +59,39 @@ export function buildWwwRedirectUrl(requestUrl: URL): URL {
   destination.hostname = PRODUCTION_DOMAINS.www;
   destination.protocol = "https:";
   return destination;
+}
+
+/**
+ * Paths that belong on the application host (auth, invite, portal, workspace).
+ * Everything else on app.* is marketing and must redirect to www to avoid SEO competition.
+ */
+export function isAppServablePath(pathname: string): boolean {
+  return (
+    isAuthPath(pathname) ||
+    isPortalLoginPath(pathname) ||
+    pathname.startsWith("/invite/") ||
+    pathname.startsWith("/client-portal") ||
+    isPrivateRoute(pathname)
+  );
+}
+
+/**
+ * Production app host only — marketing/public paths must never be served from app.*.
+ * Staging is excluded so it never redirects users into production www.
+ */
+export function shouldRedirectAppMarketingToWww(hostname: string, pathname: string): boolean {
+  if (isApiRoute(pathname)) {
+    return false;
+  }
+
+  if (resolveDomainRole(hostname) !== "app") {
+    return false;
+  }
+
+  return !isAppServablePath(pathname);
+}
+
+/** Apply X-Robots-Tag so app/staging hosts never enter the marketing index. */
+export function shouldAttachAppNoIndexHeader(hostname: string): boolean {
+  return isAppHost(hostname);
 }

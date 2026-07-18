@@ -1,5 +1,6 @@
 import type { SalesLead } from "@/types/database";
 import type { SalesProposal } from "@/types/database";
+import { DEFAULT_CURRENCY, formatWorkspaceMoney, type AppCurrency } from "@/lib/i18n";
 import { FOUNDING_CUSTOMER_DISCOUNT_PERCENT } from "@/lib/sales/founding-program";
 
 export type ProposalContent = {
@@ -13,34 +14,38 @@ export type ProposalContent = {
   arrProposed: number;
 };
 
-export function buildProposalFromLead(lead: Pick<
-  SalesLead,
-  "contact_name" | "company_name" | "pain_points" | "potential_mrr" | "mrr_estimate" | "employee_count"
->): ProposalContent {
+export function buildProposalFromLead(
+  lead: Pick<
+    SalesLead,
+    "contact_name" | "company_name" | "pain_points" | "potential_mrr" | "mrr_estimate" | "employee_count"
+  >,
+  currency: AppCurrency = DEFAULT_CURRENCY,
+): ProposalContent {
   const baseMrr = Number(lead.potential_mrr ?? lead.mrr_estimate ?? 299);
   const foundingMrr = Math.round(baseMrr * (1 - FOUNDING_CUSTOMER_DISCOUNT_PERCENT / 100));
   const company = lead.company_name ?? "your agency";
+  const money = (amount: number) => formatWorkspaceMoney(amount, currency);
 
   return {
     title: `Auroranexis Proposal — ${company}`,
     pilotAgreement: [
       `6-week founding customer pilot for ${company}.`,
       "Scope: workspace setup, client import, risk/incident workflows, first report.",
-      `Beta pricing: $${foundingMrr}/mo (${FOUNDING_CUSTOMER_DISCOUNT_PERCENT}% founding discount).`,
+      `Beta pricing: ${money(foundingMrr)}/mo (${FOUNDING_CUSTOMER_DISCOUNT_PERCENT}% founding discount).`,
       "Success criteria: onboarding checklist complete, first client live, kickoff feedback captured.",
       "Conversion: roll to standard plan at pilot end or extend 4 weeks.",
     ].join("\n"),
     pricingProposal: [
-      `Standard MRR: $${baseMrr}/mo`,
-      `Founding customer MRR: $${foundingMrr}/mo`,
-      `ARR (founding): $${foundingMrr * 12}/yr`,
+      `Standard MRR: ${money(baseMrr)}/mo`,
+      `Founding customer MRR: ${money(foundingMrr)}/mo`,
+      `ARR (founding): ${money(foundingMrr * 12)}/yr`,
       "Includes: GRC workspace, client portal, reports, automation, priority support.",
     ].join("\n"),
     roiEstimate: [
       `Estimated hours saved: ${Math.max(5, Math.round((lead.employee_count ?? 10) * 0.5))} hrs/client/month`,
       "Risk reduction: centralized register and incident workflow",
       "Retention uplift: branded client portal and scheduled reports",
-      `Payback target: < 3 months at $${foundingMrr}/mo`,
+      `Payback target: < 3 months at ${money(foundingMrr)}/mo`,
     ].join("\n"),
     timeline: [
       "Week 1: Kickoff, workspace provisioned, team invited",
@@ -61,9 +66,13 @@ export function buildProposalFromLead(lead: Pick<
 
 export function mergeProposalContent(
   proposal: SalesProposal,
-  lead: Pick<SalesLead, "contact_name" | "company_name" | "pain_points" | "potential_mrr" | "mrr_estimate" | "employee_count">,
+  lead: Pick<
+    SalesLead,
+    "contact_name" | "company_name" | "pain_points" | "potential_mrr" | "mrr_estimate" | "employee_count"
+  >,
+  currency: AppCurrency = DEFAULT_CURRENCY,
 ): ProposalContent {
-  const generated = buildProposalFromLead(lead);
+  const generated = buildProposalFromLead(lead, currency);
   return {
     title: proposal.title,
     pilotAgreement: proposal.pilot_agreement ?? generated.pilotAgreement,

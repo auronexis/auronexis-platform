@@ -1,3 +1,8 @@
+import {
+  DEFAULT_CURRENCY,
+  isAppCurrency,
+  type AppCurrency,
+} from "@/lib/i18n/currency";
 import { DEFAULT_LOCALE, isAppLocale, type AppLocale } from "@/lib/i18n/types";
 
 export type ResolveLocaleInput = {
@@ -17,6 +22,19 @@ export function getStoredOrganizationLanguage(organization: {
     return organization.language;
   }
   return DEFAULT_LOCALE;
+}
+
+/**
+ * Read the persisted organization workspace currency for settings UI and money formatting.
+ * Never derives currency from locale — only the stored DB value.
+ */
+export function getStoredOrganizationCurrency(organization: {
+  currency?: string | null;
+}): AppCurrency {
+  if (isAppCurrency(organization.currency)) {
+    return organization.currency;
+  }
+  return DEFAULT_CURRENCY;
 }
 
 /**

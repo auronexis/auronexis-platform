@@ -12,61 +12,15 @@ import { INDUSTRY_PAGES } from "@/lib/seo/industry-content";
 import { SOLUTION_PAGES, TEMPLATE_PAGES } from "@/lib/seo/landing-content";
 import type { LandingPageContent } from "@/lib/seo/landing-page-types";
 
-/**
- * Authenticated and internal route prefixes excluded from crawling and indexing.
- * Keep aligned with robots.txt disallow rules.
- */
-export const PRIVATE_ROUTE_PREFIXES = [
-  "/dashboard",
-  "/settings",
-  "/client-portal",
-  "/api/",
-  "/webhooks",
-  "/sales",
-  "/invite",
-  "/profile",
-  "/clients",
-  "/reports",
-  "/incidents",
-  "/risks",
-  "/automation",
-  "/monitoring",
-  "/predictive",
-  "/profitability",
-  "/knowledge",
-  "/notifications",
-  "/activity",
-  "/onboarding",
-  "/copilot",
-  "/intelligence",
-  "/customer-success",
-  "/adoption",
-  "/billing",
-  "/invoices",
-  "/team",
-] as const;
-
-/**
- * Routes that must not be indexed (auth flows, password reset).
- * Authenticated app surfaces use PRIVATE_ROUTE_PREFIXES + layout noindex.
- */
-export const NOINDEX_ROUTES = [
-  "/login",
-  "/signup",
-  "/forgot-password",
-  "/reset-password",
-] as const;
+export {
+  PRIVATE_ROUTE_PREFIXES,
+  NOINDEX_ROUTES,
+  isPrivateRoute,
+} from "@/lib/seo/private-routes";
 
 export { PUBLIC_SITEMAP_ROUTES, SOLUTION_ROUTES, TEMPLATE_ROUTES };
 
 export type PublicSitemapRoute = (typeof PUBLIC_SITEMAP_ROUTES)[number];
-
-/** True when a path belongs to a private authenticated or internal surface. */
-export function isPrivateRoute(path: string): boolean {
-  return PRIVATE_ROUTE_PREFIXES.some(
-    (prefix) => path === prefix || path.startsWith(prefix),
-  );
-}
 
 function buildRegistrySeo(pages: Record<string, LandingPageContent>): Record<string, { title: string; description: string }> {
   const entries: Record<string, { title: string; description: string }> = {};
@@ -157,7 +111,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.integrations]: {
     title: "Integrations",
     description:
-      "Connect Auroranexis with Stripe, Slack, email, REST API, webhooks, and AI providers for agency operations.",
+      "Connect Auroranexis with Slack, email, REST API, webhooks, and AI providers for agency operations.",
   },
   [MARKETING_ROUTES.documentation]: {
     title: "Documentation",

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import type { PipelineDashboardMetrics } from "@/lib/sales/queries";
 import { cn } from "@/lib/utils/cn";
 
@@ -10,15 +11,9 @@ type MetricCard = {
   href?: string;
 };
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
 export function PipelineMetricCards({ metrics }: { metrics: PipelineDashboardMetrics }) {
+  const { formatMoney } = useWorkspaceMoney();
+
   const cards: MetricCard[] = [
     { label: "Total leads", value: String(metrics.totalLeads), href: "/sales/leads" },
     {
@@ -27,8 +22,8 @@ export function PipelineMetricCards({ metrics }: { metrics: PipelineDashboardMet
       href: "/sales/leads?stage=qualified",
     },
     { label: "Open follow-ups", value: String(metrics.openFollowups), href: "/sales/leads" },
-    { label: "Pipeline value", value: formatCurrency(metrics.pipelineValue) },
-    { label: "Won value", value: formatCurrency(metrics.wonValue), href: "/sales/leads?stage=won" },
+    { label: "Pipeline value", value: formatMoney(metrics.pipelineValue) },
+    { label: "Won value", value: formatMoney(metrics.wonValue), href: "/sales/leads?stage=won" },
     { label: "Conversion", value: `${metrics.conversionRate}%` },
   ];
 

@@ -61,6 +61,7 @@ import { getClientById, listOrgUsers } from "@/lib/clients";
 import { getClientHealthDetail } from "@/lib/health/record";
 import { formatClientDate } from "@/lib/clients/types";
 import { formatIncidentDate } from "@/lib/incidents/types";
+import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import { formatMargin, formatCurrency } from "@/lib/profitability/types";
 import { canCreateReport, canManageReportLifecycle, canPublishReport } from "@/lib/reports/guards";
 import { canCreateRisk } from "@/lib/risks/guards";
@@ -98,6 +99,7 @@ function RestrictedValue() {
 
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
   const session = await requireSession();
+  const currency = getStoredOrganizationCurrency(session.organization);
 
   if (!sessionHasPermission(session, "clients.read")) {
     return (
@@ -217,7 +219,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <DetailKpiStat label="Monthly revenue">
           {showRevenue ? (
             <span className="text-2xl font-semibold tracking-tight text-foreground">
-              {formatCurrency(profitability?.monthlyRevenue ?? 0)}
+              {formatCurrency(profitability?.monthlyRevenue ?? 0, currency)}
             </span>
           ) : (
             <RestrictedValue />

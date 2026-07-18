@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next";
-import { buildSitemapEntries } from "@/lib/seo/sitemap";
+import { buildSitemapEntries, validateSitemapEntries } from "@/lib/seo/sitemap";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return buildSitemapEntries();
+  const entries = buildSitemapEntries();
+  const validation = validateSitemapEntries(entries);
+  if (!validation.valid) {
+    throw new Error(`Invalid sitemap: ${validation.errors.join("; ")}`);
+  }
+  return entries;
 }

@@ -41,13 +41,37 @@ async function loadSessionContext(
 
   const { data: organizationData, error: orgError } = await supabase
     .from("organizations")
-    .select("id, name, slug, plan, language, created_at, updated_at")
+    .select("id, name, slug, plan, language, currency, created_at, updated_at")
     .eq("id", appUser.organization_id)
     .maybeSingle();
 
-  const organization = organizationData as Organization | null;
+  let organization = organizationData as Organization | null;
+
   if (orgError || !organization) {
-    return null;
+    const missingCurrencyColumn =
+      orgError?.code === "42703" ||
+      orgError?.code === "PGRST204" ||
+      Boolean(orgError?.message?.includes("currency"));
+
+    if (!missingCurrencyColumn) {
+      return null;
+    }
+
+    const fallback = await supabase
+      .from("organizations")
+      .select("id, name, slug, plan, language, created_at, updated_at")
+      .eq("id", appUser.organization_id)
+      .maybeSingle();
+
+    if (fallback.error || !fallback.data) {
+      return null;
+    }
+
+    organization = { ...(fallback.data as Omit<Organization, "currency">), currency: "USD" };
+  }
+
+  if (!organization.currency) {
+    organization = { ...organization, currency: "USD" };
   }
 
   return {

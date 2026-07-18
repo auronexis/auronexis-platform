@@ -93,6 +93,7 @@ import {
   getRequiredPlanLabel,
 } from "@/lib/plans";
 import { formatCurrency, formatMargin } from "@/lib/profitability/types";
+import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import { getOrganizationPlanContextForSession } from "@/lib/plans/queries";
 import { listPendingInvitations, listTeamMembers } from "@/lib/team/queries";
 import { cn } from "@/lib/utils/cn";
@@ -104,6 +105,7 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const session = await requireSession();
+  const currency = getStoredOrganizationCurrency(session.organization);
   const data = await getDashboardData(session);
   const executiveIntelligence = await getExecutiveIntelligence(session, data);
   const aiAccess = await checkPlanFeatureForSession(session, "ai_report_assistant");
@@ -459,14 +461,14 @@ export default async function DashboardPage() {
             <>
               <DashboardMetricCard
                 label="Monthly revenue"
-                value={formatCurrency(data.businessMetrics.monthlyRevenue)}
+                value={formatCurrency(data.businessMetrics.monthlyRevenue, currency)}
                 icon={DollarSign}
                 trend="+8% this quarter"
                 tone="success"
               />
               <DashboardMetricCard
                 label="Monthly profit"
-                value={formatCurrency(data.businessMetrics.monthlyProfit)}
+                value={formatCurrency(data.businessMetrics.monthlyProfit, currency)}
                 icon={TrendingUp}
                 trend="Tracking upward"
                 tone="success"

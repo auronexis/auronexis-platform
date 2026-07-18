@@ -57,6 +57,7 @@ if (safeSingleHop) {
 console.log("verify-domain-routing: PASS");
 console.log(`  marketing hosts: ${marketingHosts.join(", ")}`);
 console.log(`  app hosts: ${appHosts.join(", ")}`);
-console.log("  next.config host redirects: disabled (Vercel-only)");
-console.log("  vercel.json redirects: none (headers/crons only)");
-console.log("  required Vercel domain hop: www.auroranexis.com -> auroranexis.com (single direction only)");
+console.log("  next.config host redirects: disabled (Vercel + middleware)");
+console.log("  vercel.json redirects: apex → www (non-API)");
+console.log("  middleware: apex → www + app marketing → www");
+console.log("  required Vercel domain hop: auroranexis.com -> www.auroranexis.com (single direction only)");

@@ -4,6 +4,7 @@ import { ProfitabilityTable } from "@/components/profitability/profitability-tab
 import { PlanFeatureGate } from "@/components/plans/plan-feature-gate";
 import { PageHeader } from "@/components/layout/page-header";
 import { requireSession } from "@/lib/auth/session";
+import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import { canEditClientFinancials } from "@/lib/profitability/guards";
 import { getProfitabilityOverview } from "@/lib/profitability/queries";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
@@ -17,6 +18,7 @@ export default async function ProfitabilityPage() {
   const session = await requireSession();
   const { summary, rows, topClients, mostProfitableClients, needsAttention } =
     await getProfitabilityOverview(session);
+  const currency = getStoredOrganizationCurrency(session.organization);
 
   return (
     <PlanFeatureGate feature="profitability">
@@ -31,6 +33,7 @@ export default async function ProfitabilityPage() {
         topClients={topClients}
         mostProfitableClients={mostProfitableClients}
         needsAttention={needsAttention}
+        currency={currency}
       />
 
       <div className="mt-8">

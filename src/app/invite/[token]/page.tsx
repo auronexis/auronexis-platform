@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AcceptInviteForm } from "@/components/auth/accept-invite-form";
+import { createPrivateAppMetadata } from "@/lib/seo/metadata";
 import { getInvitationByToken } from "@/lib/team/queries";
 import { INVITE_ROLE_LABELS } from "@/lib/team/types";
 
-export const metadata: Metadata = {
-  title: "Accept invitation",
-};
+export const metadata: Metadata = createPrivateAppMetadata("Accept invitation");
 
 type InvitePageProps = {
   params: Promise<{ token: string }>;

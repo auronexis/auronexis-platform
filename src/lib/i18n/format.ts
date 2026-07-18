@@ -1,8 +1,29 @@
 import type { CustomerInvoiceView } from "@/lib/billing/types";
+import type { AppCurrency } from "@/lib/i18n/currency";
 import type { AppLocale } from "@/lib/i18n/types";
 import { getInvoiceTranslations, type InvoiceTranslations } from "@/lib/i18n/invoice";
 import { toIntlLocale } from "@/lib/i18n/resolve-locale";
 
+/**
+ * Format whole-unit workspace money (CRM, profitability, forecasts).
+ * Uses organization currency — never hardcode currency symbols.
+ */
+export function formatWorkspaceMoney(
+  amount: number,
+  currency: AppCurrency,
+  locale: AppLocale = "en",
+): string {
+  return new Intl.NumberFormat(toIntlLocale(locale), {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+/**
+ * Format platform/Paddle invoice amounts in cents (charge currency from the transaction).
+ * Distinct from workspace currency used for org business metrics.
+ */
 export function formatMoneyFromCentsLocale(
   amountCents: number,
   currency: string,

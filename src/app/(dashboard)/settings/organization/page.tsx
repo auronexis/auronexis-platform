@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { OrganizationForm } from "@/components/settings/organization-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
-import { getStoredOrganizationLanguage } from "@/lib/i18n";
+import { getStoredOrganizationCurrency, getStoredOrganizationLanguage } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
@@ -23,6 +23,7 @@ export default async function OrganizationSettingsPage() {
   }
 
   const organizationLanguage = getStoredOrganizationLanguage(session.organization);
+  const organizationCurrency = getStoredOrganizationCurrency(session.organization);
 
   return (
     <>
@@ -43,6 +44,7 @@ export default async function OrganizationSettingsPage() {
         <OrganizationForm
           organizationName={session.organization.name}
           organizationLanguage={organizationLanguage}
+          organizationCurrency={organizationCurrency}
         />
       </PageSurface>
     </>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { refreshPredictiveIntelligenceServerAction } from "@/lib/predictive/actions";
 import type { PredictiveIntelligenceResult } from "@/lib/predictive/types";
-import { formatCurrency } from "@/lib/profitability/types";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -41,6 +41,7 @@ function ForecastSection({
 }
 
 export function PredictiveWorkspace({ initialData, showRevenue = true }: PredictiveWorkspaceProps) {
+  const { formatMoney } = useWorkspaceMoney();
   const [data, setData] = useState(initialData);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -191,7 +192,7 @@ export function PredictiveWorkspace({ initialData, showRevenue = true }: Predict
                 <dt className="text-muted">Current MRR</dt>
                 <dd className="font-medium text-foreground">
                   {data.revenueForecast.currentRecurringRevenue != null
-                    ? formatCurrency(data.revenueForecast.currentRecurringRevenue)
+                    ? formatMoney(data.revenueForecast.currentRecurringRevenue)
                     : "—"}
                 </dd>
               </div>
@@ -199,7 +200,7 @@ export function PredictiveWorkspace({ initialData, showRevenue = true }: Predict
                 <dt className="text-muted">Projected MRR</dt>
                 <dd className="font-medium text-foreground">
                   {data.revenueForecast.projectedRecurringRevenue != null
-                    ? formatCurrency(data.revenueForecast.projectedRecurringRevenue)
+                    ? formatMoney(data.revenueForecast.projectedRecurringRevenue)
                     : "—"}
                 </dd>
               </div>

@@ -241,6 +241,7 @@ export type Database = {
           slug: string;
           plan: string;
           language: string;
+          currency: string;
           created_at: string;
           updated_at: string;
         };
@@ -250,6 +251,7 @@ export type Database = {
           slug: string;
           plan?: string;
           language?: string;
+          currency?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -259,6 +261,7 @@ export type Database = {
           slug?: string;
           plan?: string;
           language?: string;
+          currency?: string;
           created_at?: string;
           updated_at?: string;
         };

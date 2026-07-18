@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ClientHealthBadge } from "@/components/profitability/client-health-badge";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { auroraSurfaceElevated } from "@/lib/ui/aurora";
+import type { AppCurrency } from "@/lib/i18n";
 import type { ClientProfitabilityRow, ProfitabilitySummary } from "@/lib/profitability/types";
 import { formatCurrency, formatMargin } from "@/lib/profitability/types";
 import { linkText } from "@/lib/ui/tokens";
@@ -12,6 +13,7 @@ type ProfitabilityOverviewProps = {
   topClients: ClientProfitabilityRow[];
   mostProfitableClients: ClientProfitabilityRow[];
   needsAttention: ClientProfitabilityRow[];
+  currency: AppCurrency;
 };
 
 function ClientMiniList({
@@ -69,11 +71,12 @@ export function ProfitabilityOverview({
   topClients,
   mostProfitableClients,
   needsAttention,
+  currency,
 }: ProfitabilityOverviewProps) {
   const kpis = [
-    ["Monthly Revenue", formatCurrency(summary.monthlyRevenue)],
-    ["Monthly Cost", formatCurrency(summary.monthlyCost)],
-    ["Monthly Profit", formatCurrency(summary.monthlyProfit)],
+    ["Monthly Revenue", formatCurrency(summary.monthlyRevenue, currency)],
+    ["Monthly Cost", formatCurrency(summary.monthlyCost, currency)],
+    ["Monthly Profit", formatCurrency(summary.monthlyProfit, currency)],
     ["Average Margin", formatMargin(summary.averageMargin)],
   ] as const;
 
@@ -93,7 +96,7 @@ export function ProfitabilityOverview({
           title="Top Clients"
           rows={topClients}
           valueLabel="Revenue"
-          getValue={(row) => formatCurrency(row.monthlyRevenue)}
+          getValue={(row) => formatCurrency(row.monthlyRevenue, currency)}
           emptyTitle="No revenue data yet"
           emptyDescription="Add clients and financial details to see your highest-value accounts."
         />
@@ -101,7 +104,7 @@ export function ProfitabilityOverview({
           title="Most Profitable Clients"
           rows={mostProfitableClients}
           valueLabel="Profit"
-          getValue={(row) => formatCurrency(row.profit)}
+          getValue={(row) => formatCurrency(row.profit, currency)}
           emptyTitle="No profitability data yet"
           emptyDescription="Track client costs and revenue to surface your strongest margins."
         />
@@ -134,7 +137,7 @@ export function ProfitabilityOverview({
                     {row.clientName}
                   </Link>
                   <p className="mt-1 text-sm text-muted">
-                    Margin {formatMargin(row.margin)} · Profit {formatCurrency(row.profit)}
+                    Margin {formatMargin(row.margin)} · Profit {formatCurrency(row.profit, currency)}
                   </p>
                 </div>
                 <ClientHealthBadge health={row.health} />

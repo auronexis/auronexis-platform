@@ -17,9 +17,10 @@ import {
   AuroraTableHeaderCell,
   AuroraTableRow,
 } from "@/components/ui/table";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import { linkText } from "@/lib/ui/tokens";
 import type { ClientProfitabilityRow } from "@/lib/profitability/types";
-import { formatCurrency, formatMargin } from "@/lib/profitability/types";
+import { formatMargin } from "@/lib/profitability/types";
 import { cn } from "@/lib/utils/cn";
 
 type ProfitabilityTableProps = {
@@ -28,6 +29,7 @@ type ProfitabilityTableProps = {
 };
 
 export function ProfitabilityTable({ rows, canEdit }: ProfitabilityTableProps) {
+  const { formatMoney } = useWorkspaceMoney();
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
 
   if (rows.length === 0) {
@@ -73,13 +75,13 @@ export function ProfitabilityTable({ rows, canEdit }: ProfitabilityTableProps) {
                   <span className="font-semibold text-foreground">{row.clientName}</span>
                 </AuroraTableCell>
                 <AuroraTableCell className="whitespace-nowrap text-muted">
-                  {formatCurrency(row.monthlyRevenue)}
+                  {formatMoney(row.monthlyRevenue)}
                 </AuroraTableCell>
                 <AuroraTableCell className="whitespace-nowrap text-muted">
-                  {formatCurrency(row.monthlyCost)}
+                  {formatMoney(row.monthlyCost)}
                 </AuroraTableCell>
                 <AuroraTableCell className="whitespace-nowrap text-muted">
-                  {formatCurrency(row.profit)}
+                  {formatMoney(row.profit)}
                 </AuroraTableCell>
                 <AuroraTableCell className="whitespace-nowrap text-muted">
                   {formatMargin(row.margin)}

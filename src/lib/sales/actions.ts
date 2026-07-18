@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { GENERIC_ACTION_ERROR, requireModulePermissionSafe } from "@/lib/action-errors";
 import { requireSession } from "@/lib/auth/session";
+import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import type { SalesLeadSource, SalesPipelineStage, ProspectSegment, LeadSourceRegion, AgencyType } from "@/types/database";
 import { PIPELINE_STAGES, LEAD_SOURCES, type SalesActivityTypeKey } from "@/lib/sales/pipeline-stages";
@@ -687,7 +688,10 @@ export async function createSalesProposal(_prev: SalesActionState, formData: For
 
   if (!lead) return { error: "Lead not found." };
 
-  const content = buildProposalFromLead(lead as never);
+  const content = buildProposalFromLead(
+    lead as never,
+    getStoredOrganizationCurrency(session.organization),
+  );
   const { error } = await supabase
     .from("sales_proposals")
     .insert({

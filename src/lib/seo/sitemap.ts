@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { isPrivateRoute, PUBLIC_SITEMAP_ROUTES } from "@/lib/seo/routes";
+import { isPrivateRoute } from "@/lib/seo/private-routes";
+import { PUBLIC_SITEMAP_ROUTES } from "@/lib/seo/routes";
 import { getSeoBaseUrl } from "@/lib/seo/metadata";
 import { PUBLIC_CANONICAL_ORIGIN } from "@/lib/company/company-seo";
 

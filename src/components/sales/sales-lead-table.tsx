@@ -1,15 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Users } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LinkButton } from "@/components/ui/link-button";
 import { PipelineStageBadge } from "@/components/sales/pipeline-stage-badge";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import type { SalesLeadWithMeta } from "@/lib/sales/queries";
 import { getLeadSourceLabel } from "@/lib/sales/pipeline-stages";
-
-function formatCurrency(value: number | null): string {
-  if (value == null) return "—";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
-}
 
 export function SalesLeadTable({
   leads,
@@ -20,6 +18,7 @@ export function SalesLeadTable({
   showScores?: boolean;
   showCreateCta?: boolean;
 }) {
+  const { formatMoney } = useWorkspaceMoney();
   if (leads.length === 0) {
     return (
       <EmptyState
@@ -76,7 +75,12 @@ export function SalesLeadTable({
                 <PipelineStageBadge stage={lead.pipeline_stage} />
               </td>
               <td className="px-4 py-3 text-muted">{getLeadSourceLabel(lead.lead_source)}</td>
-              <td className="px-4 py-3">{formatCurrency(lead.lead_value ?? lead.potential_mrr ?? lead.mrr_estimate)}</td>
+              <td className="px-4 py-3">
+                {(() => {
+                  const value = lead.lead_value ?? lead.potential_mrr ?? lead.mrr_estimate;
+                  return value == null ? "—" : formatMoney(value);
+                })()}
+              </td>
               {showScores ? (
                 <>
                   <td className="px-4 py-3">{lead.pain_score ?? "—"}</td>

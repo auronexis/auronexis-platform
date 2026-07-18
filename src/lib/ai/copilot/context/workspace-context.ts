@@ -8,6 +8,7 @@ import {
   buildPriorityClientSummaries,
 } from "@/lib/intelligence/recommendations";
 import { isReportOverdue } from "@/lib/intelligence/scoring";
+import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 export type WorkspaceCopilotContext = {
@@ -39,7 +40,8 @@ export async function loadWorkspaceCopilotContext(
   session: SessionContext,
 ): Promise<WorkspaceCopilotContext> {
   const snapshot = await buildOperationalSnapshot(session);
-  const executiveBrief = buildExecutiveBrief(snapshot, session.user.full_name);
+  const currency = getStoredOrganizationCurrency(session.organization);
+  const executiveBrief = buildExecutiveBrief(snapshot, session.user.full_name, currency);
 
   const overdueReports = snapshot.clients
     .filter((client) => isReportOverdue(client))
@@ -59,7 +61,7 @@ export async function loadWorkspaceCopilotContext(
     clientCount: snapshot.clients.length,
     executiveBrief,
     topPriorities: buildPriorityClientSummaries(snapshot).slice(0, 10),
-    insights: buildExecutiveInsights(snapshot).slice(0, 8),
+    insights: buildExecutiveInsights(snapshot, currency).slice(0, 8),
     successCategories: buildCustomerSuccessCategories(snapshot),
     overdueReports,
     openRisksCount,

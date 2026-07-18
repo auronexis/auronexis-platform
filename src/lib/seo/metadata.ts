@@ -8,7 +8,8 @@ import {
   getPageTitle,
   resolveCanonicalBaseUrl,
 } from "@/lib/company";
-import { isPrivateRoute, NOINDEX_ROUTES, PAGE_SEO } from "@/lib/seo/routes";
+import { isPrivateRoute } from "@/lib/seo/private-routes";
+import { NOINDEX_ROUTES, PAGE_SEO } from "@/lib/seo/routes";
 
 export type PageMetadataInput = {
   title: string;
@@ -18,7 +19,7 @@ export type PageMetadataInput = {
   keywords?: string[];
 };
 
-/** True when running on preview, localhost, or Vercel preview URLs. */
+/** True when running on preview, localhost, staging, or Vercel preview URLs. */
 export function isPreviewDeployment(): boolean {
   if (process.env.VERCEL_ENV === "preview") {
     return true;
@@ -29,7 +30,7 @@ export function isPreviewDeployment(): boolean {
     return process.env.NODE_ENV !== "production";
   }
 
-  return /localhost|127\.0\.0\.1|\.vercel\.app/i.test(raw);
+  return /localhost|127\.0\.0\.1|\.vercel\.app|staging\.auroranexis\.com/i.test(raw);
 }
 
 /** Resolve metadataBase — public marketing canonical host (www). */

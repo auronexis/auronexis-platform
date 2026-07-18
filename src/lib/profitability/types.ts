@@ -74,12 +74,11 @@ export function calculateClientHealth(
   return "watch";
 }
 
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+import type { AppCurrency } from "@/lib/i18n/currency";
+import { formatWorkspaceMoney } from "@/lib/i18n/format";
+
+export function formatCurrency(value: number, currency: AppCurrency): string {
+  return formatWorkspaceMoney(value, currency);
 }
 
 export function formatMargin(value: number | null): string {

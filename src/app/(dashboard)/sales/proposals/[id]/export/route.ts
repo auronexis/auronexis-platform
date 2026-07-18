@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
+import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import { canAccessModule } from "@/lib/rbac/permissions";
 import { getSalesLead, getSalesProposal } from "@/lib/sales/queries";
 import { mergeProposalContent } from "@/lib/sales/proposal-generator";
@@ -14,6 +15,7 @@ export async function GET(_request: Request, context: ExportRouteContext): Promi
     return new Response("Forbidden", { status: 403 });
   }
 
+  const currency = getStoredOrganizationCurrency(session.organization);
   const { id } = await context.params;
   const proposal = await getSalesProposal(session, id);
   if (!proposal) notFound();
@@ -29,9 +31,10 @@ export async function GET(_request: Request, context: ExportRouteContext): Promi
       mrr_estimate: Number(proposal.mrr_proposed),
       employee_count: null,
     },
+    currency,
   );
 
-  const pdf = await generateProposalPdf(content);
+  const pdf = await generateProposalPdf(content, currency);
   const filename = buildProposalExportFilename(lead?.company_name ?? "customer");
 
   const supabase = await createClient();

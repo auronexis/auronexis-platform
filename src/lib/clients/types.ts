@@ -43,16 +43,18 @@ export const CLIENT_SELECT_COLUMNS_WITH_REVENUE = `${BASE_COLUMNS_V2}, monthly_r
 export const CLIENT_SELECT_COLUMNS_V1 = BASE_COLUMNS_V1;
 export const CLIENT_SELECT_COLUMNS_V1_WITH_REVENUE = `${BASE_COLUMNS_V1}, monthly_revenue`;
 
-export function formatClientRevenue(value: number | null | undefined): string {
+import type { AppCurrency } from "@/lib/i18n/currency";
+import { formatWorkspaceMoney } from "@/lib/i18n/format";
+
+export function formatClientRevenue(
+  value: number | null | undefined,
+  currency: AppCurrency,
+): string {
   if (value == null) {
     return "—";
   }
 
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatWorkspaceMoney(value, currency);
 }
 
 export function formatClientDate(value: string): string {

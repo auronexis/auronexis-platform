@@ -32,7 +32,7 @@ test("preview deployments are noindex", () => {
 });
 
 test("private route prefixes block dashboard and workspace surfaces", () => {
-  const routes = readSource("src/lib/seo/routes.ts");
+  const routes = readSource("src/lib/seo/private-routes.ts");
   const robots = readSource("src/lib/seo/robots.ts");
   assert.match(routes, /PRIVATE_ROUTE_PREFIXES/);
   assert.match(routes, /\/onboarding/);
@@ -112,8 +112,10 @@ test("pricing structured data matches canonical billing plan prices", () => {
 
 test("documentation pages emit TechArticle structured data", () => {
   const docs = readSource("src/app/docs/[slug]/page.tsx");
+  const geo = readSource("src/lib/seo/geo-schema.ts");
   const structured = readSource("src/lib/seo/structured-data.ts");
-  assert.match(docs, /techArticleJsonLd/);
+  assert.match(docs, /docPageGraphJsonLd/);
+  assert.match(geo, /techArticleJsonLd|TechArticle/);
   assert.match(structured, /TechArticle/);
 });
 
@@ -157,7 +159,7 @@ test("metadata sets English language alternates", () => {
 });
 
 test("webhook routes are blocked in robots policy", () => {
-  const routes = readSource("src/lib/seo/routes.ts");
+  const routes = readSource("src/lib/seo/private-routes.ts");
   assert.match(routes, /\/webhooks/);
   assert.match(routes, /\/api\//);
 });
@@ -224,11 +226,31 @@ test("sitemap validation guards canonical host and private routes", () => {
   assert.match(sitemap, /duplicate sitemap URL/);
 });
 
-test("middleware preserves apex to www canonical redirect", () => {
+test("middleware preserves apex to www and app marketing to www redirects", () => {
   const middleware = readSource("src/middleware.ts");
   const routing = readSource("src/lib/deployment/middleware-routing.ts");
   assert.match(middleware, /shouldRedirectApexToWww/);
+  assert.match(middleware, /shouldRedirectAppMarketingToWww/);
+  assert.match(middleware, /X-Robots-Tag/);
   assert.match(routing, /buildWwwRedirectUrl/);
+  assert.match(routing, /shouldAttachAppNoIndexHeader/);
+});
+
+test("auth layout and invite pages are noindex", () => {
+  const authLayout = readSource("src/app/(auth)/layout.tsx");
+  const invite = readSource("src/app/invite/[token]/page.tsx");
+  assert.match(authLayout, /createPrivateAppMetadata/);
+  assert.match(invite, /createPrivateAppMetadata/);
+});
+
+test("sitemap route validates entries at build time", () => {
+  const sitemapRoute = readSource("src/app/sitemap.ts");
+  assert.match(sitemapRoute, /validateSitemapEntries/);
+});
+
+test("staging hosts are treated as non-indexable preview deployments", () => {
+  const metadata = readSource("src/lib/seo/metadata.ts");
+  assert.match(metadata, /staging\\.auroranexis\\.com/);
 });
 
 test("root layout sets document language to English", () => {

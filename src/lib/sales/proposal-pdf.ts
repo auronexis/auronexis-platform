@@ -1,4 +1,5 @@
 import PDFDocument from "pdfkit";
+import { DEFAULT_CURRENCY, formatWorkspaceMoney, type AppCurrency } from "@/lib/i18n";
 import type { ProposalContent } from "@/lib/sales/proposal-generator";
 
 type PdfDoc = InstanceType<typeof PDFDocument>;
@@ -10,7 +11,10 @@ function section(doc: PdfDoc, title: string, body: string) {
   doc.moveDown(0.8);
 }
 
-export async function generateProposalPdf(content: ProposalContent): Promise<Buffer> {
+export async function generateProposalPdf(
+  content: ProposalContent,
+  currency: AppCurrency = DEFAULT_CURRENCY,
+): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 50, size: "A4" });
     const chunks: Buffer[] = [];
@@ -32,7 +36,7 @@ export async function generateProposalPdf(content: ProposalContent): Promise<Buf
     section(doc, "Implementation Plan", content.implementationPlan);
 
     doc.fontSize(11).font("Helvetica-Bold").text(
-      `Proposed MRR: $${content.mrrProposed.toLocaleString()} · ARR: $${content.arrProposed.toLocaleString()}`,
+      `Proposed MRR: ${formatWorkspaceMoney(content.mrrProposed, currency)} · ARR: ${formatWorkspaceMoney(content.arrProposed, currency)}`,
     );
 
     doc.end();

@@ -10,6 +10,7 @@ import {
   listSalesLeads,
 } from "@/lib/sales/queries";
 import { requireSession } from "@/lib/auth/session";
+import { getStoredOrganizationCurrency, formatWorkspaceMoney } from "@/lib/i18n";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { canAccessModule } from "@/lib/rbac/permissions";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ export const metadata: Metadata = {
 export default async function AcquisitionDashboardPage() {
   await requireModuleAccess("sales");
   const session = await requireSession();
+  const currency = getStoredOrganizationCurrency(session.organization);
+  const formatMoney = (amount: number) => formatWorkspaceMoney(amount, currency);
   const canManage = canAccessModule(session.role, "sales", "manage");
 
   const [metrics, automation, leads] = await Promise.all([
@@ -58,7 +61,7 @@ export default async function AcquisitionDashboardPage() {
             <Metric label="ARR growth (30d)" value={`${revenue.arrGrowth}%`} />
             <Metric label="Close rate" value={`${revenue.closeRate}%`} />
             <Metric label="Pilot conversion" value={`${revenue.pilotConversion}%`} />
-            <Metric label="CAC" value={revenue.cac ? `$${revenue.cac.toLocaleString()}` : "—"} />
+            <Metric label="CAC" value={revenue.cac ? formatMoney(revenue.cac) : "—"} />
             <Metric
               label="Payback period"
               value={revenue.paybackPeriodMonths ? `${revenue.paybackPeriodMonths} mo` : "—"}
@@ -67,7 +70,7 @@ export default async function AcquisitionDashboardPage() {
               label="Sales cycle"
               value={revenue.salesCycleDays ? `${revenue.salesCycleDays} days` : "—"}
             />
-            <Metric label="Won MRR" value={`$${revenue.mrr.toLocaleString()}`} />
+            <Metric label="Won MRR" value={formatMoney(revenue.mrr)} />
           </dl>
         </section>
       </div>
