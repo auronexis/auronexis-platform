@@ -39,6 +39,8 @@ type PricingGridProps = {
   enterpriseContactHref: string;
   checkoutBlock?: CheckoutBlockState;
   canManage?: boolean;
+  /** When false, do not offer portal CTA (no verified Paddle customer yet). */
+  showPortalAction?: boolean;
 };
 
 export function PricingGrid({
@@ -48,6 +50,7 @@ export function PricingGrid({
   enterpriseContactHref,
   checkoutBlock,
   canManage = false,
+  showPortalAction = true,
 }: PricingGridProps) {
   const [pendingPlanKey, setPendingPlanKey] = useState<PlanKey | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +104,10 @@ export function PricingGrid({
   };
 
   const openPortal = () => {
+    if (!showPortalAction) {
+      setError("A billing portal will be available after your first completed subscription.");
+      return;
+    }
     setError(null);
     startPortalTransition(async () => {
       const result = await createPortalSessionAction();
@@ -121,6 +128,7 @@ export function PricingGrid({
           checkoutBlock={resolvedCheckoutBlock}
           canManage={canManage || safeSelection.canManage}
           portalAvailable={safeStripeStatus.portalAvailable}
+          showPortalAction={showPortalAction}
           onOpenPortal={openPortal}
           isPortalPending={isPortalPending}
         />
@@ -180,7 +188,12 @@ export function PricingGrid({
               stripeStatus={safeStripeStatus}
               enterpriseContactHref={enterpriseContactHref}
               onSelect={() => {
-                if (isDowngrade && safeSelection.isUsable && safeStripeStatus.portalAvailable) {
+                if (
+                  isDowngrade &&
+                  safeSelection.isUsable &&
+                  safeStripeStatus.portalAvailable &&
+                  showPortalAction
+                ) {
                   openPortal();
                   return;
                 }

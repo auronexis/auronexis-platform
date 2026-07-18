@@ -7,7 +7,11 @@ import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { createCheckoutSessionWithDiscount } from "@/lib/billing/checkout";
 import { assertCheckoutAllowed } from "@/lib/billing/checkout-guards.server";
 import { openCustomerPortal } from "@/lib/billing/customer-portal";
-import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
+import {
+  isExpectedPortalUnavailableError,
+  sanitizeBillingCustomerError,
+} from "@/lib/billing/errors";
+import { PADDLE_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
 import { BILLING_PROMO_MESSAGES, formatPromoValidationSuccess } from "@/lib/billing/messages";
 import { validateDiscountCode } from "@/lib/billing/discounts";
 import { calculateProrationPreview } from "@/lib/billing/proration";
@@ -132,7 +136,16 @@ export async function createPortalSessionAction(): Promise<BillingActionState> {
       email: session.email,
     });
   } catch (error) {
-    console.error("[billing][portal] failed", error);
+    if (isExpectedPortalUnavailableError(error)) {
+      // Expected before first completed Paddle purchase — informational only.
+      return {
+        error: sanitizeBillingCustomerError(error, PADDLE_PORTAL_UNAVAILABLE_MESSAGE),
+      };
+    }
+    console.error(
+      "[billing][portal] failed",
+      error instanceof Error ? error.message : "unknown_error",
+    );
     return {
       error: sanitizeBillingCustomerError(error, "Unable to open billing portal."),
     };

@@ -14,6 +14,8 @@ type CheckoutBlockBannerProps = {
   onOpenPortal?: () => void;
   isPortalPending?: boolean;
   showBackToBilling?: boolean;
+  /** When false, hide portal CTA (e.g. no verified Paddle customer yet). */
+  showPortalAction?: boolean;
 };
 
 export function CheckoutBlockBanner({
@@ -23,6 +25,7 @@ export function CheckoutBlockBanner({
   onOpenPortal,
   isPortalPending = false,
   showBackToBilling = true,
+  showPortalAction = true,
 }: CheckoutBlockBannerProps) {
   if (!checkoutBlock.blocked) {
     return null;
@@ -59,7 +62,7 @@ export function CheckoutBlockBanner({
             Open invoice
           </a>
         ) : null}
-        {canManage && portalAvailable && onOpenPortal ? (
+        {canManage && portalAvailable && showPortalAction && onOpenPortal ? (
           <Button type="button" variant="secondary" disabled={isPortalPending} onClick={onOpenPortal}>
             Open billing portal
           </Button>

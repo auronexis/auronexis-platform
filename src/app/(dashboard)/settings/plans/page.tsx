@@ -8,6 +8,7 @@ import { resolveCheckoutBlockState } from "@/lib/billing/checkout-block";
 import { getStripeBillingUiStatus } from "@/lib/billing/stripe-config";
 import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
+import { hasVerifiedPaddleCustomer } from "@/lib/billing/active-billing";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { getClientLimitUsageForSession } from "@/lib/plans/queries";
@@ -119,6 +120,18 @@ export default async function WorkspacePlansPage() {
     ignoredStripeInvoiceIds: billingState.ignoredStripeInvoiceIds,
   });
 
+  let activeProvider: "stripe" | "paddle" = "stripe";
+  try {
+    activeProvider = getActiveBillingProvider();
+  } catch {
+    activeProvider = "stripe";
+  }
+
+  const showPortalAction =
+    activeProvider === "paddle"
+      ? hasVerifiedPaddleCustomer(billingState.overview.subscription)
+      : true;
+
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-1 py-2">
       <PricingHero />
@@ -130,6 +143,7 @@ export default async function WorkspacePlansPage() {
         enterpriseContactHref={enterpriseContactHref}
         checkoutBlock={billingState.checkoutBlock}
         canManage={canManage}
+        showPortalAction={showPortalAction}
       />
     </div>
   );

@@ -1,3 +1,7 @@
+import {
+  PADDLE_PORTAL_UNAVAILABLE_MESSAGE,
+} from "@/lib/billing/active-billing";
+
 const INTERNAL_BILLING_PATTERNS = [
   /STRIPE_/i,
   /environment variable/i,
@@ -33,6 +37,10 @@ export function sanitizeBillingCustomerError(error: unknown, fallback: string): 
     return "Manage billing will be available after you complete checkout.";
   }
 
+  if (error.message === PADDLE_PORTAL_UNAVAILABLE_MESSAGE) {
+    return PADDLE_PORTAL_UNAVAILABLE_MESSAGE;
+  }
+
   if (error.message === "Unable to load billing profile.") {
     return "Unable to load billing information. Try again later.";
   }
@@ -50,4 +58,9 @@ export function sanitizeBillingCustomerError(error: unknown, fallback: string): 
   }
 
   return fallback;
+}
+
+/** Expected pre-purchase portal absence — must not be logged as an error. */
+export function isExpectedPortalUnavailableError(error: unknown): boolean {
+  return error instanceof Error && error.message === PADDLE_PORTAL_UNAVAILABLE_MESSAGE;
 }

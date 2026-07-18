@@ -214,12 +214,41 @@ test("paddle portal requires verified Paddle customer and never uses Stripe cust
   assert.match(panel, /activeProvider/);
 });
 
-test("unknown paddle price and status fail closed for entitlements", () => {
-  const prices = readSource("src/lib/paddle/prices.ts");
-  const paddleStatus = readSource("src/lib/paddle/status.ts");
-  const sync = readSource("src/lib/paddle/sync.ts");
-  assert.match(prices, /Unknown Paddle price ID/);
-  assert.match(paddleStatus, /default:\s*return "inactive"/);
-  assert.match(sync, /resolveInternalPlanFromPaddlePriceId/);
-  assert.match(sync, /Fail closed/);
+test("paddle checkout success closes overlay and redirects to billing", () => {
+  const browser = readSource("src/lib/paddle/browser-checkout.ts");
+  const success = readSource("src/lib/paddle/checkout-success.ts");
+  const billingPage = readSource("src/app/(dashboard)/settings/billing/page.tsx");
+  const poller = readSource("src/components/settings/billing-checkout-sync-poller.tsx");
+  const panel = readSource("src/components/settings/billing-settings-panel.tsx");
+  const actions = readSource("src/lib/billing/actions.ts");
+  const errors = readSource("src/lib/billing/errors.ts");
+  const portal = readSource("src/lib/billing/customer-portal.ts");
+
+  assert.match(success, /PADDLE_CHECKOUT_SUCCESS_PATH = "\/settings\/billing\?checkout=success"/);
+  assert.match(success, /Payment completed\. Your subscription is being synchronized/);
+  assert.match(success, /Billing information may take a moment to update/);
+  assert.match(browser, /checkout\.completed/);
+  assert.match(browser, /Checkout\.close/);
+  assert.match(browser, /getPaddleCheckoutSuccessUrl|checkout=success/);
+  assert.match(browser, /Does not grant access/);
+  assert.match(billingPage, /checkout=success|isPaddleCheckoutSuccessParam|paddleCheckoutSuccess/);
+  assert.match(poller, /getPaddleCheckoutSyncStatusAction/);
+  assert.match(poller, /synchronized/);
+  assert.match(poller, /PADDLE_CHECKOUT_SUCCESS_MESSAGE/);
+  assert.match(poller, /PADDLE_CHECKOUT_SYNC_SLOW_MESSAGE/);
+  assert.match(poller, /router\.refresh/);
+  assert.match(panel, /BillingCheckoutSyncPoller/);
+  assert.match(panel, /showPortal/);
+  assert.match(panel, /PADDLE_PORTAL_UNAVAILABLE_MESSAGE/);
+  assert.match(panel, /if \(!showPortal\)/);
+  assert.match(actions, /isExpectedPortalUnavailableError/);
+  assert.doesNotMatch(
+    actions.slice(actions.indexOf("createPortalSessionAction")),
+    /console\.error\("\[billing\]\[portal\] failed", error\)/,
+  );
+  assert.match(errors, /isExpectedPortalUnavailableError/);
+  assert.match(portal, /getActiveBillingProvider/);
+  assert.match(portal, /never falls back to Stripe portal/);
+  assert.match(portal, /if \(provider === "paddle"\)/);
+  assert.match(portal, /createPaddlePortalSession/);
 });

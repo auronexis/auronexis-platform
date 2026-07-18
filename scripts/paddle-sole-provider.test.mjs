@@ -201,3 +201,49 @@ test("9. organization isolation: preferred selection only considers provided org
   assert.equal(preferred?.provider_customer_id, "ctm_verified");
   assert.equal(selectPreferred([staleStripeIncomplete], "paddle"), null);
 });
+
+test("10. checkout success path is canonical billing route", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { dirname, join } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+  const success = readFileSync(join(root, "src/lib/paddle/checkout-success.ts"), "utf8");
+  assert.match(success, /\/settings\/billing\?checkout=success/);
+  assert.doesNotMatch(success, /grant access|activate entitlements/i);
+});
+
+test("11. portal hidden before customer; active with valid ctm_ id", () => {
+  assert.equal(
+    canOpenPortal({
+      activeProvider: "paddle",
+      canManage: true,
+      portalAvailable: true,
+      subscription: { billing_provider: "paddle", provider_customer_id: null },
+    }),
+    false,
+  );
+  assert.equal(
+    canOpenPortal({
+      activeProvider: "paddle",
+      canManage: true,
+      portalAvailable: true,
+      subscription: paddleActive,
+    }),
+    true,
+  );
+});
+
+test("12. no entitlement from client callback — sync requires usable verified paddle sub", () => {
+  const pendingAfterCheckout = {
+    billing_provider: "paddle",
+    status: "incomplete",
+    provider_status: "pending_sync",
+    sync_pending: true,
+    provider_customer_id: null,
+    provider_subscription_id: null,
+  };
+  const flags = resolveFlags(pendingAfterCheckout, "paddle");
+  assert.equal(flags.isUsable, false);
+  assert.equal(flags.hasSubscription, false);
+  assert.equal(resolveFlags(paddleActive, "paddle").isUsable, true);
+});

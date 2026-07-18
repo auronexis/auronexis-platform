@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { CheckoutBlockBanner } from "@/components/billing/checkout-block-banner";
+import { BillingCheckoutSyncPoller } from "@/components/settings/billing-checkout-sync-poller";
 import { InvoiceCenterPanel } from "@/components/settings/invoice-center-panel";
 import { PlanUsageSummary } from "@/components/plans/plan-usage-summary";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
   validateDiscountCodeAction,
 } from "@/lib/billing/actions";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
+import { PADDLE_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
+import type { PaddleCheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
 import {
   billingStatusToneToBadge,
   canOpenBillingPortal,
@@ -49,6 +52,9 @@ type BillingSettingsPanelProps = {
   locale: AppLocale;
   success?: boolean;
   successMessage?: string | null;
+  /** Paddle overlay redirected here with ?checkout=success */
+  paddleCheckoutSuccess?: boolean;
+  paddleSyncStatus?: PaddleCheckoutSyncStatus | null;
   cancelled?: boolean;
   billingContactCard?: BillingContactCardContent | null;
   enterpriseStatus?: EnterpriseStatus;
@@ -134,6 +140,8 @@ export function BillingSettingsPanel({
   locale,
   success,
   successMessage,
+  paddleCheckoutSuccess = false,
+  paddleSyncStatus = null,
   cancelled,
   billingContactCard,
   enterpriseStatus,
@@ -170,11 +178,17 @@ export function BillingSettingsPanel({
     showSubscriptionManagement && stripeStatus.portalCancellationAvailable;
 
   const runPortal = () => {
+    if (!showPortal) {
+      setActionError(PADDLE_PORTAL_UNAVAILABLE_MESSAGE);
+      return;
+    }
     setActionError(null);
     startPortalTransition(async () => {
       const result = await createPortalSessionAction();
       if (result?.error) {
-        setActionError(sanitizeBillingCustomerError(new Error(result.error), "Unable to open billing portal."));
+        setActionError(
+          sanitizeBillingCustomerError(new Error(result.error), "Unable to open billing portal."),
+        );
       }
     });
   };
@@ -203,10 +217,16 @@ export function BillingSettingsPanel({
   return (
     <div className="space-y-8">
       <BillingConversionTracker
-        checkoutSuccess={Boolean(success)}
+        checkoutSuccess={Boolean(success) || paddleCheckoutSuccess}
         checkoutCancelled={Boolean(cancelled)}
         planTier={overview.currentPlanKey ?? "free"}
       />
+      {paddleCheckoutSuccess ? (
+        <BillingCheckoutSyncPoller
+          enabled={paddleCheckoutSuccess}
+          initialStatus={paddleSyncStatus}
+        />
+      ) : null}
       {success ? (
         <FormAlert variant="success">
           {successMessage ?? "Payment received. Your plan may update shortly."}
@@ -252,6 +272,7 @@ export function BillingSettingsPanel({
             checkoutBlock={dashboard.checkoutBlock}
             canManage={canManage}
             portalAvailable={stripeStatus.portalAvailable}
+            showPortalAction={showPortal}
             onOpenPortal={runPortal}
             isPortalPending={isPortalPending}
             showBackToBilling={false}
