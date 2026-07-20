@@ -35,7 +35,6 @@ import type { AccountSecurityContext } from "@/lib/profile/security";
 import {
   DATE_FORMAT_OPTIONS,
   detectTimezone,
-  LANGUAGE_OPTIONS,
   TIMEZONE_OPTIONS,
   type UserPreferences,
 } from "@/lib/profile/preferences";
@@ -63,9 +62,9 @@ function shallowEqualRegional(
   a: UserPreferences["regional"],
   b: UserPreferences["regional"],
 ): boolean {
+  // Profile language is not a live UI locale — ignore it for dirty detection.
   return (
     a.timezone === b.timezone &&
-    a.language === b.language &&
     a.dateFormat === b.dateFormat &&
     a.timeFormat === b.timeFormat
   );
@@ -216,7 +215,15 @@ export function AccountCenter({ session, permissions, security }: AccountCenterP
   ]);
 
   const saveRegional = useCallback(() => {
-    persistPreferences({ ...preferences, regional: regionalDraft });
+    persistPreferences({
+      ...preferences,
+      regional: {
+        ...regionalDraft,
+        // UI language packs are not shipped yet — keep English as the display language.
+        language: "en",
+      },
+    });
+    setRegionalDraft((current) => ({ ...current, language: "en" }));
     setRegionalSuccess("Preferences saved.");
   }, [persistPreferences, preferences, regionalDraft]);
 
@@ -349,11 +356,15 @@ export function AccountCenter({ session, permissions, security }: AccountCenterP
           />
         </ProfileField>
 
-        <ProfileField label="Language" description="Additional languages coming in a future release.">
+        <ProfileField
+          label="Language"
+          description="Multiple languages will be available in a future release."
+        >
           <ProfileSelect
-            value={regionalDraft.language}
-            onChange={(value) => setRegionalDraft((current) => ({ ...current, language: value }))}
-            options={LANGUAGE_OPTIONS}
+            value="en"
+            onChange={() => undefined}
+            disabled
+            options={[{ value: "en", label: "English (Coming soon)" }]}
           />
         </ProfileField>
 

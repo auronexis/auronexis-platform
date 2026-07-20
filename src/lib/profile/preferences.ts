@@ -118,7 +118,12 @@ export function mergePreferences(stored: Partial<UserPreferences>): UserPreferen
 
   return {
     account: { ...defaults.account, ...stored.account },
-    regional: { ...defaults.regional, ...stored.regional },
+    regional: {
+      ...defaults.regional,
+      ...stored.regional,
+      // UI language packs are not available — never treat a stored "de" as an active UI locale.
+      language: "en",
+    },
     appearance: { ...defaults.appearance, ...stored.appearance },
     notifications: { ...defaults.notifications, ...stored.notifications },
   };
