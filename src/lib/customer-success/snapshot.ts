@@ -34,6 +34,9 @@ import type {
 } from "@/lib/customer-success/types";
 import type { AdoptionSnapshot } from "@/lib/adoption/types";
 import type { ActivationSnapshot } from "@/lib/activation/types";
+import { mapWithConcurrency } from "@/lib/performance/map-with-concurrency";
+
+const PORTFOLIO_CONCURRENCY = 8;
 
 export type BuildClientSnapshotInput = {
   session: SessionContext;
@@ -211,15 +214,16 @@ export async function buildCustomerSuccessPortfolio(
     listTasksForOrg(session.organization.id),
   ]);
 
-  const snapshots: ClientSuccessSnapshot[] = [];
-  for (const client of limited) {
-    const snap = await buildClientSuccessSnapshot({
-      session,
-      clientId: client.id,
-      planContext,
-    });
-    if (snap) snapshots.push(snap);
-  }
+  const snapshots = await mapWithConcurrency(
+    limited,
+    PORTFOLIO_CONCURRENCY,
+    (client) =>
+      buildClientSuccessSnapshot({
+        session,
+        clientId: client.id,
+        planContext,
+      }),
+  );
 
   const clientNames = new Map(limited.map((c) => [c.id, c.name]));
   const counts = summarizePortfolioCounts(snapshots);

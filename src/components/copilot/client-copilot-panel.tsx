@@ -1,5 +1,3 @@
-"use client";
-
 import { CopilotWorkspace } from "@/components/copilot/copilot-workspace";
 import { CLIENT_SUGGESTED_PROMPTS } from "@/lib/ai/copilot/suggested-prompts";
 import type { AIUsageSummary } from "@/lib/ai/types";

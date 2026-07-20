@@ -1,5 +1,3 @@
-"use client";
-
 import type { AIConfidenceScore } from "@/lib/ai/types";
 import { cn } from "@/lib/utils/cn";
 

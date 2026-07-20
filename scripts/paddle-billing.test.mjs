@@ -153,13 +153,14 @@ test("CSP allows minimum official Paddle domains", () => {
 
 test("env example documents paddle names without secret values", () => {
   const envExample = readSource(".env.example");
-  assert.match(envExample, /BILLING_PROVIDER/);
+  assert.match(envExample, /Paddle Billing|sole active provider/i);
   assert.match(envExample, /PADDLE_API_KEY=/);
   assert.match(envExample, /PADDLE_WEBHOOK_SECRET=/);
   assert.match(envExample, /NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=/);
   assert.match(envExample, /PADDLE_ENVIRONMENT=sandbox/);
-  const paddleBlock = envExample.slice(envExample.indexOf("# Billing provider switch"));
-  assert.doesNotMatch(paddleBlock, /pdl_[a-zA-Z0-9]|pri_[a-zA-Z0-9]{6,}/);
+  assert.doesNotMatch(envExample, /^BILLING_PROVIDER=/m);
+  assert.doesNotMatch(envExample, /^STRIPE_SECRET_KEY=/m);
+  assert.doesNotMatch(envExample, /pdl_[a-zA-Z0-9]|pri_[a-zA-Z0-9]{6,}/);
 });
 
 test("subscription status mapping preserves raw paddle status separately", () => {

@@ -10,6 +10,7 @@ import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManageReportTemplates } from "@/lib/report-templates/guards";
 import { getReportTemplateById } from "@/lib/report-templates/queries";
 import { createClient } from "@/lib/supabase/server";
+import { optionalText } from "@/lib/validation/form-fields";
 import type { Database } from "@/types/database";
 
 type ReportTemplateInsert = Database["public"]["Tables"]["report_templates"]["Insert"];
@@ -19,13 +20,6 @@ export type ReportTemplateActionState = {
   error?: string;
   success?: string;
 };
-
-const optionalText = z
-  .string()
-  .trim()
-  .transform((value) => (value.length === 0 ? null : value))
-  .nullable()
-  .optional();
 
 const templateFieldsSchema = z.object({
   name: z.string().trim().min(2, "Template name is required."),

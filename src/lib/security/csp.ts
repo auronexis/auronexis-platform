@@ -14,8 +14,9 @@ export function buildContentSecurityPolicy(): string {
     "form-action 'self'",
     "frame-ancestors 'none'",
     "object-src 'none'",
+    "upgrade-insecure-requests",
     [
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline'",
       "https://us.i.posthog.com",
       "https://us-assets.i.posthog.com",
       "https://eu.i.posthog.com",

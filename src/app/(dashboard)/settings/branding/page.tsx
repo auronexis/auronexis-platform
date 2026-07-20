@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { WhiteLabelWorkspace } from "@/components/settings/white-label-workspace";
+import { WhiteLabelWorkspaceLazy } from "@/components/performance/lazy-workspaces";
 import { PlanFeatureGate } from "@/components/plans/plan-feature-gate";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
@@ -37,7 +37,7 @@ export default async function BrandingSettingsPage() {
         }
       />
       <PageSurface>
-        <WhiteLabelWorkspace
+        <WhiteLabelWorkspaceLazy
           settings={settings}
           previewBranding={previewBranding}
           canManage={canManage}

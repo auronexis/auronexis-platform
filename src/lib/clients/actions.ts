@@ -11,21 +11,36 @@ import { computeAndRecordClientHealth } from "@/lib/health/record";
 import { assertCanCreateClient } from "@/lib/plans/guards";
 import { canViewRevenue } from "@/lib/rbac/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { optionalText } from "@/lib/validation/form-fields";
 import type { Database } from "@/types/database";
 
 type ClientInsert = Database["public"]["Tables"]["clients"]["Insert"];
 type ClientUpdate = Database["public"]["Tables"]["clients"]["Update"];
 
+type ClientMutationSnapshot = {
+  name: string;
+  status: string;
+  updated_at: string;
+};
+
+async function selectClientForMutation(
+  organizationId: string,
+  clientId: string,
+): Promise<ClientMutationSnapshot | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("clients")
+    .select("name, status, updated_at")
+    .eq("id", clientId)
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  return (data as ClientMutationSnapshot | null) ?? null;
+}
+
 export type ClientActionState = {
   error?: string;
 };
-
-const optionalText = z
-  .string()
-  .trim()
-  .transform((value) => (value.length === 0 ? null : value))
-  .nullable()
-  .optional();
 
 const clientFieldsSchema = z.object({
   name: z.string().trim().min(2, "Client name is required."),
@@ -242,12 +257,18 @@ export async function updateClientAction(
   }
 
   const supabase = await createClient();
-  const { data: existingClient } = await supabase
-    .from("clients")
-    .select("name, status, updated_at")
-    .eq("id", clientId)
-    .eq("organization_id", session.organization.id)
-    .maybeSingle();
+  const existingClient = await selectClientForMutation(session.organization.id, clientId);
+
+  const previousStatus = (existingClient as { status?: string } | null)?.status;
+  if (previousStatus === "archived" && parsed.data.status !== "archived") {
+    const clientLimitCheck = await assertCanCreateClient(
+      session.organization.id,
+      session.user.id,
+    );
+    if (!clientLimitCheck.allowed) {
+      return { error: clientLimitCheck.message };
+    }
+  }
 
   const updatePayload: ClientUpdate = buildClientPayload(
     parsed.data,
@@ -275,7 +296,6 @@ export async function updateClientAction(
     metadata: { clientId, name: parsed.data.name },
   });
 
-  const previousStatus = (existingClient as { status?: string } | null)?.status;
   if (previousStatus && previousStatus !== parsed.data.status) {
     await fireWorkflowEngine({
       trigger: "customer_health_changed",
@@ -329,15 +349,10 @@ export async function archiveClientAction(
   }
 
   const supabase = await createClient();
-  const { data: existing } = await supabase
-    .from("clients")
-    .select("name, status, updated_at")
-    .eq("id", clientId)
-    .eq("organization_id", session.organization.id)
-    .maybeSingle();
+  const existing = await selectClientForMutation(session.organization.id, clientId);
 
-  const clientName = (existing as { name: string } | null)?.name ?? "Client";
-  const clientRecord = existing as { name: string; status: string; updated_at: string } | null;
+  const clientName = existing?.name ?? "Client";
+  const clientRecord = existing;
   const archivePayload: ClientUpdate = { status: "archived" };
 
   const { error } = await supabase

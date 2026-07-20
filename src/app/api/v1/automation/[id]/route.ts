@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { getWorkflow } from "@/lib/automation/storage/repository";
 import { apiContextToSession } from "@/lib/api/resources/session";
 import { withApiHandler } from "@/lib/api/middleware/handler";
-import { apiJson } from "@/lib/api/responses/json";
+import { apiError, apiJson } from "@/lib/api/responses/json";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       const session = apiContextToSession(ctx);
       const workflow = await getWorkflow(session, id);
       if (!workflow) {
-        return apiJson({ error: { code: "not_found", message: "Workflow not found." } }, { status: 404 });
+        return apiError(404, "not_found", "Workflow not found.");
       }
       return apiJson(workflow);
     },

@@ -1,0 +1,22 @@
+---
+description: Auroranexis Build Bible V2 Chapter 8 — Enterprise SEO & search optimization
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 8 (Enterprise SEO)
+
+Spec: `docs/10_BUILD_BIBLE_V2_CHAPTER_08_SEO.md`
+
+## Rules
+
+- Only `public_website` routes may be indexed (`classifyRoute` / `isIndexablePublicRoute`).
+- Dashboard, portal, settings, API, auth, and internal routes stay `noindex` (metadata + robots + X-Robots-Tag).
+- Public pages use `createPageMetadataForPath` / `PAGE_SEO` — unique titles and descriptions.
+- Sitemap contains only validated public canonical URLs on www.
+- Structured data must match visible content; never invent reviews or certifications.
+- Prefer `/docs/*` public links over `/api/*` in marketing and AI crawler surfaces.
+- Never weaken auth, RBAC, RLS, or Paddle billing behaviour.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 8 work.

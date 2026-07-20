@@ -49,21 +49,6 @@ export function InteractiveSurface({ className, children, ...props }: Interactiv
   );
 }
 
-type ClickableCardProps = HTMLAttributes<HTMLDivElement> & {
-  href: string;
-  ariaLabel: string;
-  children: ReactNode;
-};
-
-export function ClickableCard({ href, ariaLabel, className, children, ...props }: ClickableCardProps) {
-  return (
-    <InteractiveSurface className={className} {...props}>
-      <LinkOverlay href={href} ariaLabel={ariaLabel} />
-      <div className="relative z-10">{children}</div>
-    </InteractiveSurface>
-  );
-}
-
 type RowInteractiveLinkProps = ComponentProps<typeof Link>;
 
 export function RowInteractiveLink({ className, ...props }: RowInteractiveLinkProps) {

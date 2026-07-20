@@ -68,7 +68,7 @@ export async function requestPasswordResetAction(
     return { error: parsed.error.issues[0]?.message ?? AUTH_MESSAGES.INVALID_EMAIL };
   }
 
-  if (isTurnstileConfigured()) {
+  if (isTurnstileConfigured() || process.env.NODE_ENV === "production") {
     const turnstileOk = await verifyTurnstileFromForm(formData);
     if (!turnstileOk) {
       return { error: AUTH_MESSAGES.GENERIC_ERROR };

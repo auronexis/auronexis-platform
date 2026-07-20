@@ -1,7 +1,4 @@
-"use client";
-
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import type { AIUsageSummary } from "@/lib/ai/types";
 import { cn } from "@/lib/utils/cn";
 
@@ -128,11 +125,9 @@ export function AIUpgradeCard({
         <p className="mt-1 text-xs font-medium text-foreground">{requiredPlanLabel} plan required</p>
       ) : null}
       {description ? <p className="mt-3 text-sm text-muted">{description}</p> : null}
-      <Link href="/settings/plans">
-        <Button type="button" variant="primary" size="sm" className="mt-4">
-          View plans
-        </Button>
-      </Link>
+      <LinkButton href="/settings/plans" variant="primary" size="sm" className="mt-4">
+        View plans
+      </LinkButton>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { HealthSnapshot } from "@/lib/health/types";
-import { parseHealthBreakdown } from "@/lib/health/types";
+import { mapHealthSnapshotRow } from "@/lib/health/types";
 import type { ClientPortalSessionContext } from "@/lib/client-portal/types";
 import type {
   PortalContactsData,
@@ -29,11 +29,44 @@ import { resolveSeverityTargets, formatSeverityTarget } from "@/lib/sla/policies
 import { getComplianceRate } from "@/lib/sla/metrics";
 import { listPortalPublishedReportsV2 } from "@/lib/reports-v2/queries";
 import { PORTAL_VISIBLE_REPORT_STATUSES } from "@/lib/reports/types";
+import { SLA_POLICY_SELECT } from "@/lib/sla/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { ClientPortalUser, SlaPolicy } from "@/types/database";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 
-const SLA_POLICY_PORTAL_SELECT =
-  "id, organization_id, name, incident_hours, risk_hours, is_default, critical_response_minutes, critical_resolution_minutes, high_response_minutes, high_resolution_minutes, medium_response_minutes, medium_resolution_minutes, low_response_minutes, low_resolution_minutes, created_at, updated_at";
+function mapPortalRiskRow(row: {
+  id: string;
+  title: string;
+  severity: string;
+  status: string;
+  due_at?: string | null;
+  created_at?: string;
+}): PortalRiskView {
+  return {
+    id: row.id,
+    title: row.title,
+    severity: row.severity as PortalRiskView["severity"],
+    status: row.status as PortalRiskView["status"],
+    due_date: row.due_at ?? null,
+    created_at: row.created_at ?? "",
+  };
+}
+
+function mapRelatedOpenRisk(row: {
+  id: string;
+  title: string;
+  severity: string;
+  status: string;
+  due_at: string | null;
+}): RelatedOpenRisk {
+  return {
+    id: row.id,
+    title: row.title,
+    severity: row.severity,
+    status: row.status,
+    due_date: row.due_at,
+  };
+}
 
 /** Portal users linked to a client — agency Owner/Admin only (RLS). */
 export async function listPortalUsersForClient(
@@ -64,10 +97,10 @@ export async function getPortalDashboardData(
 
   const [risksResult, incidentsResult, latestReportResult] = await Promise.all([
     supabase
-      .from("risks")
+      .from("client_risks")
       .select("id", { count: "exact", head: true })
       .eq("client_id", clientId)
-      .in("status", ["open", "in_progress"]),
+      .in("status", OPEN_RISK_STATUSES),
     supabase
       .from("incidents")
       .select("id", { count: "exact", head: true })
@@ -154,18 +187,25 @@ export async function listPortalRisks(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("risks")
+    .from("client_risks")
     .select(PORTAL_RISK_SELECT)
     .eq("client_id", session.client.id)
-    .in("status", ["open", "in_progress"])
-    .order("due_date", { ascending: true, nullsFirst: false });
+    .in("status", OPEN_RISK_STATUSES)
+    .order("due_at", { ascending: true, nullsFirst: false });
 
   if (error) {
     console.warn("[client-portal] listPortalRisks failed:", error.message);
     return [];
   }
 
-  return (data ?? []) as PortalRiskView[];
+  return ((data ?? []) as Array<{
+    id: string;
+    title: string;
+    severity: string;
+    status: string;
+    due_at: string | null;
+    created_at: string;
+  }>).map(mapPortalRiskRow);
 }
 
 /** Open incidents for the portal user's client. */
@@ -185,16 +225,16 @@ export async function getPortalReportMetrics(
 
   const [openRisks, criticalRisks, openIncidents, criticalIncidents] = await Promise.all([
     supabase
-      .from("risks")
+      .from("client_risks")
       .select("id", { count: "exact", head: true })
       .eq("client_id", clientId)
-      .in("status", ["open", "in_progress"]),
+      .in("status", OPEN_RISK_STATUSES),
     supabase
-      .from("risks")
+      .from("client_risks")
       .select("id", { count: "exact", head: true })
       .eq("client_id", clientId)
       .eq("severity", "critical")
-      .in("status", ["open", "in_progress"]),
+      .in("status", OPEN_RISK_STATUSES),
     supabase
       .from("incidents")
       .select("id", { count: "exact", head: true })
@@ -233,19 +273,25 @@ export async function getPortalRelatedOpenRisks(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("risks")
-    .select("id, title, severity, status, due_date")
+    .from("client_risks")
+    .select("id, title, severity, status, due_at")
     .eq("client_id", session.client.id)
-    .in("status", ["open", "in_progress"])
+    .in("status", OPEN_RISK_STATUSES)
     .order("severity", { ascending: false })
-    .order("due_date", { ascending: true, nullsFirst: false });
+    .order("due_at", { ascending: true, nullsFirst: false });
 
   if (error) {
     console.warn("[client-portal] getPortalRelatedOpenRisks failed:", error.message);
     return [];
   }
 
-  return (data ?? []) as RelatedOpenRisk[];
+  return ((data ?? []) as Array<{
+    id: string;
+    title: string;
+    severity: string;
+    status: string;
+    due_at: string | null;
+  }>).map(mapRelatedOpenRisk);
 }
 
 /** Related open incidents for portal PDF export. */
@@ -289,20 +335,6 @@ export async function getPortalCustomerOnboarding(session: ClientPortalSessionCo
   } catch {
     return null;
   }
-}
-
-function mapHealthSnapshotRow(row: Record<string, unknown>): HealthSnapshot {
-  return {
-    id: String(row.id),
-    organization_id: String(row.organization_id),
-    client_id: String(row.client_id),
-    score: Number(row.score),
-    status: row.status as HealthSnapshot["status"],
-    delta: Number(row.delta ?? 0),
-    reason: (row.reason as string | null) ?? null,
-    breakdown: parseHealthBreakdown(row.breakdown as never),
-    calculated_at: String(row.calculated_at),
-  };
 }
 
 /** Latest health snapshot for the portal user's client — read-only. */
@@ -359,7 +391,7 @@ async function getPortalDefaultSlaPolicy(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sla_policies")
-    .select(SLA_POLICY_PORTAL_SELECT)
+    .select(SLA_POLICY_SELECT)
     .eq("organization_id", organizationId)
     .eq("is_default", true)
     .maybeSingle();
@@ -382,7 +414,7 @@ export async function getPortalSlaAssignment(
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sla_policies")
-      .select(SLA_POLICY_PORTAL_SELECT)
+      .select(SLA_POLICY_SELECT)
       .eq("organization_id", session.organization.id)
       .eq("id", assignedPolicyId)
       .maybeSingle();

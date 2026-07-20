@@ -38,7 +38,7 @@ async function listClientActivity(session: SessionContext, clientId: string, lim
   const organizationId = session.organization.id;
 
   const [risksResult, incidentsResult, reportsResult] = await Promise.all([
-    supabase.from("risks").select("id").eq("organization_id", organizationId).eq("client_id", clientId),
+    supabase.from("client_risks").select("id").eq("organization_id", organizationId).eq("client_id", clientId),
     supabase.from("incidents").select("id").eq("organization_id", organizationId).eq("client_id", clientId),
     supabase.from("reports").select("id").eq("organization_id", organizationId).eq("client_id", clientId),
   ]);

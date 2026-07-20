@@ -1,9 +1,10 @@
-# Deployment Report — Phase 5 Sprint 2
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
+# Deployment Report â€” Phase 5 Sprint 2
 
 **Date:** 2025-06-23  
 **Version:** Auroranexis v0.97  
 **Sprint:** Deployment & Staging Rollout  
-**Target:** `staging.auroranexis.com` — **Staging Online Ready**
+**Target:** `staging.auroranexis.com` â€” **Staging Online Ready**
 
 ---
 
@@ -19,15 +20,15 @@ Sprint 2 completes Vercel deployment documentation, Supabase validation procedur
 
 | Item | Location | Status |
 |------|----------|--------|
-| Vercel deployment guide | [vercel-deployment.md](./vercel-deployment.md) | ✅ |
-| Supabase staging validation | [supabase-staging.md](./supabase-staging.md), `validate_staging.sql` | ✅ |
-| Stripe staging tests | [stripe-staging-validation.md](./stripe-staging-validation.md) | ✅ |
-| Sentry integration | `sentry.*.config.ts`, `instrumentation.ts` | ✅ |
-| PostHog integration | `PostHogProvider` | ✅ |
-| Platform status widget | Dashboard (owner/admin) | ✅ |
-| Demo seed v0.97 | `seed_demo_workspace.sql` | ✅ |
-| Health endpoint | `GET /api/health` | ✅ (v0.96) |
-| Vercel cron | `vercel.json` | ✅ (v0.96) |
+| Vercel deployment guide | [vercel-deployment.md](./vercel-deployment.md) | âœ… |
+| Supabase staging validation | [supabase-staging.md](./supabase-staging.md), `validate_staging.sql` | âœ… |
+| Stripe staging tests | [stripe-staging-validation.md](./stripe-staging-validation.md) | âœ… |
+| Sentry integration | `sentry.*.config.ts`, `instrumentation.ts` | âœ… |
+| PostHog integration | `PostHogProvider` | âœ… |
+| Platform status widget | Dashboard (owner/admin) | âœ… |
+| Demo seed v0.97 | `seed_demo_workspace.sql` | âœ… |
+| Health endpoint | `GET /api/health` | âœ… (v0.96) |
+| Vercel cron | `vercel.json` | âœ… (v0.96) |
 
 ---
 
@@ -47,7 +48,7 @@ Sprint 2 completes Vercel deployment documentation, Supabase validation procedur
 1. `supabase db push` on staging project
 2. Configure Vercel staging project env vars
 3. Assign `staging.auroranexis.com`
-4. Deploy → verify `/api/health`
+4. Deploy â†’ verify `/api/health`
 5. Register Stripe test webhook + OAuth callbacks
 6. Seed `aurora-demo` workspace
 7. Run Stripe + connector smoke tests
@@ -57,7 +58,7 @@ Sprint 2 completes Vercel deployment documentation, Supabase validation procedur
 
 ## Rollback
 
-Promote previous Vercel deployment — see [vercel-deployment.md](./vercel-deployment.md#rollback-strategy).
+Promote previous Vercel deployment â€” see [vercel-deployment.md](./vercel-deployment.md#rollback-strategy).
 
 ---
 
@@ -69,3 +70,4 @@ Promote previous Vercel deployment — see [vercel-deployment.md](./vercel-deplo
 - [monitoring-report.md](./monitoring-report.md)
 - [pilot-readiness-report.md](./pilot-readiness-report.md)
 - [launch-readiness-v0.97.md](./launch-readiness-v0.97.md)
+

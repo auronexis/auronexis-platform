@@ -38,7 +38,7 @@ export async function signIn(
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
   }
 
-  if (isTurnstileConfigured()) {
+  if (isTurnstileConfigured() || process.env.NODE_ENV === "production") {
     const turnstileOk = await verifyTurnstileFromForm(formData);
     if (!turnstileOk) {
       return { error: "Security verification failed. Please try again." };
@@ -92,7 +92,7 @@ export async function signUp(
     return { error: parsed.error.issues[0]?.message ?? "Invalid registration data." };
   }
 
-  if (isTurnstileConfigured()) {
+  if (isTurnstileConfigured() || process.env.NODE_ENV === "production") {
     const turnstileOk = await verifyTurnstileFromForm(formData);
     if (!turnstileOk) {
       return { error: "Security verification failed. Please try again." };
@@ -109,11 +109,12 @@ export async function signUp(
   const admin = createAdminClient();
   const baseSlug = slugifyOrganizationName(parsed.data.organizationName);
   const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
+  const isProduction = process.env.NODE_ENV === "production";
 
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email: parsed.data.email,
     password: parsed.data.password,
-    email_confirm: true,
+    email_confirm: !isProduction,
     user_metadata: {
       full_name: parsed.data.fullName,
     },
@@ -150,6 +151,17 @@ export async function signUp(
     await admin.from("organizations").delete().eq("id", organization.id);
     await admin.auth.admin.deleteUser(authData.user.id);
     return { error: "Unable to create user profile." };
+  }
+
+  if (isProduction) {
+    await admin.auth.admin
+      .generateLink({
+        type: "signup",
+        email: parsed.data.email,
+        password: parsed.data.password,
+      })
+      .catch(() => undefined);
+    return { error: "Account created. Confirm your email, then sign in." };
   }
 
   const supabase = await createClient();

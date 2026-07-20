@@ -1,7 +1,14 @@
 import type { SelectHTMLAttributes } from "react";
 import { cn } from "@/lib/utils/cn";
 import { auroraInputFocus, inputErrorShake } from "@/lib/ui/motion";
-import { formFieldShell, formHelper, formLabel } from "@/lib/ui/form-tokens";
+import {
+  formControl,
+  formControlHeight,
+  formError,
+  formFieldShell,
+  formHelper,
+  formLabel,
+} from "@/lib/ui/form-tokens";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 
 export type SelectOption = {
@@ -36,7 +43,11 @@ export function Select({
       <label htmlFor={selectId} className={formLabel}>
         {label}
       </label>
-      {description ? <p className={formHelper}>{description}</p> : null}
+      {description ? (
+        <p id={`${selectId}-desc`} className={formHelper}>
+          {description}
+        </p>
+      ) : null}
       <select
         id={selectId}
         disabled={disabled}
@@ -45,11 +56,12 @@ export function Select({
           error ? `${selectId}-error` : description ? `${selectId}-desc` : undefined
         }
         className={cn(
-          "flex h-10 w-full cursor-pointer rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground shadow-xs",
+          "flex cursor-pointer",
+          formControlHeight,
+          formControl,
           transitionInteractive,
           auroraInputFocus,
           focusRing,
-          "disabled:cursor-not-allowed disabled:opacity-50",
           error && "border-danger",
           error && inputErrorShake,
           className,
@@ -68,7 +80,7 @@ export function Select({
         ))}
       </select>
       {error ? (
-        <p id={`${selectId}-error`} className="text-sm text-danger" role="alert">
+        <p id={`${selectId}-error`} className={formError} role="alert">
           {error}
         </p>
       ) : null}

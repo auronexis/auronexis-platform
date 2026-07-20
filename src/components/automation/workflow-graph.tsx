@@ -1,5 +1,3 @@
-"use client";
-
 import type { WorkflowAction, WorkflowDefinition } from "@/lib/automation/builder/types";
 import {
   WORKFLOW_ACTION_LABELS,

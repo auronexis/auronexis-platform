@@ -4,14 +4,11 @@ import type {
   EscalationTriggerType,
   RecentEscalationItem,
 } from "@/lib/escalation/types";
-import { ESCALATION_TRIGGER_LABELS } from "@/lib/escalation/types";
+import { ESCALATION_RULE_SELECT, ESCALATION_TRIGGER_LABELS } from "@/lib/escalation/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { EscalationRule } from "@/types/database";
-
-const ESCALATION_RULE_SELECT =
-  "id, organization_id, name, trigger_type, severity, delay_minutes, notify_owner, notify_assigned_user, create_activity, create_notification, enabled, created_at, updated_at";
 
 function resolveEntityHref(entityType: string, entityId: string): string {
   switch (entityType) {
@@ -208,7 +205,7 @@ async function resolveEntityTitles(
   const [risks, incidents, schedules] = await Promise.all([
     riskIds.length
       ? admin
-          .from("risks")
+          .from("client_risks")
           .select("id, title")
           .eq("organization_id", organizationId)
           .in("id", riskIds)
@@ -261,7 +258,7 @@ async function resolveClientNamesForExecutions(
 
   const [risks, incidents, schedules] = await Promise.all([
     riskIds.length
-      ? admin.from("risks").select("id, clients ( name )").eq("organization_id", organizationId).in("id", riskIds)
+      ? admin.from("client_risks").select("id, clients ( name )").eq("organization_id", organizationId).in("id", riskIds)
       : Promise.resolve({ data: [] }),
     incidentIds.length
       ? admin

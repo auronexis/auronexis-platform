@@ -6,7 +6,7 @@ import { useOptionalReportAI } from "@/components/reports/ai/report-ai-provider"
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { generateExecutiveSummaryAction } from "@/lib/ai/executive-summary/action";
-import { trackAnalyticsEvent } from "@/lib/analytics/events";
+import { trackAITelemetryEvent } from "@/lib/analytics/ai-telemetry";
 import { cn } from "@/lib/utils/cn";
 
 type ExecutiveSummaryGeneratorProps = {
@@ -51,7 +51,13 @@ export function ExecutiveSummaryGenerator({
 
     setErrorMessage(null);
     setState("generating");
-    trackAnalyticsEvent("ai_summary_generation_started", { feature: "executive_report_summary" });
+    const startedAt = Date.now();
+    trackAITelemetryEvent({
+      event: "ai_summary_generation_started",
+      feature: "executive_report_summary",
+      module: "ai",
+      surface: "report_ai",
+    });
 
     startTransition(async () => {
       const result = await generateExecutiveSummaryAction({
@@ -71,19 +77,27 @@ export function ExecutiveSummaryGenerator({
       });
 
       if (!result.ok) {
-        trackAnalyticsEvent("ai_summary_generation_failed", {
+        trackAITelemetryEvent({
+          event: "ai_summary_generation_failed",
           feature: "executive_report_summary",
-          code: result.code,
+          module: "ai",
+          result: "failure",
+          duration_ms: Date.now() - startedAt,
+          surface: "report_ai",
         });
         setErrorMessage(result.error);
         setState(result.code === "rate_limit" || result.code === "duplicate" ? "cooldown" : "error");
         return;
       }
 
-      trackAnalyticsEvent("ai_summary_generated", {
+      trackAITelemetryEvent({
+        event: "ai_summary_generated",
         feature: "executive_report_summary",
+        module: "ai",
+        model: result.model,
+        result: "success",
+        duration_ms: Date.now() - startedAt,
         surface: "report_ai",
-        has_existing: result.hasExistingSummary,
       });
       setPreviewDraft(result.formattedDraft);
       setModelLabel(result.model);
@@ -105,7 +119,13 @@ export function ExecutiveSummaryGenerator({
     if (reportAI) {
       reportAI.setFieldValue("executive_summary", previewDraft);
     }
-    trackAnalyticsEvent("ai_summary_saved", { feature: "executive_report_summary", applied: true });
+    trackAITelemetryEvent({
+      event: "ai_summary_saved",
+      feature: "executive_report_summary",
+      module: "ai",
+      result: "success",
+      surface: "report_ai",
+    });
     setPreviewDraft(null);
     setState("idle");
   }, [previewDraft, reportAI]);

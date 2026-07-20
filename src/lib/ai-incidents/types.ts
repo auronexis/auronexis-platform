@@ -1,4 +1,5 @@
 import type { Json } from "@/types/database";
+import { formatAppDateTimeCompact } from "@/lib/i18n";
 
 export const INCIDENT_AI_PROVIDERS = ["OpenAI", "Anthropic", "Mock", "Disabled"] as const;
 
@@ -104,16 +105,7 @@ export function parseAnalysisMetadata(value: Json | Record<string, unknown> | nu
 }
 
 export function formatIncidentAITimestamp(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTimeCompact(value);
 }
 
 export function confidenceLabel(confidence: number | null | undefined): string {

@@ -1,0 +1,19 @@
+---
+description: Auroranexis Build Bible V2 Chapter 16 — Technical debt elimination
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 16 (Technical Debt)
+
+Spec: `docs/18_BUILD_BIBLE_V2_CHAPTER_16_TECHNICAL_DEBT.md`  
+Inventory: `docs/technical-debt-inventory-ch16.md`  
+Catalog: `docs/technical-debt.md`
+
+## Rules
+
+- Discover and classify before deleting.
+- Remove only zero-caller / zero-runtime-impact debt.
+- Preserve deprecated-but-live compatibility layers (Paddle aliases, archive stubs, health `stripe` field).
+- Do not mass-migrate `as never`, rename Stripe fields, or change billing/auth/RBAC/RLS behaviour.
+- Keep documentation synchronized with Paddle-only reality.
+- Do not commit, push, or deploy from Chapter 16 work.

@@ -1,0 +1,27 @@
+---
+description: Auroranexis Build Bible V2 Chapter 4 — enterprise UI/UX design system
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 4 (Design System)
+
+Spec: `docs/06_BUILD_BIBLE_V2_CHAPTER_04_DESIGN_SYSTEM.md`
+
+## Sources of truth
+
+- Tokens: `src/app/globals.css`, `src/lib/ui/tokens.ts`, `src/lib/ui/form-tokens.ts`, `src/lib/ui/aurora.ts`
+- Components: `src/components/ui/**` — one primitive per concern
+
+## Rules
+
+- Merge duplicate UI; do not create parallel buttons/cards/tables/badges/empty states.
+- Prefer semantic color/spacing tokens over one-off class strings.
+- Forms: shared field components + `form-tokens` label/helper/error patterns.
+- Tables: `AuroraTable*` / `DataTableShell`.
+- Loading/empty: `EmptyState`, `Skeleton`, `RouteLoadingShell`, `LoadingCard`.
+- Keep focus rings and accessible interactive states.
+- Presentation only — never change auth, RBAC, RLS, or Paddle billing behaviour.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 4 work.

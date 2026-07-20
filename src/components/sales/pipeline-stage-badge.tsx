@@ -1,3 +1,4 @@
+import { StatusBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
 import {
   getPipelineStageBadgeClass,
@@ -10,16 +11,11 @@ type PipelineStageBadgeProps = {
   className?: string;
 };
 
+/** Pipeline stage chip — shared StatusBadge chrome with stage-specific sales tones. */
 export function PipelineStageBadge({ stage, className }: PipelineStageBadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-        getPipelineStageBadgeClass(stage),
-        className,
-      )}
-    >
+    <StatusBadge tone="muted" className={cn(getPipelineStageBadgeClass(stage), className)}>
       {getPipelineStageLabel(stage)}
-    </span>
+    </StatusBadge>
   );
 }

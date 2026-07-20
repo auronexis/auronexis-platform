@@ -98,21 +98,21 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
     canManageLifecycle &&
     (incident.status === "open" || incident.status === "investigating");
   const boundUpdateAction = updateIncidentAction.bind(null, incident.id);
-  const clients = editable ? await listClients(session) : [];
-  const risks = editable ? await listLinkableRisks(session) : [];
-  const orgUsers =
-    editable && (session.role === "owner" || session.role === "admin")
-      ? await listOrgUsers(session)
-      : [];
   const allowedStatuses =
     session.role === "staff" ? STAFF_INCIDENT_STATUSES : INCIDENT_STATUSES;
 
-  const [aiAccess, planKey, latestAIAnalysis, aiHistory] = await Promise.all([
-    checkPlanFeatureForSession(session, "ai_incident_assistant"),
-    getCurrentPlan(session.organization.id),
-    getIncidentAnalysis(session, id),
-    listIncidentAnalyses(session, id, 8),
-  ]);
+  const [clients, risks, orgUsers, aiAccess, planKey, latestAIAnalysis, aiHistory] =
+    await Promise.all([
+      editable ? listClients(session) : Promise.resolve([]),
+      editable ? listLinkableRisks(session) : Promise.resolve([]),
+      editable && (session.role === "owner" || session.role === "admin")
+        ? listOrgUsers(session)
+        : Promise.resolve([]),
+      checkPlanFeatureForSession(session, "ai_incident_assistant"),
+      getCurrentPlan(session.organization.id),
+      getIncidentAnalysis(session, id),
+      listIncidentAnalyses(session, id, 8),
+    ]);
   const aiUsageSummary = await getAIUsageSummaryForSession(session, planKey);
   const aiEnabled = aiAccess.allowed && editable;
   const aiUpgradeMessage = getFeatureUpgradeMessage("ai_incident_assistant");

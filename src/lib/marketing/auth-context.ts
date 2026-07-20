@@ -248,16 +248,6 @@ export function getPublicHeaderNavLinks(
   };
 }
 
-/** @deprecated Use getPublicHeaderNavLinks instead. */
-export function getMarketingHeaderNavLinks(auth: MarketingAuthState) {
-  const header = getPublicHeaderNavLinks(auth, "compact");
-  return {
-    logoHref: header.logoHref,
-    workspaceName: header.workspaceName,
-    links: [...header.navLinks, ...header.actionLinks],
-  };
-}
-
 /** Auth-aware app shortcut used on docs hub pages. */
 export function resolvePublicAppShortcut(auth: MarketingAuthState): { href: string; label: string } {
   if (auth.isAuthenticated) {

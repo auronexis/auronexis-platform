@@ -76,17 +76,19 @@ export function calculateClientHealth(
 
 import type { AppCurrency } from "@/lib/i18n/currency";
 import { formatWorkspaceMoney } from "@/lib/i18n/format";
+import { formatAppPercent } from "@/lib/i18n/number";
+import type { AppLocale } from "@/lib/i18n/types";
 
-export function formatCurrency(value: number, currency: AppCurrency): string {
-  return formatWorkspaceMoney(value, currency);
+export function formatCurrency(
+  value: number,
+  currency: AppCurrency,
+  locale: AppLocale = "en",
+): string {
+  return formatWorkspaceMoney(value, currency, locale);
 }
 
-export function formatMargin(value: number | null): string {
-  if (value === null) {
-    return "—";
-  }
-
-  return `${value.toFixed(1)}%`;
+export function formatMargin(value: number | null, locale: AppLocale = "en"): string {
+  return formatAppPercent(value, locale);
 }
 
 export function summarizeProfitability(rows: ClientProfitabilityRow[]): ProfitabilitySummary {

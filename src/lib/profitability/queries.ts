@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import {
   calculateClientHealth,
   calculateMargin,
@@ -55,11 +56,11 @@ async function loadCriticalRiskClientIds(organizationId: string): Promise<Set<st
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("risks")
+    .from("client_risks")
     .select("client_id")
     .eq("organization_id", organizationId)
     .eq("severity", "critical")
-    .in("status", LEGACY_OPEN_RISK_STATUSES);
+    .in("status", OPEN_RISK_STATUSES);
 
   if (error) {
     throw new Error(error.message);
@@ -85,8 +86,8 @@ async function loadCriticalIncidentClientIds(organizationId: string): Promise<Se
   return new Set((data ?? []).map((row) => (row as { client_id: string }).client_id));
 }
 
-/** Build profitability rows for all active clients in the organization. */
-export async function buildClientProfitabilityRows(
+/** Build profitability rows for all active clients in the organization (request-memoized). */
+export const buildClientProfitabilityRows = cache(async function buildClientProfitabilityRows(
   session: SessionContext,
 ): Promise<ClientProfitabilityRow[]> {
   const organizationId = session.organization.id;
@@ -124,7 +125,7 @@ export async function buildClientProfitabilityRows(
       financialId: financial?.id ?? null,
     };
   });
-}
+});
 
 /** Portfolio-level KPI summary for the profitability page. */
 export async function getProfitabilitySummary(

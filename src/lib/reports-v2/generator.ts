@@ -9,7 +9,6 @@ import type {
   SLASnapshot,
 } from "@/lib/reports-v2/types";
 import {
-  buildExecutiveSummary,
   buildReportSummary,
   deriveHealthTrend,
   deriveSlaScore,
@@ -55,11 +54,11 @@ async function countOpenItems(
   const supabase = await createClient();
   const [risks, incidents] = await Promise.all([
     supabase
-      .from("risks")
+      .from("client_risks")
       .select("id, status, created_at")
       .eq("organization_id", organizationId)
       .eq("client_id", clientId)
-      .in("status", ["open", "in_progress"]),
+      .in("status", ["open", "acknowledged", "mitigated"]),
     supabase
       .from("incidents")
       .select("id, status, created_at")

@@ -13,10 +13,12 @@ export function formatWorkspaceMoney(
   currency: AppCurrency,
   locale: AppLocale = "en",
 ): string {
+  const zeroDecimal = currency === "JPY";
   return new Intl.NumberFormat(toIntlLocale(locale), {
     style: "currency",
     currency,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: zeroDecimal ? 0 : undefined,
+    maximumFractionDigits: zeroDecimal ? 0 : 0,
   }).format(amount);
 }
 
@@ -72,30 +74,30 @@ export function getLocalizedInvoiceDisplayLabel(
   invoice: CustomerInvoiceView,
   locale: AppLocale,
 ): string {
-  const t = getInvoiceTranslations(locale);
+  const translations = getInvoiceTranslations(locale);
 
   if (invoice.status === "open" && invoice.amountPaid === 0) {
-    return t.statusOpenUnpaid;
+    return translations.statusOpenUnpaid;
   }
 
   if (invoice.status === "paid") {
-    return t.statusPaid;
+    return translations.statusPaid;
   }
 
   if (invoice.status === "open") {
-    return t.statusOpen;
+    return translations.statusOpen;
   }
 
   if (invoice.status === "draft") {
-    return invoice.isFuture ? t.statusUpcoming : t.statusDraft;
+    return invoice.isFuture ? translations.statusUpcoming : translations.statusDraft;
   }
 
   if (invoice.status === "uncollectible") {
-    return t.statusUncollectible;
+    return translations.statusUncollectible;
   }
 
   if (invoice.status === "void") {
-    return t.statusVoid;
+    return translations.statusVoid;
   }
 
   return invoice.statusLabel;
@@ -105,16 +107,16 @@ export function formatLocalizedInvoiceDueLabel(
   invoice: CustomerInvoiceView,
   locale: AppLocale,
 ): string {
-  const t = getInvoiceTranslations(locale);
+  const translations = getInvoiceTranslations(locale);
 
   if (invoice.paidAt) {
     const formatted = formatBillingDateTimeLocale(invoice.paidAt, locale);
-    return formatted ? `${t.paidAt} ${formatted}` : t.statusPaid;
+    return formatted ? `${translations.paidAt} ${formatted}` : translations.statusPaid;
   }
 
   if (invoice.dueAt) {
     const formatted = formatBillingDateLocale(invoice.dueAt, locale);
-    return formatted ? `${t.dueAt} ${formatted}` : invoice.statusLabel;
+    return formatted ? `${translations.dueAt} ${formatted}` : invoice.statusLabel;
   }
 
   return invoice.statusLabel;

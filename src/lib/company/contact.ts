@@ -1,4 +1,4 @@
-/** @deprecated Import from `@/lib/company` instead. Re-exported for backward compatibility. */
+/** Stable public surface for company contact and marketing route constants. */
 export {
   APP_VERSION,
   COMPANY_NAME,

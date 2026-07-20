@@ -1,4 +1,5 @@
 import { canTrackEvent } from "@/lib/analytics/consent-gate";
+import { resolveFunnelStage } from "@/lib/analytics/funnel";
 import { isProductionAnalyticsRuntime } from "@/lib/analytics/runtime";
 import {
   getEventCategory,
@@ -18,6 +19,7 @@ export type AnalyticsEventName =
   | "plan_selected"
   | "subscription_checkout_started"
   | "subscription_checkout_completed"
+  | "subscription_checkout_cancelled"
   | "checkout_started"
   | "checkout_completed"
   | "billing_portal_opened"
@@ -32,14 +34,18 @@ export type AnalyticsEventName =
   | "cta_clicked"
   | "enterprise_page_viewed"
   | "portal_viewed"
+  | "portal_login"
   | "docs_viewed"
   | "legal_page_viewed"
   | "client_created"
+  | "client_archived"
   | "report_created"
   | "report_generated"
   | "report_published"
   | "risk_created"
   | "incident_created"
+  | "incident_closed"
+  | "automation_executed"
   | "dashboard_loaded"
   | "integration_connected"
   | "ai_summary_generated"
@@ -101,6 +107,7 @@ export type AnalyticsEventName =
   | "pricing_cta_clicked"
   | "contact_sales_clicked"
   | "documentation_viewed"
+  | "features_page_viewed"
   | "ai_connection_test_started"
   | "ai_connection_test_succeeded"
   | "ai_connection_test_failed"
@@ -108,19 +115,36 @@ export type AnalyticsEventName =
   | "ai_summary_generation_succeeded"
   | "ai_summary_generation_failed"
   | "ai_summary_saved"
-  | "ai_rate_limit_reached";
+  | "ai_rate_limit_reached"
+  | "user_invited"
+  | "user_removed"
+  | "api_token_created"
+  | "webhook_connected"
+  | "trial_started"
+  | "trial_ended"
+  | "subscription_changed";
 
 export type AnalyticsEventProps = Record<string, string | number | boolean>;
 
+export type AnalyticsSinkConsent = "analytics" | "marketing";
+
 type AnalyticsSink = (name: AnalyticsEventName, props?: AnalyticsEventProps) => void;
 
-const sinks: AnalyticsSink[] = [];
+type RegisteredSink = {
+  consent: AnalyticsSinkConsent;
+  capture: AnalyticsSink;
+};
+
+const sinks: RegisteredSink[] = [];
 const recentEvents = new Map<string, number>();
 const DEDUPE_WINDOW_MS = 400;
 
-/** Register a runtime analytics sink (Plausible, PostHog, etc.). */
-export function registerAnalyticsSink(sink: AnalyticsSink): void {
-  sinks.push(sink);
+/** Register a runtime analytics sink with an explicit consent category. */
+export function registerAnalyticsSink(
+  sink: AnalyticsSink,
+  consent: AnalyticsSinkConsent = "analytics",
+): void {
+  sinks.push({ consent, capture: sink });
 }
 
 function shouldDedupeEvent(name: AnalyticsEventName, props?: AnalyticsEventProps): boolean {
@@ -137,6 +161,7 @@ function shouldDedupeEvent(name: AnalyticsEventName, props?: AnalyticsEventProps
 /**
  * Track a privacy-aware analytics event.
  * Never sends personal data — only safe metadata props.
+ * Standard envelope adds event_category, optional funnel_stage, feature/module when provided.
  */
 export function trackAnalyticsEvent(
   name: AnalyticsEventName,
@@ -147,10 +172,15 @@ export function trackAnalyticsEvent(
 
   const canonicalName = resolveCanonicalEventName(name) as AnalyticsEventName;
   const category = getEventCategory(canonicalName);
+  const funnelStage = resolveFunnelStage(canonicalName);
   const enrichedProps: AnalyticsEventProps = {
     ...sanitizeEventProps(props),
     event_category: category,
   };
+
+  if (funnelStage && enrichedProps.funnel_stage === undefined) {
+    enrichedProps.funnel_stage = funnelStage;
+  }
 
   const canTrackAnalytics = canTrackEvent("analytics");
   const canTrackMarketing = canTrackEvent("marketing");
@@ -159,24 +189,68 @@ export function trackAnalyticsEvent(
 
   for (const sink of sinks) {
     try {
-      if (sink === ga4Sink && !canTrackMarketing) continue;
-      if (sink !== ga4Sink && !canTrackAnalytics) continue;
-      sink(canonicalName, enrichedProps);
+      if (sink.consent === "marketing" && !canTrackMarketing) continue;
+      if (sink.consent === "analytics" && !canTrackAnalytics) continue;
+      sink.capture(canonicalName, enrichedProps);
     } catch {
       // Analytics must never break the app.
     }
   }
 }
 
-const BLOCKED_PROP_KEYS =
-  /email|name|phone|address|password|token|secret|workspace|organization|client_id|customer|stripe|api_key|session_id|subscription_id|invoice_id/i;
+/** Exact keys that must never leave the browser via analytics sinks. */
+const BLOCKED_PROP_KEYS = new Set([
+  "email",
+  "name",
+  "full_name",
+  "phone",
+  "address",
+  "password",
+  "token",
+  "secret",
+  "api_key",
+  "apikey",
+  "access_token",
+  "refresh_token",
+  "organization_id",
+  "organizationid",
+  "workspace_id",
+  "workspaceid",
+  "user_id",
+  "userid",
+  "session_id",
+  "sessionid",
+  "client_id",
+  "clientid",
+  "customer_id",
+  "customerid",
+  "subscription_id",
+  "subscriptionid",
+  "invoice_id",
+  "invoiceid",
+  "stripe_customer_id",
+  "paddle_customer_id",
+  "prompt",
+  "completion",
+  "message",
+  "body",
+]);
+
+function isBlockedPropKey(key: string): boolean {
+  const normalized = key.trim().toLowerCase().replace(/-/g, "_");
+  if (BLOCKED_PROP_KEYS.has(normalized)) return true;
+  if (normalized.endsWith("_email") || normalized.endsWith("_password")) return true;
+  if (normalized.includes("api_key") || normalized.includes("secret")) return true;
+  if (normalized.includes("password") || normalized.includes("access_token")) return true;
+  return false;
+}
 
 function sanitizeEventProps(props?: AnalyticsEventProps): AnalyticsEventProps | undefined {
   if (!props) return undefined;
 
   const safe: AnalyticsEventProps = {};
   for (const [key, value] of Object.entries(props)) {
-    if (BLOCKED_PROP_KEYS.test(key)) continue;
+    if (isBlockedPropKey(key)) continue;
     if (typeof value === "string" && value.includes("@")) continue;
     safe[key] = value;
   }

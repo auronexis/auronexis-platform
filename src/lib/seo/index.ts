@@ -39,6 +39,12 @@ export {
 export { buildSitemapEntries, validateSitemapEntries } from "@/lib/seo/sitemap";
 export { buildRobotsConfig } from "@/lib/seo/robots";
 export {
+  classifyRoute,
+  isIndexablePublicRoute,
+  ROUTE_CATEGORIES,
+  type RouteCategory,
+} from "@/lib/seo/route-catalog";
+export {
   collectionPageGraphJsonLd,
   docPageGraphJsonLd,
   homePageGraphJsonLd,

@@ -24,6 +24,7 @@ import type {
 import { USAGE_METRIC_LABELS } from "@/lib/billing/types";
 import { getOrganizationPlanContext } from "@/lib/plans/queries";
 import { projectLinearForecast, percentChange } from "@/lib/predictive/forecasting";
+import { countActiveClients } from "@/lib/clients/queries";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 
@@ -140,16 +141,6 @@ async function countActiveUsers(organizationId: string): Promise<number> {
     .select("id", { count: "exact", head: true })
     .eq("organization_id", organizationId)
     .eq("is_disabled", false);
-  return count ?? 0;
-}
-
-async function countActiveClients(organizationId: string): Promise<number> {
-  const admin = createAdminClient();
-  const { count } = await admin
-    .from("clients")
-    .select("id", { count: "exact", head: true })
-    .eq("organization_id", organizationId)
-    .neq("status", "archived");
   return count ?? 0;
 }
 

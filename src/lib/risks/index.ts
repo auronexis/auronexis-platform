@@ -6,7 +6,6 @@ export type {
   RiskDetectionResult,
   RiskHeatmap,
   RiskHeatmapCell,
-  RiskMetrics,
   RiskSeverity,
   RiskSource,
   RiskStatus,
@@ -72,4 +71,3 @@ export {
   type RiskActionState,
 } from "./actions";
 export { detectClientRisks, resolveHealthEngineRisks } from "./detector";
-export { buildRiskSummary, getRiskMetrics } from "./summary";

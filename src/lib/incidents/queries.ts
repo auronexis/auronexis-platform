@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { CriticalIncidentAlert, IncidentActivityView, IncidentSummary, IncidentWithRelations, RiskOption } from "@/lib/incidents/types";
@@ -63,7 +64,7 @@ export async function listIncidents(
 }
 
 /** Load a single incident by id within the current organization. */
-export async function getIncidentById(
+export const getIncidentById = cache(async function getIncidentById(
   session: SessionContext,
   incidentId: string,
 ): Promise<IncidentWithRelations | null> {
@@ -87,7 +88,7 @@ export async function getIncidentById(
     console.warn("[incidents] getIncidentById failed:", error);
     return null;
   }
-}
+});
 
 /** Active V2 risks available for optional incident linking. */
 export async function listLinkableRisks(session: SessionContext): Promise<RiskOption[]> {

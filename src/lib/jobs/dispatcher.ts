@@ -12,6 +12,7 @@ import {
   advanceJobSchedule,
   completeJobExecution,
   createJobExecution,
+  hasRunningJobExecution,
   isJobDue,
 } from "@/lib/jobs/scheduler";
 import type { JobId, JobRunResult } from "@/lib/jobs/types";
@@ -42,6 +43,15 @@ export async function dispatchJob(jobId: JobId, options?: { force?: boolean }): 
 
   if (!options?.force && !(await isJobDue(jobId))) {
     return { jobId, status: "skipped", durationMs: 0, metadata: { reason: "not_due" } };
+  }
+
+  if (!options?.force && (await hasRunningJobExecution(jobId))) {
+    return {
+      jobId,
+      status: "skipped",
+      durationMs: 0,
+      metadata: { reason: "already_running" },
+    };
   }
 
   const started = Date.now();

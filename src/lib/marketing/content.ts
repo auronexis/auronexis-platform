@@ -81,8 +81,8 @@ export const FEATURES: readonly MarketingFeature[] = [
     workflow: "Monitor portfolio health, overdue work, and executive priorities from a single dashboard.",
     outcome: "Leadership sees what changed, which clients need attention, and what to do next.",
     enterpriseValue: "Faster operational decisions with organization-scoped visibility and audit-friendly activity.",
-    ctaLabel: "Explore the dashboard",
-    ctaHref: "/signup",
+    ctaLabel: "Explore executive dashboards",
+    ctaHref: "/features/executive-dashboards",
   },
   {
     title: "Client Reporting",
@@ -91,8 +91,8 @@ export const FEATURES: readonly MarketingFeature[] = [
     workflow: "Draft, generate, publish, and schedule reports with client portal visibility controls.",
     outcome: "Predictable delivery and a published record of value for every client.",
     enterpriseValue: "Client-ready reporting with version history and portal-only publication rules.",
-    ctaLabel: "See reporting workflow",
-    ctaHref: "/docs/reports",
+    ctaLabel: "See reporting features",
+    ctaHref: "/features/reports",
   },
   {
     title: "Risk & Incident Management",
@@ -101,8 +101,8 @@ export const FEATURES: readonly MarketingFeature[] = [
     workflow: "Log risks and incidents, tie them to clients, and resolve with traceable status changes.",
     outcome: "Fewer surprises and a defensible record for client and leadership reviews.",
     enterpriseValue: "Governance-ready risk and incident history with role-based access.",
-    ctaLabel: "Review risk workflows",
-    ctaHref: "/pricing#compare",
+    ctaLabel: "Review risk intelligence",
+    ctaHref: "/features/risk-intelligence",
     planNote: "Available on Business and Enterprise plans.",
   },
   {
@@ -112,8 +112,8 @@ export const FEATURES: readonly MarketingFeature[] = [
     workflow: "Define triggers and actions, monitor execution history, and connect delivery events.",
     outcome: "More consistent operations with less manual coordination.",
     enterpriseValue: "Repeatable automation with organization-scoped execution logs.",
-    ctaLabel: "View automation capabilities",
-    ctaHref: "/docs/automation",
+    ctaLabel: "View automation features",
+    ctaHref: "/features/automation",
   },
   {
     title: "Integrations & Connectors",
@@ -132,8 +132,8 @@ export const FEATURES: readonly MarketingFeature[] = [
     workflow: "Use adoption, success, and operational signals to surface priority clients and changes.",
     outcome: "Earlier intervention on at-risk clients and clearer executive narratives.",
     enterpriseValue: "Deterministic intelligence with evidence-backed findings and optional AI assistance.",
-    ctaLabel: "See executive intelligence",
-    ctaHref: "/features/executive-dashboards",
+    ctaLabel: "Explore AI Copilot",
+    ctaHref: "/features/ai-copilot",
     planNote: "Advanced AI narrative features are plan-gated.",
   },
 ];
@@ -142,18 +142,22 @@ export const USE_CASES = [
   {
     title: "MSPs",
     description: "Monitor multi-client operations, prove SLA performance, and standardize reporting.",
+    href: "/use-cases/msps",
   },
   {
     title: "IT Agencies",
     description: "Deliver client dashboards, incident transparency, and recurring value reports.",
+    href: "/use-cases/it-service-providers",
   },
   {
     title: "Consultancies",
     description: "Package operational insights for retainers and transformation programs.",
+    href: "/use-cases/consultancies",
   },
   {
     title: "Automation Firms",
     description: "Show automation ROI, workflow reliability, and client health in one command center.",
+    href: "/use-cases/automation-agencies",
   },
 ] as const;
 

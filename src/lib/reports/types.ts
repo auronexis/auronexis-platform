@@ -1,4 +1,5 @@
 import type { Report, ReportStatus } from "@/types/database";
+import { formatAppDate } from "@/lib/i18n";
 
 export type ReportWithRelations = Report & {
   clients: { name: string; contact_email: string | null } | null;
@@ -80,15 +81,7 @@ export const REPORT_LIST_SELECT = `
 `;
 
 export function formatReportDate(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatAppDate(value);
 }
 
 export function formatReportPeriod(start: string, end: string): string {
@@ -101,9 +94,4 @@ export function toDateInputValue(value: string | null | undefined): string {
   }
 
   return value.slice(0, 10);
-}
-
-/** @deprecated Use published_at for portal display; sent_at tracks email delivery. */
-export function wasReportDelivered(report: Pick<Report, "sent_at">): boolean {
-  return Boolean(report.sent_at);
 }

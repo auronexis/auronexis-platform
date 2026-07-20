@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ComplianceWorkspace } from "@/components/compliance/compliance-workspace";
+import { ComplianceWorkspaceLazy } from "@/components/performance/lazy-workspaces";
 import { PageHeader } from "@/components/layout/page-header";
 import { getComplianceWorkspaceData } from "@/lib/compliance/repository";
 import { requireSession } from "@/lib/auth/session";
@@ -35,7 +35,7 @@ export default async function ComplianceDashboardPage() {
           </Link>
         }
       />
-      <ComplianceWorkspace
+      <ComplianceWorkspaceLazy
         dashboard={dashboard}
         gdprRequests={gdprRequests}
         securityIncidents={securityIncidents}

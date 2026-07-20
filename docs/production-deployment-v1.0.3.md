@@ -1,4 +1,5 @@
-# Production Deployment — v1.0.3
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
+# Production Deployment â€” v1.0.3
 
 **Version:** 1.0.3  
 **Status:** Launch Candidate
@@ -8,7 +9,7 @@
 | Host | Role |
 |------|------|
 | `auroranexis.com` | Marketing apex |
-| `www.auroranexis.com` | 301 → apex |
+| `www.auroranexis.com` | 301 â†’ apex |
 | `app.auroranexis.com` | Production SaaS |
 | `staging.auroranexis.com` | Staging / QA |
 
@@ -27,4 +28,5 @@ Redirects: `next.config.ts` + Vercel domain settings
 
 ## Diagnostics
 
-Settings → Diagnostics → **Deployment readiness** and **Launch candidate readiness**
+Settings â†’ Diagnostics â†’ **Deployment readiness** and **Launch candidate readiness**
+

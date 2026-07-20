@@ -26,6 +26,12 @@ import {
   CLIENT_PORTAL_DOC as CLIENT_PORTAL_DOC_INPUT,
   INTEGRATIONS_DOC as INTEGRATIONS_DOC_INPUT,
 } from "@/lib/docs/pages/platform";
+import {
+  ACTIVITY_DOC as ACTIVITY_DOC_INPUT,
+  CUSTOMER_SUCCESS_DOC as CUSTOMER_SUCCESS_DOC_INPUT,
+  KNOWLEDGE_DOC as KNOWLEDGE_DOC_INPUT,
+  PROFITABILITY_DOC as PROFITABILITY_DOC_INPUT,
+} from "@/lib/docs/pages/growth";
 
 export const GETTING_STARTED_DOC = buildDocPage(GETTING_STARTED_DOC_INPUT);
 export const CLIENTS_DOC = buildDocPage(CLIENTS_DOC_INPUT);
@@ -44,6 +50,10 @@ export const ENTERPRISE_DOC = buildDocPage(ENTERPRISE_DOC_INPUT);
 export const COMPLIANCE_DOC = buildDocPage(COMPLIANCE_DOC_INPUT);
 export const WHITE_LABEL_DOC = buildDocPage(WHITE_LABEL_DOC_INPUT);
 export const PREDICTIVE_DOC = buildDocPage(PREDICTIVE_DOC_INPUT);
+export const KNOWLEDGE_DOC = buildDocPage(KNOWLEDGE_DOC_INPUT);
+export const PROFITABILITY_DOC = buildDocPage(PROFITABILITY_DOC_INPUT);
+export const CUSTOMER_SUCCESS_DOC = buildDocPage(CUSTOMER_SUCCESS_DOC_INPUT);
+export const ACTIVITY_DOC = buildDocPage(ACTIVITY_DOC_INPUT);
 export const DOCS_HUB_DOC = buildDocPage(DOCS_HUB_DOC_INPUT);
 
 export const DOC_PAGES: DocPageContent[] = [
@@ -57,6 +67,10 @@ export const DOC_PAGES: DocPageContent[] = [
   AUTOMATION_DOC,
   INTEGRATIONS_DOC,
   CLIENT_PORTAL_DOC,
+  KNOWLEDGE_DOC,
+  PROFITABILITY_DOC,
+  CUSTOMER_SUCCESS_DOC,
+  ACTIVITY_DOC,
   BILLING_DOC,
   SECURITY_DOC,
   API_DOC,
@@ -154,6 +168,30 @@ export const DOC_HUB_CARDS: DocHubCard[] = [
     title: "Client Portal",
     description: CLIENT_PORTAL_DOC.description,
     module: "clients",
+  },
+  {
+    slug: "knowledge",
+    title: "Knowledge Hub",
+    description: KNOWLEDGE_DOC.description,
+    module: "dashboard",
+  },
+  {
+    slug: "profitability",
+    title: "Profitability",
+    description: PROFITABILITY_DOC.description,
+    module: "clients",
+  },
+  {
+    slug: "customer-success",
+    title: "Customer Success",
+    description: CUSTOMER_SUCCESS_DOC.description,
+    module: "clients",
+  },
+  {
+    slug: "activity",
+    title: "Activity Timeline",
+    description: ACTIVITY_DOC.description,
+    module: "dashboard",
   },
   {
     slug: "billing",

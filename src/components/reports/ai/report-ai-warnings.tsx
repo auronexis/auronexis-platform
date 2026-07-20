@@ -1,5 +1,3 @@
-"use client";
-
 import type { AIWarning } from "@/lib/ai/types";
 import { FormAlert } from "@/components/ui/form-alert";
 

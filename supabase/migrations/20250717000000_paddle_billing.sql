@@ -138,6 +138,8 @@ GRANT ALL ON TABLE public.billing_provider_transactions TO service_role;
 
 -- ---------------------------------------------------------------------------
 -- Rollback notes (manual — do not auto-run)
+-- DO NOT UNCOMMENT: historical reference only — see Build Bible V2 Chapter 1
+-- non-negotiables (no destructive Stripe archive cleanup in production).
 -- ---------------------------------------------------------------------------
 -- 1. DROP TABLE IF EXISTS public.billing_provider_transactions;
 -- 2. DROP TABLE IF EXISTS public.paddle_webhook_events;

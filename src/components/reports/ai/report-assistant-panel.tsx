@@ -18,8 +18,9 @@ import {
 } from "@/lib/ai/types";
 import { cn } from "@/lib/utils/cn";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
+import { restoreFocus, trapFocus } from "@/lib/a11y/focus";
 import { useReportAI } from "@/components/reports/ai/report-ai-provider";
-import { ReportAIUpgradeCard, ReportAIUsageCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUpgradeCard, AIUsageCard } from "@/components/ai/ai-usage-card";
 import { ReportAIDiffPreview } from "@/components/reports/ai/report-ai-diff-preview";
 import { ReportAIContextPanel } from "@/components/reports/ai/report-ai-context-panel";
 import { ReportAIChecklist } from "@/components/reports/ai/report-ai-checklist";
@@ -66,12 +67,17 @@ export function ReportAssistantPanel({
   const ai = useReportAI();
   const { panelOpen, closePanel } = ai;
   const panelRef = useRef<HTMLElement>(null);
+  const previouslyFocused = useRef<Element | null>(null);
 
   const isSplit = layoutMode === "split";
   const showMobileBackdrop = panelOpen && isSplit;
 
   useEffect(() => {
     if (!panelOpen) return;
+
+    previouslyFocused.current = document.activeElement;
+    const panel = panelRef.current;
+    const releaseTrap = panel ? trapFocus(panel) : undefined;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -81,7 +87,11 @@ export function ReportAssistantPanel({
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      releaseTrap?.();
+      document.removeEventListener("keydown", handleKeyDown);
+      restoreFocus(previouslyFocused.current);
+    };
   }, [closePanel, panelOpen]);
 
   useEffect(() => {
@@ -281,14 +291,14 @@ function ReportAssistantPanelBody({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden px-5 py-5">
       {!aiEnabled ? (
-        <ReportAIUpgradeCard
+        <AIUpgradeCard
           message={upgradeMessage}
           requiredPlanLabel={requiredPlanLabel}
           title="Executive Report Copilot"
         />
       ) : (
         <>
-          <ReportAIUsageCard usageSummary={usageSummary} averageLatencyMs={averageLatencyMs} />
+          <AIUsageCard usageSummary={usageSummary} averageLatencyMs={averageLatencyMs} />
 
           <ReportAIContextPanel snapshot={contextSnapshot} />
           <ReportAIWarnings warnings={warnings} />

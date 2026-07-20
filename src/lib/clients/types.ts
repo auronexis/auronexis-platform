@@ -44,7 +44,7 @@ export const CLIENT_SELECT_COLUMNS_V1 = BASE_COLUMNS_V1;
 export const CLIENT_SELECT_COLUMNS_V1_WITH_REVENUE = `${BASE_COLUMNS_V1}, monthly_revenue`;
 
 import type { AppCurrency } from "@/lib/i18n/currency";
-import { formatWorkspaceMoney } from "@/lib/i18n/format";
+import { formatAppDate, formatWorkspaceMoney } from "@/lib/i18n";
 
 export function formatClientRevenue(
   value: number | null | undefined,
@@ -58,11 +58,7 @@ export function formatClientRevenue(
 }
 
 export function formatClientDate(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatAppDate(value);
 }
 
 export function formatHealthScore(value: number | null | undefined): string {

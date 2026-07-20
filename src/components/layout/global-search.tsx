@@ -28,6 +28,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
 import { MutedText } from "@/components/ui/typography";
+import { restoreFocus, trapFocus } from "@/lib/a11y/focus";
 import { cn } from "@/lib/utils/cn";
 import {
   auroraInputFocus,
@@ -171,6 +172,7 @@ export function GlobalSearchProvider({ children }: GlobalSearchProviderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const panelInputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const previouslyFocused = useRef<Element | null>(null);
   const resultRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const titleId = useId();
   const isMac = useIsMac();
@@ -184,11 +186,17 @@ export function GlobalSearchProvider({ children }: GlobalSearchProviderProps) {
   }, []);
 
   const openPanel = useCallback(() => {
+    previouslyFocused.current = document.activeElement;
     setOpen(true);
   }, []);
 
   const toggle = useCallback(() => {
-    setOpen((current) => !current);
+    setOpen((current) => {
+      if (!current) {
+        previouslyFocused.current = document.activeElement;
+      }
+      return !current;
+    });
   }, []);
 
   useEffect(() => {
@@ -214,11 +222,17 @@ export function GlobalSearchProvider({ children }: GlobalSearchProviderProps) {
       return;
     }
 
+    const panel = panelRef.current;
     const frame = window.requestAnimationFrame(() => {
       panelInputRef.current?.focus();
     });
+    const releaseTrap = panel ? trapFocus(panel) : undefined;
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      releaseTrap?.();
+      restoreFocus(previouslyFocused.current);
+    };
   }, [open]);
 
   useEffect(() => {

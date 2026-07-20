@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import type {
   ClientReportMetrics,
   RelatedOpenIncident,
@@ -100,13 +101,13 @@ export async function listReports(
 }
 
 /** Load a single report by id within the current organization. */
-export async function getReportById(
+export const getReportById = cache(async function getReportById(
   session: SessionContext,
   reportId: string,
 ): Promise<ReportWithRelations | null> {
   const { row } = await selectReportById(session, reportId);
   return row;
-}
+});
 
 /** Summary risk/incident counts for a linked client. */
 export async function getClientReportMetrics(
@@ -118,18 +119,18 @@ export async function getClientReportMetrics(
 
   const [openRisks, criticalRisks, openIncidents, criticalIncidents] = await Promise.all([
     supabase
-      .from("risks")
+      .from("client_risks")
       .select("id", { count: "exact", head: true })
       .eq("organization_id", organizationId)
       .eq("client_id", clientId)
-      .in("status", LEGACY_OPEN_RISK_STATUSES),
+      .in("status", OPEN_RISK_STATUSES),
     supabase
-      .from("risks")
+      .from("client_risks")
       .select("id", { count: "exact", head: true })
       .eq("organization_id", organizationId)
       .eq("client_id", clientId)
       .eq("severity", "critical")
-      .in("status", LEGACY_OPEN_RISK_STATUSES),
+      .in("status", OPEN_RISK_STATUSES),
     supabase
       .from("incidents")
       .select("id", { count: "exact", head: true })
@@ -171,20 +172,32 @@ export async function getRelatedOpenRisks(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("risks")
-    .select("id, title, severity, status, due_date")
+    .from("client_risks")
+    .select("id, title, severity, status, due_at")
     .eq("organization_id", session.organization.id)
     .eq("client_id", clientId)
-    .in("status", LEGACY_OPEN_RISK_STATUSES)
+    .in("status", OPEN_RISK_STATUSES)
     .order("severity", { ascending: false })
-    .order("due_date", { ascending: true, nullsFirst: false });
+    .order("due_at", { ascending: true, nullsFirst: false });
 
   if (error) {
     console.warn("[reports] getRelatedOpenRisks failed:", error.message);
     return [];
   }
 
-  return (data ?? []) as RelatedOpenRisk[];
+  return ((data ?? []) as Array<{
+    id: string;
+    title: string;
+    severity: string;
+    status: string;
+    due_at: string | null;
+  }>).map((row) => ({
+    id: row.id,
+    title: row.title,
+    severity: row.severity,
+    status: row.status,
+    due_date: row.due_at,
+  }));
 }
 
 /** Open incidents linked to the report client. */

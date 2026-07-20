@@ -1,0 +1,21 @@
+---
+description: Auroranexis Build Bible V2 Chapter 6 — API, Server Actions & integrations
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 6 (API / Server Actions / Integrations)
+
+Spec: `docs/08_BUILD_BIBLE_V2_CHAPTER_06_API.md`
+
+## Rules
+
+- API routes orchestrate only — auth, parse, delegate to `src/lib/**`, return standardized responses (`apiJson` / `apiError` / `apiPaginated`).
+- Prefer shared list helpers (`respondWithPaginatedList`) over copy-pasted filter/sort/paginate pipelines.
+- Server Actions: `requireSession` + permission/plan guards; use `resolveActionError` and shared form validators.
+- Webhook signing lives in `src/lib/webhooks/signing.ts` — do not duplicate.
+- Never weaken auth, RBAC, RLS, or Paddle billing behaviour.
+- Never expose secrets or raw internal exception messages to clients.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 6 work.

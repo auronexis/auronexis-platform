@@ -127,7 +127,7 @@ export default function AboutPage() {
             </Link>
           </li>
           <li>
-            <Link href="/api/docs" className="font-medium text-primary hover:underline">
+            <Link href="/docs/api" className="font-medium text-primary hover:underline">
               API documentation
             </Link>
           </li>

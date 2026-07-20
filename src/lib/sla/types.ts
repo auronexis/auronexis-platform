@@ -99,7 +99,7 @@ export type SlaActivityView = {
   message: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
-  actor: { full_name: string } | null;
+  actor?: { full_name: string } | null;
 };
 
 export type ClientSlaSummary = {
@@ -132,3 +132,25 @@ export const SLA_STATUS_LABELS: Record<Exclude<SlaStatus, null>, string> = {
   warning: "Warning",
   breached: "Breached",
 };
+
+/** Canonical PostgREST select for sla_policies rows. */
+export const SLA_POLICY_SELECT =
+  "id, organization_id, name, incident_hours, risk_hours, is_default, critical_response_minutes, critical_resolution_minutes, high_response_minutes, high_resolution_minutes, medium_response_minutes, medium_resolution_minutes, low_response_minutes, low_resolution_minutes, created_at, updated_at";
+
+/** Canonical PostgREST select for sla_events rows. */
+export const SLA_EVENT_SELECT = `
+  id,
+  organization_id,
+  incident_id,
+  client_id,
+  policy_id,
+  status,
+  breached,
+  started_at,
+  response_due_at,
+  resolution_due_at,
+  responded_at,
+  resolved_at,
+  created_at,
+  updated_at
+`;

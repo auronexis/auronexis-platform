@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { insertRows, updateRows } from "@/lib/supabase/typed";
 import type { Database } from "@/types/database";
 import type { PostgrestError } from "@supabase/supabase-js";
 
@@ -62,10 +63,11 @@ async function updatePrefs(
   patch: AdoptionPrefsUpdate,
 ): Promise<PostgrestError | null> {
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("organization_adoption_preferences")
-    .update(patch as never)
-    .eq("organization_id", organizationId);
+  const { error } = await updateRows(
+    supabase,
+    "organization_adoption_preferences",
+    patch,
+  ).eq("organization_id", organizationId);
   return error;
 }
 
@@ -75,9 +77,7 @@ async function insertPrefs(
 ): Promise<PostgrestError | null> {
   const supabase = await createClient();
   const row: AdoptionPrefsInsert = { organization_id: organizationId, ...patch };
-  const { error } = await supabase
-    .from("organization_adoption_preferences")
-    .insert(row as never);
+  const { error } = await insertRows(supabase, "organization_adoption_preferences", row);
   return error;
 }
 

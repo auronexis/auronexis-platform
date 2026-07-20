@@ -20,6 +20,7 @@ export const MARKETING_ROUTES = {
   home: "/",
   features: "/features",
   solutions: "/solutions",
+  templates: "/templates",
   useCases: "/use-cases",
   industries: "/industries",
   pricing: "/pricing",
@@ -40,6 +41,7 @@ export const MARKETING_ROUTES = {
 
 export const FEATURE_ROUTES = {
   aiExecutiveReports: "/features/ai-executive-reports",
+  aiCopilot: "/features/ai-copilot",
   clientPortal: "/features/client-portal",
   automation: "/features/automation",
   monitoring: "/features/monitoring",
@@ -124,7 +126,8 @@ export const DASHBOARD_ROUTES = {
 
 export const HELP_LINKS = {
   documentation: MARKETING_ROUTES.documentation,
-  apiDocumentation: "/api/docs",
+  /** Public indexable API guide — interactive OpenAPI UI remains at /api/docs (noindex). */
+  apiDocumentation: "/docs/api",
   releaseNotes: "/docs/release-notes",
   statusPage: MARKETING_ROUTES.status,
   support: MARKETING_ROUTES.support,
@@ -140,6 +143,7 @@ export const FOOTER_SECTIONS = {
   product: [
     { label: "Features", href: MARKETING_ROUTES.features },
     { label: "Solutions", href: MARKETING_ROUTES.solutions },
+    { label: "Templates", href: MARKETING_ROUTES.templates },
     { label: "Industries", href: MARKETING_ROUTES.industries },
     { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     { label: "Pricing", href: MARKETING_ROUTES.pricing },

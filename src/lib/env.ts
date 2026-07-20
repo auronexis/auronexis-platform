@@ -12,6 +12,18 @@ function requireEnv(name: string): string {
   return value;
 }
 
+/** Constant-time string compare — Edge-safe (no node:crypto). */
+function timingSafeEqualString(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
 /** Public Supabase URL — safe for client and server. */
 export function getSupabaseUrl(): string {
   return requireEnv("NEXT_PUBLIC_SUPABASE_URL");
@@ -29,7 +41,14 @@ export function getSupabaseServiceRoleKey(): string {
 
 /** Application base URL for auth redirects. */
 export function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const value = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (value) {
+    return value;
+  }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Missing required environment variable: NEXT_PUBLIC_APP_URL");
+  }
+  return "http://localhost:3000";
 }
 
 /** Resend API key — server-only. */
@@ -46,29 +65,6 @@ export function getResendFromEmail(): string {
   return resolveDefaultFromEmail();
 }
 
-/**
- * @deprecated Stripe has been removed from active billing. Paddle is the sole
- * active provider — see "@/lib/paddle/env". These always throw.
- */
-export function getStripeSecretKey(): never {
-  throw new Error("Stripe removed — Paddle is the sole active billing provider.");
-}
-
-/** @deprecated Stripe removed — see {@link getStripeSecretKey}. */
-export function getStripeWebhookSecret(): never {
-  throw new Error("Stripe removed — Paddle is the sole active billing provider.");
-}
-
-/** @deprecated Stripe removed — see {@link getStripeSecretKey}. */
-export function getStripeWebhookSecretV2(): never {
-  throw new Error("Stripe removed — Paddle is the sole active billing provider.");
-}
-
-/** @deprecated Stripe removed — see {@link getStripeSecretKey}. */
-export function getStripePublishableKey(): never {
-  throw new Error("Stripe removed — Paddle is the sole active billing provider.");
-}
-
 /** Cron bearer secret for /api/cron/run — server-only. */
 export function getCronSecret(): string | null {
   const value = process.env.CRON_SECRET;
@@ -79,13 +75,15 @@ export function getCronSecret(): string | null {
 export function verifyCronAuthorization(request: Request): boolean {
   const secret = getCronSecret();
   if (!secret) {
+    // Fail closed outside development — production must configure CRON_SECRET.
     return process.env.NODE_ENV === "development";
   }
   const header = request.headers.get("authorization");
   if (!header?.startsWith("Bearer ")) {
     return false;
   }
-  return header.slice("Bearer ".length) === secret;
+  const provided = header.slice("Bearer ".length);
+  return timingSafeEqualString(provided, secret);
 }
 
 /** Platform sales org for inbound lead routing — server-only. */

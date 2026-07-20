@@ -14,6 +14,18 @@ export const PUBLIC_ENDPOINT_REGISTRY: PublicEndpointProtection[] = [
     authenticated: false,
   },
   {
+    path: "/api/ready",
+    methods: ["GET"],
+    protection: "readiness probe subset of health",
+    authenticated: false,
+  },
+  {
+    path: "/api/status",
+    methods: ["GET"],
+    protection: "status probe (unauthenticated JSON)",
+    authenticated: false,
+  },
+  {
     path: "/api/paddle/webhook",
     methods: ["POST"],
     protection: "Paddle signature (PADDLE_WEBHOOK_SECRET) + idempotency table",

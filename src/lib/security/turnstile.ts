@@ -29,7 +29,8 @@ export async function verifyTurnstileToken(
   remoteIp?: string | null,
 ): Promise<boolean> {
   if (!isTurnstileConfigured()) {
-    return true;
+    // Fail closed in production when bot protection keys are missing.
+    return process.env.NODE_ENV !== "production";
   }
 
   const secret = process.env.TURNSTILE_SECRET_KEY;

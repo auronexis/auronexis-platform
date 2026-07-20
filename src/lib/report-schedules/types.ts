@@ -1,4 +1,5 @@
 import type { ReportSchedule, ReportScheduleFrequency } from "@/types/database";
+import { formatAppDate, formatAppDateTime } from "@/lib/i18n";
 
 export type { ReportScheduleFrequency };
 
@@ -30,23 +31,9 @@ export function formatScheduleDate(value: string | null | undefined): string {
     return "—";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value.includes("T") ? value : `${value}T00:00:00`));
+  return formatAppDate(value.includes("T") ? value : `${value}T00:00:00`);
 }
 
 export function formatScheduleDateTime(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }

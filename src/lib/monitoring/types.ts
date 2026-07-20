@@ -1,4 +1,5 @@
 import type { Json } from "@/types/database";
+import { formatAppDateTimeCompact } from "@/lib/i18n";
 
 export const MONITORING_PROVIDERS = [
   "Manual",
@@ -209,14 +210,5 @@ export function mapMonitoringActivityRow(row: Record<string, unknown>): Monitori
 }
 
 export function formatMonitoringTimestamp(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTimeCompact(value);
 }

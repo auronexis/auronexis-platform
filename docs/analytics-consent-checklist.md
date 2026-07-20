@@ -1,13 +1,15 @@
 # Analytics & Consent QA Checklist
 
-Use this checklist after deploying Phase 15 growth infrastructure.
+Use this checklist after deploying analytics / growth infrastructure.
 
 ## Environment
 
 - [ ] `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` set (if using Plausible)
-- [ ] `NEXT_PUBLIC_CLAUSIBLE_PROJECT_ID` set (if using Clarity)
+- [ ] `NEXT_PUBLIC_CLARITY_PROJECT_ID` set (if using Clarity)
 - [ ] `NEXT_PUBLIC_GA_MEASUREMENT_ID` set only when marketing tracking is required
 - [ ] `NEXT_PUBLIC_POSTHOG_KEY` set only when product analytics is required
+- [ ] `NEXT_PUBLIC_GTM_CONTAINER_ID` reserved for future GTM (optional stub)
+- [ ] `NEXT_PUBLIC_BING_SITE_VERIFICATION` for Bing Webmaster (SEO metadata)
 - [ ] No private secrets in `NEXT_PUBLIC_*` variables
 
 ## Cookie consent banner
@@ -26,14 +28,18 @@ Use this checklist after deploying Phase 15 growth infrastructure.
 - [ ] No GA4 script before marketing consent
 - [ ] No PostHog init before analytics consent
 - [ ] Plausible loads only after analytics consent (when configured)
+- [ ] Analytics-only consent never loads GA4
+- [ ] Marketing-only consent does not load Plausible/Clarity/PostHog
 - [ ] No console errors when env vars are unset
 
 ## Conversion events (with consent granted)
 
-- [ ] `page_view` on route changes
-- [ ] `pricing_viewed` on `/pricing`
+- [ ] `page_view` on route changes (tagged `surface`: public / app / portal)
+- [ ] `pricing_view` on `/pricing`
+- [ ] `features_page_viewed` on `/features`
 - [ ] `legal_page_viewed` on `/privacy`, `/terms`, `/cookies`
-- [ ] Events do not include email addresses or client names
+- [ ] `portal_login` queued from portal login form
+- [ ] Events do not include email addresses, org IDs, or client names
 
 ## Legal pages
 
@@ -44,10 +50,9 @@ Use this checklist after deploying Phase 15 growth infrastructure.
 ## SEO
 
 - [ ] `/sitemap.xml` includes solutions, templates, legal, docs
-- [ ] `/robots.txt` disallows `/dashboard`, `/settings`, `/client-portal`, `/api/`
-- [ ] `/login` and `/signup` are **not** in sitemap
+- [ ] `/robots.txt` disallows private app routes
 - [ ] Auth pages have `noindex` metadata
-- [ ] Home page JSON-LD validates (Organization, WebSite, SoftwareApplication, FAQ)
+- [ ] Google Search Console / Bing Webmaster verification configured by owner
 
 ## Performance
 
@@ -59,5 +64,6 @@ Use this checklist after deploying Phase 15 growth infrastructure.
 
 - Submit sitemap in Google Search Console and Bing Webmaster Tools
 - Configure Plausible/Clarity dashboards after DNS/deploy
+- Wire `trackBillingLifecycleEvent` from Paddle webhooks only in Release chapters
 - Review consent rates periodically
 - Legal review of cookie/privacy copy remains the owner's responsibility

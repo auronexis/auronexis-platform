@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import {
   EMPTY_INSIGHTS_MESSAGE,
   INSIGHT_PRIORITY_LABELS,
@@ -44,11 +42,9 @@ export function AIInsightsCard({
                 {requiredPlanLabel} plan required
               </p>
             ) : null}
-            <Link href="/settings/plans">
-              <Button type="button" variant="primary" size="sm" className="mt-4">
-                View plans
-              </Button>
-            </Link>
+            <LinkButton href="/settings/plans" variant="primary" size="sm" className="mt-4">
+              View plans
+            </LinkButton>
           </div>
         </div>
       </div>

@@ -10,6 +10,7 @@ import { signOut } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils/cn";
 import { motionDropdownEnter } from "@/lib/ui/motion";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
+import { handleMenuKeyNavigation, restoreFocus } from "@/lib/a11y/focus";
 
 type UserMenuProps = {
   userName: string;
@@ -68,6 +69,7 @@ function MenuItem({ href, label, icon, onClick, disabled }: MenuItemProps) {
 export function UserMenu({ userName, userRole, showSettings }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) {
@@ -82,9 +84,13 @@ export function UserMenu({ userName, userRole, showSettings }: UserMenuProps) {
     }
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
+      if (!menuRef.current) {
+        return;
       }
+      handleMenuKeyNavigation(event, menuRef.current, () => {
+        setOpen(false);
+        restoreFocus(triggerRef.current);
+      });
     }
 
     document.addEventListener("mousedown", onPointerDown);
@@ -98,6 +104,7 @@ export function UserMenu({ userName, userRole, showSettings }: UserMenuProps) {
   return (
     <div ref={menuRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((current) => !current)}
         className={cn(

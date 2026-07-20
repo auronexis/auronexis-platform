@@ -15,6 +15,7 @@ import {
 } from "@/lib/billing/status";
 import type { BillingHistoryItem } from "@/lib/billing/history-types";
 import type { PaddleBillingDetails } from "@/lib/paddle/subscription-details";
+import { formatAppDateOrNull, formatAppDateTimeOrNull } from "@/lib/i18n";
 
 export type UsageMetricKey =
   | "ai_generations"
@@ -182,9 +183,9 @@ export const USAGE_METRIC_LABELS: Record<UsageMetricKey, string> = {
 export type BillingOverview = {
   subscription: OrganizationSubscription | null;
   hasSubscription: boolean;
-  /** Entitled for feature access (active, trialing, past_due). */
+  /** Has an active billing relationship (active, trialing, or past_due). Not feature access. */
   isActive: boolean;
-  /** Paid and healthy subscription (active or trialing only). */
+  /** Paid and healthy subscription (active or trialing only) — matches entitlements. */
   isUsable: boolean;
   hasPaymentProblem: boolean;
   isPaymentPending: boolean;
@@ -203,29 +204,11 @@ export type BillingOverview = {
 };
 
 export function formatBillingDate(value: string | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatAppDateOrNull(value);
 }
 
 export function formatBillingDateTime(value: string | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTimeOrNull(value);
 }
 
 export function buildBillingOverview(

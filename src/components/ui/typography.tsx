@@ -34,28 +34,6 @@ export function CardHeading({ className, ...props }: TypographyProps) {
   );
 }
 
-export function LabelText({ className, ...props }: TypographyProps) {
-  return (
-    <span className={cn("text-sm font-medium text-foreground/80", className)} {...props} />
-  );
-}
-
-export function BodyText({ className, ...props }: TypographyProps) {
-  return <p className={cn("text-sm leading-relaxed text-foreground/90", className)} {...props} />;
-}
-
 export function MutedText({ className, ...props }: TypographyProps) {
   return <p className={cn("text-sm text-muted", className)} {...props} />;
-}
-
-export function EyebrowText({ className, ...props }: TypographyProps) {
-  return (
-    <p
-      className={cn(
-        "text-xs font-semibold uppercase tracking-[0.16em] text-primary",
-        className,
-      )}
-      {...props}
-    />
-  );
 }

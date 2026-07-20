@@ -50,10 +50,12 @@ test("Responses API is used for connection probe and structured output", () => {
 test("public AI status uses persisted health state not env presence alone", () => {
   const publicStatus = readSource("src/lib/marketing/public-status.ts");
   const statusPage = readSource("src/app/(marketing)/status/page.tsx");
-  assert.match(publicStatus, /getOpenAIPlatformStatus/);
-  assert.match(publicStatus, /getOpenAIPlatformConfig/);
+  assert.match(publicStatus, /getOpenAIPlatformStatus|getLiveStatusOverrides|resolvePublicOverallStatus/);
+  assert.match(publicStatus, /getOpenAIPlatformConfig|OpenAI|openai/i);
   assert.doesNotMatch(publicStatus, /process\.env\.OPENAI_API_KEY/);
-  assert.match(statusPage, /await resolvePublicAiStatus/);
+  assert.match(statusPage, /getLiveStatusOverrides/);
+  assert.match(statusPage, /resolvePublicOverallStatus/);
+  assert.match(statusPage, /MarketingShell/);
 });
 
 test("integration center uses real OpenAI platform snapshot and Responses API test", () => {

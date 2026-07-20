@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CopilotWorkspace } from "@/components/copilot/copilot-workspace";
+import { CopilotWorkspaceLazy } from "@/components/performance/lazy-workspaces";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { getCopilotAccessForSession } from "@/lib/ai/copilot/action";
@@ -19,10 +19,12 @@ type CopilotPageProps = {
 
 export default async function CopilotPage({ searchParams }: CopilotPageProps) {
   const session = await requireSession();
-  const access = await getCopilotAccessForSession();
-  const planKey = await getCurrentPlan(session.organization.id);
+  const [access, planKey, params] = await Promise.all([
+    getCopilotAccessForSession(),
+    getCurrentPlan(session.organization.id),
+    searchParams,
+  ]);
   const usage = await getAIUsageSummaryForSession(session, planKey);
-  const params = await searchParams;
 
   const initialTaskType =
     params.task === "executive_brief" ? ("executive_brief" as const) : ("workspace_question" as const);
@@ -37,7 +39,7 @@ export default async function CopilotPage({ searchParams }: CopilotPageProps) {
       />
 
       <PageSurface>
-        <CopilotWorkspace
+        <CopilotWorkspaceLazy
           allowed={access.allowed}
           upgradeMessage={access.message}
           requiredPlanLabel={access.requiredPlanLabel}

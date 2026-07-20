@@ -11,14 +11,15 @@ type LoadingCardProps = {
 /** Placeholder card while content loads — foundation primitive only. */
 export function LoadingCard({ lines = 3, showHeader = true, className }: LoadingCardProps) {
   return (
-    <Card className={cn("space-y-4", className)}>
+    <Card className={cn("space-y-4", className)} aria-busy="true" aria-live="polite">
+      <span className="sr-only">Loading content</span>
       {showHeader ? (
-        <div className="space-y-2">
+        <div className="space-y-2" aria-hidden="true">
           <Skeleton className="h-4 w-1/3" />
           <Skeleton className="h-3 w-2/3" />
         </div>
       ) : null}
-      <div className="space-y-2">
+      <div className="space-y-2" aria-hidden="true">
         {Array.from({ length: lines }).map((_, index) => (
           <Skeleton key={index} className={cn("h-3", index === lines - 1 ? "w-4/5" : "w-full")} />
         ))}

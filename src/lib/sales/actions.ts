@@ -7,7 +7,7 @@ import { requireSession } from "@/lib/auth/session";
 import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import type { SalesLeadSource, SalesPipelineStage, ProspectSegment, LeadSourceRegion, AgencyType } from "@/types/database";
-import { PIPELINE_STAGES, LEAD_SOURCES, type SalesActivityTypeKey } from "@/lib/sales/pipeline-stages";
+import { PIPELINE_STAGES, LEAD_SOURCES } from "@/lib/sales/pipeline-stages";
 import { enrichLeadScores } from "@/lib/sales/enrichment";
 import { nextCadenceDueAt, shouldEscalate, shouldFlagNoResponse } from "@/lib/sales/automation";
 import { computeCustomerSuccessScores, CUSTOMER_SUCCESS_MILESTONES_TOTAL } from "@/lib/sales/customer-success";

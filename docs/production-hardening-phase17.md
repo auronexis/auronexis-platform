@@ -1,10 +1,11 @@
-# Production Hardening — Phase 17
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
+# Production Hardening â€” Phase 17
 
 Enterprise production readiness for Auroranexis: PWA manifest, metadata, security headers, email abstraction, and environment audit.
 
-## Manifest syntax error — root cause
+## Manifest syntax error â€” root cause
 
-Chrome reported `Manifest: Syntax error — Line 1 Column 1` even though `/manifest.webmanifest` returned valid JSON when fetched directly.
+Chrome reported `Manifest: Syntax error â€” Line 1 Column 1` even though `/manifest.webmanifest` returned valid JSON when fetched directly.
 
 **Root cause:** Next.js middleware intercepted `/manifest.webmanifest` for unauthenticated requests. Supabase session middleware redirected to `/login`, returning **HTML** instead of JSON. Chrome attempted to parse the login page HTML as a web manifest.
 
@@ -19,7 +20,7 @@ Chrome reported `Manifest: Syntax error — Line 1 Column 1` even though `/manif
 |---------|--------|
 | Icons | `src/lib/branding/icons.ts` |
 | Platform metadata | `src/lib/branding/metadata.ts` |
-| Page metadata | `src/lib/seo/metadata.ts` → `createPageMetadata()` |
+| Page metadata | `src/lib/seo/metadata.ts` â†’ `createPageMetadata()` |
 | Manifest | `src/app/manifest.ts` (uses `PLATFORM_MANIFEST_ICONS`) |
 | Company SEO | `src/lib/company/company-seo.ts` |
 
@@ -41,15 +42,15 @@ Transactional email is provider-agnostic:
 
 ```
 src/lib/email/
-  addresses.ts          — platform sender addresses
-  types.ts              — EmailMessage, EmailSendResult
+  addresses.ts          â€” platform sender addresses
+  types.ts              â€” EmailMessage, EmailSendResult
   provider/
-    index.ts            — sendEmail() entry point
-    resend.ts           — default provider
-    postmark.ts         — HTTP API
-    mailgun.ts          — HTTP API
-    ses.ts              — documented; use SMTP relay
-    smtp.ts             — HTTPS relay bridge
+    index.ts            â€” sendEmail() entry point
+    resend.ts           â€” default provider
+    postmark.ts         â€” HTTP API
+    mailgun.ts          â€” HTTP API
+    ses.ts              â€” documented; use SMTP relay
+    smtp.ts             â€” HTTPS relay bridge
 ```
 
 ### Environment variables
@@ -82,12 +83,12 @@ Password reset and signup emails are sent by **Supabase Auth**, not the applicat
 
 ### Production configuration
 
-1. **Supabase Dashboard → Project Settings → Auth → SMTP Settings**
+1. **Supabase Dashboard â†’ Project Settings â†’ Auth â†’ SMTP Settings**
    - Enable custom SMTP (Resend SMTP, Postmark SMTP, or AWS SES SMTP)
    - Sender: `Auroranexis <no-reply@auroranexis.com>`
    - Reply-to: `support@auroranexis.com`
 
-2. **Authentication → Email Templates**
+2. **Authentication â†’ Email Templates**
    - Update Reset Password, Confirm Signup, Magic Link templates
    - Remove Supabase branding
    - Use Auroranexis product name and support contact
@@ -100,14 +101,14 @@ See `docs/auth/password-reset.md` for full flow and template copy.
 
 ## Production environment audit
 
-`src/lib/env/production-audit.ts` — non-throwing audit for:
+`src/lib/env/production-audit.ts` â€” non-throwing audit for:
 - Supabase, Stripe (required)
 - Email provider (recommended)
 - Plausible, Clarity, Search Console verification (optional)
 
 ## Owner checklist after Phase 17
 
-- [ ] Verify Chrome DevTools → Application → Manifest shows no syntax errors
+- [ ] Verify Chrome DevTools â†’ Application â†’ Manifest shows no syntax errors
 - [ ] Confirm `/manifest.webmanifest` returns JSON without auth redirect
 - [ ] Configure Supabase custom SMTP with `no-reply@auroranexis.com`
 - [ ] Set `EMAIL_FROM=Auroranexis <no-reply@auroranexis.com>` in Vercel production
@@ -118,3 +119,4 @@ See `docs/auth/password-reset.md` for full flow and template copy.
 ## CSP sync note
 
 `vercel.json` CSP must stay aligned with `src/lib/security/csp.ts` for static assets that bypass Next.js middleware. When adding analytics domains, update both locations.
+

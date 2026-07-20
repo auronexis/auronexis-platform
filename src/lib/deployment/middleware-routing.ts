@@ -91,7 +91,24 @@ export function shouldRedirectAppMarketingToWww(hostname: string, pathname: stri
   return !isAppServablePath(pathname);
 }
 
-/** Apply X-Robots-Tag so app/staging hosts never enter the marketing index. */
-export function shouldAttachAppNoIndexHeader(hostname: string): boolean {
-  return isAppHost(hostname);
+/** Apply X-Robots-Tag so app/staging hosts and private paths never enter the marketing index. */
+export function shouldAttachNoIndexHeader(hostname: string, pathname: string): boolean {
+  if (isAppHost(hostname)) {
+    return true;
+  }
+
+  if (isApiRoute(pathname) || isPrivateRoute(pathname)) {
+    return true;
+  }
+
+  if (
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password"
+  ) {
+    return true;
+  }
+
+  return false;
 }

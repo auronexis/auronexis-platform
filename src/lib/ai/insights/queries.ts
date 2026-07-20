@@ -8,7 +8,7 @@ import { getDashboardData } from "@/lib/dashboard/queries";
 import { buildClientProfitabilityRows } from "@/lib/profitability/queries";
 import type { ClientProfitabilityRow } from "@/lib/profitability/types";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 
@@ -103,8 +103,9 @@ async function countCreatedInRange(
   clientId?: string,
 ): Promise<number> {
   const supabase = await createClient();
+  const tableName = table === "risks" ? "client_risks" : table;
   let query = supabase
-    .from(table)
+    .from(tableName)
     .select("id", { count: "exact", head: true })
     .eq("organization_id", session.organization.id)
     .gte("created_at", start)
@@ -166,74 +167,157 @@ async function getDaysSinceLastPublishedReport(
   return daysBetween(new Date((data as { updated_at: string }).updated_at), new Date());
 }
 
-async function countOpenByClient(
-  session: SessionContext,
-  table: "incidents" | "risks",
-  clientId: string,
-  criticalOnly = false,
-): Promise<number> {
-  const supabase = await createClient();
-  const openStatuses =
-    table === "incidents" ? OPEN_INCIDENT_STATUSES : LEGACY_OPEN_RISK_STATUSES;
-
-  let query = supabase
-    .from(table)
-    .select("id", { count: "exact", head: true })
-    .eq("organization_id", session.organization.id)
-    .eq("client_id", clientId)
-    .in("status", openStatuses);
-
-  if (criticalOnly) {
-    query = query.eq("severity", "critical");
-  }
-
-  const { count, error } = await query;
-  if (error) return 0;
-  return count ?? 0;
+function incrementCountMap(map: Map<string, number>, clientId: string, by = 1): void {
+  map.set(clientId, (map.get(clientId) ?? 0) + by);
 }
 
-async function countSlaBreachesForClientInRange(
+/** Org-wide open counts grouped by client — replaces per-client N+1 head counts. */
+async function loadOpenCountsByClient(
   session: SessionContext,
-  clientId: string,
+  table: "incidents" | "risks",
+): Promise<{ open: Map<string, number>; critical: Map<string, number> }> {
+  const supabase = await createClient();
+  const tableName = table === "risks" ? "client_risks" : table;
+  const openStatuses = table === "incidents" ? OPEN_INCIDENT_STATUSES : OPEN_RISK_STATUSES;
+
+  const { data, error } = await supabase
+    .from(tableName)
+    .select("client_id, severity")
+    .eq("organization_id", session.organization.id)
+    .in("status", openStatuses);
+
+  const open = new Map<string, number>();
+  const critical = new Map<string, number>();
+  if (error || !data) {
+    return { open, critical };
+  }
+
+  for (const row of data as Array<{ client_id: string; severity: string }>) {
+    incrementCountMap(open, row.client_id);
+    if (row.severity === "critical") {
+      incrementCountMap(critical, row.client_id);
+    }
+  }
+
+  return { open, critical };
+}
+
+/** Org-wide created-in-range counts grouped by client. */
+async function loadCreatedCountsByClient(
+  session: SessionContext,
+  table: "incidents" | "risks",
   start: string,
   end: string,
-): Promise<number> {
+): Promise<Map<string, number>> {
   const supabase = await createClient();
+  const tableName = table === "risks" ? "client_risks" : table;
+  const counts = new Map<string, number>();
 
-  const { data: incidents } = await supabase
-    .from("incidents")
-    .select("id")
+  const { data, error } = await supabase
+    .from(tableName)
+    .select("client_id")
     .eq("organization_id", session.organization.id)
-    .eq("client_id", clientId);
+    .gte("created_at", start)
+    .lte("created_at", end);
 
-  const { data: risks } = await supabase
-    .from("risks")
-    .select("id")
-    .eq("organization_id", session.organization.id)
-    .eq("client_id", clientId);
-
-  const incidentIds = (incidents ?? []).map((row) => (row as { id: string }).id);
-  const riskIds = (risks ?? []).map((row) => (row as { id: string }).id);
-
-  const filters = [`and(entity_type.eq.client,entity_id.eq.${clientId})`];
-  if (incidentIds.length > 0) {
-    filters.push(`and(entity_type.eq.incident,entity_id.in.(${incidentIds.join(",")}))`);
-  }
-  if (riskIds.length > 0) {
-    filters.push(`and(entity_type.eq.risk,entity_id.in.(${riskIds.join(",")}))`);
+  if (error || !data) {
+    return counts;
   }
 
-  const { count, error } = await supabase
+  for (const row of data as Array<{ client_id: string }>) {
+    incrementCountMap(counts, row.client_id);
+  }
+
+  return counts;
+}
+
+/** Latest published/generated report age (days) per client — one org query. */
+async function loadDaysSinceLastPublishedReportByClient(
+  session: SessionContext,
+): Promise<Map<string, number>> {
+  const supabase = await createClient();
+  const daysByClient = new Map<string, number>();
+  const now = new Date();
+
+  const { data, error } = await supabase
+    .from("reports")
+    .select("client_id, updated_at")
+    .eq("organization_id", session.organization.id)
+    .in("status", ["published", "generated"])
+    .order("updated_at", { ascending: false });
+
+  if (error || !data) {
+    return daysByClient;
+  }
+
+  for (const row of data as Array<{ client_id: string; updated_at: string }>) {
+    if (daysByClient.has(row.client_id)) {
+      continue;
+    }
+    daysByClient.set(row.client_id, daysBetween(new Date(row.updated_at), now));
+  }
+
+  return daysByClient;
+}
+
+/** SLA breach activity counts per client for a range — one activity query. */
+async function loadSlaBreachCountsByClient(
+  session: SessionContext,
+  start: string,
+  end: string,
+): Promise<Map<string, number>> {
+  const supabase = await createClient();
+  const counts = new Map<string, number>();
+
+  const { data, error } = await supabase
     .from("activity_events")
-    .select("id", { count: "exact", head: true })
+    .select("entity_type, entity_id")
     .eq("organization_id", session.organization.id)
     .eq("action", "sla_breached")
     .gte("created_at", start)
-    .lte("created_at", end)
-    .or(filters.join(","));
+    .lte("created_at", end);
 
-  if (error) return 0;
-  return count ?? 0;
+  if (error || !data) {
+    return counts;
+  }
+
+  const incidentIds: string[] = [];
+  const riskIds: string[] = [];
+  for (const row of data as Array<{ entity_type: string; entity_id: string }>) {
+    if (row.entity_type === "client") {
+      incrementCountMap(counts, row.entity_id);
+    } else if (row.entity_type === "incident") {
+      incidentIds.push(row.entity_id);
+    } else if (row.entity_type === "risk") {
+      riskIds.push(row.entity_id);
+    }
+  }
+
+  const [incidents, risks] = await Promise.all([
+    incidentIds.length
+      ? supabase
+          .from("incidents")
+          .select("id, client_id")
+          .eq("organization_id", session.organization.id)
+          .in("id", incidentIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; client_id: string }> }),
+    riskIds.length
+      ? supabase
+          .from("client_risks")
+          .select("id, client_id")
+          .eq("organization_id", session.organization.id)
+          .in("id", riskIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; client_id: string }> }),
+  ]);
+
+  for (const row of (incidents.data ?? []) as Array<{ id: string; client_id: string }>) {
+    incrementCountMap(counts, row.client_id);
+  }
+  for (const row of (risks.data ?? []) as Array<{ id: string; client_id: string }>) {
+    incrementCountMap(counts, row.client_id);
+  }
+
+  return counts;
 }
 
 async function countOrgSlaBreachesInRange(
@@ -289,6 +373,14 @@ export const buildOperationalSnapshot = cache(async function buildOperationalSna
     slaBreachesPrevious,
     daysSinceLastOrgPublishedReport,
     recentActivity,
+    openIncidentsByClient,
+    openRisksByClient,
+    incidentsCreatedCurrentByClient,
+    incidentsCreatedPreviousByClient,
+    risksCreatedCurrentByClient,
+    risksCreatedPreviousByClient,
+    slaBreachesByClient,
+    daysSinceReportByClient,
   ] = await Promise.all([
     dashboard.features.incidents
       ? countCreatedInRange(session, "incidents", period.start, period.end)
@@ -312,80 +404,52 @@ export const buildOperationalSnapshot = cache(async function buildOperationalSna
       : Promise.resolve(0),
     getDaysSinceLastPublishedReport(session),
     loadRecentActivity(session),
+    dashboard.features.incidents
+      ? loadOpenCountsByClient(session, "incidents")
+      : Promise.resolve({ open: new Map<string, number>(), critical: new Map<string, number>() }),
+    dashboard.features.risks
+      ? loadOpenCountsByClient(session, "risks")
+      : Promise.resolve({ open: new Map<string, number>(), critical: new Map<string, number>() }),
+    dashboard.features.incidents
+      ? loadCreatedCountsByClient(session, "incidents", period.start, period.end)
+      : Promise.resolve(new Map<string, number>()),
+    dashboard.features.incidents
+      ? loadCreatedCountsByClient(session, "incidents", previousPeriod.start, previousPeriod.end)
+      : Promise.resolve(new Map<string, number>()),
+    dashboard.features.risks
+      ? loadCreatedCountsByClient(session, "risks", period.start, period.end)
+      : Promise.resolve(new Map<string, number>()),
+    dashboard.features.risks
+      ? loadCreatedCountsByClient(session, "risks", previousPeriod.start, previousPeriod.end)
+      : Promise.resolve(new Map<string, number>()),
+    dashboard.features.sla
+      ? loadSlaBreachCountsByClient(session, period.start, period.end)
+      : Promise.resolve(new Map<string, number>()),
+    loadDaysSinceLastPublishedReportByClient(session),
   ]);
 
-  const clients = await Promise.all(
-    profitabilityRows.map(async (row) => {
-      const [
-        openIncidents,
-        openRisks,
-        criticalIncidents,
-        criticalRisks,
-        incidentsThisPeriod,
-        incidentsPreviousPeriod,
-        risksThisPeriod,
-        risksPreviousPeriod,
-        slaBreachesThisPeriod,
-        daysSinceLastPublishedReport,
-      ] = await Promise.all([
-        dashboard.features.incidents ? countOpenByClient(session, "incidents", row.clientId) : 0,
-        dashboard.features.risks ? countOpenByClient(session, "risks", row.clientId) : 0,
-        dashboard.features.incidents
-          ? countOpenByClient(session, "incidents", row.clientId, true)
-          : 0,
-        dashboard.features.risks ? countOpenByClient(session, "risks", row.clientId, true) : 0,
-        dashboard.features.incidents
-          ? countCreatedInRange(session, "incidents", period.start, period.end, row.clientId)
-          : 0,
-        dashboard.features.incidents
-          ? countCreatedInRange(
-              session,
-              "incidents",
-              previousPeriod.start,
-              previousPeriod.end,
-              row.clientId,
-            )
-          : 0,
-        dashboard.features.risks
-          ? countCreatedInRange(session, "risks", period.start, period.end, row.clientId)
-          : 0,
-        dashboard.features.risks
-          ? countCreatedInRange(
-              session,
-              "risks",
-              previousPeriod.start,
-              previousPeriod.end,
-              row.clientId,
-            )
-          : 0,
-        dashboard.features.sla
-          ? countSlaBreachesForClientInRange(session, row.clientId, period.start, period.end)
-          : 0,
-        getDaysSinceLastPublishedReport(session, row.clientId),
-      ]);
+  const clients = profitabilityRows.map((row) => {
+    const recentActivityCount = recentActivity.filter(
+      (event) => event.entity_type === "client" && event.entity_id === row.clientId,
+    ).length;
 
-      const recentActivityCount = recentActivity.filter(
-        (event) => event.entity_type === "client" && event.entity_id === row.clientId,
-      ).length;
-
-      return {
-        clientId: row.clientId,
-        clientName: row.clientName,
-        profitability: row,
-        openIncidents,
-        openRisks,
-        criticalIncidents,
-        criticalRisks,
-        incidentsThisPeriod,
-        incidentsPreviousPeriod,
-        risksThisPeriod,
-        risksPreviousPeriod,
-        slaBreachesThisPeriod,
-        daysSinceLastPublishedReport,
-        recentActivityCount,
-      } satisfies ClientOperationalMetrics;
-    }),
-  );
+    return {
+      clientId: row.clientId,
+      clientName: row.clientName,
+      profitability: row,
+      openIncidents: openIncidentsByClient.open.get(row.clientId) ?? 0,
+      openRisks: openRisksByClient.open.get(row.clientId) ?? 0,
+      criticalIncidents: openIncidentsByClient.critical.get(row.clientId) ?? 0,
+      criticalRisks: openRisksByClient.critical.get(row.clientId) ?? 0,
+      incidentsThisPeriod: incidentsCreatedCurrentByClient.get(row.clientId) ?? 0,
+      incidentsPreviousPeriod: incidentsCreatedPreviousByClient.get(row.clientId) ?? 0,
+      risksThisPeriod: risksCreatedCurrentByClient.get(row.clientId) ?? 0,
+      risksPreviousPeriod: risksCreatedPreviousByClient.get(row.clientId) ?? 0,
+      slaBreachesThisPeriod: slaBreachesByClient.get(row.clientId) ?? 0,
+      daysSinceLastPublishedReport: daysSinceReportByClient.get(row.clientId) ?? null,
+      recentActivityCount,
+    } satisfies ClientOperationalMetrics;
+  });
 
   const criticalOpenRisks = dashboard.features.risks
     ? dashboard.criticalAlerts.filter((alert) => alert.type === "risk").length

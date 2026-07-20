@@ -4,21 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { ApiContext } from "@/lib/api/auth/context";
 import { getClientById } from "@/lib/clients/queries";
 import { apiContextToSession } from "@/lib/api/resources/session";
-import { parseHealthBreakdown, type HealthSnapshot } from "@/lib/health/types";
-
-function mapHealthRow(row: Record<string, unknown>): HealthSnapshot {
-  return {
-    id: String(row.id),
-    organization_id: String(row.organization_id),
-    client_id: String(row.client_id),
-    score: Number(row.score),
-    status: row.status as HealthSnapshot["status"],
-    delta: Number(row.delta ?? 0),
-    reason: (row.reason as string | null) ?? null,
-    breakdown: parseHealthBreakdown(row.breakdown as never),
-    calculated_at: String(row.calculated_at),
-  };
-}
+import { HEALTH_SNAPSHOT_SELECT, mapHealthSnapshotRow } from "@/lib/health/types";
 
 export async function apiGetClientHealth(ctx: ApiContext, clientId: string) {
   const session = apiContextToSession(ctx);
@@ -31,7 +17,7 @@ export async function apiGetClientHealth(ctx: ApiContext, clientId: string) {
   const [latestResult, historyResult] = await Promise.all([
     admin
       .from("health_snapshots")
-      .select("id, organization_id, client_id, score, status, delta, reason, breakdown, calculated_at")
+      .select(HEALTH_SNAPSHOT_SELECT)
       .eq("organization_id", ctx.organization.id)
       .eq("client_id", clientId)
       .order("calculated_at", { ascending: false })
@@ -39,7 +25,7 @@ export async function apiGetClientHealth(ctx: ApiContext, clientId: string) {
       .maybeSingle(),
     admin
       .from("health_snapshots")
-      .select("id, organization_id, client_id, score, status, delta, reason, breakdown, calculated_at")
+      .select(HEALTH_SNAPSHOT_SELECT)
       .eq("organization_id", ctx.organization.id)
       .eq("client_id", clientId)
       .order("calculated_at", { ascending: false })
@@ -49,10 +35,10 @@ export async function apiGetClientHealth(ctx: ApiContext, clientId: string) {
   return {
     client: { id: client.id, name: client.name },
     latest: latestResult.data
-      ? mapHealthRow(latestResult.data as Record<string, unknown>)
+      ? mapHealthSnapshotRow(latestResult.data as Record<string, unknown>)
       : null,
     history: (historyResult.data ?? []).map((row) =>
-      mapHealthRow(row as Record<string, unknown>),
+      mapHealthSnapshotRow(row as Record<string, unknown>),
     ),
   };
 }

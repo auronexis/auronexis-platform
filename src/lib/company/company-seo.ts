@@ -7,8 +7,6 @@ export const PUBLIC_CANONICAL_ORIGIN = `https://${PRODUCTION_DOMAINS.www}`;
 export const COMPANY_SEO = {
   productName: COMPANY_INFORMATION.productName,
   companyName: COMPANY_INFORMATION.legalName,
-  /** @deprecated Use resolveCanonicalBaseUrl() — kept for backward-compatible imports. */
-  canonicalBaseUrl: PUBLIC_CANONICAL_ORIGIN,
   defaultTitle: COMPANY_INFORMATION.productName,
   defaultDescription: COMPANY_INFORMATION.shortDescription,
   openGraph: {

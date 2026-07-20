@@ -1,9 +1,8 @@
-"use client";
-
 import { HelpCircle } from "lucide-react";
 import { ClientHealthScore } from "@/components/clients/client-health-score";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils/cn";
+import { focusRing } from "@/lib/ui/tokens";
 
 const HEALTH_SCORE_HELP =
   "Calculated from incidents, open risks, SLA compliance, report delivery, engagement signals, and recent activity.";
@@ -26,7 +25,7 @@ export function ClientHealthScoreWithTooltip({
         <Tooltip content={HEALTH_SCORE_HELP} side="top">
           <button
             type="button"
-            className="inline-flex text-muted hover:text-foreground"
+            className={cn("inline-flex rounded text-muted hover:text-foreground", focusRing)}
             aria-label="How health score is calculated"
           >
             <HelpCircle className="h-4 w-4" aria-hidden />

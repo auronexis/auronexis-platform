@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { getPredictiveIntelligence } from "@/lib/predictive/cache";
 import { apiContextToSession } from "@/lib/api/resources/session";
 import { withApiHandler } from "@/lib/api/middleware/handler";
-import { apiJson } from "@/lib/api/responses/json";
+import { apiError, apiJson } from "@/lib/api/responses/json";
 import { isFeatureEnabled } from "@/lib/plans/features";
 
 export async function GET(request: NextRequest) {
@@ -10,9 +10,10 @@ export async function GET(request: NextRequest) {
     scopes: ["predictive.read"],
     handler: async (ctx) => {
       if (!isFeatureEnabled(ctx.planKey, "ai_predictive_intelligence")) {
-        return apiJson(
-          { error: { code: "forbidden", message: "Predictive intelligence is not enabled on your plan." } },
-          { status: 403 },
+        return apiError(
+          403,
+          "forbidden",
+          "Predictive intelligence is not enabled on your plan.",
         );
       }
       const session = apiContextToSession(ctx);

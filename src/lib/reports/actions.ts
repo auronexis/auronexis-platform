@@ -4,18 +4,18 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
-import { dispatchAutomation } from "@/lib/automation";
 import { fireWorkflowEngine } from "@/lib/automation/engine-v2/dispatch-hook";
 import { requireSession } from "@/lib/auth/session";
 import { assertPermissionSafe, ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import {
   canEditReport,
   canManageReportLifecycle,
-  canPublishReport,
 } from "@/lib/reports/guards";
 import { getReportById } from "@/lib/reports/queries";
 import { EDITABLE_REPORT_STATUSES, STAFF_REPORT_STATUSES } from "@/lib/reports/types";
+import { clientBelongsToOrganization, userBelongsToOrganization } from "@/lib/clients/queries";
 import { createClient } from "@/lib/supabase/server";
+import { optionalText } from "@/lib/validation/form-fields";
 import type { Database, ReportStatus } from "@/types/database";
 
 type ReportInsert = Database["public"]["Tables"]["reports"]["Insert"];
@@ -25,13 +25,6 @@ export type ReportActionState = {
   error?: string;
   success?: string;
 };
-
-const optionalText = z
-  .string()
-  .trim()
-  .transform((value) => (value.length === 0 ? null : value))
-  .nullable()
-  .optional();
 
 const reportFieldsSchema = z
   .object({
@@ -70,31 +63,14 @@ async function verifyClientInOrg(
   organizationId: string,
   clientId: string,
 ): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("clients")
-    .select("id")
-    .eq("id", clientId)
-    .eq("organization_id", organizationId)
-    .maybeSingle();
-
-  return Boolean(data);
+  return clientBelongsToOrganization(organizationId, clientId);
 }
 
 async function verifyUserInOrg(
   organizationId: string,
   userId: string,
 ): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("users")
-    .select("id")
-    .eq("id", userId)
-    .eq("organization_id", organizationId)
-    .eq("is_disabled", false)
-    .maybeSingle();
-
-  return Boolean(data as { id: string } | null);
+  return userBelongsToOrganization(organizationId, userId);
 }
 
 function editableStatusError(status: ReportStatus): { error: string } | null {
@@ -318,7 +294,7 @@ export async function updateReportAction(
 
 /** Mark a report as generated — delegates to Reports Engine V2. */
 export async function markReportReadyAction(reportId: string): Promise<void> {
-  const { generateReportV2Action, publishReportV2Action } = await import("@/lib/reports-v2/actions");
+  const { generateReportV2Action } = await import("@/lib/reports-v2/actions");
   const result = await generateReportV2Action(reportId);
   if (result.error) {
     throw new Error(result.error);

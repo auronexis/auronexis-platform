@@ -1,35 +1,55 @@
 import type { InputHTMLAttributes } from "react";
 import { cn } from "@/lib/utils/cn";
 import { auroraInputFocus, inputErrorShake } from "@/lib/ui/motion";
+import {
+  formControl,
+  formControlHeight,
+  formError,
+  formFieldShell,
+  formHelper,
+  formLabel,
+} from "@/lib/ui/form-tokens";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   error?: string;
+  description?: string;
 };
 
-export function Input({ className, label, error, id, ...props }: InputProps) {
+export function Input({
+  className,
+  label,
+  error,
+  description,
+  id,
+  ...props
+}: InputProps) {
   const inputId = id ?? props.name;
 
   return (
-    <div className="space-y-2">
-      <label
-        htmlFor={inputId}
-        className="block text-sm font-medium text-foreground/80 transition-colors duration-150"
-      >
+    <div className={formFieldShell}>
+      <label htmlFor={inputId} className={formLabel}>
         {label}
       </label>
+      {description ? (
+        <p id={`${inputId}-desc`} className={formHelper}>
+          {description}
+        </p>
+      ) : null}
       <input
         id={inputId}
         aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `${inputId}-error` : undefined}
+        aria-describedby={
+          error ? `${inputId}-error` : description ? `${inputId}-desc` : undefined
+        }
         className={cn(
-          "flex h-10 w-full cursor-text rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground shadow-xs",
+          "flex cursor-text",
+          formControlHeight,
+          formControl,
           transitionInteractive,
-          "placeholder:text-muted/80",
           auroraInputFocus,
           focusRing,
-          "disabled:cursor-not-allowed disabled:opacity-50",
           error && "border-danger",
           error && inputErrorShake,
           className,
@@ -37,7 +57,7 @@ export function Input({ className, label, error, id, ...props }: InputProps) {
         {...props}
       />
       {error ? (
-        <p id={`${inputId}-error`} className="text-sm text-danger" role="alert">
+        <p id={`${inputId}-error`} className={formError} role="alert">
           {error}
         </p>
       ) : null}

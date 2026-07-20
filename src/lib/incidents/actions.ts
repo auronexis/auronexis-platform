@@ -26,7 +26,9 @@ import {
 import { getIncidentById } from "@/lib/incidents/queries";
 import { STAFF_INCIDENT_STATUSES } from "@/lib/incidents/types";
 import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { clientBelongsToOrganization, userBelongsToOrganization } from "@/lib/clients/queries";
 import { createClient } from "@/lib/supabase/server";
+import { optionalText } from "@/lib/validation/form-fields";
 import type { Database, IncidentStatus } from "@/types/database";
 
 type IncidentInsert = Database["public"]["Tables"]["incidents"]["Insert"];
@@ -36,13 +38,6 @@ export type IncidentActionState = {
   error?: string;
   success?: string;
 };
-
-const optionalText = z
-  .string()
-  .trim()
-  .transform((value) => (value.length === 0 ? null : value))
-  .nullable()
-  .optional();
 
 const incidentFieldsSchema = z.object({
   title: z.string().trim().min(2, "Incident title is required."),
@@ -85,31 +80,14 @@ async function verifyClientInOrg(
   organizationId: string,
   clientId: string,
 ): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("clients")
-    .select("id")
-    .eq("id", clientId)
-    .eq("organization_id", organizationId)
-    .maybeSingle();
-
-  return Boolean(data);
+  return clientBelongsToOrganization(organizationId, clientId);
 }
 
 async function verifyUserInOrg(
   organizationId: string,
   userId: string,
 ): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("users")
-    .select("id")
-    .eq("id", userId)
-    .eq("organization_id", organizationId)
-    .eq("is_disabled", false)
-    .maybeSingle();
-
-  return Boolean(data as { id: string } | null);
+  return userBelongsToOrganization(organizationId, userId);
 }
 
 async function verifyRiskInOrg(

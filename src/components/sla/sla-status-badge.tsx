@@ -1,11 +1,12 @@
 import type { SlaStatus } from "@/lib/sla/calculations";
 import { SLA_STATUS_LABELS } from "@/lib/sla/types";
+import { StatusBadge, type StatusBadgeTone } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
 
-const statusStyles: Record<Exclude<SlaStatus, null>, string> = {
-  on_track: "bg-green-50 text-success ring-green-600/20",
-  warning: "bg-amber-50 text-warning ring-amber-600/25",
-  breached: "bg-red-50 text-red-700 ring-red-600/25",
+const statusTones: Record<Exclude<SlaStatus, null>, StatusBadgeTone> = {
+  on_track: "success",
+  warning: "warning",
+  breached: "danger",
 };
 
 type SlaStatusBadgeProps = {
@@ -19,14 +20,8 @@ export function SlaStatusBadge({ status, className }: SlaStatusBadgeProps) {
   }
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
-        statusStyles[status],
-        className,
-      )}
-    >
+    <StatusBadge tone={statusTones[status]} className={className}>
       {SLA_STATUS_LABELS[status]}
-    </span>
+    </StatusBadge>
   );
 }

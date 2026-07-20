@@ -2,6 +2,7 @@ import "server-only";
 
 import { getPaddleClient } from "@/lib/paddle/client";
 import { parsePaddleMoneyToCents } from "@/lib/paddle/money";
+import { isPaddleCancelScheduledChange } from "@/lib/paddle/status";
 import { getOrganizationSubscription } from "@/lib/billing/queries";
 import {
   hasVerifiedPaddleCustomer,
@@ -145,9 +146,10 @@ export async function getPaddleBillingDetails(
       details.periodStart = asString(currentBilling.startsAt ?? currentBilling.starts_at) ?? details.periodStart;
       details.periodEnd = asString(currentBilling.endsAt ?? currentBilling.ends_at) ?? details.periodEnd;
       details.renewalDate = details.periodEnd;
-      details.cancelAtPeriodEnd = Boolean(
-        live.scheduledChange ?? live.scheduled_change ?? details.cancelAtPeriodEnd,
-      );
+      const scheduled = live.scheduledChange ?? live.scheduled_change;
+      if (scheduled !== undefined && scheduled !== null) {
+        details.cancelAtPeriodEnd = isPaddleCancelScheduledChange(scheduled);
+      }
       if (liveStatus) {
         details.status = getBillingStatusLabel(liveStatus);
         details.paymentStatus = getPaymentSummaryLabel(liveStatus);

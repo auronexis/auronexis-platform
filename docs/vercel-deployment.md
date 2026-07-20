@@ -1,7 +1,8 @@
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
 # Vercel Deployment Guide
 
 **Version:** Auroranexis v0.97  
-**Sprint:** Phase 5 Sprint 2 — Deployment & Staging Rollout  
+**Sprint:** Phase 5 Sprint 2 â€” Deployment & Staging Rollout  
 **Target:** `staging.auroranexis.com`
 
 ---
@@ -51,7 +52,7 @@ Copy from [vercel-checklist.md](./vercel-checklist.md). Set per Vercel environme
 | **Preview** | Test keys; optional `DEV_FORCE_PLAN=enterprise` |
 | **Development** | Local `.env.local` only |
 
-**Never** commit `.env.local`. Use Vercel → Settings → Environment Variables.
+**Never** commit `.env.local`. Use Vercel â†’ Settings â†’ Environment Variables.
 
 ---
 
@@ -102,7 +103,7 @@ Root `vercel.json`:
 Requirements:
 
 - [ ] `CRON_SECRET` set in Vercel (Production)
-- [ ] Cron visible under Settings → Cron Jobs after deploy
+- [ ] Cron visible under Settings â†’ Cron Jobs after deploy
 - [ ] Manual test:
 
 ```bash
@@ -116,7 +117,7 @@ curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
 
 Optional deploy triggers:
 
-1. Vercel → Settings → Git → Deploy Hooks
+1. Vercel â†’ Settings â†’ Git â†’ Deploy Hooks
 2. Create hook URL for staging rebuilds after Supabase migration
 3. Store hook URL in team secrets (not git)
 
@@ -142,9 +143,9 @@ Dashboard **Platform status** widget (owner/admin) mirrors internal checks.
 
 After each deploy:
 
-1. Vercel → Deployments → select deployment → **Building** tab
+1. Vercel â†’ Deployments â†’ select deployment â†’ **Building** tab
 2. Confirm: `Compiled successfully`, no TypeScript errors
-3. **Functions** tab: verify `/api/health`, `/api/cron/run`, `/api/stripe/webhook`
+3. **Functions** tab: verify `/api/health`, `/api/cron/run`, `/api/paddle/webhook` (Stripe webhook path retired — see enterprise-deployment.md)
 4. **Runtime Logs**: smoke test login + health endpoint
 
 Common failures:
@@ -162,8 +163,8 @@ Common failures:
 
 ### Instant rollback (preferred)
 
-1. Vercel → Deployments → find last known-good deployment
-2. ⋮ menu → **Promote to Production**
+1. Vercel â†’ Deployments â†’ find last known-good deployment
+2. â‹® menu â†’ **Promote to Production**
 3. Verify `/api/health` and login
 
 ### Git revert
@@ -175,7 +176,7 @@ git push origin main   # or staging
 
 ### Database rollback
 
-- Migrations are forward-only — do **not** revert SQL without DBA review
+- Migrations are forward-only â€” do **not** revert SQL without DBA review
 - Use Supabase branch reset for staging disasters ([disaster-recovery.md](./disaster-recovery.md))
 
 ### Stripe rollback
@@ -206,3 +207,4 @@ git push origin main   # or staging
 - [deployment-staging.md](./deployment-staging.md)
 - [domain-setup.md](./domain-setup.md)
 - [supabase-staging.md](./supabase-staging.md)
+

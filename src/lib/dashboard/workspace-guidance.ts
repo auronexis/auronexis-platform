@@ -1,5 +1,5 @@
-import type { KnowledgeHubData } from "@/lib/ai/knowledge/types";
 import type { DashboardData } from "@/lib/dashboard/types";
+import type { KnowledgeHubData } from "@/lib/ai/knowledge/types";
 import type { OrganizationPlanContext } from "@/lib/plans/types";
 import type { ActivationStepStatus } from "@/lib/activation/types";
 import { buildActivationSteps } from "@/lib/activation/steps";
@@ -7,6 +7,61 @@ import { buildNextBestAction } from "@/lib/activation/recommendations";
 import { getCompletionPercent, resolveActivationStage } from "@/lib/activation/scoring";
 import { getActivationDataSnapshot } from "@/lib/activation/queries";
 import type { SessionContext } from "@/lib/tenancy/context";
+
+export type DashboardOperationalMetricDef = {
+  key: "clients" | "risks" | "incidents" | "sla";
+  label: string;
+  value: number;
+  trend: string;
+  tone: "info" | "warning" | "danger";
+};
+
+/** Feature-gated operational metric definitions for the command center. */
+export function resolveDashboardOperationalMetrics(
+  data: DashboardData,
+): DashboardOperationalMetricDef[] {
+  const metrics: DashboardOperationalMetricDef[] = [
+    {
+      key: "clients",
+      label: "Clients",
+      value: data.clientHealth.totalClients,
+      trend: "+2 this month",
+      tone: "info",
+    },
+  ];
+
+  if (data.features.risks) {
+    metrics.push({
+      key: "risks",
+      label: "Open risks",
+      value: data.openRiskCount,
+      trend: "Needs attention",
+      tone: "warning",
+    });
+  }
+
+  if (data.features.incidents) {
+    metrics.push({
+      key: "incidents",
+      label: "Open incidents",
+      value: data.openIncidentCount,
+      trend: "Active queue",
+      tone: "danger",
+    });
+  }
+
+  if (data.features.sla) {
+    metrics.push({
+      key: "sla",
+      label: "Breached SLAs",
+      value: data.slaMetrics.breachedCount,
+      trend: "Compliance watch",
+      tone: "danger",
+    });
+  }
+
+  return metrics;
+}
 
 export type WorkspaceProgressItem = {
   id: string;

@@ -1,5 +1,5 @@
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { resolveEntitySlaInfo } from "@/lib/sla/calculations";
 import {
   evaluateSlaTransitionsForEntity,
@@ -13,15 +13,14 @@ import type {
   SlaDashboardMetrics,
   SlaEventView,
 } from "@/lib/sla/types";
+import { SLA_EVENT_SELECT, SLA_POLICY_SELECT } from "@/lib/sla/types";
 import { getSLAMetrics } from "@/lib/sla/metrics";
 import { buildSlaTimers } from "@/lib/sla/timers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { ClientRiskStatus, IncidentSeverity, IncidentStatus, RiskStatus, SlaPolicy } from "@/types/database";
-
-const SLA_POLICY_SELECT =
-  "id, organization_id, name, incident_hours, risk_hours, is_default, critical_response_minutes, critical_resolution_minutes, high_response_minutes, high_resolution_minutes, medium_response_minutes, medium_resolution_minutes, low_response_minutes, low_resolution_minutes, created_at, updated_at";
+import { cache } from "react";
 
 type ClientPolicyRow = {
   id: string;
@@ -105,6 +104,29 @@ export async function getDefaultSlaPolicy(organizationId: string): Promise<SlaPo
   return (data as SlaPolicy | null) ?? null;
 }
 
+async function listClientPolicyRows(
+  organizationId: string,
+  clientIds: string[],
+): Promise<ClientPolicyRow[]> {
+  if (clientIds.length === 0) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  const uniqueClientIds = [...new Set(clientIds)];
+  const { data, error } = await supabase
+    .from("clients")
+    .select("id, sla_policy_id")
+    .eq("organization_id", organizationId)
+    .in("id", uniqueClientIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data as ClientPolicyRow[]) ?? [];
+}
+
 /** Resolve effective SLA policy per client id. */
 export async function getClientSlaPolicyMap(
   organizationId: string,
@@ -117,22 +139,11 @@ export async function getClientSlaPolicyMap(
   }
 
   const supabase = await createClient();
-  const uniqueClientIds = [...new Set(clientIds)];
-
-  const [{ data: clientsData, error: clientsError }, defaultPolicy] = await Promise.all([
-    supabase
-      .from("clients")
-      .select("id, sla_policy_id")
-      .eq("organization_id", organizationId)
-      .in("id", uniqueClientIds),
+  const [clients, defaultPolicy] = await Promise.all([
+    listClientPolicyRows(organizationId, clientIds),
     getDefaultSlaPolicy(organizationId),
   ]);
 
-  if (clientsError) {
-    throw new Error(clientsError.message);
-  }
-
-  const clients = (clientsData as ClientPolicyRow[]) ?? [];
   const policyIds = [
     ...new Set(
       clients
@@ -192,22 +203,10 @@ async function getClientSlaContextMap(
   }
 
   const supabase = await createClient();
-  const uniqueClientIds = [...new Set(clientIds)];
-
-  const [{ data: clientsData, error: clientsError }, defaultPolicy] = await Promise.all([
-    supabase
-      .from("clients")
-      .select("id, sla_policy_id")
-      .eq("organization_id", organizationId)
-      .in("id", uniqueClientIds),
+  const [clients, defaultPolicy] = await Promise.all([
+    listClientPolicyRows(organizationId, clientIds),
     getDefaultSlaPolicy(organizationId),
   ]);
-
-  if (clientsError) {
-    throw new Error(clientsError.message);
-  }
-
-  const clients = (clientsData as ClientPolicyRow[]) ?? [];
   const policyIds = [
     ...new Set(
       clients
@@ -360,7 +359,7 @@ export async function attachRiskSlaInfo<
   });
 }
 
-async function loadOpenSlaEntities(organizationId: string): Promise<{
+const loadOpenSlaEntities = cache(async function loadOpenSlaEntities(organizationId: string): Promise<{
   defaultPolicy: SlaPolicy | null;
   incidents: OpenIncidentRow[];
   risks: OpenRiskRow[];
@@ -378,12 +377,12 @@ async function loadOpenSlaEntities(organizationId: string): Promise<{
       .eq("organization_id", organizationId)
       .in("status", OPEN_INCIDENT_STATUSES),
     admin
-      .from("risks")
+      .from("client_risks")
       .select(
         "id, client_id, title, status, created_at, owner_user_id, clients ( name, sla_policy_id )",
       )
       .eq("organization_id", organizationId)
-      .in("status", LEGACY_OPEN_RISK_STATUSES),
+      .in("status", OPEN_RISK_STATUSES),
   ]);
 
   if (incidentsResult.error || risksResult.error) {
@@ -426,7 +425,7 @@ async function loadOpenSlaEntities(organizationId: string): Promise<{
   }
 
   return { defaultPolicy, incidents, risks, policiesById };
-}
+});
 
 /** Evaluate open items and dispatch SLA automations only on status transitions. */
 export async function processOrganizationSlaAlerts(organizationId: string): Promise<void> {
@@ -602,23 +601,6 @@ export async function getRiskSlaInfo(
 }
 
 export const getSLAPolicies = listSlaPolicies;
-
-const SLA_EVENT_SELECT = `
-  id,
-  organization_id,
-  incident_id,
-  client_id,
-  policy_id,
-  status,
-  breached,
-  started_at,
-  response_due_at,
-  resolution_due_at,
-  responded_at,
-  resolved_at,
-  created_at,
-  updated_at
-`;
 
 export async function getSlaEventByIncidentId(
   organizationId: string,

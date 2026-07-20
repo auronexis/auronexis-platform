@@ -1,4 +1,7 @@
+import { cache } from "react";
 import { getRecentActivityEvents } from "@/lib/activity/queries";
+
+import { formatAppDateOrNull } from "@/lib/i18n";
 
 import type { CriticalIncidentAlert } from "@/lib/incidents/types";
 
@@ -22,9 +25,7 @@ import { getRiskDashboardMetrics, getRiskHeatmap, getRiskSummary } from "@/lib/r
 
 import { getEscalationDashboardMetrics } from "@/lib/escalation/queries";
 
-import { processOrganizationReportOverdueEscalations } from "@/lib/escalation/evaluations";
-
-import { getSlaDashboardMetrics, processOrganizationSlaAlerts } from "@/lib/sla/queries";
+import { getSlaDashboardMetrics } from "@/lib/sla/queries";
 
 import { getMonitoringDashboardMetrics } from "@/lib/monitoring/summary";
 
@@ -119,30 +120,6 @@ const EMPTY_MONITORING_METRICS = {
 
 
 
-function formatDueLabel(value: string | null | undefined): string | null {
-
-  if (!value) {
-
-    return null;
-
-  }
-
-
-
-  return new Intl.DateTimeFormat("en-US", {
-
-    month: "short",
-
-    day: "numeric",
-
-    year: "numeric",
-
-  }).format(new Date(value));
-
-}
-
-
-
 async function getDraftReportsCount(session: SessionContext): Promise<number> {
 
   const supabase = await createClient();
@@ -227,7 +204,7 @@ export async function getDashboardMetrics(
 
         clientName: risk.clients?.name ?? null,
 
-        dueLabel: formatDueLabel(risk.due_at),
+        dueLabel: formatAppDateOrNull(risk.due_at),
 
         href: `/risks/${risk.id}`,
 
@@ -253,7 +230,7 @@ export async function getDashboardMetrics(
 
         clientName: incident.clients?.name ?? null,
 
-        dueLabel: formatDueLabel(incident.due_at),
+        dueLabel: formatAppDateOrNull(incident.due_at),
 
         href: `/incidents/${incident.id}`,
 
@@ -280,94 +257,57 @@ export async function getDashboardMetrics(
 
 
 /** Full dashboard dataset for Dashboard v2. */
-
-export async function getDashboardData(session: SessionContext): Promise<DashboardData> {
-
+export const getDashboardData = cache(async function getDashboardData(
+  session: SessionContext,
+): Promise<DashboardData> {
   const canViewFinancialRole = canViewRevenue(session.role);
 
-
-
   const [
-
     risksEnabled,
-
     incidentsEnabled,
-
     slaEnabled,
-
     escalationEnabled,
-
     profitabilityEnabled,
-
     schedulingEnabled,
-
     incidentAIEnabled,
-
     riskAIEnabled,
-
   ] = await Promise.all([
-
     canUseFeature(session.organization.id, "risks"),
-
     canUseFeature(session.organization.id, "incidents"),
-
     canUseFeature(session.organization.id, "sla_tracking"),
-
     canUseFeature(session.organization.id, "escalation_rules"),
-
     canUseFeature(session.organization.id, "profitability"),
-
     canUseFeature(session.organization.id, "report_scheduling"),
-
     canUseFeature(session.organization.id, "ai_incident_assistant"),
-
     canUseFeature(session.organization.id, "ai_risk_assistant"),
-
   ]);
-
-
 
   const canViewFinancial = canViewFinancialRole && profitabilityEnabled;
 
-
-
-  if (slaEnabled) {
-
-    await processOrganizationSlaAlerts(session.organization.id).catch((error) => {
-
-      console.error("[sla] alert processing failed:", error);
-
-    });
-
-  }
-
-
-
-  if (escalationEnabled) {
-
-    await processOrganizationReportOverdueEscalations(session.organization.id).catch((error) => {
-
-      console.error("[escalation] report overdue processing failed:", error);
-
-    });
-
-  }
-
-
-
-  const [metrics, slaMetrics, escalationMetrics, businessMetrics, draftReportsCount, upcomingSchedules, recentActivity, healthMetrics, reportsMetrics, riskSummaryResult, riskHeatmap, monitoringMetrics, incidentAIMetrics, riskAIMetrics, executiveReportMetrics] =
-
-    await Promise.all([
-
-      getDashboardMetrics(session, { risksEnabled, incidentsEnabled }),
-
-      slaEnabled ? getSlaDashboardMetrics(session) : Promise.resolve(EMPTY_SLA_METRICS),
-
-      escalationEnabled ? getEscalationDashboardMetrics(session) : Promise.resolve(EMPTY_ESCALATION_METRICS),
-
-      canViewFinancial ? getProfitabilitySummary(session) : Promise.resolve(null),
-
-      getDraftReportsCount(session),
+  const [
+    metrics,
+    slaMetrics,
+    escalationMetrics,
+    businessMetrics,
+    draftReportsCount,
+    upcomingSchedules,
+    recentActivity,
+    healthMetrics,
+    reportsMetrics,
+    riskSummaryResult,
+    riskHeatmap,
+    monitoringMetrics,
+    incidentAIMetrics,
+    riskAIMetrics,
+    executiveReportMetrics,
+  ] = await Promise.all([
+    getDashboardMetrics(session, { risksEnabled, incidentsEnabled }),
+    slaEnabled ? getSlaDashboardMetrics(session) : Promise.resolve(EMPTY_SLA_METRICS),
+    escalationEnabled
+      ? getEscalationDashboardMetrics(session)
+      : Promise.resolve(EMPTY_ESCALATION_METRICS),
+    canViewFinancial ? getProfitabilitySummary(session) : Promise.resolve(null),
+    getDraftReportsCount(session),
 
       schedulingEnabled ? getUpcomingReportSchedules(session, 5) : Promise.resolve([]),
 
@@ -441,6 +381,6 @@ export async function getDashboardData(session: SessionContext): Promise<Dashboa
         !risksEnabled || !incidentsEnabled || !slaEnabled || !escalationEnabled,
     },
   };
-}
+});
 
 

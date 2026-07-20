@@ -1,13 +1,8 @@
 "use client";
 
-import { RouteErrorBoundary } from "@/components/errors/route-error-boundary";
+import { RouteErrorBoundary, type AppRouterErrorProps } from "@/components/errors/route-error-boundary";
 
-type ErrorProps = {
-  error: Error & { digest?: string };
-  reset: () => void;
-};
-
-export default function PortalError({ error, reset }: ErrorProps) {
+export default function PortalError({ error, reset }: AppRouterErrorProps) {
   return (
     <RouteErrorBoundary
       error={error}

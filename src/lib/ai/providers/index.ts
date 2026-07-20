@@ -4,7 +4,6 @@ import type { AIProviderId } from "@/lib/ai/types";
 
 const PROVIDER_FACTORIES: Partial<Record<AIProviderId, AIProviderFactory>> = {
   placeholder: () => placeholderAIProvider,
-  // Future: openai: () => new OpenAIProvider(...),
 };
 
 /** Resolve the active AI provider — defaults to placeholder until configured. */

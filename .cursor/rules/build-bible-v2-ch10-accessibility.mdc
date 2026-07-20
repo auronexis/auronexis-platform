@@ -1,0 +1,24 @@
+---
+description: Auroranexis Build Bible V2 Chapter 10 — WCAG 2.2 AA accessibility
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 10 (Enterprise Accessibility)
+
+Spec: `docs/12_BUILD_BIBLE_V2_CHAPTER_10_ACCESSIBILITY.md`
+
+## Rules
+
+- Prefer semantic HTML (`main`, `nav`, `button`, `label`, `dialog`, `th scope`) over ARIA.
+- Use `focusRing` from `src/lib/ui/tokens.ts` on custom interactive controls.
+- Use `src/lib/a11y/focus.ts` (`trapFocus`, `restoreFocus`, `focusFirstElement`) for non-native overlays.
+- Native `<dialog showModal()>` must set `aria-modal="true"` and stable labelled headings (`useId`).
+- Never rely on placeholder text as the only form label.
+- Decorative icons/images must be hidden from assistive technology; meaningful ones need names.
+- Status meaning must not rely on color alone.
+- Do not remove focus outlines or redesign layouts for accessibility work.
+- Never weaken auth, RBAC, RLS, Paddle billing, API contracts, or SEO behaviour.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 10 work.

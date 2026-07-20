@@ -1,4 +1,5 @@
 import type { Json } from "@/types/database";
+import { formatAppDateTimeCompact } from "@/lib/i18n";
 
 export type ExecutiveReportSnapshot = {
   id: string;
@@ -85,16 +86,7 @@ export function mapExecutiveReportSnapshotRow(row: Record<string, unknown>): Exe
 }
 
 export function formatExecutiveReportTimestamp(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTimeCompact(value);
 }
 
 export function parseExecutiveMetadata(value: Json | ExecutiveReportMetadata | null | undefined): ExecutiveReportMetadata {

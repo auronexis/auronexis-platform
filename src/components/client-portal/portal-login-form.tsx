@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormAlert } from "@/components/ui/form-alert";
+import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { signInPortal, type PortalAuthActionState } from "@/lib/client-portal/actions";
 
 const initialState: PortalAuthActionState = {};
@@ -11,7 +13,16 @@ export function PortalLoginForm() {
   const [state, formAction, isPending] = useActionState(signInPortal, initialState);
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form
+      action={formAction}
+      className="space-y-4"
+      onSubmit={() =>
+        markPendingAnalyticsEvent("portal_login", {
+          surface: "portal_login",
+          module: "portal",
+        })
+      }
+    >
       <Input
         name="email"
         type="email"
@@ -28,9 +39,7 @@ export function PortalLoginForm() {
         required
         placeholder="••••••••"
       />
-      {state.error ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-critical">{state.error}</p>
-      ) : null}
+      {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? "Signing in…" : "Sign in to portal"}
       </Button>

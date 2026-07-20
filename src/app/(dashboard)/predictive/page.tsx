@@ -3,8 +3,8 @@ import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import { PredictiveOverview } from "@/components/predictive/predictive-overview";
 import { PredictiveTimeline } from "@/components/predictive/predictive-timeline";
-import { PredictiveWorkspace } from "@/components/predictive/predictive-workspace";
-import { ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
+import { PredictiveWorkspaceLazy } from "@/components/performance/lazy-workspaces";
+import { AIUpgradeCard } from "@/components/ai/ai-usage-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { requireSession } from "@/lib/auth/session";
@@ -38,7 +38,7 @@ export default async function PredictivePage() {
           description="Forecasts and early warnings from verified workspace data."
         />
         <PageSurface>
-          <ReportAIUpgradeCard
+          <AIUpgradeCard
             message={getFeatureUpgradeMessage("ai_predictive_intelligence")}
             requiredPlanLabel={getRequiredPlanLabel("ai_predictive_intelligence")}
             title="Predictive Intelligence"
@@ -84,7 +84,7 @@ export default async function PredictivePage() {
               View clients
             </Link>
           </div>
-          <PredictiveWorkspace
+          <PredictiveWorkspaceLazy
             initialData={intelligence}
             showRevenue={canViewRevenue(session.role)}
           />

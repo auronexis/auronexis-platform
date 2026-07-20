@@ -8,6 +8,7 @@ import { PLATFORM_NAME } from "@/lib/branding/defaults";
 import { FOOTER_LINKS } from "@/lib/company/contact";
 import { getInitials } from "@/components/client-portal/portal-theme";
 import {
+  auroraSurface,
   auroraTableCell,
   auroraTableHeaderCell,
   auroraTableShell,
@@ -16,29 +17,6 @@ import { cn } from "@/lib/utils/cn";
 
 const HERO_PATTERN =
   "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")";
-
-/** @deprecated Use BrandLogo with organization branding instead. */
-export function PortalLogoMark({ className, size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
-  const sizes = {
-    sm: "h-8 w-8 rounded-lg text-sm",
-    md: "h-10 w-10 rounded-xl text-lg",
-    lg: "h-11 w-11 rounded-xl text-xl",
-  };
-
-  return (
-    <div
-      className={cn(
-        "relative flex shrink-0 items-center justify-center bg-primary shadow-lg shadow-primary/30",
-        sizes[size],
-        className,
-      )}
-      aria-hidden
-    >
-      <span className="font-bold tracking-tight text-primary-foreground">A</span>
-      <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-sm bg-primary-foreground/90" />
-    </div>
-  );
-}
 
 export function PortalUserAvatar({
   name,
@@ -135,7 +113,8 @@ export function PortalCard({ children, className, hover = false }: PortalCardPro
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm",
+        auroraSurface,
+        "p-6",
         hover &&
           "transition duration-150 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-interactive",
         className,
@@ -319,9 +298,9 @@ type PortalEmptyStateProps = {
 
 export function PortalEmptyState({ title, description, action }: PortalEmptyStateProps) {
   return (
-    <PortalCard className="flex min-h-[12rem] flex-col items-center justify-center border-dashed py-10 text-center">
-      <p className="text-lg font-semibold text-foreground">{title}</p>
-      <p className="mx-auto mt-2 max-w-md text-sm text-muted">{description}</p>
+    <PortalCard className="flex min-h-[12rem] flex-col items-center justify-center border-dashed border-border-strong bg-surface px-6 py-10 text-center">
+      <p className="text-lg font-semibold tracking-tight text-foreground">{title}</p>
+      <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted">{description}</p>
       {action ? <div className="mt-6 flex justify-center">{action}</div> : null}
     </PortalCard>
   );
@@ -340,7 +319,7 @@ export function PortalTableShell({ children }: PortalTableShellProps) {
 }
 
 export function PortalKpiMetric({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cn("text-3xl font-bold tracking-tight", className)}>{children}</p>;
+  return <p className={cn("text-3xl font-bold tracking-tight text-foreground", className)}>{children}</p>;
 }
 
 export function PortalSentBadge() {

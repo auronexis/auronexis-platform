@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import { WEBHOOK_EVENTS, type CreateWebhookEndpointResult, type WebhookEndpointView } from "@/lib/webhooks/types";
+import { assertSafeOutboundUrl } from "@/lib/security/outbound-url";
 import { generateWebhookSigningSecret } from "@/lib/webhooks/signing";
 import type { WebhookEndpoint } from "@/types/database";
 
@@ -39,6 +40,7 @@ export async function createWebhookEndpointAction(input: {
   url: string;
   events: string[];
 }): Promise<CreateWebhookEndpointResult> {
+  const safeUrl = assertSafeOutboundUrl(input.url);
   const signingSecret = generateWebhookSigningSecret();
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -46,7 +48,7 @@ export async function createWebhookEndpointAction(input: {
     .insert({
       organization_id: input.session.organization.id,
       name: input.name.trim(),
-      url: input.url.trim(),
+      url: safeUrl,
       secret: encryptSecretValue(signingSecret),
       events: validateEvents(input.events),
       active: true,

@@ -19,7 +19,7 @@ export type {
   ConnectorsDashboardSnapshot,
   ConnectorsDiagnosticsSnapshot,
 } from "@/lib/connectors/types";
-export { CONNECTOR_PLATFORM_VERSION } from "@/lib/connectors/types";
+export { CONNECTOR_PLATFORM_VERSION, CONNECTOR_IDS, isConnectorId } from "@/lib/connectors/types";
 export {
   getConnectorsDashboardSnapshot,
   getConnectorConnectionByConnectorId,

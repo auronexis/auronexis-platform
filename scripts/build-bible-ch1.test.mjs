@@ -1,14 +1,8 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, extname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, extname } from "node:path";
 import test from "node:test";
-
-const rootDir = join(dirname(fileURLToPath(import.meta.url)), "..");
-
-function readSource(relativePath) {
-  return readFileSync(join(rootDir, relativePath), "utf8");
-}
+import { readSource, rootDir } from "./_test-helpers/read-source.mjs";
 
 function walkTsFiles(dir, out = []) {
   for (const entry of readdirSync(dir)) {

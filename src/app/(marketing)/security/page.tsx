@@ -57,7 +57,7 @@ export default function SecurityPage() {
             sub-processors
           </Link>
           ,{" "}
-          <Link href="/api/docs" className="font-medium text-primary hover:underline">
+          <Link href="/docs/api" className="font-medium text-primary hover:underline">
             API documentation
           </Link>
           .

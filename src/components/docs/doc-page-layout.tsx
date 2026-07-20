@@ -57,7 +57,7 @@ function renderTable(table: DocTable | undefined) {
         <thead className="bg-white/[0.04] text-primary-foreground/90">
           <tr>
             {table.headers.map((header) => (
-              <th key={header} className="px-4 py-3 font-semibold text-white">
+              <th key={header} scope="col" className="px-4 py-3 font-semibold text-white">
                 {header}
               </th>
             ))}

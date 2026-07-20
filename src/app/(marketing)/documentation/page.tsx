@@ -6,7 +6,7 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { HELP_TOPICS } from "@/lib/marketing/content";
-import { DOCS_URL } from "@/lib/company/contact";
+import { DOCS_URL, MARKETING_ROUTES } from "@/lib/company/contact";
 import { cn } from "@/lib/utils/cn";
 import { getAuroraModule, auroraSurfaceInteractive } from "@/lib/ui/aurora";
 import { focusRing } from "@/lib/ui/tokens";
@@ -17,7 +17,7 @@ const DOC_LINKS = [
   { href: "/docs", label: "Documentation hub", icon: BookOpen, module: "dashboard" as const },
   { href: "/docs/getting-started", label: "Getting started", icon: BookOpen, module: "dashboard" as const },
   { href: "/docs/release-notes", label: "Release notes", icon: ScrollText, module: "settings" as const },
-  { href: "/api/docs", label: "API reference", icon: FileCode2, module: "settings" as const },
+  { href: "/docs/api", label: "API reference", icon: FileCode2, module: "settings" as const },
 ] as const;
 
 export default function DocumentationPage() {
@@ -26,13 +26,24 @@ export default function DocumentationPage() {
       <MarketingHero
         eyebrow="Documentation"
         title="Product documentation"
-        description="Guides for workspace setup, modules, integrations, billing, and API usage. The full product documentation hub lives at /docs."
+        description="Guides for workspace setup, modules, integrations, billing, and API usage. This page is the marketing gateway — the full product documentation hub lives at /docs."
         primaryHref="/docs"
         primaryLabel="Open docs hub"
         secondaryHref="/docs/getting-started"
         secondaryLabel="Getting started"
       />
       <MarketingSection title="Start here">
+        <p className="mb-6 max-w-2xl text-sm text-muted">
+          Looking for human support? Visit{" "}
+          <Link href={MARKETING_ROUTES.support} className="font-medium text-primary hover:underline">
+            Support
+          </Link>{" "}
+          or the{" "}
+          <Link href={MARKETING_ROUTES.faq} className="font-medium text-primary hover:underline">
+            FAQ
+          </Link>
+          . Documentation and FAQ answer evaluation questions; Help indexes common entry points without replacing product docs.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2">
           {DOC_LINKS.map((link) => {
             const identity = getAuroraModule(link.module);

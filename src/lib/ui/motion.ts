@@ -3,6 +3,8 @@
  * Durations: hover/dropdown/search/sidebar 150ms, dialog/toast 180ms. Max 200ms.
  */
 
+import { focusRing, pressable } from "@/lib/ui/tokens";
+
 export const easePremium = "ease-[cubic-bezier(0.25,0.46,0.45,0.94)]";
 
 export const motionFast = "duration-150";
@@ -42,8 +44,8 @@ export const topbarIconButton = [
   "inline-flex items-center justify-center rounded-md p-2 text-muted",
   "transition-all duration-150 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]",
   "hover:scale-105 hover:bg-muted/10 hover:text-foreground hover:shadow-xs",
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-  "active:scale-[0.98]",
+  focusRing,
+  pressable,
 ].join(" ");
 
 /** Search result row highlight */

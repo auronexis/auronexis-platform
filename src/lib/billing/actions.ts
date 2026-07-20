@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { assertCheckoutAllowed } from "@/lib/billing/checkout-guards.server";
+import { trackBillingLifecycleEvent } from "@/lib/analytics/billing-lifecycle";
 import { openCustomerPortal } from "@/lib/billing/customer-portal";
 import {
   isExpectedPortalUnavailableError,
@@ -131,6 +132,11 @@ export async function createPortalSessionAction(): Promise<BillingActionState> {
       error: sanitizeBillingCustomerError(error, "Unable to open billing portal."),
     };
   }
+
+  void trackBillingLifecycleEvent("billing_portal_opened", {
+    result: "success",
+    source: "customer_portal",
+  });
 
   redirect(portalUrl);
 }

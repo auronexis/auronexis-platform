@@ -1,31 +1,21 @@
 import "server-only";
 
+import { trackBillingLifecycleEvent } from "@/lib/analytics/billing-lifecycle";
+import { invalidateBillingCache } from "@/lib/billing/cache";
+import { PADDLE_WEBHOOK_EVENT_TYPES } from "@/lib/billing/commercial-events";
 import {
   extractOrganizationIdFromCustomData,
   extractPriceIdFromSubscription,
   extractPriceIdFromTransaction,
+  isKnownPaddleSubscriptionStatus,
   reconcileSubscriptionFromPaddle,
   upsertPaddleOrganizationSubscription,
   upsertPaddleTransaction,
 } from "@/lib/paddle/sync";
+import { isPaddleCancelScheduledChange } from "@/lib/paddle/status";
 import { parsePaddleMoneyToCents } from "@/lib/paddle/money";
 
-const HANDLED_EVENT_TYPES = new Set([
-  "subscription.created",
-  "subscription.activated",
-  "subscription.updated",
-  "subscription.canceled",
-  "subscription.paused",
-  "subscription.resumed",
-  "subscription.trialing",
-  "subscription.past_due",
-  "transaction.completed",
-  "transaction.paid",
-  "transaction.payment_failed",
-  "transaction.updated",
-  "customer.created",
-  "customer.updated",
-]);
+const HANDLED_EVENT_TYPES = new Set<string>(PADDLE_WEBHOOK_EVENT_TYPES);
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -40,6 +30,51 @@ export type PaddleWebhookHandleResult = {
   ignored: boolean;
   organizationId: string | null;
 };
+
+/**
+ * Emit privacy-safe commercial analytics after a verified webhook outcome.
+ * Fail-silent — must never affect billing state.
+ */
+export async function emitPaddleWebhookCommercialEvent(eventType: string): Promise<void> {
+  try {
+    switch (eventType) {
+      case "transaction.completed":
+      case "transaction.paid":
+        await trackBillingLifecycleEvent("invoice_paid", {
+          result: "success",
+          source: "paddle_webhook",
+          event_type: eventType,
+        });
+        break;
+      case "transaction.payment_failed":
+        await trackBillingLifecycleEvent("invoice_failed", {
+          result: "failure",
+          source: "paddle_webhook",
+          event_type: eventType,
+        });
+        break;
+      case "subscription.canceled":
+        await trackBillingLifecycleEvent("subscription_cancelled", {
+          result: "cancelled",
+          source: "paddle_webhook",
+          event_type: eventType,
+        });
+        break;
+      case "subscription.activated":
+      case "subscription.created":
+        await trackBillingLifecycleEvent("subscription_checkout_completed", {
+          result: "success",
+          source: "paddle_webhook",
+          event_type: eventType,
+        });
+        break;
+      default:
+        break;
+    }
+  } catch {
+    // Commercial analytics must never break webhook processing.
+  }
+}
 
 /**
  * Process a verified Paddle Billing event entity.
@@ -83,6 +118,13 @@ export async function handlePaddleWebhookEvent(event: {
     }
 
     try {
+      const providerStatus = asString(data.status);
+      if (!providerStatus || !isKnownPaddleSubscriptionStatus(providerStatus)) {
+        // Partial / event-type-only payloads must not write inactive locally.
+        await reconcileSubscriptionFromPaddle(subscriptionId, organizationId);
+        return { handled: true, ignored: false, organizationId };
+      }
+
       const priceId = extractPriceIdFromSubscription(data);
       const currentBilling = asRecord(data.currentBillingPeriod ?? data.current_billing_period);
       await upsertPaddleOrganizationSubscription({
@@ -90,10 +132,12 @@ export async function handlePaddleWebhookEvent(event: {
         providerCustomerId: asString(data.customerId ?? data.customer_id),
         providerSubscriptionId: subscriptionId,
         providerPriceId: priceId,
-        providerStatus: asString(data.status) ?? eventType.replace("subscription.", ""),
+        providerStatus,
         currentPeriodStart: asString(currentBilling.startsAt ?? currentBilling.starts_at),
         currentPeriodEnd: asString(currentBilling.endsAt ?? currentBilling.ends_at),
-        cancelAtPeriodEnd: Boolean(data.scheduledChange ?? data.scheduled_change),
+        cancelAtPeriodEnd: isPaddleCancelScheduledChange(
+          data.scheduledChange ?? data.scheduled_change,
+        ),
         trialEndsAt: asString(
           asRecord(data.currentTrialPeriod ?? data.current_trial_period).endsAt ??
             asRecord(data.currentTrialPeriod ?? data.current_trial_period).ends_at,
@@ -248,4 +292,14 @@ async function findOrganizationByProviderSubscription(
     .eq("provider_subscription_id", subscriptionId)
     .maybeSingle();
   return asString((data as { organization_id?: string } | null)?.organization_id);
+}
+
+/** Invalidate usage caches after a successful webhook that may change entitlements/usage. */
+export function invalidateCachesAfterWebhook(organizationId: string | null): void {
+  if (!organizationId) return;
+  try {
+    invalidateBillingCache(organizationId);
+  } catch {
+    // Cache invalidation must never break webhooks.
+  }
 }

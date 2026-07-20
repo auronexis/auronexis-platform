@@ -109,32 +109,42 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   const canMarkSent = canManageLifecycle && report.status === "published";
   const canArchive = canManageLifecycle && report.status !== "archived";
   const boundUpdateAction = updateReportAction.bind(null, report.id);
-  const clients = editable ? await listClients(session) : [];
-  const orgUsers =
-    editable && (session.role === "owner" || session.role === "admin")
-      ? await listOrgUsers(session)
-      : [];
   const allowedStatuses =
     session.role === "staff" ? STAFF_REPORT_STATUSES : EDITABLE_REPORT_STATUSES;
 
-  const [metrics, relatedRisks, relatedIncidents, emailDeliveries, aiAccess, planKey] =
-    await Promise.all([
-      getClientReportMetrics(session, report.client_id).catch(() => ({
-        openRisksCount: 0,
-        criticalRisksCount: 0,
-        openIncidentsCount: 0,
-        criticalIncidentsCount: 0,
-      })),
-      getRelatedOpenRisks(session, report.client_id).catch(() => []),
-      getRelatedOpenIncidents(session, report.client_id).catch(() => []),
-      canViewEmailHistory ? listReportEmailDeliveries(session, report.id) : Promise.resolve([]),
-      checkPlanFeatureForSession(session, "ai_report_assistant"),
-      getCurrentPlan(session.organization.id),
-    ]);
+  const [
+    clients,
+    orgUsers,
+    metrics,
+    relatedRisks,
+    relatedIncidents,
+    emailDeliveries,
+    aiAccess,
+    planKey,
+    versionHistoryResult,
+    executiveSnapshot,
+  ] = await Promise.all([
+    editable ? listClients(session) : Promise.resolve([]),
+    editable && (session.role === "owner" || session.role === "admin")
+      ? listOrgUsers(session)
+      : Promise.resolve([]),
+    getClientReportMetrics(session, report.client_id).catch(() => ({
+      openRisksCount: 0,
+      criticalRisksCount: 0,
+      openIncidentsCount: 0,
+      criticalIncidentsCount: 0,
+    })),
+    getRelatedOpenRisks(session, report.client_id).catch(() => []),
+    getRelatedOpenIncidents(session, report.client_id).catch(() => []),
+    canViewEmailHistory ? listReportEmailDeliveries(session, report.id) : Promise.resolve([]),
+    checkPlanFeatureForSession(session, "ai_report_assistant"),
+    getCurrentPlan(session.organization.id),
+    getReportHistory(session, report.id),
+    getExecutiveReport(session, report.id),
+  ]);
 
   const aiUsageSummary = await getAIUsageSummaryForSession(session, planKey);
-  const versionHistory = (await getReportHistory(session, report.id)).data ?? [];
-  const executiveSnapshot = await getExecutiveReport(session, report.id);
+  const versionHistory = versionHistoryResult.data ?? [];
   const canGenerateExecutive =
     canManageLifecycle && report.status !== "archived";
 

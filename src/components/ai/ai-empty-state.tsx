@@ -1,5 +1,4 @@
-"use client";
-
+import { CompactEmptyState } from "@/components/ui/compact-empty-state";
 import { cn } from "@/lib/utils/cn";
 
 export type AIEmptyStateKind =
@@ -42,15 +41,10 @@ type AIEmptyStateProps = {
 export function AIEmptyState({ kind, title, description, className }: AIEmptyStateProps) {
   const defaults = MESSAGES[kind];
   return (
-    <div
-      className={cn(
-        "rounded-lg border border-border bg-muted/5 p-4 text-center",
-        className,
-      )}
-      role="status"
-    >
-      <p className="text-sm font-medium text-foreground">{title ?? defaults.title}</p>
-      <p className="mt-2 text-sm text-muted">{description ?? defaults.description}</p>
-    </div>
+    <CompactEmptyState
+      title={title ?? defaults.title}
+      description={description ?? defaults.description}
+      className={cn("rounded-lg border-border bg-muted/5 py-4", className)}
+    />
   );
 }

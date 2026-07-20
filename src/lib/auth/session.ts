@@ -41,19 +41,23 @@ async function loadSessionContext(
 
   const { data: organizationData, error: orgError } = await supabase
     .from("organizations")
-    .select("id, name, slug, plan, language, currency, created_at, updated_at")
+    .select(
+      "id, name, slug, plan, language, currency, timezone, date_format, time_format, week_start, measurement_system, created_at, updated_at",
+    )
     .eq("id", appUser.organization_id)
     .maybeSingle();
 
   let organization = organizationData as Organization | null;
 
   if (orgError || !organization) {
-    const missingCurrencyColumn =
+    const missingRegionalColumn =
       orgError?.code === "42703" ||
       orgError?.code === "PGRST204" ||
-      Boolean(orgError?.message?.includes("currency"));
+      Boolean(orgError?.message?.includes("currency")) ||
+      Boolean(orgError?.message?.includes("timezone")) ||
+      Boolean(orgError?.message?.includes("date_format"));
 
-    if (!missingCurrencyColumn) {
+    if (!missingRegionalColumn) {
       return null;
     }
 
@@ -67,11 +71,37 @@ async function loadSessionContext(
       return null;
     }
 
-    organization = { ...(fallback.data as Omit<Organization, "currency">), currency: "USD" };
+    organization = {
+      ...(fallback.data as Omit<
+        Organization,
+        "currency" | "timezone" | "date_format" | "time_format" | "week_start" | "measurement_system"
+      >),
+      currency: "USD",
+      timezone: "UTC",
+      date_format: "DD/MM/YYYY",
+      time_format: "24h",
+      week_start: "monday",
+      measurement_system: "metric",
+    };
   }
 
   if (!organization.currency) {
     organization = { ...organization, currency: "USD" };
+  }
+  if (!organization.timezone) {
+    organization = { ...organization, timezone: "UTC" };
+  }
+  if (!organization.date_format) {
+    organization = { ...organization, date_format: "DD/MM/YYYY" };
+  }
+  if (!organization.time_format) {
+    organization = { ...organization, time_format: "24h" };
+  }
+  if (!organization.week_start) {
+    organization = { ...organization, week_start: "monday" };
+  }
+  if (!organization.measurement_system) {
+    organization = { ...organization, measurement_system: "metric" };
   }
 
   return {

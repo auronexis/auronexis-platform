@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import {
   getPlanByPriceId,
@@ -16,13 +17,13 @@ import type {
   OrganizationPlanUsageSummary,
   PlanResolutionSource,
 } from "@/lib/plans/types";
-import { isActiveSubscriptionStatus } from "@/lib/billing/status";
+import { isSubscriptionUsable } from "@/lib/billing/status";
+import { countActiveClients } from "@/lib/clients/queries";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 const SUBSCRIPTION_SELECT =
-  "stripe_price_id, provider_price_id, billing_provider, status";
+  "stripe_price_id, provider_price_id, provider_subscription_id, billing_provider, status, updated_at";
 
 /** Resolve the effective plan key for an organization. */
 export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {
@@ -34,7 +35,7 @@ export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {
 export const getEffectivePlan = getCurrentPlan;
 
 /** Full plan context for an organization — override > Stripe/Paddle > starter fallback. */
-export async function getOrganizationPlanContext(
+export const getOrganizationPlanContext = cache(async function getOrganizationPlanContext(
   organizationId: string,
 ): Promise<OrganizationPlanContext> {
   const admin = createAdminClient();
@@ -56,18 +57,21 @@ export async function getOrganizationPlanContext(
     (data ?? []) as Array<{
       stripe_price_id: string | null;
       provider_price_id: string | null;
+      provider_subscription_id: string | null;
       billing_provider: string | null;
       status: string;
+      updated_at?: string;
     }>,
   );
-  const billingProvider = subscription?.billing_provider ?? "stripe";
+  const billingProvider = subscription?.billing_provider ?? "paddle";
   const subscriptionPriceId =
     billingProvider === "paddle"
       ? (subscription?.provider_price_id ?? null)
       : (subscription?.stripe_price_id ?? subscription?.provider_price_id ?? null);
   const subscriptionStatus = subscription?.status ?? null;
+  // Align with entitlements: only active/trialing grant paid plan features.
   const isActiveSubscription = Boolean(
-    subscriptionPriceId && subscriptionStatus && isActiveSubscriptionStatus(subscriptionStatus),
+    subscriptionPriceId && subscriptionStatus && isSubscriptionUsable(subscriptionStatus),
   );
 
   let basePlanKey: PlanKey = getDefaultPlanKey();
@@ -124,7 +128,7 @@ export async function getOrganizationPlanContext(
     subscriptionStatus,
     mappedPlanKeyFromPriceId,
   };
-}
+});
 
 export async function getOrganizationPlanContextForSession(
   session: SessionContext,
@@ -134,21 +138,9 @@ export async function getOrganizationPlanContextForSession(
 
 /** Count non-archived clients for plan limit enforcement. */
 export async function getClientLimitUsage(organizationId: string): Promise<ClientLimitUsage> {
-  const admin = createAdminClient();
   const plan = await getOrganizationPlanContext(organizationId);
   const limit = plan.features.max_clients;
-
-  const { count, error } = await admin
-    .from("clients")
-    .select("id", { count: "exact", head: true })
-    .eq("organization_id", organizationId)
-    .neq("status", "archived");
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const used = count ?? 0;
+  const used = await countActiveClients(organizationId);
 
   return {
     used,
@@ -161,21 +153,9 @@ export async function getClientLimitUsage(organizationId: string): Promise<Clien
 export async function getClientLimitUsageForSession(
   session: SessionContext,
 ): Promise<ClientLimitUsage> {
-  const supabase = await createClient();
   const plan = await getOrganizationPlanContextForSession(session);
   const limit = plan.features.max_clients;
-
-  const { count, error } = await supabase
-    .from("clients")
-    .select("id", { count: "exact", head: true })
-    .eq("organization_id", session.organization.id)
-    .neq("status", "archived");
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const used = count ?? 0;
+  const used = await countActiveClients(session.organization.id, { useUserClient: true });
 
   return {
     used,

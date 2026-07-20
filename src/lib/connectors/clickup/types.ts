@@ -1,4 +1,3 @@
-import type { ConnectorModuleConfig } from "@/lib/connectors/shared/module-config";
 import { CLICKUP_CONNECTOR_CONFIG } from "@/lib/connectors/definitions";
 
 export type ClickupResource = {

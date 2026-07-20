@@ -1,5 +1,5 @@
 import PDFDocument from "pdfkit";
-import { DEFAULT_CURRENCY, formatWorkspaceMoney, type AppCurrency } from "@/lib/i18n";
+import { DEFAULT_CURRENCY, formatAppDate, formatWorkspaceMoney, type AppCurrency, type AppLocale } from "@/lib/i18n";
 import type { ProposalContent } from "@/lib/sales/proposal-generator";
 
 type PdfDoc = InstanceType<typeof PDFDocument>;
@@ -14,6 +14,7 @@ function section(doc: PdfDoc, title: string, body: string) {
 export async function generateProposalPdf(
   content: ProposalContent,
   currency: AppCurrency = DEFAULT_CURRENCY,
+  locale: AppLocale = "en",
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 50, size: "A4" });
@@ -25,7 +26,9 @@ export async function generateProposalPdf(
 
     doc.fontSize(18).font("Helvetica-Bold").text(content.title);
     doc.moveDown(0.5);
-    doc.fontSize(10).font("Helvetica").fillColor("#555555").text(`Generated ${new Date().toLocaleDateString()}`);
+    doc.fontSize(10).font("Helvetica").fillColor("#555555").text(
+      `Generated ${formatAppDate(new Date().toISOString(), locale)}`,
+    );
     doc.fillColor("#000000");
     doc.moveDown(1);
 
@@ -36,7 +39,7 @@ export async function generateProposalPdf(
     section(doc, "Implementation Plan", content.implementationPlan);
 
     doc.fontSize(11).font("Helvetica-Bold").text(
-      `Proposed MRR: ${formatWorkspaceMoney(content.mrrProposed, currency)} · ARR: ${formatWorkspaceMoney(content.arrProposed, currency)}`,
+      `Proposed MRR: ${formatWorkspaceMoney(content.mrrProposed, currency, locale)} · ARR: ${formatWorkspaceMoney(content.arrProposed, currency, locale)}`,
     );
 
     doc.end();

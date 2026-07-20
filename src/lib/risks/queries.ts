@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { sessionHasPermission } from "@/lib/authorization/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -99,7 +100,7 @@ export async function listClientRisks(
   return listRisks(session, { ...options, clientId });
 }
 
-export async function getRiskById(
+export const getRiskById = cache(async function getRiskById(
   session: SessionContext,
   riskId: string,
 ): Promise<ClientRiskView | null> {
@@ -126,7 +127,7 @@ export async function getRiskById(
     console.warn("[risks] getRiskById failed:", error);
     return null;
   }
-}
+});
 
 export async function listOpenRisks(session: SessionContext): Promise<ClientRiskView[]> {
   return listRisks(session, { status: [...OPEN_RISK_STATUSES] });

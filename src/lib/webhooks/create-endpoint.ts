@@ -1,6 +1,7 @@
 import "server-only";
 
 import { encryptSecretValue } from "@/lib/integrations/secrets/encryption";
+import { assertSafeOutboundUrl } from "@/lib/security/outbound-url";
 import { createClient } from "@/lib/supabase/server";
 import { generateWebhookSigningSecret } from "@/lib/webhooks/signing";
 import { WEBHOOK_EVENTS } from "@/lib/webhooks/types";
@@ -19,6 +20,7 @@ export async function createWebhookEndpoint(input: {
   events: string[];
   createdBy: string;
 }): Promise<{ endpoint: WebhookEndpoint; signingSecret: string }> {
+  const safeUrl = assertSafeOutboundUrl(input.url);
   const signingSecret = generateWebhookSigningSecret();
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -26,7 +28,7 @@ export async function createWebhookEndpoint(input: {
     .insert({
       organization_id: input.organizationId,
       name: input.description?.trim() || "Webhook endpoint",
-      url: input.url.trim(),
+      url: safeUrl,
       secret: encryptSecretValue(signingSecret),
       events: validateEvents(input.events),
       active: true,

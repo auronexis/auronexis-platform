@@ -1,7 +1,7 @@
 import { PredictiveClientPanel } from "@/components/predictive/predictive-client-panel";
 import { PredictiveEmptyState } from "@/components/predictive/predictive-empty-state";
 import { PredictiveSummaryCard } from "@/components/predictive/predictive-summary-card";
-import { ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUpgradeCard } from "@/components/ai/ai-usage-card";
 import { DetailSection } from "@/components/layout/detail-page";
 import { getClientPredictiveAnalysis } from "@/lib/predictive/cache";
 import { getClientPredictiveSummary } from "@/lib/predictive/summary";
@@ -28,7 +28,7 @@ export async function PredictiveIntelligenceSection({ clientId }: PredictiveInte
         title="Predictive Intelligence"
         description="Deterministic forecasts from verified client history."
       >
-        <ReportAIUpgradeCard
+        <AIUpgradeCard
           message={getFeatureUpgradeMessage("ai_predictive_intelligence")}
           requiredPlanLabel={getRequiredPlanLabel("ai_predictive_intelligence")}
           title="Predictive Intelligence"

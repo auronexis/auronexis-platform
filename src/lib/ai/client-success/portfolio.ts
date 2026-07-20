@@ -2,7 +2,11 @@ import type { ClientSuccessAnalysis, ClientSuccessPortfolioEntry, ClientSuccessP
 import { generateClientSuccessAnalysis } from "@/lib/ai/client-success/engine";
 import { buildClientSuccessSnapshot } from "@/lib/ai/client-success/queries";
 import { listClients } from "@/lib/clients/queries";
+import { PORTFOLIO_PAGE_SIZE } from "@/lib/customer-success/constants";
+import { mapWithConcurrency } from "@/lib/performance/map-with-concurrency";
 import type { SessionContext } from "@/lib/tenancy/context";
+
+const PORTFOLIO_CONCURRENCY = 8;
 
 function toPortfolioEntry(
   analysis: ClientSuccessAnalysis,
@@ -62,14 +66,14 @@ export async function buildClientSuccessPortfolio(
 ): Promise<ClientSuccessPortfolioResult> {
   const started = Date.now();
   const clients = await listClients(session);
-  const entries: ClientSuccessPortfolioEntry[] = [];
+  const limited = clients.slice(0, PORTFOLIO_PAGE_SIZE);
 
-  for (const client of clients) {
+  const entries = await mapWithConcurrency(limited, PORTFOLIO_CONCURRENCY, async (client) => {
     const snapshot = await buildClientSuccessSnapshot(session, client.id);
-    if (!snapshot) continue;
+    if (!snapshot) return null;
     const analysis = generateClientSuccessAnalysis(snapshot);
-    entries.push(toPortfolioEntry(analysis, snapshot));
-  }
+    return toPortfolioEntry(analysis, snapshot);
+  });
 
   const highestRisk = [...entries].sort((a, b) => b.priorityScore - a.priorityScore).slice(0, 5);
   const highestValue = [...entries].sort((a, b) => b.monthlyRevenue - a.monthlyRevenue).slice(0, 5);

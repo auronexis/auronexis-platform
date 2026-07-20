@@ -16,13 +16,14 @@ import {
 } from "@/lib/ai/operational/types";
 import { cn } from "@/lib/utils/cn";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
+import { restoreFocus, trapFocus } from "@/lib/a11y/focus";
 import { OperationalAIDiffPreview } from "@/components/operational/ai/operational-ai-diff-preview";
 import { OperationalAIHistory } from "@/components/operational/ai/operational-ai-history";
 import { useOperationalAI } from "@/components/operational/ai/operational-ai-provider";
 import {
-  ReportAIUpgradeCard,
-  ReportAIUsageCard,
-} from "@/components/reports/ai/report-ai-usage-card";
+  AIUpgradeCard,
+  AIUsageCard,
+} from "@/components/ai/ai-usage-card";
 
 const RISK_SUMMARY_ACTIONS: RiskAIActionKey[] = [
   "summarize_risk",
@@ -140,10 +141,15 @@ export function OperationalAssistantPanel({
   } = useOperationalAI();
 
   const panelRef = useRef<HTMLElement>(null);
+  const previouslyFocused = useRef<Element | null>(null);
   const title = entityType === "risk" ? "Risk Copilot" : "Incident Copilot";
 
   useEffect(() => {
     if (!panelOpen) return;
+
+    previouslyFocused.current = document.activeElement;
+    const panel = panelRef.current;
+    const releaseTrap = panel ? trapFocus(panel) : undefined;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -153,7 +159,11 @@ export function OperationalAssistantPanel({
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      releaseTrap?.();
+      document.removeEventListener("keydown", handleKeyDown);
+      restoreFocus(previouslyFocused.current);
+    };
   }, [closePanel, panelOpen]);
 
   useEffect(() => {
@@ -213,14 +223,14 @@ export function OperationalAssistantPanel({
 
         <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-5">
           {!aiEnabled ? (
-            <ReportAIUpgradeCard
+            <AIUpgradeCard
               message={upgradeMessage}
               requiredPlanLabel={requiredPlanLabel}
               title={entityType === "risk" ? "AI Risk Copilot" : "AI Incident Copilot"}
             />
           ) : (
             <>
-              <ReportAIUsageCard usageSummary={usageSummary} averageLatencyMs={averageLatencyMs} />
+              <AIUsageCard usageSummary={usageSummary} averageLatencyMs={averageLatencyMs} />
 
               {contextSnapshot ? (
                 <section aria-label="AI context" className="rounded-lg border border-border bg-muted/5 p-4">

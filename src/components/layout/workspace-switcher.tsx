@@ -1,5 +1,3 @@
-"use client";
-
 import { ChevronDown } from "lucide-react";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { Icon } from "@/components/ui/icon";

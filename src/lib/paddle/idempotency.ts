@@ -3,11 +3,14 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type PaddleIdempotencyStatus = "proceed" | "duplicate" | "retry";
+export type PaddleIdempotencyStatus = "proceed" | "duplicate" | "retry" | "unavailable";
 
 export type PaddleIdempotencyResult = {
   status: PaddleIdempotencyStatus;
 };
+
+/** Stuck `processing` rows older than this may be retried safely (Paddle redelivery). */
+const PROCESSING_STALE_MS = 5 * 60 * 1000;
 
 function hashPayload(rawBody: string): string {
   return createHash("sha256").update(rawBody).digest("hex");
@@ -25,17 +28,34 @@ export async function ensurePaddleIdempotency(input: {
 
   const { data: existing, error: readError } = await admin
     .from("paddle_webhook_events")
-    .select("status")
+    .select("status, received_at, payload_hash")
     .eq("provider", "paddle")
     .eq("provider_event_id", input.providerEventId)
     .maybeSingle();
 
   if (readError) {
-    console.error("[paddle] idempotency read failed:", readError.message);
-    return { status: "proceed" };
+    console.error("[paddle] idempotency read failed:", {
+      message: readError.message,
+      eventType: input.eventType,
+      providerEventIdPrefix: input.providerEventId.slice(0, 12),
+    });
+    return { status: "unavailable" };
   }
 
-  const row = existing as { status: string } | null;
+  const row = existing as {
+    status: string;
+    received_at?: string | null;
+    payload_hash?: string | null;
+  } | null;
+
+  if (row?.payload_hash && row.payload_hash !== payloadHash) {
+    console.error("[paddle] idempotency payload hash mismatch — rejecting", {
+      eventType: input.eventType,
+      providerEventIdPrefix: input.providerEventId.slice(0, 12),
+      priorStatus: row.status,
+    });
+    return { status: "unavailable" };
+  }
 
   if (row?.status === "processed" || row?.status === "duplicate" || row?.status === "ignored") {
     await admin
@@ -47,7 +67,7 @@ export async function ensurePaddleIdempotency(input: {
   }
 
   if (row?.status === "failed") {
-    await admin
+    const { data: claimed, error: claimError } = await admin
       .from("paddle_webhook_events")
       .update({
         status: "processing",
@@ -55,12 +75,58 @@ export async function ensurePaddleIdempotency(input: {
         payload_hash: payloadHash,
       } as never)
       .eq("provider", "paddle")
-      .eq("provider_event_id", input.providerEventId);
+      .eq("provider_event_id", input.providerEventId)
+      .eq("status", "failed")
+      .select("provider_event_id")
+      .maybeSingle();
+
+    if (claimError) {
+      console.error("[paddle] idempotency failed→processing claim error:", claimError.message);
+      return { status: "unavailable" };
+    }
+    if (!claimed) {
+      return { status: "duplicate" };
+    }
     return { status: "retry" };
   }
 
   if (row?.status === "processing") {
-    return { status: "duplicate" };
+    const receivedAtMs = row.received_at ? Date.parse(row.received_at) : Number.NaN;
+    const isStale =
+      Number.isFinite(receivedAtMs) && Date.now() - receivedAtMs >= PROCESSING_STALE_MS;
+
+    if (!isStale) {
+      return { status: "duplicate" };
+    }
+
+    console.warn("[paddle] retrying stale processing webhook", {
+      eventType: input.eventType,
+      providerEventIdPrefix: input.providerEventId.slice(0, 12),
+    });
+
+    const { data: claimed, error: claimError } = await admin
+      .from("paddle_webhook_events")
+      .update({
+        status: "processing",
+        last_error: null,
+        payload_hash: payloadHash,
+        received_at: now,
+      } as never)
+      .eq("provider", "paddle")
+      .eq("provider_event_id", input.providerEventId)
+      .eq("status", "processing")
+      .eq("received_at", row.received_at ?? "")
+      .select("provider_event_id")
+      .maybeSingle();
+
+    if (claimError) {
+      console.error("[paddle] idempotency stale processing claim error:", claimError.message);
+      return { status: "unavailable" };
+    }
+    if (!claimed) {
+      return { status: "duplicate" };
+    }
+    return { status: "retry" };
   }
 
   const { error: insertError } = await admin.from("paddle_webhook_events").insert({
@@ -77,7 +143,12 @@ export async function ensurePaddleIdempotency(input: {
     if (insertError.code === "23505") {
       return { status: "duplicate" };
     }
-    console.error("[paddle] idempotency insert failed:", insertError.message);
+    console.error("[paddle] idempotency insert failed:", {
+      message: insertError.message,
+      eventType: input.eventType,
+      providerEventIdPrefix: input.providerEventId.slice(0, 12),
+    });
+    return { status: "unavailable" };
   }
 
   return { status: "proceed" };

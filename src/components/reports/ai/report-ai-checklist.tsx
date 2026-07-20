@@ -1,5 +1,3 @@
-"use client";
-
 import type { AIChecklistItem } from "@/lib/ai/types";
 import { cn } from "@/lib/utils/cn";
 

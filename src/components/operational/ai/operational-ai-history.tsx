@@ -1,7 +1,3 @@
-"use client";
-
-
-
 import { AIHistory } from "@/components/ai/ai-history";
 
 import {

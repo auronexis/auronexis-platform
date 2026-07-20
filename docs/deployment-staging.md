@@ -1,3 +1,4 @@
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
 # Staging Deployment Guide
 
 **Version:** Auroranexis v0.96  
@@ -10,28 +11,28 @@
 
 | Domain | Purpose | Vercel project | Supabase |
 |--------|---------|----------------|----------|
-| `auroranexis.com` | Marketing landing (future) | `auroranexis-web` | — |
+| `auroranexis.com` | Marketing landing (future) | `auroranexis-web` | â€” |
 | `app.auroranexis.com` | Production SaaS | `auroranexis-app` | Production project |
 | `staging.auroranexis.com` | Staging / pilot | `auroranexis-staging` | Staging project |
 
 ```
-                    ┌─────────────────────┐
-                    │   auroranexis.com   │
-                    │   (Landing / WWW)   │
-                    └──────────┬──────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              ▼                                 ▼
-   ┌──────────────────────┐        ┌──────────────────────┐
-   │ app.auroranexis.com  │        │ staging.auroranexis  │
-   │ Production SaaS      │        │ Staging / Pilot      │
-   └──────────┬───────────┘        └──────────┬───────────┘
-              │                               │
-              ▼                               ▼
-   ┌──────────────────────┐        ┌──────────────────────┐
-   │ Supabase Production  │        │ Supabase Staging     │
-   │ Stripe Live          │        │ Stripe Test          │
-   └──────────────────────┘        └──────────────────────┘
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚   auroranexis.com   â”‚
+                    â”‚   (Landing / WWW)   â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                               â”‚
+              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+              â–¼                                 â–¼
+   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+   â”‚ app.auroranexis.com  â”‚        â”‚ staging.auroranexis  â”‚
+   â”‚ Production SaaS      â”‚        â”‚ Staging / Pilot      â”‚
+   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+              â”‚                               â”‚
+              â–¼                               â–¼
+   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+   â”‚ Supabase Production  â”‚        â”‚ Supabase Staging     â”‚
+   â”‚ Stripe Live          â”‚        â”‚ Stripe Test          â”‚
+   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -47,7 +48,7 @@ supabase db push
 
 Apply all migrations including `20250624140000_production_infrastructure.sql`.
 
-Verify: Settings → Database → Migrations show 31 files applied.
+Verify: Settings â†’ Database â†’ Migrations show 31 files applied.
 
 ### 2. Vercel staging project
 
@@ -91,13 +92,13 @@ Use **Stripe test mode** webhook secret in `STRIPE_WEBHOOK_SECRET`.
 
 ### 6. Demo workspace
 
-After deploy, seed demo data — see [demo-tenant.md](./demo-tenant.md).
+After deploy, seed demo data â€” see [demo-tenant.md](./demo-tenant.md).
 
 ---
 
 ## Environment validation
 
-Required variables for staging (set in Vercel → Settings → Environment Variables):
+Required variables for staging (set in Vercel â†’ Settings â†’ Environment Variables):
 
 | Variable | Required | Notes |
 |----------|----------|-------|
@@ -105,9 +106,9 @@ Required variables for staging (set in Vercel → Settings → Environment Varia
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Staging anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server only |
 | `NEXT_PUBLIC_APP_URL` | Yes | `https://staging.auroranexis.com` |
-| `STRIPE_SECRET_KEY` | Yes | `sk_test_…` |
+| `STRIPE_SECRET_KEY` | Yes | `sk_test_â€¦` |
 | `STRIPE_WEBHOOK_SECRET` | Yes | Staging webhook signing secret |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | `pk_test_…` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | `pk_test_â€¦` |
 | `STRIPE_*_PRICE_ID` (4 plans) | Yes | Test mode price IDs |
 | `RESEND_API_KEY` | Yes | Email delivery |
 | `RESEND_FROM_EMAIL` | Yes | Verified sender |
@@ -118,7 +119,7 @@ Required variables for staging (set in Vercel → Settings → Environment Varia
 | `MICROSOFT_CLIENT_ID/SECRET` | Per connector | |
 | `GITHUB_CLIENT_ID/SECRET` | Per connector | |
 
-Validate in app: **Settings → Diagnostics** — all infrastructure sections green or explained.
+Validate in app: **Settings â†’ Diagnostics** â€” all infrastructure sections green or explained.
 
 ---
 
@@ -140,3 +141,4 @@ Validate in app: **Settings → Diagnostics** — all infrastructure sections gr
 - [vercel-checklist.md](./vercel-checklist.md)
 - [staging-checklist.md](./staging-checklist.md)
 - [operations-runbook.md](./operations-runbook.md)
+

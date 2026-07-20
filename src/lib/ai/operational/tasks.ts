@@ -3,7 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { OperationalTasksResult, OperationalTaskItem } from "@/lib/ai/operational/types";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 /** Build dashboard operational task highlights from verified DB data. */
@@ -21,10 +21,10 @@ export async function buildOperationalTasks(
     .in("status", OPEN_INCIDENT_STATUSES);
 
   const { data: risks } = await supabase
-    .from("risks")
-    .select("id, title, severity, resolution_notes, due_date, status")
+    .from("client_risks")
+    .select("id, title, severity, mitigation_plan, due_at, status")
     .eq("organization_id", orgId)
-    .in("status", LEGACY_OPEN_RISK_STATUSES);
+    .in("status", OPEN_RISK_STATUSES);
 
   const openIncidents = incidents ?? [];
   const openRisks = risks ?? [];
@@ -42,7 +42,7 @@ export async function buildOperationalTasks(
   }
 
   const noMitigation = openRisks.filter(
-    (row) => !(row as { resolution_notes: string | null }).resolution_notes?.trim(),
+    (row) => !(row as { mitigation_plan: string | null }).mitigation_plan?.trim(),
   );
   if (noMitigation.length > 0) {
     tasks.push({

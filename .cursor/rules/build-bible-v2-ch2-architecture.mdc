@@ -1,0 +1,32 @@
+---
+description: Auroranexis Build Bible V2 Chapter 2 — architecture layering and reuse rules
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 2 (Architecture)
+
+Spec: `docs/04_BUILD_BIBLE_V2_CHAPTER_02_ARCHITECTURE.md`
+
+## Layering
+
+- Business logic only in `src/lib/**` (services).
+- Pages/layouts compose and orchestrate — no domain algorithms.
+- Presentation components: no DB access, no business decisions.
+- API routes stay thin — parse, authorize, delegate to services.
+- Never import `server-only`, `@/lib/supabase/server`, or `@/lib/supabase/admin` into Client Components.
+
+## Reuse
+
+- One implementation per concern; consolidate duplicates.
+- Remove dead modules, unused exports, unused dependencies.
+- Do not move files without architectural justification.
+- Do not invent unnecessary abstractions.
+
+## Preserve
+
+- Features, API contracts, DB contracts, RBAC, RLS, Paddle billing.
+- Never reintroduce Stripe.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 2 work.

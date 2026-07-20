@@ -1,4 +1,5 @@
 import type { Json } from "@/types/database";
+import { formatAppDateTime } from "@/lib/i18n";
 
 export type HealthStatus = "excellent" | "healthy" | "watch" | "critical";
 
@@ -129,11 +130,37 @@ export function parseHealthBreakdown(value: Json | HealthBreakdown | null | unde
 }
 
 export function formatHealthTimestamp(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
+}
+
+/** Canonical PostgREST select for health_snapshots rows. */
+export const HEALTH_SNAPSHOT_SELECT =
+  "id, organization_id, client_id, score, status, delta, reason, breakdown, calculated_at";
+
+/** Map a raw health_snapshots row into the domain HealthSnapshot shape. */
+export function mapHealthSnapshotRow(row: Record<string, unknown>): HealthSnapshot {
+  return {
+    id: String(row.id),
+    organization_id: String(row.organization_id),
+    client_id: String(row.client_id),
+    score: Number(row.score),
+    status: row.status as HealthStatus,
+    delta: Number(row.delta ?? 0),
+    reason: (row.reason as string | null) ?? null,
+    breakdown: parseHealthBreakdown(row.breakdown as Json | null | undefined),
+    calculated_at: String(row.calculated_at),
+  };
+}
+
+/** Keep the first (newest) snapshot per client when rows are ordered newest-first. */
+export function latestSnapshotByClient(rows: HealthSnapshot[]): Map<string, HealthSnapshot> {
+  const map = new Map<string, HealthSnapshot>();
+
+  for (const row of rows) {
+    if (!map.has(row.client_id)) {
+      map.set(row.client_id, row);
+    }
+  }
+
+  return map;
 }

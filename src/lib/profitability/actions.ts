@@ -11,6 +11,7 @@ import {
 import { requireSession } from "@/lib/auth/session";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canEditClientFinancials } from "@/lib/profitability/guards";
+import { clientBelongsToOrganization } from "@/lib/clients/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -48,16 +49,7 @@ async function verifyClientInOrg(
   organizationId: string,
   clientId: string,
 ): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("clients")
-    .select("id")
-    .eq("id", clientId)
-    .eq("organization_id", organizationId)
-    .neq("status", "archived")
-    .maybeSingle();
-
-  return Boolean(data);
+  return clientBelongsToOrganization(organizationId, clientId, { excludeArchived: true });
 }
 
 async function assertFinancialMutationAccess(

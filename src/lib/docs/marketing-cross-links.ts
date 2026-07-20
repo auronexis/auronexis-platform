@@ -41,6 +41,27 @@ const DOC_MARKETING_LINKS: Record<string, readonly DocRelatedLink[]> = {
   "client-portal": [
     { href: FEATURE_ROUTES.clientPortal, label: "Client portal feature" },
   ],
+  knowledge: [
+    { href: FEATURE_ROUTES.knowledgeBase, label: "Knowledge Hub" },
+    { href: FEATURE_ROUTES.incidents, label: "Incidents" },
+  ],
+  profitability: [
+    { href: FEATURE_ROUTES.profitability, label: "Profitability" },
+    { href: FEATURE_ROUTES.customerSuccess, label: "Customer success" },
+  ],
+  "customer-success": [
+    { href: FEATURE_ROUTES.customerSuccess, label: "Customer success" },
+    { href: SOLUTION_ROUTES.customerHealthScore, label: "Customer health score" },
+  ],
+  activity: [
+    { href: FEATURE_ROUTES.activityTimeline, label: "Activity timeline" },
+    { href: FEATURE_ROUTES.automation, label: "Automation" },
+  ],
+  predictive: [
+    { href: FEATURE_ROUTES.aiCopilot, label: "AI Copilot" },
+    { href: FEATURE_ROUTES.executiveDashboards, label: "Executive dashboards" },
+    { href: FEATURE_ROUTES.aiExecutiveReports, label: "AI executive reports" },
+  ],
   compliance: [
     { href: MARKETING_ROUTES.compliance, label: "Compliance readiness" },
     { href: MARKETING_ROUTES.security, label: "Security" },
@@ -50,7 +71,7 @@ const DOC_MARKETING_LINKS: Record<string, readonly DocRelatedLink[]> = {
     { href: MARKETING_ROUTES.faq, label: "FAQ" },
   ],
   api: [
-    { href: "/api/docs", label: "OpenAPI reference" },
+    { href: "/docs/api", label: "API documentation" },
     { href: MARKETING_ROUTES.integrations, label: "Integrations" },
   ],
   enterprise: [

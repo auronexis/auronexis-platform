@@ -1,4 +1,5 @@
-# Vercel Production — v1.0.3
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
+# Vercel Production â€” v1.0.3
 
 **Version:** 1.0.3  
 **Status:** Launch Candidate
@@ -24,10 +25,11 @@
 
 ## Cron
 
-`vercel.json` — `/api/cron/run` every 15 minutes. Set `CRON_SECRET` in production.
+`vercel.json` â€” `/api/cron/run` every 15 minutes. Set `CRON_SECRET` in production.
 
 ## Diagnostics
 
 `src/lib/diagnostics/vercel-production-readiness.ts`
 
 See also [vercel-production.md](./vercel-production.md) for full matrix.
+

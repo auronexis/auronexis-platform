@@ -197,12 +197,13 @@ export function AutomationBuilderWorkspace({ initialWorkflow }: AutomationBuilde
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Builder mode">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Builder mode">
         <Button
           type="button"
           variant={mode === "ai" ? "primary" : "outline"}
           size="sm"
           onClick={() => setMode("ai")}
+          aria-pressed={mode === "ai"}
         >
           AI Builder
         </Button>
@@ -211,6 +212,7 @@ export function AutomationBuilderWorkspace({ initialWorkflow }: AutomationBuilde
           variant={mode === "visual" ? "primary" : "outline"}
           size="sm"
           onClick={() => setMode("visual")}
+          aria-pressed={mode === "visual"}
         >
           Visual Builder
         </Button>

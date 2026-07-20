@@ -242,6 +242,11 @@ export type Database = {
           plan: string;
           language: string;
           currency: string;
+          timezone: string;
+          date_format: string;
+          time_format: string;
+          week_start: string;
+          measurement_system: string;
           created_at: string;
           updated_at: string;
         };
@@ -252,6 +257,11 @@ export type Database = {
           plan?: string;
           language?: string;
           currency?: string;
+          timezone?: string;
+          date_format?: string;
+          time_format?: string;
+          week_start?: string;
+          measurement_system?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -262,6 +272,11 @@ export type Database = {
           plan?: string;
           language?: string;
           currency?: string;
+          timezone?: string;
+          date_format?: string;
+          time_format?: string;
+          week_start?: string;
+          measurement_system?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -5469,6 +5484,19 @@ export type Database = {
     };
   };
 };
+
+/** Row type for a public table. */
+export type Tables<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Row"];
+
+/** Insert payload type for a public table. */
+export type TablesInsert<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Insert"];
+
+/** Update payload type for a public table. */
+export type TablesUpdate<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Update"];
+
 export type Organization = Database["public"]["Tables"]["organizations"]["Row"];
 export type AppUser = Database["public"]["Tables"]["users"]["Row"];
 export type Client = Database["public"]["Tables"]["clients"]["Row"];

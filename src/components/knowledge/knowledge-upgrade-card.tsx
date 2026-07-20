@@ -1,8 +1,5 @@
-"use client";
-
-import Link from "next/link";
 import { BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 
 type KnowledgeUpgradeCardProps = {
   message: string;
@@ -25,11 +22,9 @@ export function KnowledgeUpgradeCard({ message, requiredPlanLabel }: KnowledgeUp
       <p className="mt-3 text-sm text-muted">
         Search organizational memory, related incidents, and historical recommendations once you upgrade.
       </p>
-      <Link href="/settings/plans">
-        <Button type="button" variant="primary" size="sm" className="mt-4">
-          View plans
-        </Button>
-      </Link>
+      <LinkButton href="/settings/plans" variant="primary" size="sm" className="mt-4">
+        View plans
+      </LinkButton>
     </div>
   );
 }

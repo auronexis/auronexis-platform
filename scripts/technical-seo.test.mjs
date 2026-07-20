@@ -38,7 +38,10 @@ test("private route prefixes block dashboard and workspace surfaces", () => {
   assert.match(routes, /\/onboarding/);
   assert.match(routes, /\/copilot/);
   assert.match(routes, /\/intelligence/);
+  assert.match(routes, /\/auth/);
+  assert.match(routes, /\/legal/);
   assert.match(robots, /PRIVATE_ROUTE_PREFIXES/);
+  assert.match(robots, /NOINDEX_ROUTES/);
 });
 
 test("auth routes are noindex", () => {
@@ -155,7 +158,54 @@ test("package.json exposes technical SEO test script", () => {
 
 test("metadata sets English language alternates", () => {
   const metadata = readSource("src/lib/seo/metadata.ts");
-  assert.match(metadata, /languages:\s*\{\s*en:/);
+  assert.match(metadata, /languages:\s*\{/);
+  assert.match(metadata, /en:/);
+  assert.match(metadata, /"x-default"/);
+});
+
+test("Twitter and Open Graph share the same social preview image", () => {
+  const metadata = readSource("src/lib/seo/metadata.ts");
+  const branding = readSource("src/lib/branding/metadata.ts");
+  assert.match(metadata, /resolveTwitterImageUrl/);
+  assert.match(metadata, /resolveOpenGraphImageUrl/);
+  assert.doesNotMatch(metadata, /linkedinBanner/);
+  assert.match(branding, /opengraph-1200x630\.png/);
+  assert.doesNotMatch(branding, /linkedin-banner\.png/);
+});
+
+test("IndexNow submission and key file are wired for Bing discoverability", () => {
+  const indexnow = readSource("src/lib/seo/indexnow.ts");
+  const route = readSource("src/app/api/indexnow/route.ts");
+  const keyRoute = readSource("src/app/.well-known/[file]/route.ts");
+  const envExample = readSource(".env.example");
+  const vercel = readSource("vercel.json");
+  assert.match(indexnow, /api\.indexnow\.org\/indexnow/);
+  assert.match(indexnow, /INDEXNOW_KEY/);
+  assert.match(indexnow, /\.well-known\/\$\{key\}\.txt/);
+  assert.match(route, /submitIndexNowUrls/);
+  assert.match(route, /verifyCronAuthorization/);
+  assert.match(keyRoute, /getIndexNowKey/);
+  assert.match(envExample, /INDEXNOW_KEY/);
+  assert.match(vercel, /\/api\/indexnow/);
+});
+
+test("interactive API docs HTML is noindex with canonical to /docs/api", () => {
+  const html = readSource("src/lib/api/docs/public-api-docs-html.ts");
+  const links = readSource("src/lib/company/company-links.ts");
+  assert.match(html, /noindex,\s*nofollow/);
+  assert.match(html, /canonical.*\/docs\/api/);
+  assert.match(links, /apiDocumentation:\s*"\/docs\/api"/);
+});
+
+test("templates hub is indexable and linked from the public footer", () => {
+  const hub = readSource("src/app/(marketing)/templates/page.tsx");
+  const links = readSource("src/lib/company/company-links.ts");
+  const routes = readSource("src/lib/seo/routes.ts");
+  assert.match(hub, /createPageMetadataForPath\(MARKETING_ROUTES\.templates\)/);
+  assert.match(hub, /TEMPLATE_HUB_ENTRIES/);
+  assert.match(links, /templates:\s*"\/templates"/);
+  assert.match(links, /label:\s*"Templates"/);
+  assert.match(routes, /MARKETING_ROUTES\.templates/);
 });
 
 test("webhook routes are blocked in robots policy", () => {
@@ -232,8 +282,9 @@ test("middleware preserves apex to www and app marketing to www redirects", () =
   assert.match(middleware, /shouldRedirectApexToWww/);
   assert.match(middleware, /shouldRedirectAppMarketingToWww/);
   assert.match(middleware, /X-Robots-Tag/);
+  assert.match(middleware, /shouldAttachNoIndexHeader/);
   assert.match(routing, /buildWwwRedirectUrl/);
-  assert.match(routing, /shouldAttachAppNoIndexHeader/);
+  assert.match(routing, /shouldAttachNoIndexHeader/);
 });
 
 test("auth layout and invite pages are noindex", () => {

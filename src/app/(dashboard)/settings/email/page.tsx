@@ -8,6 +8,7 @@ import { getOrganizationEmailSettings } from "@/lib/email/organization-settings-
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
+import { extractEmailAddress } from "@/lib/email/addresses";
 import { getDefaultFromEmail } from "@/lib/env/email";
 
 export const metadata: Metadata = {
@@ -47,10 +48,5 @@ export default async function EmailSettingsPage() {
       </div>
     </PlanFeatureGate>
   );
-}
-
-function extractEmailAddress(fromValue: string): string {
-  const match = fromValue.match(/<([^>]+)>/);
-  return match?.[1]?.trim() ?? fromValue.trim();
 }
 

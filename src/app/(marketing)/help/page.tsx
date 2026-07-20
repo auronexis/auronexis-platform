@@ -18,7 +18,7 @@ export default function HelpPage() {
       <MarketingHero
         eyebrow="Help"
         title="Help Center"
-        description="Documentation, status updates, pilot program, and support channels."
+        description="A short index of documentation, FAQ, status, and support channels — not a second documentation hub."
         primaryHref={MARKETING_ROUTES.documentation}
         primaryLabel="View documentation"
         secondaryHref={MARKETING_ROUTES.support}
@@ -26,7 +26,11 @@ export default function HelpPage() {
       />
       <MarketingSection title="Browse help topics">
         <p className="mb-4 max-w-2xl text-sm text-muted">
-          Browse topics below, read the{" "}
+          Use this page to find the right destination: product guides at{" "}
+          <Link href="/docs" className="font-medium text-primary hover:underline">
+            /docs
+          </Link>
+          , answers in the{" "}
           <Link href={MARKETING_ROUTES.faq} className="font-medium text-primary hover:underline">
             FAQ
           </Link>

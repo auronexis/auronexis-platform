@@ -139,18 +139,21 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     notFound();
   }
 
-  const healthDetail = await getClientHealthDetail(session, client).catch(() => ({
-    latest: null,
-    history: [],
-  }));
-
-  const slaAssignment = await getClientSlaAssignment(
-    session.organization.id,
-    client.sla_policy_id,
-  );
-  const clientSlaSummary = await getClientSLA(session, id);
-  const clientMonitoringSummary = await getClientMonitoringSummary(session, id);
-  const [copilotAccess, planKey] = await Promise.all([
+  const [
+    healthDetail,
+    slaAssignment,
+    clientSlaSummary,
+    clientMonitoringSummary,
+    copilotAccess,
+    planKey,
+  ] = await Promise.all([
+    getClientHealthDetail(session, client).catch(() => ({
+      latest: null,
+      history: [],
+    })),
+    getClientSlaAssignment(session.organization.id, client.sla_policy_id),
+    getClientSLA(session, id),
+    getClientMonitoringSummary(session, id),
     getCopilotAccessForSession(),
     getCurrentPlan(session.organization.id),
   ]);

@@ -66,10 +66,10 @@ export const PLATFORM_METADATA: Metadata = {
     card: "summary_large_image",
     title: PLATFORM_NAME,
     description: COMPANY_SEO.defaultDescription,
-    images: [new URL("/branding/linkedin-banner.png", metadataBase).toString()],
+    images: [new URL("/branding/opengraph-1200x630.png", metadataBase).toString()],
   },
   robots: isPreviewDeployment()
-    ? { index: false, follow: false }
+    ? { index: false, follow: false, nocache: true }
     : { index: true, follow: true },
 };
 

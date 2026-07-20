@@ -1,5 +1,3 @@
-"use client";
-
 import { SkeletonText } from "@/components/ui/skeleton";
 import type { EntireReportProgress } from "@/lib/ai/types";
 

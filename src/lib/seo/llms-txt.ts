@@ -24,6 +24,7 @@ ${COMPANY_INFORMATION.productName} is an AI Operations Platform for MSPs, IT age
 - Home: ${base}/
 - Features: ${base}${MARKETING_ROUTES.features}
 - Solutions: ${base}${MARKETING_ROUTES.solutions}
+- Templates: ${base}${MARKETING_ROUTES.templates}
 - Use cases: ${base}${MARKETING_ROUTES.useCases}
 - Industries: ${base}${MARKETING_ROUTES.industries}
 - Pricing: ${base}${MARKETING_ROUTES.pricing}
@@ -51,7 +52,7 @@ ${capabilityLines}
 
 ## API and integrations
 
-- OpenAPI: ${base}/api/docs
+- API documentation: ${base}/docs/api
 - Integrations: ${base}${MARKETING_ROUTES.integrations}
 
 ## Accuracy policy

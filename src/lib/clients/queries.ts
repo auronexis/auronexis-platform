@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { canViewRevenue } from "@/lib/rbac/permissions";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -207,7 +209,7 @@ export async function listClients(
 }
 
 /** Load a single client by id within the current organization. */
-export async function getClientById(
+export const getClientById = cache(async function getClientById(
   session: SessionContext,
   clientId: string,
 ): Promise<ClientView | null> {
@@ -219,6 +221,87 @@ export async function getClientById(
   }
 
   return row;
+});
+
+/**
+ * Tenant-scoped client existence check used by mutations across modules.
+ * Does not change RLS — still runs through the caller’s Supabase client.
+ */
+export async function clientBelongsToOrganization(
+  organizationId: string,
+  clientId: string,
+  options?: { excludeArchived?: boolean },
+): Promise<boolean> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("clients")
+    .select("id")
+    .eq("id", clientId)
+    .eq("organization_id", organizationId);
+
+  if (options?.excludeArchived) {
+    query = query.neq("status", "archived");
+  }
+
+  const { data } = await query.maybeSingle();
+  return Boolean(data);
+}
+
+/**
+ * Tenant-scoped user existence check used by mutations across modules.
+ * Requires a non-disabled user in the organization.
+ */
+export async function userBelongsToOrganization(
+  organizationId: string,
+  userId: string,
+): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", userId)
+    .eq("organization_id", organizationId)
+    .eq("is_disabled", false)
+    .maybeSingle();
+
+  return Boolean(data);
+}
+
+/**
+ * Count non-archived clients for plan/usage metering.
+ * Defaults to the admin client (service role) to match existing limit enforcement.
+ */
+export async function countActiveClients(
+  organizationId: string,
+  options?: { useUserClient?: boolean },
+): Promise<number> {
+  if (options?.useUserClient) {
+    const supabase = await createClient();
+    const { count, error } = await supabase
+      .from("clients")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organizationId)
+      .neq("status", "archived");
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return count ?? 0;
+  }
+
+  const admin = createAdminClient();
+  const { count, error } = await admin
+    .from("clients")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    .neq("status", "archived");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return count ?? 0;
 }
 
 /** Active organization members for owner assignment. */

@@ -45,7 +45,7 @@ This document defines sections and messaging for the public marketing site. Impl
 
 Mirror [pricing-beta.md](./pricing-beta.md) list prices (not pilot discount).  
 Highlight: 14-day trial, no credit card optional (product decision).  
-Link to Stripe Checkout on app subdomain.
+Link to **Paddle Checkout** on the app subdomain (see [paddle-billing.md](./paddle-billing.md)).
 
 ---
 
@@ -115,7 +115,7 @@ Link → [connectors.md](./connectors.md)
 
 - Supabase Auth + RLS
 - Encrypted connector tokens
-- Stripe PCI scope minimized (Checkout / Portal)
+- Paddle PCI scope minimized (Checkout / Portal hosted by Paddle)
 - Link → [security.md](./security.md)
 
 ---
@@ -142,7 +142,7 @@ Yes — client portal with role-based access.
 Roadmap; email/password and magic link today.
 
 **What about billing?**  
-Stripe subscriptions, invoices, and customer portal.
+Paddle subscriptions, invoices, and customer portal.
 
 ---
 

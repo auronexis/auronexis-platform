@@ -1,0 +1,21 @@
+---
+description: Auroranexis Build Bible V2 Chapter 5 — Database & Supabase standards
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 5 (Database & Supabase)
+
+Spec: `docs/07_BUILD_BIBLE_V2_CHAPTER_05_DATABASE.md`
+
+## Rules
+
+- No Supabase / SQL in UI components — data access only in `src/lib/**` services and thin API/Server Actions.
+- Never weaken RLS, tenant isolation, RBAC, auth, or Paddle billing behaviour.
+- Prefer typed DB helpers (`src/lib/supabase/typed.ts`, `TablesInsert` / `TablesUpdate`) over unjustified `as never` on inserts/updates.
+- Consolidate duplicate query/select helpers; one implementation per concern (e.g. `HEALTH_SNAPSHOT_SELECT`, `ORGANIZATION_SUBSCRIPTION_SELECT`).
+- Migrations: ordered, deterministic, safe; no destructive production-data changes without explicit justification.
+- Never expose service-role keys or DB secrets to the client.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 5 work.

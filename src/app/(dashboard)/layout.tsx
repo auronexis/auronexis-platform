@@ -15,7 +15,7 @@ import { canUseFeature } from "@/lib/plans/guards";
 import { getNavItemsForRoleAndPlan } from "@/lib/tenancy/context";
 import { getUnreadNotificationCount } from "@/lib/notifications/queries";
 import { DashboardAnalyticsTracker } from "@/components/analytics/dashboard-analytics-tracker";
-import { getStoredOrganizationCurrency, getStoredOrganizationLanguage } from "@/lib/i18n";
+import { getStoredOrganizationCurrency, getStoredOrganizationRegionalSettings } from "@/lib/i18n";
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
@@ -44,11 +44,17 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   const organizationAgeMs = Date.now() - new Date(session.organization.created_at).getTime();
   const isRecentSignup = organizationAgeMs >= 0 && organizationAgeMs < 10 * 60 * 1000;
   const workspaceCurrency = getStoredOrganizationCurrency(session.organization);
-  const workspaceLocale = getStoredOrganizationLanguage(session.organization);
+  const regional = getStoredOrganizationRegionalSettings(session.organization);
 
   return (
     <UserPreferencesProvider>
-      <WorkspaceMoneyProvider currency={workspaceCurrency} locale={workspaceLocale}>
+      <WorkspaceMoneyProvider
+        currency={workspaceCurrency}
+        locale={regional.language}
+        timezone={regional.timezone}
+        dateFormat={regional.dateFormat}
+        timeFormat={regional.timeFormat}
+      >
         <ToastProvider>
           <MobileNavProvider>
             <WhiteLabelThemeInjector branding={branding} scopeId="dashboard-root" />

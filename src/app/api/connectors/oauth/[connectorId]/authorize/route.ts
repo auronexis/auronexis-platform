@@ -4,30 +4,10 @@ import { bootstrapConnectors } from "@/lib/connectors/bootstrap";
 import { getConnectorConfig } from "@/lib/connectors/queries";
 import { buildAuthorizeUrl, isConnectorOAuthConfigured } from "@/lib/connectors/oauth/platform";
 import { createOAuthState } from "@/lib/connectors/oauth/state";
-import type { ConnectorId } from "@/lib/connectors/types";
+import { isConnectorId } from "@/lib/connectors/types";
 import { getAppUrl } from "@/lib/env";
 import { checkPlanFeatureForSession } from "@/lib/plans/guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
-
-const CONNECTOR_IDS: ConnectorId[] = [
-  "google",
-  "microsoft",
-  "jira",
-  "github",
-  "gitlab",
-  "notion",
-  "slack",
-  "teams",
-  "linear",
-  "hubspot",
-  "salesforce",
-  "zendesk",
-  "clickup",
-];
-
-function isConnectorId(value: string): value is ConnectorId {
-  return CONNECTOR_IDS.includes(value as ConnectorId);
-}
 
 type RouteContext = {
   params: Promise<{ connectorId: string }>;

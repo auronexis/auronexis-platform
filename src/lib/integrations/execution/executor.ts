@@ -37,7 +37,6 @@ function isUrl(value: string): boolean {
 
 function simulationToExecutionResult(
   simulation: IntegrationSimulationResult,
-  input: IntegrationExecuteInput,
 ): IntegrationExecutionResult {
   const hasErrors = simulation.validationErrors.length > 0;
   return {
@@ -165,13 +164,13 @@ export async function executeLiveIntegration(
 
   if (input.forceSimulation) {
     const simulation = provider.simulate(input);
-    return simulationToExecutionResult(simulation, input);
+    return simulationToExecutionResult(simulation);
   }
 
   if (!provider.liveExecutionSupported) {
     const simulation = provider.simulate(input);
     return {
-      ...simulationToExecutionResult(simulation, input),
+      ...simulationToExecutionResult(simulation),
       message: `[Placeholder] ${simulation.message} Live execution is not enabled for ${provider.name}.`,
     };
   }

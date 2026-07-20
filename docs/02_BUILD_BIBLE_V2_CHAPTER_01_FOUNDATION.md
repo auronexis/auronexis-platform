@@ -1,6 +1,6 @@
 # Auroranexis Build Bible V2 — Chapter 1: Foundation & Execution Rules
 
-**Status:** Canonical (engineering)  
+**Status:** Implemented  
 **Version:** 2.0 Chapter 1  
 **Priority:** 1 — supersedes conflicting implementation patterns
 

@@ -149,7 +149,7 @@ export const PORTAL_INCIDENT_DETAIL_SELECT =
 export const PORTAL_USER_SELECT =
   "id, auth_user_id, organization_id, client_id, email, full_name, is_active, last_login_at, created_at";
 
-export const PORTAL_RISK_SELECT = "id, title, severity, status, due_date, created_at";
+export const PORTAL_RISK_SELECT = "id, title, severity, status, due_at, created_at";
 
 export const PORTAL_TIMELINE_EVENT_TYPES = [
   "report.published",
@@ -167,5 +167,4 @@ export const PORTAL_TIMELINE_EVENT_TYPES = [
 
 export type PortalTimelineEventType = (typeof PORTAL_TIMELINE_EVENT_TYPES)[number];
 
-export const HEALTH_SNAPSHOT_PORTAL_SELECT =
-  "id, organization_id, client_id, score, status, delta, reason, breakdown, calculated_at";
+export { HEALTH_SNAPSHOT_SELECT as HEALTH_SNAPSHOT_PORTAL_SELECT } from "@/lib/health/types";

@@ -35,11 +35,54 @@ export function auditProductionEnvironment(): ProductionEnvAudit {
     { key: "PADDLE_WEBHOOK_SECRET", label: "Paddle webhook secret", severity: "required", configured: isSet("PADDLE_WEBHOOK_SECRET") },
     { key: "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", label: "Paddle client token", severity: "required", configured: isSet("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN") },
     {
+      key: "PADDLE_ENVIRONMENT",
+      label: "Paddle environment",
+      severity: "required",
+      configured:
+        process.env.PADDLE_ENVIRONMENT === "sandbox" || process.env.PADDLE_ENVIRONMENT === "production",
+      note: 'Must be exactly "sandbox" or "production"',
+    },
+    {
+      key: "CRON_SECRET",
+      label: "Cron bearer secret",
+      severity: "required",
+      configured: isSet("CRON_SECRET"),
+      note: "Required in production — cron auth fails closed without it outside development",
+    },
+    {
       key: "EMAIL_PROVIDER",
       label: `Email provider (${getEmailProviderId()})`,
       severity: "recommended",
       configured: isEmailConfigured(),
       note: "Required for report delivery and lead notifications",
+    },
+    {
+      key: "TURNSTILE",
+      label: "Cloudflare Turnstile",
+      severity: "recommended",
+      configured: isSet("NEXT_PUBLIC_TURNSTILE_SITE_KEY") && isSet("TURNSTILE_SECRET_KEY"),
+      note: "Never set TURNSTILE_DISABLE or E2E_DISABLE_RATE_LIMIT in production (ignored if set)",
+    },
+    {
+      key: "TURNSTILE_DISABLE",
+      label: "Turnstile disable flag",
+      severity: "optional",
+      configured: !isSet("TURNSTILE_DISABLE"),
+      note: "Must remain unset in production; bypass is blocked when NODE_ENV=production",
+    },
+    {
+      key: "E2E_DISABLE_RATE_LIMIT",
+      label: "E2E rate-limit disable flag",
+      severity: "optional",
+      configured: !isSet("E2E_DISABLE_RATE_LIMIT"),
+      note: "Must remain unset in production; bypass is blocked when NODE_ENV=production",
+    },
+    {
+      key: "DEV_FORCE_PLAN",
+      label: "Dev plan override",
+      severity: "optional",
+      configured: !isSet("DEV_FORCE_PLAN"),
+      note: "Ignored in production by getDevForcePlanOverride()",
     },
     {
       key: "NEXT_PUBLIC_PLAUSIBLE_DOMAIN",
@@ -66,6 +109,13 @@ export function auditProductionEnvironment(): ProductionEnvAudit {
       label: "Bing Webmaster verification",
       severity: "optional",
       configured: isSet("NEXT_PUBLIC_BING_SITE_VERIFICATION"),
+    },
+    {
+      key: "INDEXNOW_KEY",
+      label: "IndexNow key",
+      severity: "optional",
+      configured: isSet("INDEXNOW_KEY"),
+      note: "Enables daily sitemap URL submission to Bing and participating engines",
     },
   ];
 

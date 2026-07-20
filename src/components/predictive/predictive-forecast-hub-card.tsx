@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import type { PredictiveDashboardSummary } from "@/lib/predictive/types";
 import { cn } from "@/lib/utils/cn";

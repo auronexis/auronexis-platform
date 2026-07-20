@@ -1,15 +1,16 @@
-# Production Infrastructure Report — Phase 5 Sprint 0
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
+# Production Infrastructure Report â€” Phase 5 Sprint 0
 
 **Date:** 2025-06-27  
 **Version:** v0.95  
-**Sprint:** Phase 5 Sprint 0 — Production Infrastructure  
+**Sprint:** Phase 5 Sprint 0 â€” Production Infrastructure  
 **Target:** Pilot / Production Infrastructure Ready
 
 ---
 
 ## Summary
 
-Phase 5 Sprint 0 delivers the production infrastructure layer required to move Auroranexis from v0.9 RC ("external scheduler required") to v0.95 ("infrastructure ready for pilot"). Three coordinated subsystems — Stripe idempotency, cron jobs, and background queue — share Supabase persistence, service-role execution, authenticated HTTP dispatch, and unified diagnostics.
+Phase 5 Sprint 0 delivers the production infrastructure layer required to move Auroranexis from v0.9 RC ("external scheduler required") to v0.95 ("infrastructure ready for pilot"). Three coordinated subsystems â€” Stripe idempotency, cron jobs, and background queue â€” share Supabase persistence, service-role execution, authenticated HTTP dispatch, and unified diagnostics.
 
 **Overall status:** Infrastructure implemented. Pilot-ready with documented operational requirements.
 
@@ -19,14 +20,14 @@ Phase 5 Sprint 0 delivers the production infrastructure layer required to move A
 
 | # | Deliverable | Location | Status |
 |---|-------------|----------|--------|
-| 1 | Database migration | `supabase/migrations/20250624140000_production_infrastructure.sql` | ✅ Complete |
-| 2 | Stripe idempotency | `src/lib/stripe/idempotency.ts` | ✅ Complete |
-| 3 | Webhook integration | `src/app/api/stripe/webhook/route.ts` | ✅ Complete |
-| 4 | Job registry & scheduler | `src/lib/jobs/` | ✅ Complete |
-| 5 | Cron HTTP endpoint | `src/app/api/cron/run/route.ts` | ✅ Complete |
-| 6 | Queue system | `src/lib/queue/` | ✅ Complete |
-| 7 | Diagnostics extensions | `src/lib/diagnostics/`, diagnostics panel | ✅ Complete |
-| 8 | Operations documentation | `docs/*-checklist.md`, runbooks, reports | ✅ Complete |
+| 1 | Database migration | `supabase/migrations/20250624140000_production_infrastructure.sql` | âœ… Complete |
+| 2 | Stripe idempotency | `src/lib/stripe/idempotency.ts` | âœ… Complete |
+| 3 | Webhook integration | `src/app/api/stripe/webhook/route.ts` | âœ… Complete |
+| 4 | Job registry & scheduler | `src/lib/jobs/` | âœ… Complete |
+| 5 | Cron HTTP endpoint | `src/app/api/cron/run/route.ts` | âœ… Complete |
+| 6 | Queue system | `src/lib/queue/` | âœ… Complete |
+| 7 | Diagnostics extensions | `src/lib/diagnostics/`, diagnostics panel | âœ… Complete |
+| 8 | Operations documentation | `docs/*-checklist.md`, runbooks, reports | âœ… Complete |
 
 ---
 
@@ -112,7 +113,7 @@ flowchart TB
 | Object | Type | Rows (seed) |
 |--------|------|-------------|
 | `stripe_webhook_events` | Table | 0 (runtime) |
-| `idx_billing_events_stripe_event_unique` | Partial unique index | — |
+| `idx_billing_events_stripe_event_unique` | Partial unique index | â€” |
 | `job_definitions` | Table | 8 |
 | `job_schedules` | Table | 8 |
 | `job_executions` | Table | 0 (runtime) |
@@ -139,12 +140,12 @@ All tables: RLS enabled, service_role full access, owner/admin scoped SELECT whe
 
 | Domain | Staging result | Reference |
 |--------|----------------|-----------|
-| Migration | ✅ Pass | [staging-report.md](./staging-report.md) |
-| Stripe idempotency | ✅ Pass | [stripe-idempotency-report.md](./stripe-idempotency-report.md) |
-| Cron dispatch | ✅ Pass | [cron-report.md](./cron-report.md) |
-| Queue processing | ✅ Pass | [queue-report.md](./queue-report.md) |
-| Diagnostics | ✅ Pass | [diagnostics-report.md](./diagnostics-report.md) |
-| Build pipeline | ✅ Pass | typecheck, lint, build |
+| Migration | âœ… Pass | [staging-report.md](./staging-report.md) |
+| Stripe idempotency | âœ… Pass | [stripe-idempotency-report.md](./stripe-idempotency-report.md) |
+| Cron dispatch | âœ… Pass | [cron-report.md](./cron-report.md) |
+| Queue processing | âœ… Pass | [queue-report.md](./queue-report.md) |
+| Diagnostics | âœ… Pass | [diagnostics-report.md](./diagnostics-report.md) |
+| Build pipeline | âœ… Pass | typecheck, lint, build |
 
 ---
 
@@ -185,7 +186,7 @@ All tables: RLS enabled, service_role full access, owner/admin scoped SELECT whe
 
 ## Recommendation
 
-### **Pilot Ready — Production Infrastructure**
+### **Pilot Ready â€” Production Infrastructure**
 
 Auroranexis v0.95 is suitable for:
 
@@ -193,7 +194,7 @@ Auroranexis v0.95 is suitable for:
 - **Production deployment** after [production-checklist.md](./production-checklist.md) sign-off
 - **Enterprise demos** with infrastructure diagnostics visible to owner/admin
 
-Not yet **Enterprise Ready** until distributed locking, full queue handlers, and automated alerting are complete (overall score label requires ≥ 95).
+Not yet **Enterprise Ready** until distributed locking, full queue handlers, and automated alerting are complete (overall score label requires â‰¥ 95).
 
 ---
 
@@ -204,3 +205,4 @@ Not yet **Enterprise Ready** until distributed locking, full queue handlers, and
 - [operations-runbook.md](./operations-runbook.md)
 - [disaster-recovery.md](./disaster-recovery.md)
 - [launch-readiness-report.md](./launch-readiness-report.md) (v0.9 baseline)
+

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Input } from "@/components/ui/input";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import { exportAuditAction } from "@/lib/compliance/actions";
 import type { AuditEventView, AuditSearchResult } from "@/lib/compliance/types";
 import { groupAuditTimelineByDay, formatTimelineLabel } from "@/lib/audit/timeline";
@@ -32,7 +33,7 @@ export function AuditExplorer({ initialResult }: AuditExplorerProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-
+  const { formatDateTime, locale } = useWorkspaceMoney();
   const timeline = useMemo(() => groupAuditTimelineByDay(result.items), [result.items]);
 
   const [query, setQuery] = useState("");
@@ -96,7 +97,7 @@ export function AuditExplorer({ initialResult }: AuditExplorerProps) {
         <div className="mt-4 space-y-6">
           {timeline.map((group) => (
             <div key={group.date}>
-              <p className="text-sm font-semibold text-foreground">{formatTimelineLabel(group.date)}</p>
+              <p className="text-sm font-semibold text-foreground">{formatTimelineLabel(group.date, locale)}</p>
               <div className="mt-3 space-y-2">
                 {group.items.map((item) => (
                   <div key={item.id} className="rounded-lg border border-border/70 px-3 py-2 text-sm">
@@ -108,7 +109,7 @@ export function AuditExplorer({ initialResult }: AuditExplorerProps) {
                       {item.entityType}
                       {item.entityId ? ` · ${item.entityId}` : ""} · {item.source}
                     </p>
-                    <p className="text-xs text-muted">{new Date(item.createdAt).toLocaleString()}</p>
+                    <p className="text-xs text-muted">{formatDateTime(item.createdAt)}</p>
                     {item.deepLink ? (
                       <Link href={item.deepLink} className="text-xs font-medium text-primary hover:underline">
                         Open entity

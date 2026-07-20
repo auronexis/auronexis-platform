@@ -22,6 +22,9 @@ export type CleanupRecommendation = {
   message: string;
   entityType: "subscription" | "invoice" | "checkout" | "organization";
   entityId?: string;
+  /** Provider id (Paddle or archived Stripe) for diagnostics display. */
+  providerId?: string;
+  /** @deprecated Use providerId — kept for existing diagnostics consumers. */
   stripeId?: string;
   actionable: boolean;
   suggestedAction?: string;
@@ -46,13 +49,14 @@ export function collectCleanupRecommendations(input: {
       recommendations.push({
         code: "open_unpaid_invoice",
         severity: input.checkoutBlock.blocked ? "warning" : "info",
-        title: "Open unpaid invoice",
-        message: `Invoice ${invoice.stripeInvoiceId} is open with ${invoice.formattedAmount} due. This can block new checkout.`,
+        title: "Open unpaid invoice (archive)",
+        message: `Archived invoice ${invoice.stripeInvoiceId} is open with ${invoice.formattedAmount} due. Active billing uses Paddle transactions.`,
         entityType: "invoice",
         entityId: invoice.id,
+        providerId: invoice.stripeInvoiceId,
         stripeId: invoice.stripeInvoiceId,
         actionable: true,
-        suggestedAction: "Re-sync invoices from Stripe or mark as ignored if diagnostic-only.",
+        suggestedAction: "Confirm status in Paddle customer portal; treat Stripe rows as archive-only.",
       });
     }
   }
@@ -63,37 +67,39 @@ export function collectCleanupRecommendations(input: {
         recommendations.push({
           code: "canceled_subscription_open_invoice",
           severity: "warning",
-          title: "Canceled subscription with open invoice",
-          message: `Subscription is ${getBillingStatusLabel(status).toLowerCase()} but invoice ${invoice.stripeInvoiceId} remains open locally.`,
+          title: "Canceled subscription with open archive invoice",
+          message: `Subscription is ${getBillingStatusLabel(status).toLowerCase()} but archive invoice ${invoice.stripeInvoiceId} remains open locally.`,
           entityType: "invoice",
           entityId: invoice.id,
+          providerId: invoice.stripeInvoiceId,
           stripeId: invoice.stripeInvoiceId,
           actionable: true,
-          suggestedAction: "Re-sync from Stripe, then clear stale local rows if Stripe shows void/uncollectible.",
+          suggestedAction: "Reconcile from Paddle; clear stale archive rows only after confirmation.",
         });
       }
     }
   }
 
-  const stripeInvoiceCounts = new Map<string, number>();
+  const archiveInvoiceCounts = new Map<string, number>();
   for (const invoice of input.invoices) {
-    stripeInvoiceCounts.set(
+    archiveInvoiceCounts.set(
       invoice.stripeInvoiceId,
-      (stripeInvoiceCounts.get(invoice.stripeInvoiceId) ?? 0) + 1,
+      (archiveInvoiceCounts.get(invoice.stripeInvoiceId) ?? 0) + 1,
     );
   }
 
-  for (const [stripeInvoiceId, count] of stripeInvoiceCounts) {
+  for (const [archiveInvoiceId, count] of archiveInvoiceCounts) {
     if (count > 1) {
       recommendations.push({
         code: "duplicate_invoice_rows",
         severity: "danger",
-        title: "Duplicate invoice rows",
-        message: `${count} local rows reference Stripe invoice ${stripeInvoiceId}.`,
+        title: "Duplicate archive invoice rows",
+        message: `${count} local archive rows reference invoice ${archiveInvoiceId}.`,
         entityType: "invoice",
-        stripeId: stripeInvoiceId,
+        providerId: archiveInvoiceId,
+        stripeId: archiveInvoiceId,
         actionable: true,
-        suggestedAction: "Re-sync invoices from Stripe to reconcile duplicates.",
+        suggestedAction: "Deduplicate archive rows; live invoices come from Paddle transactions.",
       });
     }
   }
@@ -106,11 +112,11 @@ export function collectCleanupRecommendations(input: {
     recommendations.push({
       code: "duplicate_checkout_attempts",
       severity: "warning",
-      title: "Multiple open checkout invoices",
-      message: `${openUnpaidCount} open unpaid invoices exist — likely duplicate checkout attempts or stale test remnants.`,
+      title: "Multiple open archive checkout invoices",
+      message: `${openUnpaidCount} open unpaid archive invoices exist — likely stale test remnants.`,
       entityType: "checkout",
       actionable: true,
-      suggestedAction: "Re-sync invoices, then clear stale rows confirmed void/uncollectible in Stripe.",
+      suggestedAction: "Clear confirmed void/uncollectible archive rows; use Paddle for live billing state.",
     });
   }
 
@@ -122,10 +128,10 @@ export function collectCleanupRecommendations(input: {
 
     if (kind === "internal") {
       recommendations.push({
-        code: "inactive_row_without_stripe_ids",
+        code: "inactive_row_without_provider_ids",
         severity: "info",
-        title: "Inactive row without Stripe IDs",
-        message: "A subscription row has no stripe_customer_id or stripe_subscription_id.",
+        title: "Inactive row without provider IDs",
+        message: "A subscription row has no Paddle provider_customer_id / provider_subscription_id.",
         entityType: "subscription",
         entityId: row.id,
         actionable: false,
@@ -139,10 +145,10 @@ export function collectCleanupRecommendations(input: {
       code: "multiple_subscription_rows",
       severity: "danger",
       title: "Multiple subscription rows",
-      message: `${input.allSubscriptions.length} organization_subscriptions rows exist for this workspace. Preferred active/trialing row is used for billing UI.`,
+      message: `${input.allSubscriptions.length} organization_subscriptions rows exist for this workspace. Preferred Paddle-backed row is used for billing UI.`,
       entityType: "organization",
       actionable: true,
-      suggestedAction: "Re-sync current subscription from Stripe. Do not delete rows without Stripe confirmation.",
+      suggestedAction: "Reconcile from Paddle via webhook/sync. Do not delete rows without provider confirmation.",
     });
   }
 
@@ -163,7 +169,7 @@ export function collectCleanupRecommendations(input: {
       message: `${staleCheckoutEvents.length} recent billing audit events reference checkout or incomplete sessions.`,
       entityType: "checkout",
       actionable: true,
-      suggestedAction: "Refresh billing from Stripe to align subscription and invoice state.",
+      suggestedAction: "Confirm subscription state in Paddle customer portal and local sync_pending flags.",
     });
   }
 
@@ -179,11 +185,11 @@ export function collectCleanupRecommendations(input: {
         severity: "info",
         title: "Stale subscription row",
         message:
-          "Preferred subscription row appears inactive/canceled with no Stripe subscription id for 90+ days.",
+          "Preferred subscription row appears inactive/canceled with no active Paddle subscription id for 90+ days.",
         entityType: "subscription",
         entityId: subscription.id,
         actionable: true,
-        suggestedAction: "Re-sync current subscription from Stripe if customer still has active billing.",
+        suggestedAction: "Reconcile from Paddle if the customer still has active billing.",
       });
     }
   }
@@ -193,13 +199,14 @@ export function collectCleanupRecommendations(input: {
       recommendations.push({
         code: "stale_invoice_row",
         severity: "info",
-        title: "Stale invoice row",
-        message: `Invoice ${invoice.stripeInvoiceId} is ${invoice.statusLabel.toLowerCase()} locally and can be cleared after Stripe confirmation.`,
+        title: "Stale archive invoice row",
+        message: `Archive invoice ${invoice.stripeInvoiceId} is ${invoice.statusLabel.toLowerCase()} locally and can be cleared after confirmation.`,
         entityType: "invoice",
         entityId: invoice.id,
+        providerId: invoice.stripeInvoiceId,
         stripeId: invoice.stripeInvoiceId,
         actionable: true,
-        suggestedAction: "Clear stale local invoice rows (Stripe void/uncollectible only).",
+        suggestedAction: "Clear stale archive invoice rows only after provider confirmation.",
       });
     }
   }
@@ -212,7 +219,7 @@ function dedupeRecommendations(recommendations: CleanupRecommendation[]): Cleanu
   const result: CleanupRecommendation[] = [];
 
   for (const item of recommendations) {
-    const key = `${item.code}:${item.entityId ?? item.stripeId ?? "global"}`;
+    const key = `${item.code}:${item.entityId ?? item.providerId ?? item.stripeId ?? "global"}`;
     if (seen.has(key)) {
       continue;
     }

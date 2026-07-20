@@ -11,9 +11,17 @@ import {
   APP_CURRENCIES,
   APP_CURRENCY_LABELS,
   APP_LOCALES,
+  MEASUREMENT_SYSTEM_OPTIONS,
+  ORGANIZATION_TIMEZONE_OPTIONS,
+  WEEK_START_OPTIONS,
   type AppCurrency,
   type AppLocale,
+  type MeasurementSystem,
+  type OrganizationDateFormat,
+  type OrganizationTimeFormat,
+  type WeekStart,
 } from "@/lib/i18n";
+import { DATE_FORMAT_OPTIONS } from "@/lib/profile/preferences";
 import { updateOrganizationAction, type TeamActionState } from "@/lib/team/actions";
 import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
 
@@ -21,6 +29,11 @@ type OrganizationFormProps = {
   organizationName: string;
   organizationLanguage: AppLocale;
   organizationCurrency: AppCurrency;
+  organizationTimezone: string;
+  organizationDateFormat: OrganizationDateFormat;
+  organizationTimeFormat: OrganizationTimeFormat;
+  organizationWeekStart: WeekStart;
+  organizationMeasurementSystem: MeasurementSystem;
 };
 
 const initialState: TeamActionState = {};
@@ -35,10 +48,25 @@ const CURRENCY_OPTIONS = APP_CURRENCIES.map((currency) => ({
   label: APP_CURRENCY_LABELS[currency],
 }));
 
+const TIMEZONE_OPTIONS = ORGANIZATION_TIMEZONE_OPTIONS.map((zone) => ({
+  value: zone,
+  label: zone,
+}));
+
+const TIME_FORMAT_OPTIONS = [
+  { value: "24h", label: "24-hour" },
+  { value: "12h", label: "12-hour" },
+];
+
 export function OrganizationForm({
   organizationName,
   organizationLanguage,
   organizationCurrency,
+  organizationTimezone,
+  organizationDateFormat,
+  organizationTimeFormat,
+  organizationWeekStart,
+  organizationMeasurementSystem,
 }: OrganizationFormProps) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(updateOrganizationAction, initialState);
@@ -51,15 +79,23 @@ export function OrganizationForm({
     }
   }, [state.success, router]);
 
+  const formKey = [
+    organizationName,
+    organizationLanguage,
+    organizationCurrency,
+    organizationTimezone,
+    organizationDateFormat,
+    organizationTimeFormat,
+    organizationWeekStart,
+    organizationMeasurementSystem,
+  ].join("-");
+
   return (
-    <form
-      action={formAction}
-      key={`${organizationName}-${organizationLanguage}-${organizationCurrency}`}
-    >
+    <form action={formAction} key={formKey}>
       <FormRoot className="max-w-lg">
         <FormSection
           title="Organization"
-          description="Your organization's display name, language, and workspace currency for financial displays."
+          description="Agency profile and regional defaults for workspace currency, language, dates, and timezones."
         >
           <Input
             name="name"
@@ -81,6 +117,37 @@ export function OrganizationForm({
             description="Used across Sales, Profitability, forecasts, and financial widgets. Paddle subscription invoices keep their charged currency."
             defaultValue={organizationCurrency}
             options={CURRENCY_OPTIONS}
+          />
+          <Select
+            name="timezone"
+            label="Timezone"
+            description="Display timezone for dates and schedules. Backend timestamps remain UTC."
+            defaultValue={organizationTimezone}
+            options={TIMEZONE_OPTIONS}
+          />
+          <Select
+            name="dateFormat"
+            label="Date format"
+            defaultValue={organizationDateFormat}
+            options={DATE_FORMAT_OPTIONS}
+          />
+          <Select
+            name="timeFormat"
+            label="Time format"
+            defaultValue={organizationTimeFormat}
+            options={TIME_FORMAT_OPTIONS}
+          />
+          <Select
+            name="weekStart"
+            label="Week starts on"
+            defaultValue={organizationWeekStart}
+            options={WEEK_START_OPTIONS}
+          />
+          <Select
+            name="measurementSystem"
+            label="Measurement system"
+            defaultValue={organizationMeasurementSystem}
+            options={MEASUREMENT_SYSTEM_OPTIONS}
           />
         </FormSection>
 

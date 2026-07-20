@@ -77,6 +77,14 @@ export const getClientPortalSession = cache(async (): Promise<ClientPortalSessio
     return null;
   }
 
+  // Referential integrity: portal user, client, and organization must align.
+  if (
+    client.organization_id !== portalUser.organization_id ||
+    client.organization_id !== organization.id
+  ) {
+    return null;
+  }
+
   return {
     authUserId: authUser.id,
     email: authUser.email ?? portalUser.email,

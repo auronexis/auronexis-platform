@@ -90,7 +90,8 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
     items: [
       {
         question: "How does Auroranexis use AI?",
-        answer: "AI assists with executive report drafting, copilot workflows, and structured summaries. Source operational data remains visible so reviewers can validate outputs before publication.",
+        answer:
+          "AI assists with executive report drafting, AI Copilot workflows, and structured summaries. Source operational data remains visible so reviewers can validate outputs before publication. See /features/ai-copilot.",
       },
       {
         question: "Is AI usage plan-gated?",
@@ -148,7 +149,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Is there a public API?",
-        answer: "Yes. REST API and webhook documentation is available at /docs/api and /api/docs.",
+        answer: "Yes. REST API and webhook documentation is available at /docs/api.",
       },
       {
         question: "Can I connect custom tools?",
@@ -243,6 +244,132 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       {
         question: "Is priority support available?",
         answer: "Enterprise plans include priority support. Business and Professional use standard support channels.",
+      },
+    ],
+  },
+  {
+    id: "risk",
+    title: "Risk management",
+    items: [
+      {
+        question: "How does risk tracking work?",
+        answer:
+          "Teams register operational risks against clients with severity, ownership, and mitigation status. See /features/risk-intelligence and /docs/risks.",
+      },
+      {
+        question: "Is this a GRC certification platform?",
+        answer:
+          "No. Auroranexis focuses on operational delivery risks for agencies — not enterprise-wide GRC certification management.",
+      },
+    ],
+  },
+  {
+    id: "sla",
+    title: "SLA monitoring",
+    items: [
+      {
+        question: "Can I define SLA policies per client?",
+        answer:
+          "Yes. Configure policies and monitor breaches from SLA workflows. Start at /solutions/sla-management and /docs/sla.",
+      },
+      {
+        question: "How is SLA performance shared with clients?",
+        answer:
+          "Include SLA summaries in reports and portal publications when your delivery process requires client visibility.",
+      },
+    ],
+  },
+  {
+    id: "health",
+    title: "Client health",
+    items: [
+      {
+        question: "What is a customer health score?",
+        answer:
+          "It is a structured operational signal based on incidents, risks, SLA performance, and delivery activity — not a fabricated external benchmark. See /solutions/customer-health-score.",
+      },
+      {
+        question: "Where do I learn about health monitoring?",
+        answer: "Read /features/health-monitoring and predictive intelligence docs at /docs/predictive.",
+      },
+    ],
+  },
+  {
+    id: "knowledge",
+    title: "Knowledge Hub",
+    items: [
+      {
+        question: "What is the Knowledge Hub?",
+        answer:
+          "An organization-scoped library for runbooks and delivery procedures. Marketing may also say Knowledge Base — both refer to the same module. See /features/knowledge-base and /docs/knowledge.",
+      },
+      {
+        question: "Can clients read Knowledge Hub articles?",
+        answer: "No. Knowledge Hub is for internal teams. Clients see published portal content only.",
+      },
+    ],
+  },
+  {
+    id: "profitability",
+    title: "Profitability",
+    items: [
+      {
+        question: "Does profitability replace accounting?",
+        answer:
+          "No. It provides operations-adjacent financial context next to delivery signals. Keep your accounting system as the ledger of record. See /features/profitability.",
+      },
+    ],
+  },
+  {
+    id: "customer-success",
+    title: "Customer success",
+    items: [
+      {
+        question: "What does Customer Success cover?",
+        answer:
+          "Portfolio prioritization and playbooks driven by operational signals such as health, incidents, and delivery activity. See /features/customer-success and /docs/customer-success.",
+      },
+    ],
+  },
+  {
+    id: "activity",
+    title: "Activity timeline",
+    items: [
+      {
+        question: "What appears on the activity timeline?",
+        answer:
+          "Organization-scoped changes across clients, incidents, risks, reports, and automation. See /features/activity-timeline and /docs/activity.",
+      },
+    ],
+  },
+  {
+    id: "compliance",
+    title: "Compliance",
+    items: [
+      {
+        question: "Do you claim SOC 2 or ISO certification?",
+        answer: `No. We publish readiness posture only. See ${MARKETING_ROUTES.compliance} and /docs/compliance.`,
+      },
+      {
+        question: "Where do I manage GDPR requests?",
+        answer:
+          "Business and Enterprise workspaces use Dashboard → Compliance for request tracking and evidence exports. Readiness tools do not certify your agency.",
+      },
+    ],
+  },
+  {
+    id: "ai-copilot",
+    title: "AI Copilot",
+    items: [
+      {
+        question: "What is AI Copilot?",
+        answer:
+          "Workspace assistance for operational Q&A and structured summaries grounded in your data. It does not invent testimonials or certifications. See /features/ai-copilot.",
+      },
+      {
+        question: "How does Copilot differ from AI executive reports?",
+        answer:
+          "AI executive reports focus on recurring client briefings. Copilot assists broader operational questions inside the authenticated workspace.",
       },
     ],
   },

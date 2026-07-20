@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { RelatedKnowledgePanelView } from "@/components/knowledge/related-knowledge-panel";
 import { KnowledgeHealthCard } from "@/components/knowledge/knowledge-health-card";
-import { ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUpgradeCard } from "@/components/ai/ai-usage-card";
 import { DetailSection } from "@/components/layout/detail-page";
 import {
   buildRelatedKnowledgePanel,
@@ -38,7 +38,7 @@ export async function ClientKnowledgeSection({
         title="Historical knowledge"
         description="Organizational memory for this client — reports, incidents, risks, and playbooks."
       >
-        <ReportAIUpgradeCard
+        <AIUpgradeCard
           message={getFeatureUpgradeMessage("ai_knowledge_search")}
           requiredPlanLabel={getRequiredPlanLabel("ai_knowledge_search")}
           title="AI Knowledge Hub"

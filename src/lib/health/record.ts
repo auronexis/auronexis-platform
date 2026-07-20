@@ -1,3 +1,4 @@
+import type { Json } from "@/types/database";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { calculateHealth } from "@/lib/health/engine";
 import {
@@ -60,7 +61,7 @@ export async function recordHealthSnapshot(input: RecordHealthSnapshotInput): Pr
       status: row.status as HealthSnapshot["status"],
       delta: Number(row.delta ?? 0),
       reason: (row.reason as string | null) ?? null,
-      breakdown: parseHealthBreakdown(row.breakdown as never),
+      breakdown: parseHealthBreakdown(row.breakdown as Json | null | undefined),
       calculated_at: String(row.calculated_at),
     };
 

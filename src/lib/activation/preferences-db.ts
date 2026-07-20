@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { insertRows, updateRows } from "@/lib/supabase/typed";
 import type { Database } from "@/types/database";
 import type { ActivationPreferences } from "@/lib/activation/types";
 import type { PostgrestError } from "@supabase/supabase-js";
@@ -69,10 +70,11 @@ async function updateActivationPreferences(
   patch: ActivationPrefsUpdate,
 ): Promise<PostgrestError | null> {
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("organization_activation_preferences")
-    .update(patch as never)
-    .eq("organization_id", organizationId);
+  const { error } = await updateRows(
+    supabase,
+    "organization_activation_preferences",
+    patch,
+  ).eq("organization_id", organizationId);
 
   return error;
 }
@@ -87,9 +89,11 @@ async function insertActivationPreferences(
     ...patch,
   };
 
-  const { error } = await supabase
-    .from("organization_activation_preferences")
-    .insert(insertRow as never);
+  const { error } = await insertRows(
+    supabase,
+    "organization_activation_preferences",
+    insertRow,
+  );
 
   return error;
 }

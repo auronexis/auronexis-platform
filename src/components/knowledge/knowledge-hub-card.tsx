@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import type { KnowledgeHubData } from "@/lib/ai/knowledge/types";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -27,11 +25,9 @@ export function KnowledgeHubCard({
         {requiredPlanLabel ? (
           <p className="mt-1 text-xs font-medium text-foreground">{requiredPlanLabel} plan required</p>
         ) : null}
-        <Link href="/settings/plans">
-          <Button type="button" variant="primary" size="sm" className="mt-4">
-            View plans
-          </Button>
-        </Link>
+        <LinkButton href="/settings/plans" variant="primary" size="sm" className="mt-4">
+          View plans
+        </LinkButton>
       </div>
     );
   }

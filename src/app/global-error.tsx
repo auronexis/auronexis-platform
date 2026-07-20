@@ -1,13 +1,8 @@
 "use client";
 
-import { RouteErrorBoundary } from "@/components/errors/route-error-boundary";
+import { RouteErrorBoundary, type AppRouterErrorProps } from "@/components/errors/route-error-boundary";
 
-type ErrorProps = {
-  error: Error & { digest?: string };
-  reset: () => void;
-};
-
-export default function GlobalError({ error, reset }: ErrorProps) {
+export default function GlobalError({ error, reset }: AppRouterErrorProps) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-background px-6 font-sans text-foreground antialiased">

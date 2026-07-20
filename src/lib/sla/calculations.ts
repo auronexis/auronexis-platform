@@ -3,6 +3,7 @@ import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
 import { LEGACY_OPEN_RISK_STATUSES, OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import type { SlaPolicy } from "@/types/database";
 import type { EntitySlaInfo, SlaPolicySource } from "@/lib/sla/types";
+import { formatAppDateTime } from "@/lib/i18n";
 
 export type SlaStatus = "on_track" | "warning" | "breached" | null;
 
@@ -197,15 +198,5 @@ export function resolveEntitySlaInfo(input: {
 }
 
 export function formatSlaDueDate(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }

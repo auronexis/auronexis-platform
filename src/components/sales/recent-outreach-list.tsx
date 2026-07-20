@@ -3,7 +3,7 @@ import { Mail } from "lucide-react";
 import type { SalesLeadActivity } from "@/types/database";
 import { formatDistanceToNow } from "@/lib/utils/date";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 
 export function RecentOutreachList({
   activities,
@@ -21,11 +21,9 @@ export function RecentOutreachList({
             title="No outreach logged yet"
             description="Log calls, emails, and meetings on lead records to track follow-ups and pipeline momentum."
             action={
-              <Link href="/sales/leads">
-                <Button size="sm" variant="secondary">
-                  Open leads
-                </Button>
-              </Link>
+              <LinkButton href="/sales/leads" size="sm" variant="secondary">
+                Open leads
+              </LinkButton>
             }
             className="min-h-[10rem] py-8"
           />

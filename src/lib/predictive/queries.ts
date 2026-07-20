@@ -4,12 +4,14 @@ import { buildClientProfitabilityRows } from "@/lib/profitability/queries";
 import type { ClientProfitabilityRow } from "@/lib/profitability/types";
 import { canUseFeature } from "@/lib/plans/guards";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
-import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { HistoricalWindowKey, HistoricalWindowMetrics } from "@/lib/predictive/types";
 import { buildClientSuccessSnapshot } from "@/lib/ai/client-success/queries";
 import type { ClientSuccessSnapshot } from "@/lib/ai/client-success/queries";
+import { PORTFOLIO_PAGE_SIZE } from "@/lib/customer-success/constants";
+import { mapWithConcurrency } from "@/lib/performance/map-with-concurrency";
 
 export type ClientPredictiveSnapshot = {
   clientId: string;
@@ -161,11 +163,11 @@ async function countOpenItems(
       .eq("client_id", clientId)
       .in("status", OPEN_INCIDENT_STATUSES),
     supabase
-      .from("risks")
+      .from("client_risks")
       .select("id", { count: "exact", head: true })
       .eq("organization_id", session.organization.id)
       .eq("client_id", clientId)
-      .in("status", LEGACY_OPEN_RISK_STATUSES),
+      .in("status", OPEN_RISK_STATUSES),
   ]);
 
   return {
@@ -189,20 +191,21 @@ export async function buildOrganizationPredictiveSnapshot(
     .neq("status", "archived")
     .order("name", { ascending: true });
 
-  const activeClients = (clientRows ?? []) as Array<{ id: string; name: string }>;
-
-  const snapshots = await Promise.all(
-    activeClients.map(async (client) => {
-      const success = await buildClientSuccessSnapshot(session, client.id);
-      if (!success) return null;
-      return {
-        clientId: client.id,
-        clientName: client.name,
-        success,
-        profitability: profitabilityByClient.get(client.id) ?? null,
-      } satisfies ClientPredictiveSnapshot;
-    }),
+  const activeClients = ((clientRows ?? []) as Array<{ id: string; name: string }>).slice(
+    0,
+    PORTFOLIO_PAGE_SIZE,
   );
+
+  const snapshots = await mapWithConcurrency(activeClients, 8, async (client) => {
+    const success = await buildClientSuccessSnapshot(session, client.id);
+    if (!success) return null;
+    return {
+      clientId: client.id,
+      clientName: client.name,
+      success,
+      profitability: profitabilityByClient.get(client.id) ?? null,
+    } satisfies ClientPredictiveSnapshot;
+  });
 
   const [
     historicalWindows,

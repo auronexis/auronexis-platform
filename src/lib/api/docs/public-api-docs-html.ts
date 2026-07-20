@@ -52,6 +52,8 @@ export function buildPublicApiDocsHtml(auth: MarketingAuthState): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Auroranexis API</title>
   <meta name="description" content="Auroranexis REST API reference — authentication, scopes, endpoints, webhooks, and rate limits." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://www.auroranexis.com/docs/api" />
   <style>
     :root {
       color-scheme: dark;

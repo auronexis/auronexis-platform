@@ -1,5 +1,7 @@
 import { MAX_PERIOD_DAYS } from "@/lib/executive-intelligence/constants";
 import type { IntelligencePeriod, IntelligencePeriodPreset } from "@/lib/executive-intelligence/types";
+import { formatAppMonthYear } from "@/lib/i18n/date";
+import type { AppLocale } from "@/lib/i18n/types";
 
 function toIso(date: Date): string {
   return date.toISOString();
@@ -16,6 +18,7 @@ function endOfMonthUtc(date: Date): Date {
 export function resolveIntelligencePeriod(
   preset: IntelligencePeriodPreset = "30d",
   reference = new Date(),
+  locale: AppLocale = "en",
 ): IntelligencePeriod {
   if (preset === "month") {
     const currentStart = startOfMonthUtc(reference);
@@ -23,13 +26,12 @@ export function resolveIntelligencePeriod(
     const previousRef = new Date(Date.UTC(reference.getUTCFullYear(), reference.getUTCMonth() - 1, 15));
     const previousStart = startOfMonthUtc(previousRef);
     const previousEnd = endOfMonthUtc(previousRef);
-    const formatter = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" });
     return {
       currentStart: toIso(currentStart),
       currentEnd: toIso(currentEnd),
       comparisonStart: toIso(previousStart),
       comparisonEnd: toIso(previousEnd),
-      label: `${formatter.format(currentStart)} vs ${formatter.format(previousStart)}`,
+      label: `${formatAppMonthYear(currentStart, locale)} vs ${formatAppMonthYear(previousStart, locale)}`,
       preset,
     };
   }

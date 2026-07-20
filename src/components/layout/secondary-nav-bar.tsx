@@ -27,16 +27,14 @@ export function SecondaryNavBar({
   return (
     <nav aria-label={ariaLabel} className={cn(secondaryNavBarSticky, className)}>
       <div className="overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <ul role="tablist" className="flex min-w-max gap-0.5 px-1">
+        <ul className="flex min-w-max gap-0.5 px-1" role="list">
           {items.map((item) => {
             const isActive = activeId === item.id;
             return (
-              <li key={item.id} role="presentation">
+              <li key={item.id}>
                 <button
                   type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-controls={item.id}
+                  aria-current={isActive ? "true" : undefined}
                   onClick={() => onSelect(item.id)}
                   className={cn(
                     secondaryNavTab,

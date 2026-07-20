@@ -1,8 +1,10 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isSubscriptionUsable } from "@/lib/billing/status";
 import { resolveInternalPlanFromPaddlePriceId } from "@/lib/paddle/prices";
 import {
+  isPaddleCancelScheduledChange,
   mapPaddleSubscriptionStatus,
   mapPaddleTransactionStatus,
 } from "@/lib/paddle/status";
@@ -26,6 +28,20 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+/** True when the status string is a real Paddle subscription status (not an event-type fragment). */
+export function isKnownPaddleSubscriptionStatus(status: string | null | undefined): boolean {
+  const normalized = (status ?? "").trim().toLowerCase();
+  return (
+    normalized === "active" ||
+    normalized === "trialing" ||
+    normalized === "past_due" ||
+    normalized === "paused" ||
+    normalized === "canceled" ||
+    normalized === "cancelled" ||
+    normalized === "incomplete"
+  );
 }
 
 export function extractOrganizationIdFromCustomData(customData: unknown): string | null {
@@ -71,6 +87,12 @@ export function extractPriceIdFromTransaction(data: Record<string, unknown>): st
 export async function upsertPaddleOrganizationSubscription(
   input: PaddleSubscriptionSyncInput,
 ): Promise<void> {
+  if (!isKnownPaddleSubscriptionStatus(input.providerStatus)) {
+    throw new Error(
+      `Missing or unknown Paddle subscription status "${input.providerStatus ?? ""}" — reconcile required.`,
+    );
+  }
+
   if (input.providerPriceId) {
     // Fail closed: unknown price IDs throw before any entitlement write.
     resolveInternalPlanFromPaddlePriceId(input.providerPriceId);
@@ -80,12 +102,46 @@ export async function upsertPaddleOrganizationSubscription(
   const admin = createAdminClient();
   const now = new Date().toISOString();
 
+  const { data: existing } = await admin
+    .from("organization_subscriptions")
+    .select(
+      "provider_customer_id, provider_subscription_id, provider_price_id, billing_provider, status",
+    )
+    .eq("organization_id", input.organizationId)
+    .maybeSingle();
+
+  const existingRow = existing as {
+    provider_customer_id: string | null;
+    provider_subscription_id: string | null;
+    provider_price_id: string | null;
+    billing_provider: string | null;
+    status: string | null;
+  } | null;
+
+  // Never null-out verified provider ids from a partial webhook payload.
+  const providerCustomerId =
+    input.providerCustomerId ??
+    (existingRow?.billing_provider === "paddle" ? existingRow.provider_customer_id : null);
+  const providerSubscriptionId =
+    asString(input.providerSubscriptionId) ??
+    (existingRow?.billing_provider === "paddle" ? existingRow.provider_subscription_id : null) ??
+    input.providerSubscriptionId;
+  const providerPriceId =
+    input.providerPriceId ??
+    (existingRow?.billing_provider === "paddle" ? existingRow.provider_price_id : null);
+
+  if (isSubscriptionUsable(normalized) && !providerPriceId) {
+    throw new Error(
+      "Usable Paddle subscription missing provider_price_id — reconcile required.",
+    );
+  }
+
   const row = {
     organization_id: input.organizationId,
     billing_provider: "paddle",
-    provider_customer_id: input.providerCustomerId,
-    provider_subscription_id: input.providerSubscriptionId,
-    provider_price_id: input.providerPriceId,
+    provider_customer_id: providerCustomerId,
+    provider_subscription_id: providerSubscriptionId,
+    provider_price_id: providerPriceId,
     provider_status: input.providerStatus,
     status: normalized,
     current_period_start: input.currentPeriodStart ?? null,
@@ -106,14 +162,59 @@ export async function upsertPaddleOrganizationSubscription(
   }
 
   const planFlag = normalized === "active" || normalized === "trialing" ? "paid" : "free";
-  await admin
+  const { error: planError } = await admin
     .from("organizations")
     .update({ plan: planFlag } as never)
     .eq("id", input.organizationId);
+
+  if (planError) {
+    // Subscription row already written — flag for reconcile so plan/entitlements re-sync.
+    await admin
+      .from("organization_subscriptions")
+      .update({ sync_pending: true, updated_at: now } as never)
+      .eq("organization_id", input.organizationId);
+    throw new Error(`Failed to sync organization plan flag: ${planError.message}`);
+  }
 }
 
+/**
+ * Mark checkout sync pending without overwriting a live usable Paddle subscription.
+ * Avoids impossible state: organizations.plan=paid + entitlements inactive.
+ */
 export async function markOrganizationSyncPending(organizationId: string): Promise<void> {
   const admin = createAdminClient();
+  const now = new Date().toISOString();
+
+  const { data: existing } = await admin
+    .from("organization_subscriptions")
+    .select("status, billing_provider, provider_subscription_id, sync_pending")
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  const existingRow = existing as {
+    status: string | null;
+    billing_provider: string | null;
+    provider_subscription_id: string | null;
+    sync_pending: boolean | null;
+  } | null;
+
+  const hasUsablePaddle =
+    existingRow?.billing_provider === "paddle" &&
+    isSubscriptionUsable(existingRow.status) &&
+    Boolean(existingRow.provider_subscription_id?.startsWith("sub_"));
+
+  if (hasUsablePaddle) {
+    const { error } = await admin
+      .from("organization_subscriptions")
+      .update({ sync_pending: true, updated_at: now } as never)
+      .eq("organization_id", organizationId);
+
+    if (error) {
+      console.error("[paddle] failed to mark sync pending on live subscription:", error.message);
+    }
+    return;
+  }
+
   const { error } = await admin.from("organization_subscriptions").upsert(
     {
       organization_id: organizationId,
@@ -121,7 +222,7 @@ export async function markOrganizationSyncPending(organizationId: string): Promi
       sync_pending: true,
       status: "incomplete",
       provider_status: "pending_sync",
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     } as never,
     { onConflict: "organization_id" },
   );
@@ -152,14 +253,35 @@ export async function upsertPaddleTransaction(input: {
   billingPeriodEnd?: string | null;
 }): Promise<void> {
   const admin = createAdminClient();
+
+  const { data: existingTxn } = await admin
+    .from("billing_provider_transactions")
+    .select(
+      "invoice_url, invoice_number, provider_customer_id, provider_subscription_id, provider_price_id, product_name, payment_method_summary",
+    )
+    .eq("billing_provider", "paddle")
+    .eq("provider_transaction_id", input.providerTransactionId)
+    .maybeSingle();
+
+  const existing = existingTxn as {
+    invoice_url: string | null;
+    invoice_number: string | null;
+    provider_customer_id: string | null;
+    provider_subscription_id: string | null;
+    provider_price_id: string | null;
+    product_name: string | null;
+    payment_method_summary: string | null;
+  } | null;
+
   const { error } = await admin.from("billing_provider_transactions").upsert(
     {
       organization_id: input.organizationId,
       billing_provider: "paddle",
       provider_transaction_id: input.providerTransactionId,
-      provider_customer_id: input.providerCustomerId,
-      provider_subscription_id: input.providerSubscriptionId,
-      provider_price_id: input.providerPriceId,
+      provider_customer_id: input.providerCustomerId ?? existing?.provider_customer_id ?? null,
+      provider_subscription_id:
+        input.providerSubscriptionId ?? existing?.provider_subscription_id ?? null,
+      provider_price_id: input.providerPriceId ?? existing?.provider_price_id ?? null,
       status: mapPaddleTransactionStatus(input.status),
       amount_total: input.amountTotal,
       amount_subtotal: input.amountSubtotal ?? null,
@@ -167,10 +289,11 @@ export async function upsertPaddleTransaction(input: {
       currency: input.currency.toUpperCase(),
       occurred_at: input.occurredAt,
       paid_at: input.paidAt,
-      invoice_url: input.invoiceUrl,
-      invoice_number: input.invoiceNumber ?? null,
-      product_name: input.productName ?? null,
-      payment_method_summary: input.paymentMethodSummary ?? null,
+      invoice_url: input.invoiceUrl ?? existing?.invoice_url ?? null,
+      invoice_number: input.invoiceNumber ?? existing?.invoice_number ?? null,
+      product_name: input.productName ?? existing?.product_name ?? null,
+      payment_method_summary:
+        input.paymentMethodSummary ?? existing?.payment_method_summary ?? null,
       billing_period_start: input.billingPeriodStart ?? null,
       billing_period_end: input.billingPeriodEnd ?? null,
       updated_at: new Date().toISOString(),
@@ -201,16 +324,22 @@ export async function reconcileSubscriptionFromPaddle(
 
   const priceId = extractPriceIdFromSubscription(data);
   const currentBilling = asRecord(data.currentBillingPeriod ?? data.current_billing_period);
+  const providerStatus = asString(data.status);
+  if (!providerStatus) {
+    throw new Error("Live Paddle subscription missing status.");
+  }
 
   await upsertPaddleOrganizationSubscription({
     organizationId,
     providerCustomerId: asString(data.customerId ?? data.customer_id),
     providerSubscriptionId: asString(data.id) ?? subscriptionId,
     providerPriceId: priceId,
-    providerStatus: asString(data.status) ?? "inactive",
+    providerStatus,
     currentPeriodStart: asString(currentBilling.startsAt ?? currentBilling.starts_at),
     currentPeriodEnd: asString(currentBilling.endsAt ?? currentBilling.ends_at),
-    cancelAtPeriodEnd: Boolean(data.scheduledChange ?? data.scheduled_change),
+    cancelAtPeriodEnd: isPaddleCancelScheduledChange(
+      data.scheduledChange ?? data.scheduled_change,
+    ),
     trialEndsAt: asString(asRecord(data.currentTrialPeriod ?? data.current_trial_period).endsAt),
   });
 

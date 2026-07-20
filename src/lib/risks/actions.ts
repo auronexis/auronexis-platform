@@ -8,6 +8,7 @@ import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import { assertPermissionSafe, sessionHasPermission } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { clientBelongsToOrganization, userBelongsToOrganization } from "@/lib/clients/queries";
 import { canEditRisk } from "@/lib/risks/guards";
 import { getRiskById } from "@/lib/risks/queries";
 import {
@@ -15,6 +16,7 @@ import {
   clampScoreDimension,
   severityFromRiskScore,
 } from "@/lib/risks/scoring";
+import { optionalText } from "@/lib/validation/form-fields";
 import type { Database } from "@/types/database";
 import type { RiskActivityEventType } from "@/lib/risks/activity";
 
@@ -25,13 +27,6 @@ export type RiskActionState = {
   error?: string;
   success?: string;
 };
-
-const optionalText = z
-  .string()
-  .trim()
-  .transform((value) => (value.length === 0 ? null : value))
-  .nullable()
-  .optional();
 
 const scoreDimension = z.coerce.number().int().min(1).max(5);
 
@@ -77,26 +72,11 @@ function parseRiskForm(formData: FormData) {
 }
 
 async function verifyClientInOrg(organizationId: string, clientId: string): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("clients")
-    .select("id")
-    .eq("id", clientId)
-    .eq("organization_id", organizationId)
-    .maybeSingle();
-  return Boolean(data);
+  return clientBelongsToOrganization(organizationId, clientId);
 }
 
 async function verifyUserInOrg(organizationId: string, userId: string): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("users")
-    .select("id")
-    .eq("id", userId)
-    .eq("organization_id", organizationId)
-    .eq("is_disabled", false)
-    .maybeSingle();
-  return Boolean(data);
+  return userBelongsToOrganization(organizationId, userId);
 }
 
 function revalidateRiskPaths(clientId: string, riskId?: string) {

@@ -2,19 +2,17 @@ import "server-only";
 
 import type { ClientPortalSessionContext } from "@/lib/client-portal/types";
 import type { ClientSlaAssignment, PortalSlaSummary } from "@/lib/sla/types";
+import { SLA_POLICY_SELECT } from "@/lib/sla/types";
 import { resolveSeverityTargets, formatSeverityTarget } from "@/lib/sla/policies";
 import { getComplianceRate } from "@/lib/sla/metrics";
 import { createClient } from "@/lib/supabase/server";
 import type { SlaPolicy } from "@/types/database";
 
-const SLA_POLICY_PORTAL_SELECT =
-  "id, organization_id, name, incident_hours, risk_hours, is_default, critical_response_minutes, critical_resolution_minutes, high_response_minutes, high_resolution_minutes, medium_response_minutes, medium_resolution_minutes, low_response_minutes, low_resolution_minutes, created_at, updated_at";
-
 async function getPortalDefaultSlaPolicy(organizationId: string): Promise<SlaPolicy | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("sla_policies")
-    .select(SLA_POLICY_PORTAL_SELECT)
+    .select(SLA_POLICY_SELECT)
     .eq("organization_id", organizationId)
     .eq("is_default", true)
     .maybeSingle();
@@ -32,7 +30,7 @@ async function getPortalSlaAssignmentInternal(
     const supabase = await createClient();
     const { data } = await supabase
       .from("sla_policies")
-      .select(SLA_POLICY_PORTAL_SELECT)
+      .select(SLA_POLICY_SELECT)
       .eq("organization_id", session.organization.id)
       .eq("id", assignedPolicyId)
       .maybeSingle();

@@ -46,19 +46,19 @@ export function SalesLeadTable({
       <table className="min-w-full divide-y divide-border-subtle text-sm">
         <thead className="bg-surface-2/50">
           <tr>
-            <th className="px-4 py-3 text-left font-medium text-muted">Contact</th>
-            <th className="px-4 py-3 text-left font-medium text-muted">Company</th>
-            <th className="px-4 py-3 text-left font-medium text-muted">Stage</th>
-            <th className="px-4 py-3 text-left font-medium text-muted">Source</th>
-            <th className="px-4 py-3 text-left font-medium text-muted">Deal value</th>
+            <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Contact</th>
+            <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Company</th>
+            <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Stage</th>
+            <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Source</th>
+            <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Deal value</th>
             {showScores ? (
               <>
-                <th className="px-4 py-3 text-left font-medium text-muted">Pain</th>
-                <th className="px-4 py-3 text-left font-medium text-muted">Fit</th>
-                <th className="px-4 py-3 text-left font-medium text-muted">Priority</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Pain</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Fit</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Priority</th>
               </>
             ) : null}
-            <th className="px-4 py-3 text-left font-medium text-muted">Owner</th>
+            <th scope="col" className="px-4 py-3 text-left font-medium text-muted">Owner</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border-subtle bg-surface-1">

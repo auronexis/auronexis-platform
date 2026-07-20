@@ -18,7 +18,8 @@ import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
 import { HELP_LINKS } from "@/lib/company/contact";
 import { cn } from "@/lib/utils/cn";
 import { motionDropdownEnter } from "@/lib/ui/motion";
-import { iconButtonSurface } from "@/lib/ui/tokens";
+import { focusRing, iconButtonSurface } from "@/lib/ui/tokens";
+import { handleMenuKeyNavigation, restoreFocus } from "@/lib/a11y/focus";
 
 type HelpLinkItem = {
   label: string;
@@ -38,8 +39,10 @@ const HELP_ITEMS: HelpLinkItem[] = [
 ];
 
 function HelpMenuLink({ item, onSelect }: { item: HelpLinkItem; onSelect: () => void }) {
-  const className =
-    "flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm text-foreground hover:bg-muted/10";
+  const className = cn(
+    "flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm text-foreground hover:bg-muted/10",
+    focusRing,
+  );
 
   if (item.external || item.href.startsWith("mailto:")) {
     return (
@@ -62,6 +65,7 @@ function HelpMenuLink({ item, onSelect }: { item: HelpLinkItem; onSelect: () => 
 export function HelpMenu() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const platformBranding = getPlatformBrandingDefaults();
 
   useEffect(() => {
@@ -77,9 +81,13 @@ export function HelpMenu() {
     }
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
+      if (!menuRef.current) {
+        return;
       }
+      handleMenuKeyNavigation(event, menuRef.current, () => {
+        setOpen(false);
+        restoreFocus(triggerRef.current);
+      });
     }
 
     document.addEventListener("mousedown", onPointerDown);
@@ -93,6 +101,7 @@ export function HelpMenu() {
   return (
     <div ref={menuRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((current) => !current)}
         className={iconButtonSurface}

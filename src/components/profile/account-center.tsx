@@ -19,10 +19,9 @@ import {
   LocalDeviceBadge,
   ProfileField,
   ProfileReadOnlyValue,
-  ProfileSaveFooter,
   ProfileSectionCard,
-  ProfileSelect,
 } from "@/components/profile/profile-section-card";
+import { ProfileSaveFooter, ProfileSelect } from "@/components/profile/profile-section-controls";
 import { useUserPreferences } from "@/components/profile/user-preferences-provider";
 import { useClientPreference } from "@/lib/profile/use-client-preference";
 import { Input } from "@/components/ui/input";

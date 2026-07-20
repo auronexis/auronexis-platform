@@ -10,7 +10,7 @@ export type ProductionDomainKey = keyof typeof PRODUCTION_DOMAINS;
 
 export const PRODUCTION_DOMAIN_LIST = Object.values(PRODUCTION_DOMAINS);
 
-/** Canonical redirect rules — apex → www for marketing; never redirect /api/* (Stripe webhooks). */
+/** Canonical redirect rules — apex → www for marketing; never redirect /api/* (Paddle webhooks). */
 export const PRODUCTION_DOMAIN_REDIRECTS = [
   {
     sourceHost: PRODUCTION_DOMAINS.apex,

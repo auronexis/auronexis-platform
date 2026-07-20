@@ -39,7 +39,10 @@ export function isSubscriptionUsable(status: string | null | undefined): boolean
   return USABLE_STATUSES.has(normalizeSubscriptionStatus(status));
 }
 
-/** Broader than {@link isSubscriptionUsable} — includes past_due, which is entitled but not "usable". */
+/**
+ * Broader than {@link isSubscriptionUsable} — includes past_due for billing UI
+ * (payment-problem relationship). Paid feature access must use isSubscriptionUsable.
+ */
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["trialing", "active", "past_due"]);
 
 export function isActiveSubscriptionStatus(status: string | null | undefined): boolean {
@@ -180,11 +183,17 @@ export function formatMoneyFromCents(
   return formatMoneyFromCentsLocale(amountCents, currency, locale);
 }
 
-export function shortenStripeId(value: string, visible = 10): string {
+/** Shorten provider IDs (Paddle `ctm_`/`sub_`/`txn_`, archived Stripe ids) for diagnostic UI. */
+export function shortenProviderId(value: string, visible = 10): string {
   if (value.length <= visible + 3) {
     return value;
   }
   return `${value.slice(0, visible)}…`;
+}
+
+/** @deprecated Prefer {@link shortenProviderId} — kept for existing imports. */
+export function shortenStripeId(value: string, visible = 10): string {
+  return shortenProviderId(value, visible);
 }
 
 /** Customer-safe invoice status for billing tables. */

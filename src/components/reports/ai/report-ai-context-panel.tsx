@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReportAIContextSnapshot } from "@/lib/ai/types";
 
 type ReportAIContextPanelProps = {

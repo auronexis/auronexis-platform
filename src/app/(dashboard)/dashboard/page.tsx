@@ -71,6 +71,7 @@ import { getDashboardData } from "@/lib/dashboard/queries";
 import { getExecutiveIntelligence } from "@/lib/intelligence/queries";
 import {
   buildSmartRecommendations,
+  resolveDashboardOperationalMetrics,
 } from "@/lib/dashboard/workspace-guidance";
 import { buildActivationSnapshot } from "@/lib/activation/status";
 import { buildAdoptionSnapshot, resolveDashboardGuidanceMode } from "@/lib/adoption/snapshot";
@@ -107,47 +108,64 @@ export default async function DashboardPage() {
   const session = await requireSession();
   const currency = getStoredOrganizationCurrency(session.organization);
   const data = await getDashboardData(session);
-  const executiveIntelligence = await getExecutiveIntelligence(session, data);
-  const aiAccess = await checkPlanFeatureForSession(session, "ai_report_assistant");
-  const successAccess = await checkPlanFeatureForSession(session, "ai_client_analysis");
-  const operationalAiAccess = await checkPlanFeatureForSession(session, "ai_risk_assistant");
-  const incidentAiAccess = await checkPlanFeatureForSession(session, "ai_incident_assistant");
-  const riskAiAccess = await checkPlanFeatureForSession(session, "ai_risk_assistant");
-  const automationAccess = await checkPlanFeatureForSession(session, "ai_automation_builder");
-  const predictiveAccess = await checkPlanFeatureForSession(session, "ai_predictive_intelligence");
-  const knowledgeAccess = await checkPlanFeatureForSession(session, "ai_knowledge_search");
-  const intelligence = aiAccess.allowed
-    ? await getOperationalIntelligence(session, data)
-    : null;
-  const successPortfolio = successAccess.allowed
-    ? await getClientSuccessPortfolio(session)
-    : null;
-  const operationalTasks =
-    (data.features.risks || data.features.incidents) && operationalAiAccess.allowed
-      ? await buildOperationalTasks(session)
-      : null;
-  const knowledgeHub = knowledgeAccess.allowed ? await getKnowledgeHubData(session) : null;
-  const integrationsSummary = automationAccess.allowed
-    ? await getIntegrationsDashboardSummary({
-        organizationId: session.organization.id,
-        userId: session.user.id,
-      })
-    : null;
-  const integrationRuntimeSummary = automationAccess.allowed
-    ? await getIntegrationRuntimeSummary({
-        organizationId: session.organization.id,
-      })
-    : null;
-  const predictiveSummary = predictiveAccess.allowed
-    ? await getPredictiveDashboardSummary(session)
-    : null;
-  const canManageCompliance = canManageOrganizationSettings(session);
-  const complianceSummary = canManageCompliance
-    ? await getComplianceDiagnosticsSnapshot(session)
-    : null;
-  const platformStatus = canManageCompliance ? await getPlatformStatusSnapshot() : null;
+  const [
+    executiveIntelligence,
+    aiAccess,
+    successAccess,
+    operationalAiAccess,
+    incidentAiAccess,
+    riskAiAccess,
+    automationAccess,
+    predictiveAccess,
+    knowledgeAccess,
+  ] = await Promise.all([
+    getExecutiveIntelligence(session, data),
+    checkPlanFeatureForSession(session, "ai_report_assistant"),
+    checkPlanFeatureForSession(session, "ai_client_analysis"),
+    checkPlanFeatureForSession(session, "ai_risk_assistant"),
+    checkPlanFeatureForSession(session, "ai_incident_assistant"),
+    checkPlanFeatureForSession(session, "ai_risk_assistant"),
+    checkPlanFeatureForSession(session, "ai_automation_builder"),
+    checkPlanFeatureForSession(session, "ai_predictive_intelligence"),
+    checkPlanFeatureForSession(session, "ai_knowledge_search"),
+  ]);
 
-  const [teamMembers, pendingInvitations, planContext] = await Promise.all([
+  const canManageCompliance = canManageOrganizationSettings(session);
+
+  const [
+    intelligence,
+    successPortfolio,
+    operationalTasks,
+    knowledgeHub,
+    integrationsSummary,
+    integrationRuntimeSummary,
+    predictiveSummary,
+    complianceSummary,
+    platformStatus,
+    teamMembers,
+    pendingInvitations,
+    planContext,
+  ] = await Promise.all([
+    aiAccess.allowed ? getOperationalIntelligence(session, data) : Promise.resolve(null),
+    successAccess.allowed ? getClientSuccessPortfolio(session) : Promise.resolve(null),
+    (data.features.risks || data.features.incidents) && operationalAiAccess.allowed
+      ? buildOperationalTasks(session)
+      : Promise.resolve(null),
+    knowledgeAccess.allowed ? getKnowledgeHubData(session) : Promise.resolve(null),
+    automationAccess.allowed
+      ? getIntegrationsDashboardSummary({
+          organizationId: session.organization.id,
+          userId: session.user.id,
+        })
+      : Promise.resolve(null),
+    automationAccess.allowed
+      ? getIntegrationRuntimeSummary({
+          organizationId: session.organization.id,
+        })
+      : Promise.resolve(null),
+    predictiveAccess.allowed ? getPredictiveDashboardSummary(session) : Promise.resolve(null),
+    canManageCompliance ? getComplianceDiagnosticsSnapshot(session) : Promise.resolve(null),
+    canManageCompliance ? getPlatformStatusSnapshot() : Promise.resolve(null),
     listTeamMembers(session).catch(() => []),
     listPendingInvitations(session).catch(() => []),
     getOrganizationPlanContextForSession(session).catch(() => null),
@@ -172,7 +190,9 @@ export default async function DashboardPage() {
     monitoringConnectorCount: data.monitoringMetrics.activeConnectors,
   });
 
-  const [adoption, smartRecommendations] = await Promise.all([
+  const canReadCustomerSuccess = sessionHasPermission(session, "customer_success.read");
+
+  const [adoption, smartRecommendations, customerSuccessPortfolio] = await Promise.all([
     buildAdoptionSnapshot({
       session,
       planContext,
@@ -184,14 +204,12 @@ export default async function DashboardPage() {
       activation,
     }),
     buildSmartRecommendations(guidanceInput),
+    canReadCustomerSuccess
+      ? buildCustomerSuccessPortfolio({ session, planContext })
+      : Promise.resolve(null),
   ]);
 
   const guidanceMode = resolveDashboardGuidanceMode(activation, adoption);
-
-  const canReadCustomerSuccess = sessionHasPermission(session, "customer_success.read");
-  const customerSuccessPortfolio = canReadCustomerSuccess
-    ? await buildCustomerSuccessPortfolio({ session, planContext })
-    : null;
   const customerSuccessMode = customerSuccessPortfolio
     ? resolveDashboardCustomerSuccessMode(activation, adoption, customerSuccessPortfolio)
     : "hidden";
@@ -220,52 +238,17 @@ export default async function DashboardPage() {
 
   const canDismissActivation = canManageOrganizationSettings(session);
 
-  const operationalMetrics = [
-    {
-      key: "clients",
-      label: "Clients",
-      value: data.clientHealth.totalClients,
-      icon: Users,
-      trend: "+2 this month",
-      tone: "info" as const,
-    },
-    ...(data.features.risks
-      ? [
-          {
-            key: "risks",
-            label: "Open risks",
-            value: data.openRiskCount,
-            icon: ShieldAlert,
-            trend: "Needs attention",
-            tone: "warning" as const,
-          },
-        ]
-      : []),
-    ...(data.features.incidents
-      ? [
-          {
-            key: "incidents",
-            label: "Open incidents",
-            value: data.openIncidentCount,
-            icon: AlertTriangle,
-            trend: "Active queue",
-            tone: "danger" as const,
-          },
-        ]
-      : []),
-    ...(data.features.sla
-      ? [
-          {
-            key: "sla",
-            label: "Breached SLAs",
-            value: data.slaMetrics.breachedCount,
-            icon: Timer,
-            trend: "Compliance watch",
-            tone: "danger" as const,
-          },
-        ]
-      : []),
-  ];
+  const operationalMetrics = resolveDashboardOperationalMetrics(data).map((metric) => ({
+    ...metric,
+    icon:
+      metric.key === "clients"
+        ? Users
+        : metric.key === "risks"
+          ? ShieldAlert
+          : metric.key === "incidents"
+            ? AlertTriangle
+            : Timer,
+  }));
 
   const showCriticalAlerts = data.features.risks || data.features.incidents;
 

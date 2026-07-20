@@ -24,7 +24,7 @@ import { buildInviteUrl } from "@/lib/team/types";
 import { assertCanInviteTeamMember, canAcceptTeamInvite } from "@/lib/seats/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { Database, InviteRole, UserRole } from "@/types/database";
+import type { Database, InviteRole } from "@/types/database";
 
 type TeamInvitationInsert = Database["public"]["Tables"]["team_invitations"]["Insert"];
 
@@ -57,7 +57,26 @@ const acceptInviteSchema = z.object({
 const organizationSchema = z.object({
   name: z.string().trim().min(2, "Organization name is required."),
   language: z.enum(["de", "en"] as const),
-  currency: z.enum(["USD", "EUR", "GBP", "CAD", "AUD"] as const),
+  currency: z.enum([
+    "USD",
+    "EUR",
+    "GBP",
+    "CAD",
+    "AUD",
+    "CHF",
+    "JPY",
+    "NOK",
+    "SEK",
+    "DKK",
+    "PLN",
+    "CZK",
+    "RON",
+  ] as const),
+  timezone: z.string().trim().min(1),
+  dateFormat: z.enum(["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"] as const),
+  timeFormat: z.enum(["12h", "24h"] as const),
+  weekStart: z.enum(["monday", "sunday"] as const),
+  measurementSystem: z.enum(["metric", "imperial"] as const),
 });
 
 function assertInvitableRole(
@@ -382,6 +401,11 @@ export async function updateOrganizationAction(
     name: formData.get("name"),
     language: formData.get("language"),
     currency: formData.get("currency"),
+    timezone: formData.get("timezone"),
+    dateFormat: formData.get("dateFormat"),
+    timeFormat: formData.get("timeFormat"),
+    weekStart: formData.get("weekStart"),
+    measurementSystem: formData.get("measurementSystem"),
   });
 
   if (!parsed.success) {
@@ -395,15 +419,24 @@ export async function updateOrganizationAction(
       name: parsed.data.name,
       language: parsed.data.language,
       currency: parsed.data.currency,
+      timezone: parsed.data.timezone,
+      date_format: parsed.data.dateFormat,
+      time_format: parsed.data.timeFormat,
+      week_start: parsed.data.weekStart,
+      measurement_system: parsed.data.measurementSystem,
     } as never)
     .eq("id", session.organization.id)
-    .select("id, name, language, currency")
+    .select(
+      "id, name, language, currency, timezone, date_format, time_format, week_start, measurement_system",
+    )
     .single();
 
   if (error) {
     if (
       error.message.includes("language") ||
       error.message.includes("currency") ||
+      error.message.includes("timezone") ||
+      error.message.includes("date_format") ||
       error.code === "42703" ||
       error.code === "PGRST204"
     ) {
@@ -415,12 +448,23 @@ export async function updateOrganizationAction(
     return { error: "Unable to update organization." };
   }
 
-  const saved = data as { language?: string; currency?: string } | null;
+  const saved = data as {
+    language?: string;
+    currency?: string;
+    timezone?: string;
+    date_format?: string;
+    time_format?: string;
+    week_start?: string;
+    measurement_system?: string;
+  } | null;
   if (saved?.language !== parsed.data.language) {
     return { error: "Organization language did not persist. Please try again." };
   }
   if (saved?.currency !== parsed.data.currency) {
     return { error: "Organization currency did not persist. Please try again." };
+  }
+  if (saved?.timezone !== parsed.data.timezone) {
+    return { error: "Organization timezone did not persist. Please try again." };
   }
 
   await recordActivityEvent({
@@ -436,6 +480,11 @@ export async function updateOrganizationAction(
       name: parsed.data.name,
       language: parsed.data.language,
       currency: parsed.data.currency,
+      timezone: parsed.data.timezone,
+      dateFormat: parsed.data.dateFormat,
+      timeFormat: parsed.data.timeFormat,
+      weekStart: parsed.data.weekStart,
+      measurementSystem: parsed.data.measurementSystem,
     },
   });
 

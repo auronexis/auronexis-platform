@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -20,12 +20,14 @@ test("unified analytics taxonomy defines conversion and product events", () => {
     "workspace_created",
     "subscription_checkout_started",
     "subscription_checkout_completed",
+    "subscription_checkout_cancelled",
     "invoice_paid",
     "client_created",
     "report_generated",
     "dashboard_loaded",
     "ai_summary_generated",
     "integration_connected",
+    "portal_login",
   ]) {
     assert.match(taxonomy, new RegExp(name));
     assert.match(events, new RegExp(name));
@@ -34,8 +36,10 @@ test("unified analytics taxonomy defines conversion and product events", () => {
 
 test("analytics events sanitize blocked identifiers and PII keys", () => {
   const events = readSource("src/lib/analytics/events.ts");
-  assert.match(events, /workspace|organization|client_id|api_key|token|secret/i);
+  assert.match(events, /organization_id/);
+  assert.match(events, /BLOCKED_PROP_KEYS/);
   assert.match(events, /value\.includes\("@"\)/);
+  assert.match(events, /funnel_stage/);
 });
 
 test("GA4 disables automatic page_view to prevent duplicates", () => {
@@ -51,6 +55,7 @@ test("landing page and pricing conversion trackers are wired", () => {
   const pricing = readSource("src/app/(marketing)/pricing/page.tsx");
   const signup = readSource("src/app/(auth)/signup/page.tsx");
   assert.match(pageTracker, /landing_page_view/);
+  assert.match(pageTracker, /resolvePageViewSurface/);
   assert.match(pricing, /pricing_view/);
   assert.match(signup, /signup_started/);
 });
@@ -62,9 +67,11 @@ test("dashboard and billing conversion instrumentation exists", () => {
   const pricingGrid = readSource("src/components/pricing/pricing-grid.tsx");
   assert.match(dashboardLayout, /DashboardAnalyticsTracker/);
   assert.match(dashboardTracker, /dashboard_loaded/);
+  assert.doesNotMatch(dashboardTracker, /signup_completed/);
   const billingTracker = readSource("src/components/analytics/billing-conversion-tracker.tsx");
   assert.match(billingPanel, /BillingConversionTracker/);
   assert.match(billingTracker, /subscription_checkout_completed/);
+  assert.match(billingTracker, /subscription_checkout_cancelled/);
   assert.match(pricingGrid, /subscription_checkout_started/);
 });
 
@@ -79,21 +86,25 @@ test("product forms queue privacy-safe product analytics events", () => {
   assert.match(incidentForm, /incident_created/);
 });
 
-test("stripe webhooks emit server-side conversion analytics without billing logic changes", () => {
-  const webhooks = readSource("src/lib/stripe/webhooks.ts");
+test("billing lifecycle analytics integration point exists without paddle coupling", () => {
+  const lifecycle = readSource("src/lib/analytics/billing-lifecycle.ts");
   const serverEvents = readSource("src/lib/analytics/server-events.ts");
-  assert.match(webhooks, /trackServerAnalyticsEvent/);
-  assert.match(webhooks, /invoice_paid/);
-  assert.match(webhooks, /invoice_failed/);
-  assert.match(webhooks, /subscription_cancelled/);
+  assert.match(lifecycle, /trackBillingLifecycleEvent/);
+  assert.match(lifecycle, /invoice_paid/);
+  assert.match(lifecycle, /subscription_cancelled/);
   assert.match(serverEvents, /GA4_API_SECRET/);
-  assert.doesNotMatch(serverEvents, /organization_id/);
+  assert.match(serverEvents, /organization_id/);
+  assert.ok(!existsSync(join(rootDir, "src/lib/stripe/webhooks.ts")));
 });
 
-test("consent-gated providers remain unchanged", () => {
+test("consent-gated sinks use explicit marketing vs analytics categories", () => {
   const provider = readSource("src/components/analytics/analytics-provider.tsx");
+  const events = readSource("src/lib/analytics/events.ts");
   const clarity = readSource("src/components/analytics/clarity-script.tsx");
   assert.match(provider, /hasAnalyticsConsent|hasMarketingConsent/);
+  assert.match(provider, /registerAnalyticsSink\(\(name, props\) => ga4Sink\(name, props\), "marketing"\)/);
+  assert.match(provider, /registerAnalyticsSink\(\(name, props\) => plausibleSink\(name, props\), "analytics"\)/);
+  assert.match(events, /sink\.consent === "marketing"/);
   assert.match(clarity, /hasAnalyticsConsent/);
   assert.match(provider, /getElementById\("ga4-script"\)/);
 });
@@ -110,4 +121,8 @@ test("documentation and integration surfaces track product analytics", () => {
 test("package.json exposes analytics conversion test script", () => {
   const pkg = readSource("package.json");
   assert.match(pkg, /test:analytics-conversion/);
+});
+
+test("dead duplicate PostHog provider is removed", () => {
+  assert.ok(!existsSync(join(rootDir, "src/components/observability/posthog-provider.tsx")));
 });

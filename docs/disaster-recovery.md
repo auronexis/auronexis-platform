@@ -1,14 +1,16 @@
-# Disaster Recovery — Phase 5 Production Infrastructure
+# Disaster Recovery
 
-**Version:** v0.95 · Phase 5 Sprint 0  
-**RTO target:** 4 hours (pilot) · **RPO target:** 24 hours (Supabase daily backup)  
-**Related:** [operations-runbook.md](./operations-runbook.md) · [production-checklist.md](./production-checklist.md)
+**Canonical** operational recovery for Auroranexis.  
+**RTO target:** 4 hours · **RPO target:** ≤ 24 hours (Supabase backup / PITR)  
+**Related:** [rollback-plan.md](./rollback-plan.md) · [enterprise-deployment.md](./enterprise-deployment.md) · [operations-runbook.md](./operations-runbook.md) · [paddle-billing.md](./paddle-billing.md)
 
 ---
 
 ## Summary
 
-Disaster recovery for Auroranexis Phase 5 infrastructure focuses on restoring database state, replaying missed background work, and re-establishing external integrations (Stripe webhooks, cron scheduler). The idempotency and queue layers are designed to tolerate replay without duplicate side effects when procedures below are followed.
+Recovery focuses on restoring database state, replaying background work, and re-establishing integrations (**Paddle webhooks**, cron, email, AI). Idempotency and queue layers tolerate replay when procedures below are followed.
+
+Stripe paths are **historical archive only** — do not re-enable Stripe webhooks for active billing.
 
 ---
 
@@ -16,193 +18,133 @@ Disaster recovery for Auroranexis Phase 5 infrastructure focuses on restoring da
 
 | System | Data store | Recovery mechanism |
 |--------|------------|-------------------|
-| Stripe webhooks | `stripe_webhook_events`, `billing_events` | Stripe Dashboard replay + idempotency |
-| Cron jobs | `job_definitions`, `job_schedules`, `job_executions` | Reschedule + force-run |
+| Paddle webhooks | Billing webhook idempotency + subscription rows | Paddle dashboard replay + signature verify |
+| Cron jobs | `job_*` / execution history | Reschedule + authorized force-run |
 | Background queue | `queue_jobs`, `queue_dead_letters` | Re-enqueue from dead letters |
-| Application | Deployment platform | Redeploy last known good tag |
+| Application | Vercel deployments | Instant rollback to last good |
+| Email / AI / analytics | Provider accounts | Rotate keys; degrade gracefully |
 
 ---
 
 ## Recovery tiers
 
-### Tier 1 — Partial degradation (single component)
+### Tier 1 — Partial degradation
 
-**Examples:** Cron scheduler misconfigured, queue worker stalled, transient Stripe failures.
+Examples: Cron misconfigured, queue stalled, transient Paddle API errors, AI provider outage.
 
-**Response:**
-
-1. Follow incident procedures in [operations-runbook.md](./operations-runbook.md).
-2. No full restore required.
-3. Verify diagnostics return to healthy status within 1 hour.
+1. Follow [operations-runbook.md](./operations-runbook.md).
+2. Use kill-switches (`AI_PROVIDER=disabled`) when needed.
+3. Verify `/api/health` returns to healthy/degraded (not unavailable) within 1 hour.
 
 ### Tier 2 — Database restore required
 
-**Examples:** Accidental data corruption, failed migration, Supabase region outage with restore.
-
-**Response:**
-
-1. Restore Supabase backup to new project or point-in-time recovery snapshot.
-2. Update deployment env vars to restored project URL and keys.
-3. Re-apply any migrations newer than backup if using manual restore.
-4. Execute post-restore validation (see below).
+1. Restore Supabase backup or PITR snapshot.
+2. Update deployment env vars if project URL/keys change.
+3. Re-apply only migrations newer than the restore point that are known-good.
+4. Run post-restore validation (§ below).
 
 ### Tier 3 — Full platform loss
 
-**Examples:** Deployment account compromise, complete hosting loss.
-
-**Response:**
-
-1. Provision new deployment from git tag.
+1. Provision deployment from known-good git tag.
 2. Restore Supabase from backup.
-3. Rotate all secrets: `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `STRIPE_*`, `INTEGRATION_SECRET_KEY`.
-4. Re-register Stripe webhook endpoint with new signing secret.
-5. Reconfigure external cron scheduler.
-6. Full validation checklist before traffic.
+3. Rotate secrets: `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `INTEGRATION_SECRET_KEY`, email keys.
+4. Re-register Paddle webhook with new signing secret.
+5. Reconfigure Vercel Cron Authorization.
+6. Complete [enterprise-release-checklist.md](./enterprise-release-checklist.md) before traffic.
+
+---
+
+## Database backup strategy
+
+| Control | Expectation |
+|---------|-------------|
+| Automated backups | Enabled on Supabase production project |
+| PITR | Enabled where plan allows; document retention days |
+| Restore drill | Practice on staging at least quarterly |
+| Migration discipline | Forward-only; never rely on untested down SQL in production |
+
+---
+
+## Provider outage handling
+
+| Provider | Degraded behaviour | Operator action |
+|----------|--------------------|-----------------|
+| Paddle | Checkout/portal unavailable; entitlements unchanged until webhook sync | Status page; pause non-critical billing UI messaging |
+| Supabase | App unavailable | Failover / restore; communicate outage |
+| Email | Queue outbound; surface soft errors | Switch provider credentials if prolonged |
+| OpenAI | AI features empty/disabled | `AI_PROVIDER=disabled` |
+| Analytics | No client events | Optional — not customer-blocking |
+
+---
+
+## Expired secrets
+
+1. Rotate compromised secret in provider dashboard.
+2. Update Vercel Production env.
+3. Redeploy/restart to pick up values.
+4. For Paddle webhook secret: update Paddle notification secret in the same change window.
+5. Invalidate old cron bearer by setting new `CRON_SECRET` (old callers fail closed).
+
+---
+
+## Failed deployments
+
+Follow [rollback-plan.md](./rollback-plan.md) §6 — leave Production on last good artifact.
+
+---
+
+## Webhook backlog recovery
+
+1. Confirm handler healthy (signature + idempotency).
+2. Replay from Paddle dashboard for missed event IDs.
+3. Confirm no duplicate side effects (idempotency keys).
+4. Monitor billing diagnostics panel.
+
+---
+
+## Queue recovery
+
+1. Inspect dead-letter / failed queue jobs in diagnostics.
+2. Fix root cause (handler bug → app rollback first).
+3. Re-enqueue dead letters deliberately (avoid blind mass replay).
+4. Ensure cron fires every 5 minutes so `queue_worker` stays caught up.
 
 ---
 
 ## Post-restore validation
 
-### Database integrity
+### Database
 
 ```sql
--- Infrastructure tables exist
-SELECT COUNT(*) FROM job_definitions;        -- expect 8
-SELECT COUNT(*) FROM job_schedules;          -- expect 8
-SELECT to_regclass('public.stripe_webhook_events');
+-- Job registry populated (expect 9 definitions after seed/sync)
+SELECT COUNT(*) FROM job_definitions;
+
 SELECT to_regclass('public.queue_jobs');
 SELECT to_regclass('public.queue_dead_letters');
 
--- Unique constraints intact
-SELECT indexname FROM pg_indexes
-WHERE tablename IN ('stripe_webhook_events', 'billing_events', 'queue_jobs')
-  AND indexdef LIKE '%UNIQUE%';
+-- RLS still enabled on core tenant tables
+SELECT relname, relrowsecurity
+FROM pg_class
+WHERE relname IN ('organizations', 'clients', 'reports', 'subscriptions')
+  AND relkind = 'r';
 ```
 
-### Stripe idempotency
+### Application
 
-1. Send test webhook from Stripe Dashboard.
-2. Confirm row in `stripe_webhook_events` with `status = 'processed'`.
-3. Replay same event — confirm `duplicate: true` response and no duplicate billing rows.
-
-### Cron recovery
-
-1. Reset schedules if `next_run_at` is far in the past after long outage:
-   ```sql
-   UPDATE job_schedules SET next_run_at = NOW();
-   ```
-2. Force-run all jobs sequentially via `?job=<id>` or single POST to dispatch due jobs.
-3. Verify `job_executions` shows recent completed runs.
-
-### Queue recovery
-
-1. Reset orphaned running jobs:
-   ```sql
-   UPDATE queue_jobs
-   SET status = 'pending', started_at = NULL, scheduled_at = NOW()
-   WHERE status = 'running';
-   ```
-2. Force-run `queue_worker` job.
-3. Process dead letters manually if outage exceeded retry windows.
+- `GET /api/ready` → 200
+- `GET /api/health` → not `unavailable`
+- Login + one client list query
+- Paddle webhook test notification
+- Cron authorized POST `/api/cron/run`
 
 ---
 
-## Stripe event replay procedure
+## Secret rotation checklist (Tier 3)
 
-After database restore, billing state may lag Stripe's source of truth.
-
-**Safe replay order:**
-
-1. `customer.subscription.updated`
-2. `invoice.paid` / `invoice.payment_failed`
-3. `checkout.session.completed`
-
-**Steps:**
-
-1. Open Stripe Dashboard → Developers → Events.
-2. Filter by affected customer or time range during outage.
-3. Resend events individually (not bulk) during initial recovery.
-4. Monitor `stripe_webhook_events` — expect `processed` or `duplicate`, never unhandled duplicates in `billing_events`.
-
-**Idempotency guarantee:** `ensureStripeIdempotency` returns `duplicate` for already-processed event IDs. Failed events transition to `retry` on Stripe resend.
-
----
-
-## Cron gap backfill
-
-If cron was offline for interval `T`:
-
-| Job | Backfill strategy |
-|-----|-------------------|
-| `sla_alerts` | Force-run immediately; review SLA breach notifications for gap period |
-| `report_schedules` | Force-run; schedules with overdue `next_run_at` processed in handler |
-| `connector_sync` | Force-run; connectors sync on next successful run |
-| `billing_snapshots` | Accept gap or manually trigger if billing audit requires daily snapshot |
-| `queue_worker` | Force-run repeatedly until pending count = 0 |
-
-```bash
-# Dispatch all due jobs
-curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
-  https://<domain>/api/cron/run
-
-# Force critical jobs
-for job in sla_alerts queue_worker report_schedules; do
-  curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
-    "https://<domain>/api/cron/run?job=$job"
-done
-```
-
----
-
-## Queue dead letter recovery
-
-Dead letters preserve full job context for manual replay.
-
-```sql
-SELECT id, queue_name, job_type, payload, error_message, attempts, dead_at
-FROM queue_dead_letters
-ORDER BY dead_at DESC;
-```
-
-Replay via server-side `dispatchQueueJob` with:
-
-- Same `queueName`, `jobType`, `payload`
-- **New** `idempotencyKey` (append `-replay-<timestamp>`)
-
-After successful processing, archive the dead letter row.
-
----
-
-## Secret rotation after compromise
-
-| Secret | Rotation action |
-|--------|-----------------|
-| `CRON_SECRET` | Generate new value; update deployment + scheduler simultaneously |
-| `STRIPE_WEBHOOK_SECRET` | Roll signing secret in Stripe; update env; verify delivery |
-| `SUPABASE_SERVICE_ROLE_KEY` | Rotate in Supabase dashboard; update deployment immediately |
-| `STRIPE_SECRET_KEY` | Roll in Stripe; update env; no webhook replay needed |
-
-**Order:** Deploy new secrets → verify health probes → revoke old secrets.
-
----
-
-## Backup requirements
-
-| Asset | Frequency | Retention | Owner |
-|-------|-----------|-----------|-------|
-| Supabase database | Daily (minimum) | 30 days | Platform |
-| Deployment config / env | On change | Version controlled | Engineering |
-| Stripe event log | Stripe-managed | Per Stripe policy | Billing |
-
-Enable Supabase point-in-time recovery for production before pilot launch.
-
----
-
-## Pilot readiness notes
-
-- DR procedures tested on staging at least once before production pilot.
-- Document actual RTO/RPO achieved during staging drill in [staging-report.md](./staging-report.md).
-- Idempotency layer eliminates duplicate billing risk during replay — critical for pilot confidence.
-- Queue dead letters provide audit trail for jobs lost during outage windows.
-
-**Target:** v0.95 infrastructure supports pilot DR with documented replay paths; enterprise multi-region DR remains a future phase.
+- [ ] Supabase service role
+- [ ] Cron secret
+- [ ] Paddle API key + webhook secret + client token (as needed)
+- [ ] Integration vault key
+- [ ] Email provider API key
+- [ ] Turnstile secret
+- [ ] OAuth connector secrets (if used)

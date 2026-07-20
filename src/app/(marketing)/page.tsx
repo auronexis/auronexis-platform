@@ -193,6 +193,9 @@ export default async function MarketingHomePage() {
             </article>
           ))}
         </div>
+        <Link href={MARKETING_ROUTES.compliance} className={cn("mt-6 inline-flex text-sm font-medium text-primary hover:underline", focusRing, "rounded-lg")}>
+          Review compliance readiness →
+        </Link>
         </MarketingSection>
       </MarketingPace>
 
@@ -252,6 +255,9 @@ export default async function MarketingHomePage() {
       <MarketingPace>
         <MarketingSection eyebrow="FAQ" title="Frequently asked questions">
           <MarketingFaq items={FAQ_ITEMS} />
+          <Link href={MARKETING_ROUTES.faq} className={cn("mt-6 inline-flex text-sm font-medium text-primary hover:underline", focusRing, "rounded-lg")}>
+            Browse all FAQ topics →
+          </Link>
         </MarketingSection>
       </MarketingPace>
 

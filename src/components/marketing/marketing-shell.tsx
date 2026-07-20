@@ -2,6 +2,7 @@ import { Suspense, type ReactNode } from "react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingAuthProvider } from "@/components/marketing/marketing-auth-provider";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { SkipLink } from "@/components/ui/skip-link";
 import { getPublicNavState } from "@/lib/marketing/public-nav";
 import { marketingMotionEnter } from "@/lib/ui/marketing-motion";
 import { cn } from "@/lib/utils/cn";
@@ -37,9 +38,16 @@ async function MarketingShellContent({
 
   return (
     <>
+      <SkipLink />
       {hideHeader ? null : <MarketingHeader auth={auth} />}
       <MarketingAuthProvider value={auth}>
-        <main className={cn("flex-auto", marketingMotionEnter, className)}>{children}</main>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className={cn("flex-auto outline-none", marketingMotionEnter, className)}
+        >
+          {children}
+        </main>
       </MarketingAuthProvider>
     </>
   );
@@ -48,8 +56,9 @@ async function MarketingShellContent({
 function MarketingShellFallback({ hideHeader }: { hideHeader?: boolean }) {
   return (
     <>
+      <SkipLink />
       {hideHeader ? null : <MarketingHeaderSkeleton />}
-      <main className="flex-auto min-h-[40vh]" aria-busy="true" />
+      <main id="main-content" tabIndex={-1} className="flex-auto min-h-[40vh] outline-none" aria-busy="true" />
     </>
   );
 }

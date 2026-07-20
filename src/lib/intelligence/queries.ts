@@ -6,7 +6,12 @@ import { buildOperationalSnapshot } from "@/lib/ai/insights/queries";
 import type { DashboardData } from "@/lib/dashboard/types";
 import { deriveHealthTrend } from "@/lib/reports-v2/summary";
 import type { HealthSnapshot } from "@/lib/health/types";
-import { parseHealthBreakdown, scoreToHealthStatus } from "@/lib/health/types";
+import {
+  HEALTH_SNAPSHOT_SELECT,
+  latestSnapshotByClient,
+  mapHealthSnapshotRow,
+  scoreToHealthStatus,
+} from "@/lib/health/types";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import {
@@ -24,37 +29,8 @@ import type {
   OrganizationHealthTrend,
 } from "@/lib/intelligence/types";
 
-const HEALTH_SNAPSHOT_SELECT =
-  "id, organization_id, client_id, score, status, delta, reason, breakdown, calculated_at";
-
 function daysAgoIso(days: number): string {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-}
-
-function mapSnapshotRow(row: Record<string, unknown>): HealthSnapshot {
-  return {
-    id: String(row.id),
-    organization_id: String(row.organization_id),
-    client_id: String(row.client_id),
-    score: Number(row.score),
-    status: row.status as HealthSnapshot["status"],
-    delta: Number(row.delta ?? 0),
-    reason: (row.reason as string | null) ?? null,
-    breakdown: parseHealthBreakdown(row.breakdown as never),
-    calculated_at: String(row.calculated_at),
-  };
-}
-
-function latestSnapshotByClient(rows: HealthSnapshot[]): Map<string, HealthSnapshot> {
-  const map = new Map<string, HealthSnapshot>();
-
-  for (const row of rows) {
-    if (!map.has(row.client_id)) {
-      map.set(row.client_id, row);
-    }
-  }
-
-  return map;
 }
 
 function computeAverageScore(rows: HealthSnapshot[]): number | null {
@@ -131,7 +107,7 @@ async function loadOrganizationHealthSnapshots(session: SessionContext): Promise
     return [];
   }
 
-  return (data ?? []).map((row) => mapSnapshotRow(row as Record<string, unknown>));
+  return (data ?? []).map((row) => mapHealthSnapshotRow(row as Record<string, unknown>));
 }
 
 /** Aggregate executive intelligence from existing operational data sources. */

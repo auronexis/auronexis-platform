@@ -9,25 +9,9 @@ import type {
   SlaActivityView,
   SlaEventView,
 } from "@/lib/sla/types";
+import { SLA_EVENT_SELECT } from "@/lib/sla/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { IncidentSeverity } from "@/types/database";
-
-const SLA_EVENT_SELECT = `
-  id,
-  organization_id,
-  incident_id,
-  client_id,
-  policy_id,
-  status,
-  breached,
-  started_at,
-  response_due_at,
-  resolution_due_at,
-  responded_at,
-  resolved_at,
-  created_at,
-  updated_at
-`;
 
 const SLA_ACTIVITY_SELECT = `
   id,
@@ -169,7 +153,31 @@ export async function listSlaActivityForPolicy(
       return [];
     }
 
-    return (data ?? []) as SlaActivityView[];
+    const rows = (data ?? []) as Array<{
+      id: string;
+      organization_id: string;
+      event_type: string;
+      actor_user_id: string | null;
+      incident_id: string | null;
+      message: string | null;
+      metadata: unknown;
+      created_at: string;
+    }>;
+
+    return rows.map((row) => ({
+      id: String(row.id),
+      organization_id: String(row.organization_id),
+      event_type: String(row.event_type),
+      actor_user_id: row.actor_user_id,
+      incident_id: row.incident_id,
+      message: row.message,
+      metadata:
+        row.metadata && typeof row.metadata === "object" && !Array.isArray(row.metadata)
+          ? (row.metadata as Record<string, unknown>)
+          : {},
+      created_at: String(row.created_at),
+      actor: null,
+    }));
   } catch (error) {
     console.warn("[sla] listSlaActivityForPolicy failed:", error);
     return [];

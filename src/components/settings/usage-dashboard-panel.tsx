@@ -5,6 +5,7 @@ import type { UsageDashboardData } from "@/lib/billing/types";
 import type { EntitlementsUsageSummary } from "@/lib/entitlements/types";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { LinkButton } from "@/components/ui/link-button";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import { cn } from "@/lib/utils/cn";
 
 type UsageDashboardPanelProps = {
@@ -29,6 +30,7 @@ function UsageBar({ percent }: { percent: number | null }) {
 
 export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelProps) {
   const { entitlements: resolved } = entitlements;
+  const { formatNumber } = useWorkspaceMoney();
 
   return (
     <div className="space-y-8">
@@ -63,11 +65,11 @@ export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelP
                 <div>
                   <p className="text-sm font-medium capitalize text-foreground">{metric.label}s</p>
                   <p className="mt-1 text-2xl font-semibold text-foreground">
-                    {metric.used.toLocaleString()}
+                    {formatNumber(metric.used)}
                     {metric.limit !== null ? (
                       <span className="text-sm font-normal text-muted">
                         {" "}
-                        / {metric.limit.toLocaleString()}
+                        / {formatNumber(metric.limit)}
                       </span>
                     ) : (
                       <span className="text-sm font-normal text-muted"> / Unlimited</span>
@@ -88,7 +90,7 @@ export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelP
                 <UsageBar percent={metric.percentUsed} />
               </div>
               {metric.remaining !== null ? (
-                <p className="mt-2 text-xs text-muted">{metric.remaining.toLocaleString()} remaining</p>
+                <p className="mt-2 text-xs text-muted">{formatNumber(metric.remaining)} remaining</p>
               ) : (
                 <p className="mt-2 text-xs text-muted">Unlimited on your plan</p>
               )}
@@ -130,11 +132,11 @@ export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelP
                 <div>
                   <p className="text-sm font-medium text-foreground">{metric.label}</p>
                   <p className="mt-1 text-2xl font-semibold text-foreground">
-                    {metric.used.toLocaleString()}
+                    {formatNumber(metric.used)}
                     {metric.limit !== null ? (
                       <span className="text-sm font-normal text-muted">
                         {" "}
-                        / {metric.limit.toLocaleString()} {metric.unit}
+                        / {formatNumber(metric.limit)} {metric.unit}
                       </span>
                     ) : (
                       <span className="text-sm font-normal text-muted"> {metric.unit}</span>
@@ -155,7 +157,7 @@ export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelP
                 <UsageBar percent={metric.percentUsed} />
               </div>
               {metric.remaining !== null ? (
-                <p className="mt-2 text-xs text-muted">{metric.remaining.toLocaleString()} remaining</p>
+                <p className="mt-2 text-xs text-muted">{formatNumber(metric.remaining)} remaining</p>
               ) : (
                 <p className="mt-2 text-xs text-muted">Unlimited on your plan</p>
               )}
@@ -189,12 +191,12 @@ export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelP
               {data.trends.map((trend) => (
                 <tr key={trend.key} className="border-b border-border/40">
                   <td className="py-3 pr-4 font-medium text-foreground">{trend.label}</td>
-                  <td className="py-3 pr-4 text-muted">{trend.current.toLocaleString()}</td>
-                  <td className="py-3 pr-4 text-muted">{trend.previous.toLocaleString()}</td>
+                  <td className="py-3 pr-4 text-muted">{formatNumber(trend.current)}</td>
+                  <td className="py-3 pr-4 text-muted">{formatNumber(trend.previous)}</td>
                   <td className="py-3 pr-4 text-muted">
                     {trend.changePercent === null ? "—" : `${trend.changePercent > 0 ? "+" : ""}${trend.changePercent}%`}
                   </td>
-                  <td className="py-3 text-muted">{trend.projectedEndOfMonth.toLocaleString()}</td>
+                  <td className="py-3 text-muted">{formatNumber(trend.projectedEndOfMonth)}</td>
                 </tr>
               ))}
             </tbody>
@@ -215,8 +217,8 @@ export function UsageDashboardPanel({ data, entitlements }: UsageDashboardPanelP
             >
               <p className="text-sm font-medium text-foreground">{forecast.label}</p>
               <p className="mt-2 text-sm text-muted">
-                Projected {forecast.projectedUsage.toLocaleString()}
-                {forecast.limit !== null ? ` / ${forecast.limit.toLocaleString()}` : ""} ·{" "}
+                Projected {formatNumber(forecast.projectedUsage)}
+                {forecast.limit !== null ? ` / ${formatNumber(forecast.limit)}` : ""} ·{" "}
                 {forecast.daysRemaining} day(s) left
               </p>
               {forecast.likelyOverage && forecast.suggestedUpgrade ? (

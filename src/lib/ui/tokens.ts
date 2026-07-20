@@ -47,15 +47,24 @@ export const tableRowInteractive = [
 /** Section vertical rhythm inside pages. */
 export const pageSection = "space-y-6";
 
+/** Dense section rhythm for nested dashboard widgets. */
+export const pageSectionDense = "space-y-4";
+
 /** Page content max width wrapper. */
 export const pageContainer = "mx-auto w-full max-w-7xl space-y-8";
 
+/** Standard metric value display. */
+export const metricValue = "text-3xl font-bold tracking-tight text-foreground";
+
+/** Standard metric label under/above a KPI. */
+export const metricLabel = "text-xs font-medium uppercase tracking-[0.08em] text-muted";
+
 /** Filter tab links for archive/active list views. */
 export const filterTabActive =
-  "text-sm font-semibold text-foreground underline-offset-4 hover:text-primary";
+  `text-sm font-semibold text-foreground underline-offset-4 hover:text-primary ${focusRing}`;
 
 export const filterTabInactive =
-  "text-sm font-medium text-muted transition-colors duration-150 hover:text-foreground";
+  `text-sm font-medium text-muted transition-colors duration-150 hover:text-foreground ${focusRing}`;
 
 /** Sidebar nav scroll region — invisible scrollbar, flex child scroll. */
 export const sidebarNavScroll = "min-h-0 flex-1 overflow-y-auto no-scrollbar";

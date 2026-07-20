@@ -19,6 +19,7 @@ import { CookiePreferencesButton } from "@/components/consent/cookie-preferences
 import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
 
 import { cn } from "@/lib/utils/cn";
+import { focusRing } from "@/lib/ui/tokens";
 
 
 
@@ -74,7 +75,8 @@ function FooterLinkColumn({
             <Link
               href={link.href}
               className={cn(
-                "text-sm hover:underline",
+                "rounded text-sm hover:underline",
+                focusRing,
                 dark
                   ? "text-primary-foreground/70 hover:text-white"
                   : "text-muted hover:text-foreground",
@@ -125,7 +127,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
             {FOOTER_LINKS.slice(0, 4).map((link) => (
 
-              <Link key={link.href} href={link.href} className="hover:text-foreground hover:underline">
+              <Link key={link.href} href={link.href} className={cn("rounded hover:text-foreground hover:underline", focusRing)}>
 
                 {link.label}
 
@@ -172,7 +174,10 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
-                className="mt-4 inline-block text-sm text-primary-foreground/90 hover:text-white hover:underline"
+                className={cn(
+                  "mt-4 inline-block rounded text-sm text-primary-foreground/90 hover:text-white hover:underline",
+                  focusRing,
+                )}
               >
 
                 {SUPPORT_EMAIL}
@@ -180,7 +185,10 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
               </a>
               <p className="mt-2 text-xs text-primary-foreground/60">
                 Sales:{" "}
-                <a href={`mailto:${SALES_EMAIL}`} className="hover:text-white hover:underline">
+                <a
+                  href={`mailto:${SALES_EMAIL}`}
+                  className={cn("rounded hover:text-white hover:underline", focusRing)}
+                >
                   {SALES_EMAIL}
                 </a>
               </p>
@@ -254,7 +262,8 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
               className={cn(
 
-                "text-muted hover:text-foreground hover:underline",
+                "rounded text-muted hover:text-foreground hover:underline",
+                focusRing,
 
                 variant === "portal" && "text-primary-foreground/80 hover:text-primary-foreground",
 
@@ -274,7 +283,8 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
             className={cn(
 
-              "text-muted hover:text-foreground hover:underline",
+              "rounded text-muted hover:text-foreground hover:underline",
+              focusRing,
 
               variant === "portal" && "text-primary-foreground/80 hover:text-primary-foreground",
 

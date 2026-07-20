@@ -17,7 +17,12 @@ export type PlatformHealthSnapshot = {
   configuration: {
     database: boolean;
     supabase: boolean;
-    /** @deprecated Field name kept for compat — now reflects Paddle, not Stripe. */
+    /** Paddle billing configured (sole active provider). */
+    paddle: boolean;
+    /**
+     * @deprecated Alias of `paddle` for older monitors — not Stripe.
+     * Prefer `paddle`.
+     */
     stripe: boolean;
     ai: boolean;
   };
@@ -37,14 +42,15 @@ export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapsho
     supabaseConfigured = false;
   }
 
-  const stripeConfigured = isPaddleConfigured();
+  const paddleConfigured = isPaddleConfigured();
 
   const aiConfigured = isAIProviderConfigured(provider.id);
 
   const configuration = {
     database: database.level !== "unavailable",
     supabase: supabaseConfigured,
-    stripe: stripeConfigured,
+    paddle: paddleConfigured,
+    stripe: paddleConfigured,
     ai: aiConfigured,
   };
 
@@ -52,7 +58,7 @@ export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapsho
     database.level === "unavailable"
       ? "unavailable"
       : configuration.supabase && configuration.database
-        ? configuration.stripe && configuration.ai
+        ? configuration.paddle && configuration.ai
           ? "healthy"
           : "degraded"
         : "degraded";

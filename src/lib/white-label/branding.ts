@@ -8,7 +8,7 @@ import {
 import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
 import type { OrganizationBranding } from "@/types/database";
 import type { WhiteLabelSettings } from "@/types/database";
-import type { ResolvedWhiteLabelBranding, WhiteLabelThemeTokens } from "@/lib/white-label/types";
+import type { ResolvedWhiteLabelBranding } from "@/lib/white-label/types";
 import { buildThemeCssVariables, buildThemeTokens } from "@/lib/white-label/themes";
 import { sanitizeCustomCss } from "@/lib/white-label/validation";
 
@@ -156,7 +156,8 @@ function defaultSettingsRow(organizationName: string): WhiteLabelSettings {
   };
 }
 
-function buildPlatformDefaults(organizationName: string): ResolvedWhiteLabelBranding {
+function buildPlatformDefaults(_organizationName: string): ResolvedWhiteLabelBranding {
+  void _organizationName;
   const platform = getPlatformBrandingDefaults();
   const themeTokens = buildThemeTokens({
     primary: DEFAULT_PRIMARY_COLOR,

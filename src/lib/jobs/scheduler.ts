@@ -43,6 +43,24 @@ export async function isJobDue(jobId: JobId): Promise<boolean> {
   return new Date(schedule.nextRunAt).getTime() <= Date.now();
 }
 
+/** True when a previous execution for this job is still marked running. */
+export async function hasRunningJobExecution(jobId: JobId): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("job_executions")
+    .select("id")
+    .eq("job_id", jobId)
+    .eq("status", "running")
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    return false;
+  }
+
+  return Boolean(data);
+}
+
 export async function advanceJobSchedule(jobId: JobId): Promise<void> {
   const admin = createAdminClient();
   const now = new Date();

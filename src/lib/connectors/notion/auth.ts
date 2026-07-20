@@ -1,5 +1,5 @@
 import { NOTION_CONNECTOR_CONFIG } from "@/lib/connectors/definitions";
-import { buildOAuthEnvKeys, isOAuthConfigured } from "@/lib/connectors/shared/module-config";
+import { buildOAuthEnvKeys } from "@/lib/connectors/shared/module-config";
 import { buildAuthorizeUrl, isConnectorOAuthConfigured } from "@/lib/connectors/oauth";
 
 export const AUTH_CONFIG = NOTION_CONNECTOR_CONFIG;

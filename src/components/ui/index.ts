@@ -1,4 +1,5 @@
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from "./button";
+export { StatusBadge, type StatusBadgeTone } from "./badge";
 export {
   Card,
   CardContent,
@@ -6,21 +7,21 @@ export {
   CardFooter,
   CardHeader,
   CardTitle,
-  DataTableShell,
-  InteractiveCardLink,
 } from "./card";
 export { Dialog } from "./dialog";
 export { EmptyState } from "./empty-state";
+export { CompactEmptyState } from "./compact-empty-state";
 export { FormAlert } from "./form-alert";
-export { DangerZone, FormFooter, FormRoot, FormSection } from "./form-section";
+export { FormFooter, FormRoot, FormSection } from "./form-section";
 export { ConfirmActionButton } from "./confirm-action-button";
 export { ConfirmDialog } from "./confirm-dialog";
 export { ArchiveFilterTabs } from "./archive-filter-tabs";
 export { PageSurface, PageSurfaceHeading } from "./page-surface";
 export { Icon, type IconSize } from "./icon";
 export { Input } from "./input";
-export { LoadingButton } from "./loading-button";
+export { LinkButton } from "./link-button";
 export { LoadingCard } from "./loading-card";
+export { MetricCardGrid, type MetricCardItem } from "./metric-card-grid";
 export { Select, type SelectOption } from "./select";
 export { Skeleton, SkeletonText } from "./skeleton";
 export { Spinner } from "./spinner";
@@ -39,7 +40,6 @@ export {
   AuroraTableRow,
 } from "./table";
 export {
-  ClickableCard,
   InteractiveSurface,
   LinkOverlay,
   RowInteractiveLink,
@@ -49,10 +49,7 @@ export {
 } from "./interactive-surface";
 export { ClickableRow } from "./clickable-row";
 export {
-  BodyText,
   CardHeading,
-  EyebrowText,
-  LabelText,
   MutedText,
   PageDescription,
   PageTitle,

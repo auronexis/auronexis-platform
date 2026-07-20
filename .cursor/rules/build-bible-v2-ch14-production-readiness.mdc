@@ -1,0 +1,31 @@
+---
+description: Auroranexis Build Bible V2 Chapter 14 — Enterprise deployment & production readiness
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 14 (Production Readiness)
+
+Spec: `docs/16_BUILD_BIBLE_V2_CHAPTER_14_PRODUCTION_READINESS.md`
+
+## Canonical ops docs
+
+- Deploy: `docs/enterprise-deployment.md`
+- Checklist: `docs/enterprise-release-checklist.md`
+- Rollback: `docs/rollback-plan.md`
+- DR: `docs/disaster-recovery.md`
+- Env template: `.env.example` (Paddle-first)
+
+## Rules
+
+- Deployment preparation only — do not production-deploy, commit, or push from Chapter 14.
+- Do not modify business logic, authentication, authorization, RBAC, RLS, Paddle billing behaviour, or API contracts.
+- Do not execute production database migrations from this chapter.
+- Keep secrets server-only; never add `NEXT_PUBLIC_` to service role, Paddle API, webhook, or cron secrets.
+- Prefer updating canonical enterprise docs over proliferating versioned Stripe-era deploy notes.
+- Production cron cadence must cover 5-minute jobs (`webhook_retries`, `queue_worker`).
+- CI must gate on lint, typecheck, build, and production-readiness / regression suites.
+
+## Abandoned configuration
+
+- `BILLING_PROVIDER` is not a runtime switch — Paddle is sole active provider.
+- Stripe env vars / `/api/stripe/*` must not be reintroduced as active paths.

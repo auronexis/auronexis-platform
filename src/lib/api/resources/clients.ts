@@ -17,6 +17,18 @@ const clientBodySchema = z.object({
   notes: z.string().trim().optional().nullable(),
 });
 
+/** Public API create body — subset of clientBodySchema used by POST /clients. */
+export const clientCreateBodySchema = clientBodySchema.pick({
+  name: true,
+  status: true,
+  contactName: true,
+  contactEmail: true,
+  notes: true,
+});
+
+/** Public API update body — partial create fields. */
+export const clientUpdateBodySchema = clientCreateBodySchema.partial();
+
 export async function apiListClients(
   ctx: ApiContext,
   options?: { status?: string; search?: string },
@@ -83,6 +95,27 @@ export async function apiCreateClient(ctx: ApiContext, body: unknown) {
 export async function apiUpdateClient(ctx: ApiContext, clientId: string, body: unknown) {
   const parsed = clientBodySchema.partial().parse(body);
   const admin = createAdminClient();
+
+  if (parsed.status && parsed.status !== "archived") {
+    const { data: existing } = await admin
+      .from("clients")
+      .select("status")
+      .eq("id", clientId)
+      .eq("organization_id", ctx.organization.id)
+      .maybeSingle();
+
+    const previousStatus = (existing as { status?: string } | null)?.status;
+    if (previousStatus === "archived") {
+      const limit = await assertCanCreateClient(
+        ctx.organization.id,
+        ctx.userId ?? ctx.organization.id,
+      );
+      if (!limit.allowed) {
+        throw new Error(limit.message ?? "Client limit reached.");
+      }
+    }
+  }
+
   const { data, error } = await admin
     .from("clients")
     .update({

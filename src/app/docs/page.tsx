@@ -9,17 +9,13 @@ import { COMPANY_NAME, DOCS_URL, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { DOCS_HUB_DOC, DOC_HUB_CARDS } from "@/lib/docs/registry";
 import { JsonLdScript } from "@/lib/marketing/seo";
-import { createPageMetadata } from "@/lib/seo";
+import { createPageMetadataForPath } from "@/lib/seo";
 import { collectionPageGraphJsonLd } from "@/lib/seo/geo-schema";
 import { cn } from "@/lib/utils/cn";
 import { getAuroraModule, auroraSurfaceInteractive } from "@/lib/ui/aurora";
 import { focusRing } from "@/lib/ui/tokens";
 
-export const metadata: Metadata = createPageMetadata({
-  title: "Documentation",
-  description: `${COMPANY_NAME} product documentation hub for agencies and operations teams.`,
-  path: "/docs",
-});
+export const metadata: Metadata = createPageMetadataForPath("/docs");
 
 const HUB_ICONS = {
   "getting-started": BookOpen,
@@ -147,7 +143,7 @@ export default function DocsHubPage() {
                 </a>
               </li>
               <li>
-                <Link href="/api/docs" className="hover:text-white hover:underline">
+                <Link href="/docs/api" className="hover:text-white hover:underline">
                   OpenAPI reference
                 </Link>
               </li>

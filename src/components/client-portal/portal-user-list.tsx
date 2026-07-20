@@ -1,4 +1,5 @@
 import { DisablePortalUserButton } from "@/components/client-portal/disable-portal-user-button";
+import { StatusBadge } from "@/components/ui/badge";
 import type { ClientPortalUser } from "@/types/database";
 
 type PortalUserListProps = {
@@ -19,15 +20,9 @@ export function PortalUserList({ users }: PortalUserListProps) {
             <p className="text-sm text-muted">{user.email}</p>
           </div>
           <div className="flex items-center gap-3">
-            <span
-              className={
-                user.is_active
-                  ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700"
-                  : "inline-flex rounded-full bg-muted/10 px-2.5 py-0.5 text-xs font-medium text-muted"
-              }
-            >
+            <StatusBadge tone={user.is_active ? "success" : "muted"}>
               {user.is_active ? "Active" : "Disabled"}
-            </span>
+            </StatusBadge>
             {user.is_active ? <DisablePortalUserButton portalUserId={user.id} /> : null}
           </div>
         </li>

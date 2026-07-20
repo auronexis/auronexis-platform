@@ -18,12 +18,14 @@ export function Spinner({ size = "md", className, label = "Loading" }: SpinnerPr
   return (
     <span
       role="status"
-      aria-label={label}
+      aria-live="polite"
       className={cn(
         "inline-block animate-spin rounded-full border-current border-r-transparent",
         sizeStyles[size],
         className,
       )}
-    />
+    >
+      <span className="sr-only">{label}</span>
+    </span>
   );
 }

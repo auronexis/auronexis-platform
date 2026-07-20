@@ -26,6 +26,18 @@ export function mapPaddleSubscriptionStatus(
   }
 }
 
+/**
+ * True only when Paddle scheduled_change action is cancel.
+ * Plan changes / pauses must not set cancel_at_period_end.
+ */
+export function isPaddleCancelScheduledChange(scheduledChange: unknown): boolean {
+  if (!scheduledChange || typeof scheduledChange !== "object") {
+    return false;
+  }
+  const action = (scheduledChange as Record<string, unknown>).action;
+  return typeof action === "string" && action.trim().toLowerCase() === "cancel";
+}
+
 export function mapPaddleTransactionStatus(
   paddleStatus: string | null | undefined,
 ): string {

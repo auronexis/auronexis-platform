@@ -3,6 +3,7 @@ import {
   DELIVERY_STATUS_LABELS,
   formatDeliveryDateTime,
 } from "@/lib/reports/email-types";
+import { StatusBadge } from "@/components/ui/badge";
 
 type ReportEmailHistoryProps = {
   deliveries: ReportEmailDeliveryView[];
@@ -20,19 +21,19 @@ export function ReportEmailHistory({ deliveries }: ReportEmailHistoryProps) {
       <table className="min-w-full divide-y divide-border">
         <thead className="bg-muted/10">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
               Recipient
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
               Sent
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
               Resend ID
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted">
               Error
             </th>
           </tr>
@@ -44,17 +45,17 @@ export function ReportEmailHistory({ deliveries }: ReportEmailHistoryProps) {
                 {delivery.recipient_email}
               </td>
               <td className="whitespace-nowrap px-6 py-4">
-                <span
-                  className={
+                <StatusBadge
+                  tone={
                     delivery.status === "sent"
-                      ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700"
+                      ? "success"
                       : delivery.status === "failed"
-                        ? "inline-flex rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-critical"
-                        : "inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-warning"
+                        ? "danger"
+                        : "warning"
                   }
                 >
                   {DELIVERY_STATUS_LABELS[delivery.status]}
-                </span>
+                </StatusBadge>
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm text-muted">
                 {formatDeliveryDateTime(delivery.sent_at ?? delivery.created_at)}

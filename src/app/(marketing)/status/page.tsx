@@ -4,19 +4,15 @@ import { Suspense } from "react";
 import { Activity } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { PublicAppLink } from "@/components/marketing/public-app-link";
-import { StatusBadge, type StatusLevel } from "@/components/marketing/status-badge";
+import { StatusBadge } from "@/components/marketing/status-badge";
 import { STATUS_COMPONENTS_STATIC } from "@/lib/marketing/content";
 import {
   filterPublicStatusComponents,
-  resolvePublicAiStatus,
+  getLiveStatusOverrides,
   resolvePublicOverallStatus,
   type PublicStatusComponent,
 } from "@/lib/marketing/public-status";
 import { COMPANY_NAME } from "@/lib/company/contact";
-import { checkDatabaseHealth, type DatabaseHealthLevel } from "@/lib/diagnostics/platform-health";
-import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
-import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
-import { isPaddleConfigured } from "@/lib/paddle/env";
 import { cn } from "@/lib/utils/cn";
 
 export const metadata: Metadata = createPageMetadataForPath("/status");
@@ -24,94 +20,9 @@ export const metadata: Metadata = createPageMetadataForPath("/status");
 /** Live probes require runtime env — skip static prerender at build time. */
 export const dynamic = "force-dynamic";
 
-type StatusComponent = PublicStatusComponent;
-
-function mapHealth(ok: boolean, degraded = false): StatusLevel {
-  if (ok) return "operational";
-  if (degraded) return "degraded";
-  return "incident";
-}
-
-function mapDatabaseLevel(level: DatabaseHealthLevel): StatusLevel {
-  if (level === "healthy") return "operational";
-  if (level === "degraded") return "degraded";
-  return "incident";
-}
-
-async function getLiveStatusOverrides(): Promise<Record<string, StatusComponent>> {
-  const [database, cron, queue] = await Promise.all([
-    checkDatabaseHealth(),
-    getCronDiagnosticsSnapshot(),
-    getQueueDiagnosticsSnapshot(),
-  ]);
-  const billingConfigured = isPaddleConfigured();
-
-  const aiStatus = await resolvePublicAiStatus();
-
-  return {
-    Platform: {
-      name: "Platform",
-      status: mapDatabaseLevel(database.level),
-      detail: database.level === "healthy" ? "Application services available" : database.message,
-    },
-    API: {
-      name: "API",
-      status: database.level === "unavailable" ? "incident" : "operational",
-      detail: "Application and authenticated API routes",
-    },
-    Database: {
-      name: "Database",
-      status: mapDatabaseLevel(database.level),
-      detail: database.level === "healthy" ? "Data services available" : "Data services impacted",
-    },
-    Billing: {
-      name: "Billing",
-      status: billingConfigured ? "operational" : "degraded",
-      detail: billingConfigured
-        ? "Subscription billing available"
-        : "Billing availability limited",
-    },
-    AI: {
-      name: "AI",
-      status: aiStatus.status,
-      detail: aiStatus.detail,
-    },
-    Connectors: {
-      name: "Connectors",
-      status: "operational",
-      detail: "Integration infrastructure available",
-    },
-    Automation: {
-      name: "Automation",
-      status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
-      detail: "Workflow execution services",
-    },
-    Cron: {
-      name: "Cron",
-      status: mapHealth(cron.tableReachable && cron.status !== "unavailable", cron.status === "degraded"),
-      detail: "Scheduled maintenance jobs",
-    },
-    Queue: {
-      name: "Queue",
-      status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
-      detail: "Background processing",
-    },
-    Observability: {
-      name: "Observability",
-      status:
-        process.env.NEXT_PUBLIC_SENTRY_DSN ||
-        process.env.NEXT_PUBLIC_POSTHOG_KEY ||
-        process.env.SENTRY_DSN
-          ? "operational"
-          : "maintenance",
-      detail: "Platform monitoring",
-    },
-  };
-}
-
 export default async function StatusPage() {
   const overrides = await getLiveStatusOverrides();
-  const components: StatusComponent[] = filterPublicStatusComponents(
+  const components: PublicStatusComponent[] = filterPublicStatusComponents(
     STATUS_COMPONENTS_STATIC.map((item) => {
       const live = overrides[item.name];
       return live ?? { name: item.name, status: item.status, detail: item.detail };
@@ -151,7 +62,7 @@ export default async function StatusPage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
+      <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
         <div
           className={cn(
             "rounded-2xl border p-6",
@@ -177,7 +88,7 @@ export default async function StatusPage() {
             </li>
           ))}
         </ul>
-      </main>
+      </div>
     </MarketingShell>
   );
 }

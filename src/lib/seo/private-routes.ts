@@ -9,6 +9,8 @@ export const PRIVATE_ROUTE_PREFIXES = [
   "/client-portal",
   "/api/",
   "/webhooks",
+  "/auth",
+  "/legal",
   "/sales",
   "/invite",
   "/profile",
@@ -46,7 +48,11 @@ export const NOINDEX_ROUTES = [
 
 /** True when a path belongs to a private authenticated or internal surface. */
 export function isPrivateRoute(path: string): boolean {
-  return PRIVATE_ROUTE_PREFIXES.some(
-    (prefix) => path === prefix || path.startsWith(prefix),
-  );
+  const pathname = path.split("?")[0] || "/";
+  return PRIVATE_ROUTE_PREFIXES.some((prefix) => {
+    if (prefix.endsWith("/")) {
+      return pathname === prefix.slice(0, -1) || pathname.startsWith(prefix);
+    }
+    return pathname === prefix || pathname.startsWith(`${prefix}/`);
+  });
 }

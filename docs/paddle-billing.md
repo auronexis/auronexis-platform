@@ -1,18 +1,17 @@
 # Paddle Billing Integration
 
-Production-safe dual-provider billing. Stripe remains fully intact.
+Auroranexis uses **Paddle as the sole active billing provider**. Stripe schema and diagnostic rows may remain as a historical archive only — they never drive checkout, portal, or entitlements.
 
 ## Status
 
-- Stripe: production history preserved
-- Paddle: sandbox-ready when `BILLING_PROVIDER=paddle` and price IDs are configured
-- Production Paddle cutover requires explicit owner approval (do not automate)
+- **Active provider:** Paddle (always — `getActiveBillingProvider()` returns `"paddle"`)
+- **Archive:** Stripe columns/tables may exist for diagnostics; never selected for new commerce
+- `BILLING_PROVIDER` env is ignored for provider selection
 
 ## Environment variables (names only)
 
 | Name | Scope | Notes |
 |------|-------|-------|
-| `BILLING_PROVIDER` | server | `stripe` (default) or `paddle` |
 | `PADDLE_API_KEY` | server-only | Never expose to browser |
 | `PADDLE_WEBHOOK_SECRET` | server-only | Signature verification |
 | `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | browser-safe | Paddle.js token |
@@ -20,61 +19,51 @@ Production-safe dual-provider billing. Stripe remains fully intact.
 | `PADDLE_PRICE_PROFESSIONAL_MONTHLY` | server | `pri_…` from Paddle |
 | `PADDLE_PRICE_BUSINESS_MONTHLY` | server | `pri_…` from Paddle |
 | `PADDLE_PRICE_ENTERPRISE_MONTHLY` | server | optional; Enterprise remains quotation-first |
+| `GA4_API_SECRET` | server-only | Optional server commercial analytics (Measurement Protocol) |
 
-## Apply database migration (owner)
+## Authoritative modules
 
-If `20250717000000_paddle_billing.sql` has not been applied yet:
+| Concern | Location |
+|---------|----------|
+| Checkout payload | `src/lib/paddle/checkout.ts` |
+| Webhooks + commercial events | `src/lib/paddle/webhooks.ts`, `src/app/api/paddle/webhook/route.ts` |
+| Idempotency | `src/lib/paddle/idempotency.ts` |
+| Sync / upsert | `src/lib/paddle/sync.ts` |
+| Customer portal | `src/lib/paddle/portal.ts` |
+| Entitlements | `src/lib/entitlements/resolver.ts` |
+| Plan catalog | `src/lib/billing/plans.ts` |
+| Commercial event names | `src/lib/billing/commercial-events.ts` |
 
-1. Open Supabase Dashboard → SQL Editor for the production project.
-2. Paste the full contents of `supabase/migrations/20250717000000_paddle_billing.sql`.
-3. Run the script once.
-4. Confirm these objects exist:
-   - columns on `organization_subscriptions`: `billing_provider`, `provider_customer_id`, `provider_subscription_id`, `provider_price_id`, `provider_status`, `sync_pending`
-   - table `paddle_webhook_events`
-   - table `billing_provider_transactions`
-5. Do not drop Stripe columns or `customer_invoices`.
+## Database migrations
 
-Optional CLI: `supabase db push` (only if your CLI is pointed at the correct project).
+1. `20250717000000_paddle_billing.sql` — Paddle columns, `paddle_webhook_events`, `billing_provider_transactions`
+2. `20250718160000_paddle_billing_v2_stripe_archive.sql` — archive views for historical Stripe data
 
-## Sandbox activation checklist
+Do not drop archive Stripe columns used by diagnostics.
 
-1. Confirm Vercel has all `PADDLE_*` price IDs and secrets (already done if this report says so).
-2. Set `BILLING_PROVIDER=paddle` in Vercel if not already set (defaults to `stripe`).
-3. Keep `PADDLE_ENVIRONMENT=sandbox`.
-4. Redeploy after any env change.
-5. Confirm webhook destination: `https://auroranexis.com/api/paddle/webhook`
+## Checkout rules
 
-## Legal review TODO
+- Public pricing: `/pricing`
+- Authenticated checkout: `/settings/plans` (Paddle.js overlay)
+- Access is **never** granted from browser success alone — webhook/server reconciliation required
+- Duplicate self-serve subscriptions blocked via checkout guards + single subscription row per org
 
-- [ ] Qualified German/EU counsel must review `/terms` (including Paddle MoR section) and `/refund-policy` before any compliance claim.
-- Existing German liability, governing law, and jurisdiction clauses were retained deliberately.
+## Customer portal
 
-## Checkout location
+- `/settings/billing` → Paddle customer portal session (`ctm_` customer required)
+- Invoices/PDFs from `billing_provider_transactions` + Paddle invoice PDF API
 
-- Public pricing: `/pricing` (plan CTAs lead to signup / workspace plans)
-- Authenticated checkout: `/settings/plans` opens Paddle.js overlay when provider is paddle
-- Access is never granted from browser success alone — webhook/server reconciliation required
+## Webhooks
 
-## Legal pages
+- Endpoint: `/api/paddle/webhook`
+- Signature required (`paddle-signature`)
+- Idempotent via `paddle_webhook_events` (including stale `processing` retry after 5 minutes)
+- Commercial analytics emitted after successful process (privacy-safe, no org IDs)
 
-- Terms: `/terms` (extended with Paddle Merchant of Record section; German liability/governing law retained)
-- Refund policy: `/refund-policy` (public, footer + sitemap)
-- **Legal review required** by qualified German/EU counsel before relying on these texts for compliance claims
+## Entitlements
 
-## Rollback
+Single authoritative resolve: `resolveOrganizationEntitlements` — Paddle subscription → price → `PLAN_ENTITLEMENTS`.
 
-1. Set `BILLING_PROVIDER=stripe` and redeploy
-2. Optionally drop additive tables/columns per rollback notes in the migration
-3. Stripe columns, invoices, and webhook history remain untouched
+## Validation
 
-## Production cutover checklist (owner-only)
-
-- [ ] Paddle live approval
-- [ ] Production API key, client token, webhook secret
-- [ ] Production price IDs
-- [ ] Approved checkout domain
-- [ ] `PADDLE_ENVIRONMENT=production`
-- [ ] Verified live webhook delivery
-- [ ] Legal pages live and counsel-reviewed
-- [ ] Controlled real purchase test
-- [ ] Stripe remains available until Paddle is proven
+`npm run test:paddle-billing`, `npm run test:build-bible-ch12`, `npm run lint`, `npm run typecheck`, `npm run build`.

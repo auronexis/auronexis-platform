@@ -1,8 +1,8 @@
 import type { CustomerSuccessRecord } from "@/types/database";
-import Link from "next/link";
 import { HeartHandshake } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { updateCustomerSuccessForm } from "@/lib/sales/actions";
 
 type CustomerSuccessTableProps = {
@@ -18,9 +18,9 @@ export function CustomerSuccessTable({ records, canManage }: CustomerSuccessTabl
         title="No customer success records yet"
         description="Enroll founding customers to track onboarding milestones, renewal health, and pilot outcomes."
         action={
-          <Link href="/sales/onboarding">
-            <Button size="sm">Open onboarding</Button>
-          </Link>
+          <LinkButton href="/sales/onboarding" size="sm">
+            Open onboarding
+          </LinkButton>
         }
       />
     );

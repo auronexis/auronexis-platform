@@ -430,11 +430,9 @@ export function BillingSettingsPanel({
             >
               Open Billing Portal
             </Button>
-            <Link href="/settings/plans">
-              <Button type="button" variant="secondary">
-                Change Plan
-              </Button>
-            </Link>
+            <LinkButton href="/settings/plans" variant="secondary">
+              Change Plan
+            </LinkButton>
             {showCancelSubscription ? (
               <Button
                 type="button"
@@ -637,9 +635,7 @@ export function BillingSettingsPanel({
           ) : null}
           {!overview.isUsable && !showPortal ? (
             <FormFooter className="border-t-0 pt-0">
-              <Link href="/settings/plans">
-                <Button type="button">Choose a plan</Button>
-              </Link>
+              <LinkButton href="/settings/plans">Choose a plan</LinkButton>
               <LinkButton href="/settings/usage" variant="secondary" size="md">
                 Usage dashboard
               </LinkButton>

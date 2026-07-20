@@ -1,4 +1,5 @@
 import type { ReportTemplate } from "@/types/database";
+import { formatAppDate } from "@/lib/i18n";
 
 export type ReportTemplateListItem = ReportTemplate & {
   users: { full_name: string } | null;
@@ -45,13 +46,5 @@ export function emptyReportTemplateContent(): ReportTemplateContent {
 }
 
 export function formatTemplateDate(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatAppDate(value);
 }

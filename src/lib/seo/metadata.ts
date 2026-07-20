@@ -81,8 +81,9 @@ function resolveOpenGraphImageUrl(): string {
   return new URL(BRANDING_ASSETS.openGraph, resolveMetadataBase()).toString();
 }
 
+/** Same 1200×630 asset as Open Graph — consistent link previews across Google/Bing/X. */
 function resolveTwitterImageUrl(): string {
-  return new URL(BRANDING_ASSETS.linkedinBanner, resolveMetadataBase()).toString();
+  return resolveOpenGraphImageUrl();
 }
 
 /** Canonical metadata builder for public marketing, legal, and docs pages. */
@@ -101,12 +102,17 @@ export function createPageMetadata({
     description,
     metadataBase: resolveMetadataBase(),
     applicationName: PLATFORM_NAME,
+    authors: [{ name: COMPANY_INFORMATION.legalName }],
     creator: COMPANY_INFORMATION.legalName,
     publisher: COMPANY_INFORMATION.legalName,
+    category: "technology",
     keywords: keywords ?? [...DEFAULT_KEYWORDS],
     alternates: {
       canonical: url.toString(),
-      languages: { en: url.toString() },
+      languages: {
+        en: url.toString(),
+        "x-default": url.toString(),
+      },
     },
     openGraph: {
       type: COMPANY_SEO.openGraph.type,
@@ -130,7 +136,14 @@ export function createPageMetadata({
       description,
       images: [resolveTwitterImageUrl()],
     },
-    robots: indexable ? { index: true, follow: true } : { index: false, follow: false },
+    robots: indexable
+      ? { index: true, follow: true }
+      : {
+          index: false,
+          follow: false,
+          nocache: true,
+          googleBot: { index: false, follow: false, noimageindex: true },
+        },
   };
 }
 
@@ -150,7 +163,16 @@ export function createPageMetadataForPath(path: string, overrides?: Partial<Page
 export function createPrivateAppMetadata(title: string): Metadata {
   return {
     title,
-    robots: { index: false, follow: false },
+    robots: {
+      index: false,
+      follow: false,
+      nocache: true,
+      googleBot: {
+        index: false,
+        follow: false,
+        noimageindex: true,
+      },
+    },
   };
 }
 

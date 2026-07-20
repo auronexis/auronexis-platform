@@ -1,5 +1,5 @@
 import { RelatedKnowledgePanelView } from "@/components/knowledge/related-knowledge-panel";
-import { ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUpgradeCard } from "@/components/ai/ai-usage-card";
 import { DetailSection } from "@/components/layout/detail-page";
 import { buildRelatedKnowledgePanel } from "@/lib/ai/knowledge/get-hub";
 import { requireSession } from "@/lib/auth/session";
@@ -42,7 +42,7 @@ export async function RelatedKnowledgeSection({
       description="Verified historical reports, risks, incidents, and resolutions."
     >
       {!access.allowed ? (
-        <ReportAIUpgradeCard
+        <AIUpgradeCard
           message={getFeatureUpgradeMessage("ai_knowledge_search")}
           requiredPlanLabel={getRequiredPlanLabel("ai_knowledge_search")}
           title="AI Knowledge Hub"

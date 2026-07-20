@@ -206,7 +206,10 @@ export const TIMEZONE_OPTIONS = [
   "Australia/Sydney",
 ] as const;
 
-export const LANGUAGE_OPTIONS = [{ value: "en", label: "English" }] as const;
+export const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" },
+  { value: "de", label: "German" },
+] as const;
 
 export const DATE_FORMAT_OPTIONS: { value: DateFormatPreference; label: string }[] = [
   { value: "DD/MM/YYYY", label: "DD/MM/YYYY" },

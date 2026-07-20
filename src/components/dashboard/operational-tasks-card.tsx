@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import type { OperationalTaskItem } from "@/lib/ai/operational/types";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
@@ -39,11 +37,9 @@ export function OperationalTasksCard({
                 {requiredPlanLabel} plan required
               </p>
             ) : null}
-            <Link href="/settings/plans">
-              <Button type="button" variant="primary" size="sm" className="mt-4">
-                View plans
-              </Button>
-            </Link>
+            <LinkButton href="/settings/plans" variant="primary" size="sm" className="mt-4">
+              View plans
+            </LinkButton>
           </div>
         </div>
       </div>

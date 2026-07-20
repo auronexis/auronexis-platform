@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Sparkles } from "lucide-react";
 import { InsightsWorkspace } from "@/components/insights/insights-workspace";
-import { ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUpgradeCard } from "@/components/ai/ai-usage-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { getOperationalIntelligence } from "@/lib/ai/insights/get-intelligence";
@@ -42,7 +42,7 @@ export default async function DashboardInsightsPage() {
 
       <PageSurface>
         {!aiEnabled ? (
-          <ReportAIUpgradeCard
+          <AIUpgradeCard
             message={getFeatureUpgradeMessage("ai_report_assistant")}
             requiredPlanLabel={getRequiredPlanLabel("ai_report_assistant")}
             title="Operational Intelligence"

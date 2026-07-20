@@ -16,10 +16,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { EscalationRule } from "@/types/database";
 import type { IncidentSeverity, IncidentStatus, RiskSeverity, RiskStatus } from "@/types/database";
 import type { EscalationContext, EscalationTriggerType } from "@/lib/escalation/types";
-import { ESCALATION_TRIGGER_LABELS } from "@/lib/escalation/types";
-
-const ESCALATION_RULE_SELECT =
-  "id, organization_id, name, trigger_type, severity, delay_minutes, notify_owner, notify_assigned_user, create_activity, create_notification, enabled, created_at, updated_at";
+import { ESCALATION_RULE_SELECT, ESCALATION_TRIGGER_LABELS } from "@/lib/escalation/types";
 
 function withEscalationFooter(description: string): string {
   return `${description} ${AUTOMATION_FOOTER}`;

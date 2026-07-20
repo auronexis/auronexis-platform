@@ -22,17 +22,24 @@ export function BillingConversionTracker({
         sessionStorage.setItem(key, "1");
         trackConversionEvent("subscription_checkout_completed", {
           surface: "settings_billing",
+          module: "billing",
           plan_tier: planTier,
+          result: "success",
         });
       }
     }
 
     if (checkoutCancelled) {
-      trackConversionEvent("subscription_checkout_started", {
-        surface: "settings_billing",
-        outcome: "cancelled",
-        plan_tier: planTier,
-      });
+      const key = "auroranexis:billing_checkout_cancelled";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        trackConversionEvent("subscription_checkout_cancelled", {
+          surface: "settings_billing",
+          module: "billing",
+          plan_tier: planTier,
+          result: "cancelled",
+        });
+      }
     }
   }, [checkoutCancelled, checkoutSuccess, planTier]);
 

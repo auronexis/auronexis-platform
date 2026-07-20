@@ -1,19 +1,45 @@
 import "server-only";
 
 import type { AnalyticsEventProps } from "@/lib/analytics/events";
-import { resolveCanonicalEventName } from "@/lib/analytics/taxonomy";
+import { resolveFunnelStage } from "@/lib/analytics/funnel";
+import { getEventCategory, resolveCanonicalEventName } from "@/lib/analytics/taxonomy";
 
 const GA4_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
 const GA4_API_SECRET = process.env.GA4_API_SECRET?.trim();
 
+const BLOCKED_PROP_KEYS = new Set([
+  "email",
+  "name",
+  "full_name",
+  "phone",
+  "address",
+  "password",
+  "token",
+  "secret",
+  "api_key",
+  "organization_id",
+  "workspace_id",
+  "user_id",
+  "session_id",
+  "client_id",
+  "customer_id",
+  "subscription_id",
+  "invoice_id",
+  "prompt",
+  "completion",
+]);
+
 function sanitizeServerProps(props?: AnalyticsEventProps): AnalyticsEventProps | undefined {
   if (!props) return undefined;
 
-  const blocked = /email|name|phone|address|password|token|secret|workspace|organization|client|stripe|api_key|customer/i;
   const safe: AnalyticsEventProps = {};
 
   for (const [key, value] of Object.entries(props)) {
-    if (blocked.test(key)) continue;
+    const normalized = key.trim().toLowerCase().replace(/-/g, "_");
+    if (BLOCKED_PROP_KEYS.has(normalized)) continue;
+    if (normalized.includes("password") || normalized.includes("secret") || normalized.includes("api_key")) {
+      continue;
+    }
     if (typeof value === "string" && (value.includes("@") || value.length > 120)) continue;
     safe[key] = value;
   }
@@ -21,7 +47,11 @@ function sanitizeServerProps(props?: AnalyticsEventProps): AnalyticsEventProps |
   return Object.keys(safe).length > 0 ? safe : undefined;
 }
 
-/** Fire a server-side conversion to GA4 Measurement Protocol — optional, fail-silent. */
+/**
+ * Fire a server-side conversion to GA4 Measurement Protocol — optional, fail-silent.
+ * Integration point for billing lifecycle / server conversions (see billing-lifecycle.ts).
+ * Never include organization, customer, or secret identifiers.
+ */
 export async function trackServerAnalyticsEvent(
   name: string,
   props?: AnalyticsEventProps,
@@ -29,7 +59,13 @@ export async function trackServerAnalyticsEvent(
   if (!GA4_MEASUREMENT_ID || !GA4_API_SECRET) return;
 
   const canonicalName = resolveCanonicalEventName(name);
-  const safeProps = sanitizeServerProps(props);
+  const category = getEventCategory(canonicalName);
+  const funnelStage = resolveFunnelStage(canonicalName);
+  const safeProps = sanitizeServerProps({
+    ...props,
+    event_category: category,
+    ...(funnelStage ? { funnel_stage: funnelStage } : {}),
+  });
   const clientId = `server.${Date.now()}`;
 
   const payload = {

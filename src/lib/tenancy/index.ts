@@ -5,3 +5,4 @@ export {
   type SessionContext,
   type NavItem,
 } from "./context";
+export { requireOrganizationId } from "./organization-scope";

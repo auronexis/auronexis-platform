@@ -15,6 +15,7 @@ import {
 import { KnowledgeHealthCard } from "@/components/knowledge/knowledge-health-card";
 import { AIErrorAlert } from "@/components/ai/ai-error-alert";
 import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -330,19 +331,27 @@ export function KnowledgeHubWorkspace({
           <Button
             key={key}
             type="button"
+            id={`knowledge-tab-${key}`}
             size="sm"
             variant={tab === key ? "primary" : "outline"}
             onClick={() => setTab(key)}
             role="tab"
             aria-selected={tab === key}
+            aria-controls={`knowledge-panel-${key}`}
+            tabIndex={tab === key ? 0 : -1}
           >
             {TAB_LABELS[key]}
           </Button>
         ))}
       </div>
 
-      <TabContent tab={tab} items={filteredItems} onGenerateArticle={canGenerate ? generateArticle : undefined} />
-
+      <div
+        id={`knowledge-panel-${tab}`}
+        role="tabpanel"
+        aria-labelledby={`knowledge-tab-${tab}`}
+      >
+        <TabContent tab={tab} items={filteredItems} onGenerateArticle={canGenerate ? generateArticle : undefined} />
+      </div>
       {canGeneratePlaybooks ? (
         <section aria-labelledby="playbook-generation-heading" className="rounded-2xl border border-border bg-surface/80 p-5">
           <h2 id="playbook-generation-heading" className="text-lg font-semibold text-foreground">
@@ -431,9 +440,9 @@ function TabContent({
         description={empty.description}
         action={
           empty.href && empty.cta ? (
-            <Link href={empty.href}>
-              <Button size="sm">{empty.cta}</Button>
-            </Link>
+            <LinkButton href={empty.href} size="sm">
+              {empty.cta}
+            </LinkButton>
           ) : undefined
         }
       />

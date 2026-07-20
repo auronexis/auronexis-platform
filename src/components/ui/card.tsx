@@ -1,5 +1,4 @@
-import type { HTMLAttributes, ReactNode } from "react";
-import Link from "next/link";
+import type { HTMLAttributes } from "react";
 import { auroraSurface, auroraSurfaceInteractive } from "@/lib/ui/aurora";
 import { cardInteractive } from "@/lib/ui/motion";
 import { cn } from "@/lib/utils/cn";
@@ -82,35 +81,4 @@ type CardFooterProps = HTMLAttributes<HTMLDivElement>;
 
 export function CardFooter({ className, ...props }: CardFooterProps) {
   return <div className={cn("mt-6 flex items-center gap-3", className)} {...props} />;
-}
-
-type InteractiveCardLinkProps = {
-  href: string;
-  className?: string;
-  children: ReactNode;
-};
-
-/** Card-styled navigation tile with consistent hover elevation. */
-export function InteractiveCardLink({ href, className, children }: InteractiveCardLinkProps) {
-  return (
-    <Link
-      href={href}
-      className={cn("block", auroraSurfaceInteractive, cardInteractive, "p-6", className)}
-    >
-      {children}
-    </Link>
-  );
-}
-
-/** Table/list wrapper with card chrome and no inner padding. */
-export function DataTableShell({
-  className,
-  children,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <Card padding="none" variant="aurora" className={cn("overflow-hidden", className)} {...props}>
-      {children}
-    </Card>
-  );
 }

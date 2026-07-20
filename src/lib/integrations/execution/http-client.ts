@@ -2,6 +2,7 @@ import "server-only";
 
 import type { HttpMethod } from "@/lib/integrations/types";
 import { sanitizeLogPayload } from "@/lib/integrations/secrets/masking";
+import { assertSafeOutboundUrl } from "@/lib/security/outbound-url";
 
 export type HttpClientAuth =
   | { type: "none" }
@@ -89,6 +90,7 @@ async function sleep(ms: number): Promise<void> {
 }
 
 export async function executeHttpRequest(request: HttpClientRequest): Promise<HttpClientResponse> {
+  const safeUrl = assertSafeOutboundUrl(request.url);
   const timeoutMs = request.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const maxAttempts = Math.max(1, request.maxAttempts ?? DEFAULT_MAX_ATTEMPTS);
   const authHeaders = buildAuthHeaders(request.auth);
@@ -107,7 +109,7 @@ export async function executeHttpRequest(request: HttpClientRequest): Promise<Ht
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const response = await fetch(request.url, {
+      const response = await fetch(safeUrl, {
         method: request.method,
         headers: mergedHeaders,
         body:

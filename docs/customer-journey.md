@@ -25,7 +25,7 @@ Signup → Workspace → Client → Risk → Incident → Report → Compliance 
 | 6 | Report generation | `/reports/new` | Staff+ | Draft → ready workflow |
 | 7 | Report publish | Report detail | Admin+ | Status → published |
 | 8 | Compliance export | `/dashboard/compliance/audit` | Owner/Admin | Export CSV/JSON |
-| 9 | Billing upgrade | `/settings/billing` | Owner | Stripe Checkout (test) |
+| 9 | Billing upgrade | `/settings/billing` | Owner | Paddle Checkout (sandbox/live) |
 | 10 | Portal invite | Client detail | Admin+ | Portal user created |
 | 11 | Portal login | `/client-portal/login` | Portal user | Scoped client view |
 | 12 | Automation | `/automation` | Plan-gated | Workflow list + run |
@@ -71,7 +71,7 @@ Test with pilot accounts — see [pilot-execution.md](./pilot-execution.md).
 | Module smoke | `staging.spec.ts` |
 | Health API | `smoke.spec.ts` |
 
-Manual only: Stripe checkout, OAuth connect, portal invite acceptance.
+Manual only: Paddle checkout, OAuth connect, portal invite acceptance.
 
 ---
 

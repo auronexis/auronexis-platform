@@ -21,10 +21,10 @@ let sinksRegistered = false;
 
 function registerSinksOnce(): void {
   if (sinksRegistered) return;
-  registerAnalyticsSink((name, props) => plausibleSink(name, props));
-  registerAnalyticsSink((name, props) => claritySink(name, props));
-  registerAnalyticsSink((name, props) => posthogSink(name, props));
-  registerAnalyticsSink((name, props) => ga4Sink(name, props));
+  registerAnalyticsSink((name, props) => plausibleSink(name, props), "analytics");
+  registerAnalyticsSink((name, props) => claritySink(name, props), "analytics");
+  registerAnalyticsSink((name, props) => posthogSink(name, props), "analytics");
+  registerAnalyticsSink((name, props) => ga4Sink(name, props), "marketing");
   sinksRegistered = true;
 }
 

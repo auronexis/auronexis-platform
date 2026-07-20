@@ -49,25 +49,3 @@ export function FormFooter({ children, secondary, className }: FormFooterProps) 
     </div>
   );
 }
-
-type DangerZoneProps = {
-  title: string;
-  description: string;
-  children: ReactNode;
-  className?: string;
-};
-
-export function DangerZone({ title, description, children, className }: DangerZoneProps) {
-  return (
-    <section
-      className={cn(
-        "rounded-xl border border-danger/20 bg-danger/[0.02] p-6",
-        className,
-      )}
-    >
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <p className="mt-1 text-sm text-muted">{description}</p>
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}

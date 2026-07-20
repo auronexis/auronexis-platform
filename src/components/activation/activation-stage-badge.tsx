@@ -1,5 +1,5 @@
 import type { ActivationStage } from "@/lib/activation/types";
-import { cn } from "@/lib/utils/cn";
+import { StatusBadge, type StatusBadgeTone } from "@/components/ui/badge";
 
 const STAGE_LABELS: Record<ActivationStage, string> = {
   not_started: "Not started",
@@ -10,13 +10,13 @@ const STAGE_LABELS: Record<ActivationStage, string> = {
   mature: "Mature workspace",
 };
 
-const STAGE_TONES: Record<ActivationStage, string> = {
-  not_started: "bg-muted/15 text-muted border-border",
-  getting_started: "bg-primary/10 text-primary border-primary/20",
-  building_foundation: "bg-info/10 text-info border-info/20",
-  operational: "bg-warning/10 text-warning border-warning/20",
-  activated: "bg-success/10 text-success border-success/20",
-  mature: "bg-muted/10 text-foreground border-border",
+const STAGE_TONES: Record<ActivationStage, StatusBadgeTone> = {
+  not_started: "muted",
+  getting_started: "info",
+  building_foundation: "info",
+  operational: "warning",
+  activated: "success",
+  mature: "neutral",
 };
 
 type ActivationStageBadgeProps = {
@@ -26,15 +26,9 @@ type ActivationStageBadgeProps = {
 
 export function ActivationStageBadge({ stage, className }: ActivationStageBadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
-        STAGE_TONES[stage],
-        className,
-      )}
-    >
+    <StatusBadge tone={STAGE_TONES[stage]} className={className}>
       {STAGE_LABELS[stage]}
-    </span>
+    </StatusBadge>
   );
 }
 

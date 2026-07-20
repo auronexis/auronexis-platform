@@ -22,12 +22,14 @@ No new application features — integration guidance for pilot and GA.
 
 ## Health endpoint
 
-Built-in probe: `GET /api/health`
+Built-in probes: `GET /api/health` and `GET /api/ready`
 
-Returns JSON with:
+Health JSON includes configuration flags for database, Supabase, **Paddle** (`configuration.paddle`; legacy alias `configuration.stripe` mirrors Paddle), and AI.
 
-- Database connectivity
-- Stripe webhook table readiness
+Also monitor:
+
+- Paddle webhook processing (idempotency + diagnostics)
+- Queue / cron job health in Settings → Diagnostics
 - Cron registry status
 - Queue worker metrics
 
@@ -51,7 +53,7 @@ Installed: `posthog-js`
 
 1. Create PostHog project
 2. Set `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST`
-3. Provider: `src/components/observability/posthog-provider.tsx` (root layout)
+3. Provider: `src/components/analytics/analytics-provider.tsx` (consent-gated PostHog)
 4. No init when key unset
 
 ---
@@ -85,7 +87,7 @@ Recommended before GA:
 
 ## Cron monitoring
 
-- Vercel Cron → `/api/cron/run` every 15 minutes
+- Vercel Cron → `/api/cron/run` every 5 minutes
 - Verify `job_runs` recent success in diagnostics
 - Manual: `POST /api/cron/run` with `Authorization: Bearer $CRON_SECRET`
 

@@ -1,0 +1,22 @@
+---
+description: Auroranexis Build Bible V2 Chapter 7 — Performance, caching & scalability
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 7 (Performance / Caching / Scalability)
+
+Spec: `docs/09_BUILD_BIBLE_V2_CHAPTER_07_PERFORMANCE.md`
+
+## Rules
+
+- Prefer Server Components; keep Client Components as interactive islands.
+- Memoize hot loaders with React `cache()` within a request — do not invent stale tenant business caches.
+- Parallelize independent awaits (`Promise.all`); avoid sequential waterfalls.
+- Cap portfolio/list loops; use `mapWithConcurrency` for bounded fan-out.
+- Lazy-load heavy workspaces via `src/components/performance/lazy-workspaces.tsx` when UX-safe.
+- Skip overlapping job executions (`hasRunningJobExecution`) unless force-run.
+- Never weaken auth, RBAC, RLS, or Paddle billing behaviour.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 7 work.

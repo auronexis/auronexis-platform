@@ -16,6 +16,7 @@ import {
 } from "@/lib/report-schedules/schedule";
 import { getReportTemplateRecordById } from "@/lib/report-templates/queries";
 import { applyReportTemplate } from "@/lib/report-templates/types";
+import { clientBelongsToOrganization, userBelongsToOrganization } from "@/lib/clients/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, ReportScheduleFrequency } from "@/types/database";
 
@@ -91,29 +92,11 @@ function parseScheduleForm(formData: FormData) {
 }
 
 async function verifyClientInOrg(organizationId: string, clientId: string): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("clients")
-    .select("id")
-    .eq("id", clientId)
-    .eq("organization_id", organizationId)
-    .neq("status", "archived")
-    .maybeSingle();
-
-  return Boolean(data);
+  return clientBelongsToOrganization(organizationId, clientId, { excludeArchived: true });
 }
 
 async function verifyUserInOrg(organizationId: string, userId: string): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("users")
-    .select("id")
-    .eq("id", userId)
-    .eq("organization_id", organizationId)
-    .eq("is_disabled", false)
-    .maybeSingle();
-
-  return Boolean(data as { id: string } | null);
+  return userBelongsToOrganization(organizationId, userId);
 }
 
 async function verifyTemplateInOrg(

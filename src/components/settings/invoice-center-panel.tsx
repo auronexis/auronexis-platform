@@ -1,5 +1,3 @@
-"use client";
-
 import type { CustomerInvoiceView } from "@/lib/billing/types";
 import {
   billingStatusToneToBadge,
@@ -77,13 +75,13 @@ export function InvoiceCenterPanel({
           <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-border/70 text-left text-muted">
-                <th className="py-2 pr-4 font-medium">{t.invoice}</th>
-                <th className="py-2 pr-4 font-medium">{t.status}</th>
-                <th className="py-2 pr-4 font-medium">{t.amountDue}</th>
-                <th className="py-2 pr-4 font-medium">{t.amountPaid}</th>
-                <th className="py-2 pr-4 font-medium">{t.period}</th>
-                <th className="py-2 pr-4 font-medium">{t.duePaid}</th>
-                <th className="py-2 font-medium">{t.actions}</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t.invoice}</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t.status}</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t.amountDue}</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t.amountPaid}</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t.period}</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t.duePaid}</th>
+                <th scope="col" className="py-2 font-medium">{t.actions}</th>
               </tr>
             </thead>
             <tbody>

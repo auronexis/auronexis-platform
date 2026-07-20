@@ -96,12 +96,23 @@ type AuroraTableHeaderCellProps = ThHTMLAttributes<HTMLTableCellElement>;
 export function AuroraTableHeaderCell({
   className,
   children,
+  scope = "col",
   ...props
 }: AuroraTableHeaderCellProps) {
   return (
-    <th className={cn(auroraTableHeaderCell, className)} {...props}>
+    <th scope={scope} className={cn(auroraTableHeaderCell, className)} {...props}>
       {children}
     </th>
+  );
+}
+
+type AuroraTableCaptionProps = HTMLAttributes<HTMLTableCaptionElement>;
+
+export function AuroraTableCaption({ className, children, ...props }: AuroraTableCaptionProps) {
+  return (
+    <caption className={cn("caption-bottom px-4 py-3 text-left text-sm text-muted", className)} {...props}>
+      {children}
+    </caption>
   );
 }
 

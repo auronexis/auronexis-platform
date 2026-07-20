@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { Card } from "@/components/ui/card";
 import { PageTitle, MutedText } from "@/components/ui/typography";
 
@@ -24,9 +23,7 @@ export function UpgradeRequiredPanel({
         </p>
       ) : null}
       <div className="mt-6">
-        <Link href="/settings/plans">
-          <Button type="button">View plans</Button>
-        </Link>
+        <LinkButton href="/settings/plans">View plans</LinkButton>
       </div>
     </Card>
   );

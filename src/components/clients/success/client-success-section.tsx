@@ -1,5 +1,5 @@
 import { ClientSuccessPanel } from "@/components/clients/success/client-success-panel";
-import { ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUpgradeCard } from "@/components/ai/ai-usage-card";
 import { DetailSection } from "@/components/layout/detail-page";
 import { getClientSuccessAnalysis } from "@/lib/ai/client-success/get-analysis";
 import { INSUFFICIENT_CLIENT_DATA } from "@/lib/ai/client-success/types";
@@ -25,7 +25,7 @@ export async function ClientSuccessSection({ clientId }: ClientSuccessSectionPro
       description="AI-powered health, churn risk, communication, and operational maturity analysis."
     >
       {!aiAccess.allowed ? (
-        <ReportAIUpgradeCard
+        <AIUpgradeCard
           message={getFeatureUpgradeMessage("ai_client_success")}
           requiredPlanLabel={getRequiredPlanLabel("ai_client_success")}
           title="Client Success Intelligence"

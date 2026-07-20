@@ -115,21 +115,3 @@ export function ModuleIcon({ module, icon, className }: ModuleIconProps) {
     </span>
   );
 }
-
-type ModulePlaceholderProps = {
-  title: string;
-  description: string;
-};
-
-/** Placeholder for modules not yet implemented in Foundation Build v1. */
-export function ModulePlaceholder({ title, description }: ModulePlaceholderProps) {
-  return (
-    <div className="rounded-2xl border border-dashed border-border-strong bg-gradient-to-b from-muted/5 to-surface p-12 text-center shadow-sm">
-      <p className="text-lg font-semibold text-foreground">{title}</p>
-      <p className="mt-2 text-sm text-muted">{description}</p>
-      <p className="mt-6 text-xs uppercase tracking-wider text-muted/80">
-        Foundation Build v1 — module shell
-      </p>
-    </div>
-  );
-}

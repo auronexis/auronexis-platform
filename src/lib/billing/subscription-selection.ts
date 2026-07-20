@@ -65,19 +65,32 @@ export function selectPreferredSubscriptionRow(
 }
 
 export function selectPreferredSubscriptionSummaryRow<
-  T extends { status: string | null; updated_at?: string },
+  T extends {
+    status: string | null;
+    updated_at?: string;
+    billing_provider?: string | null;
+    provider_subscription_id?: string | null;
+  },
 >(rows: T[], activeProvider: BillingProvider = "paddle"): T | null {
   if (rows.length === 0) {
     return null;
   }
 
   if (activeProvider === "paddle") {
-    // Summary rows may lack provider fields — prefer usable status, else newest.
-    const usable = rows.find((row) => isSubscriptionUsable(row.status));
+    // Prefer Paddle-backed rows only — never fall back to Stripe remnants.
+    const paddleRows = rows.filter((row) => row.billing_provider === "paddle");
+    const candidates = paddleRows.length > 0 ? paddleRows : [];
+    const usable = candidates.find((row) => isSubscriptionUsable(row.status));
     if (usable) {
       return usable;
     }
-    return rows[0] ?? null;
+    const withSub = candidates.find((row) =>
+      Boolean(row.provider_subscription_id?.startsWith("sub_")),
+    );
+    if (withSub) {
+      return withSub;
+    }
+    return candidates[0] ?? null;
   }
 
   const usable = rows.find((row) => isSubscriptionUsable(row.status));

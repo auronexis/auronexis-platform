@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
+import { SkipLink } from "@/components/ui/skip-link";
 import { cn } from "@/lib/utils/cn";
+import { focusRing } from "@/lib/ui/tokens";
 
 /** Fixed login logo path — transparent wordmark for dark login surfaces. */
 const LOGIN_LOGO_SRC = "/branding/logo-horizontal-transparent.png";
@@ -57,9 +59,16 @@ export function LoginBrandingShell({
   if (variant === "portal") {
     return (
       <div className="flex min-h-screen bg-surface-1">
+        <SkipLink />
         <LoginDecorativePanel backgroundUrl={loginBackground} />
         <div className="flex min-h-screen flex-1 flex-col">
-          <div className="flex flex-1 items-center justify-center px-4 py-12">{children}</div>
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="flex flex-1 items-center justify-center px-4 py-12 outline-none"
+          >
+            {children}
+          </main>
           {footer}
         </div>
       </div>
@@ -68,26 +77,34 @@ export function LoginBrandingShell({
 
   return (
     <div className="flex min-h-screen bg-surface-1">
+      <SkipLink />
       <LoginDecorativePanel backgroundUrl={loginBackground} />
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-white p-6 shadow-sm dark:bg-white">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="w-full max-w-md rounded-2xl border border-border-subtle bg-white p-6 shadow-sm outline-none dark:bg-white"
+        >
           {children}
           {branding.supportEmail || branding.supportUrl ? (
             <div className="mt-6 border-t border-border/60 pt-4 text-center text-xs text-muted">
               {branding.supportEmail ? (
-                <a href={`mailto:${branding.supportEmail}`} className="hover:underline">
+                <a
+                  href={`mailto:${branding.supportEmail}`}
+                  className={cn("rounded hover:underline", focusRing)}
+                >
                   {branding.supportEmail}
                 </a>
               ) : null}
               {branding.supportEmail && branding.supportUrl ? " · " : null}
               {branding.supportUrl ? (
-                <a href={branding.supportUrl} className="hover:underline">
+                <a href={branding.supportUrl} className={cn("rounded hover:underline", focusRing)}>
                   Support
                 </a>
               ) : null}
             </div>
           ) : null}
-        </div>
+        </main>
         {footer ? <div className={cn("mt-6 w-full max-w-md")}>{footer}</div> : null}
       </div>
     </div>

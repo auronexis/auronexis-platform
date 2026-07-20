@@ -15,6 +15,25 @@ export type ConnectorId =
   | "zendesk"
   | "clickup";
 
+export const CONNECTOR_IDS: readonly ConnectorId[] = [
+  "google",
+  "microsoft",
+  "jira",
+  "github",
+  "gitlab",
+  "notion",
+  "slack",
+  "teams",
+  "linear",
+  "hubspot",
+  "salesforce",
+  "zendesk",
+  "clickup",
+] as const;
+
+export function isConnectorId(value: string): value is ConnectorId {
+  return (CONNECTOR_IDS as readonly string[]).includes(value);
+}
 export type ConnectorConnectionStatus =
   | "connected"
   | "disconnected"

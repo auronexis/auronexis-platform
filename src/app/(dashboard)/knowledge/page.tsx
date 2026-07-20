@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { KnowledgeHubWorkspace } from "@/components/knowledge/knowledge-hub-workspace";
 import { KnowledgeUpgradeCard } from "@/components/knowledge/knowledge-upgrade-card";
+import { KnowledgeHubWorkspaceLazy } from "@/components/performance/lazy-workspaces";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { getKnowledgeHubData } from "@/lib/ai/knowledge/get-hub";
@@ -39,7 +39,7 @@ export default async function KnowledgePage() {
             requiredPlanLabel={getRequiredPlanLabel("ai_knowledge_search")}
           />
         ) : hub ? (
-          <KnowledgeHubWorkspace
+          <KnowledgeHubWorkspaceLazy
             initialData={hub}
             canGenerate={generationAccess.allowed}
             canGeneratePlaybooks={playbookAccess.allowed}

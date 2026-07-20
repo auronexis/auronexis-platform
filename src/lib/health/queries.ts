@@ -4,48 +4,25 @@ import type {
   HealthDashboardMetrics,
   HealthMetricsInput,
   HealthSnapshot,
-  HealthStatus,
 } from "@/lib/health/types";
-import { parseHealthBreakdown } from "@/lib/health/types";
+import {
+  HEALTH_SNAPSHOT_SELECT,
+  latestSnapshotByClient,
+  mapHealthSnapshotRow,
+} from "@/lib/health/types";
+import { mapWithConcurrency } from "@/lib/performance/map-with-concurrency";
 import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { ClientView } from "@/lib/clients/types";
 
-const HEALTH_SNAPSHOT_SELECT =
-  "id, organization_id, client_id, score, status, delta, reason, breakdown, calculated_at";
-
 const RECENT_ACTIVITY_DAYS = 14;
 const REPORT_WINDOW_DAYS = 45;
 const INACTIVE_DAYS = 30;
+const HEALTH_PREVIEW_CONCURRENCY = 4;
+const HEALTH_PREVIEW_CAP = 25;
 
 function daysAgo(days: number): string {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-}
-
-function mapSnapshotRow(row: Record<string, unknown>): HealthSnapshot {
-  return {
-    id: String(row.id),
-    organization_id: String(row.organization_id),
-    client_id: String(row.client_id),
-    score: Number(row.score),
-    status: row.status as HealthStatus,
-    delta: Number(row.delta ?? 0),
-    reason: (row.reason as string | null) ?? null,
-    breakdown: parseHealthBreakdown(row.breakdown as never),
-    calculated_at: String(row.calculated_at),
-  };
-}
-
-function latestSnapshotByClient(rows: HealthSnapshot[]): Map<string, HealthSnapshot> {
-  const map = new Map<string, HealthSnapshot>();
-
-  for (const row of rows) {
-    if (!map.has(row.client_id)) {
-      map.set(row.client_id, row);
-    }
-  }
-
-  return map;
 }
 
 /** Gather operational signals used by the health engine. */
@@ -69,11 +46,11 @@ export async function gatherClientHealthMetrics(
         .eq("client_id", clientId)
         .neq("status", "archived"),
       supabase
-        .from("risks")
+        .from("client_risks")
         .select("id, status, created_at")
         .eq("organization_id", organizationId)
         .eq("client_id", clientId)
-        .neq("status", "archived"),
+        .not("status", "in", "(resolved,dismissed)"),
       supabase
         .from("reports")
         .select("id, status, updated_at")
@@ -177,7 +154,7 @@ export async function getLatestHealthSnapshot(
     return null;
   }
 
-  return data ? mapSnapshotRow(data as Record<string, unknown>) : null;
+  return data ? mapHealthSnapshotRow(data as Record<string, unknown>) : null;
 }
 
 export async function listHealthSnapshots(
@@ -200,7 +177,7 @@ export async function listHealthSnapshots(
     return [];
   }
 
-  return (data ?? []).map((row) => mapSnapshotRow(row as Record<string, unknown>));
+  return (data ?? []).map((row) => mapHealthSnapshotRow(row as Record<string, unknown>));
 }
 
 export async function getClientHealthSummaries(
@@ -227,7 +204,7 @@ export async function getClientHealthSummaries(
     return summaries;
   }
 
-  const latest = latestSnapshotByClient((data ?? []).map((row) => mapSnapshotRow(row as Record<string, unknown>)));
+  const latest = latestSnapshotByClient((data ?? []).map((row) => mapHealthSnapshotRow(row as Record<string, unknown>)));
 
   for (const [clientId, snapshot] of latest.entries()) {
     summaries.set(clientId, {
@@ -243,7 +220,7 @@ export async function getClientHealthSummaries(
   return summaries;
 }
 
-/** Resolve list health badges from snapshots, with live previews for untracked clients. */
+/** Resolve list health badges from snapshots, with capped live previews for untracked clients. */
 export async function enrichClientHealthSummaries(
   session: SessionContext,
   clients: Pick<ClientView, "id" | "name" | "status" | "updated_at">[],
@@ -253,21 +230,21 @@ export async function enrichClientHealthSummaries(
     clients.map((client) => client.id),
   );
 
-  await Promise.all(
-    clients
-      .filter((client) => !summaries.has(client.id))
-      .map(async (client) => {
-        const result = await calculateClientHealthPreview(session, client);
-        summaries.set(client.id, {
-          clientId: client.id,
-          score: result.score,
-          status: result.status,
-          delta: result.delta,
-          reason: result.reason,
-          calculatedAt: new Date().toISOString(),
-        });
-      }),
-  );
+  const missing = clients
+    .filter((client) => !summaries.has(client.id))
+    .slice(0, HEALTH_PREVIEW_CAP);
+
+  await mapWithConcurrency(missing, HEALTH_PREVIEW_CONCURRENCY, async (client) => {
+    const result = await calculateClientHealthPreview(session, client);
+    summaries.set(client.id, {
+      clientId: client.id,
+      score: result.score,
+      status: result.status,
+      delta: result.delta,
+      reason: result.reason,
+      calculatedAt: new Date().toISOString(),
+    });
+  });
 
   return summaries;
 }
@@ -301,7 +278,7 @@ export async function getHealthDashboardMetrics(session: SessionContext): Promis
     return empty;
   }
 
-  const rows = (data ?? []).map((row) => mapSnapshotRow(row as Record<string, unknown>));
+  const rows = (data ?? []).map((row) => mapHealthSnapshotRow(row as Record<string, unknown>));
   if (rows.length === 0) {
     return empty;
   }

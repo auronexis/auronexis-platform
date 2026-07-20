@@ -1,5 +1,3 @@
-"use client";
-
 import dynamic from "next/dynamic";
 import { AutomationStoreProvider } from "@/components/automation/automation-store-provider";
 import type { PlanKey } from "@/lib/billing/plans";

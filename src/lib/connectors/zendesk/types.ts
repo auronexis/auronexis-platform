@@ -1,4 +1,3 @@
-import type { ConnectorModuleConfig } from "@/lib/connectors/shared/module-config";
 import { ZENDESK_CONNECTOR_CONFIG } from "@/lib/connectors/definitions";
 
 export type ZendeskResource = {

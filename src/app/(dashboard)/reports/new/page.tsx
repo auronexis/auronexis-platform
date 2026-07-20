@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { FileText } from "lucide-react";
 import { ReportForm } from "@/components/reports/report-form";
 import { ReportEditableWithAI } from "@/components/reports/ai/report-editable-with-ai";
-import { PageHeader, ModulePlaceholder } from "@/components/layout/page-header";
+import { PageHeader } from "@/components/layout/page-header";
 import { DashboardPage } from "@/components/layout/dashboard-page";
+import { EmptyState } from "@/components/ui/empty-state";
 import { LinkButton } from "@/components/ui/link-button";
 import { listClients } from "@/lib/clients/queries";
 import { createReportAction } from "@/lib/reports/actions";
@@ -63,7 +65,7 @@ export default async function NewReportPage() {
 
   if (clients.length === 0) {
     return (
-      <>
+      <DashboardPage>
         <PageHeader
           title="Create report"
           description="Build an executive report linked to a client."
@@ -73,16 +75,17 @@ export default async function NewReportPage() {
             </Link>
           }
         />
-        <ModulePlaceholder
+        <EmptyState
+          icon={FileText}
           title="Add a client first"
           description="Reports must be linked to an existing client record."
+          action={
+            <LinkButton href="/clients/new" variant="secondary">
+              Create a client
+            </LinkButton>
+          }
         />
-        <div className="mt-4">
-          <LinkButton href="/clients/new" variant="secondary">
-            Create a client
-          </LinkButton>
-        </div>
-      </>
+      </DashboardPage>
     );
   }
 

@@ -92,12 +92,14 @@ Supabase Auth redirect URLs (Supabase Dashboard → Authentication → URL Confi
 
 ---
 
-## Stripe webhook URLs
+## Paddle webhook URLs
 
 | Environment | Endpoint |
 |-------------|----------|
-| Staging | `https://staging.auroranexis.com/api/stripe/webhook` |
-| Production | `https://app.auroranexis.com/api/stripe/webhook` |
+| Staging | `https://staging.auroranexis.com/api/paddle/webhook` |
+| Production | `https://www.auroranexis.com/api/paddle/webhook` (or app host matching DNS) |
+
+> Historical Stripe webhook routes are removed. See [paddle-billing.md](./paddle-billing.md).
 
 ---
 
@@ -132,5 +134,6 @@ curl https://staging.auroranexis.com/api/health
 ## Related
 
 - [oauth-setup.md](./oauth-setup.md)
-- [stripe-production.md](./stripe-production.md)
+- [paddle-billing.md](./paddle-billing.md)
+- [enterprise-deployment.md](./enterprise-deployment.md)
 - [deployment-staging.md](./deployment-staging.md)

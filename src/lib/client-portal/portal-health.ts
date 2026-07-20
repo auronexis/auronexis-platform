@@ -1,24 +1,9 @@
 import "server-only";
 
 import type { HealthSnapshot } from "@/lib/health/types";
-import { parseHealthBreakdown } from "@/lib/health/types";
+import { HEALTH_SNAPSHOT_SELECT, mapHealthSnapshotRow } from "@/lib/health/types";
 import type { ClientPortalSessionContext } from "@/lib/client-portal/types";
-import { HEALTH_SNAPSHOT_PORTAL_SELECT } from "@/lib/client-portal/types";
 import { createClient } from "@/lib/supabase/server";
-
-function mapHealthSnapshotRow(row: Record<string, unknown>): HealthSnapshot {
-  return {
-    id: String(row.id),
-    organization_id: String(row.organization_id),
-    client_id: String(row.client_id),
-    score: Number(row.score),
-    status: row.status as HealthSnapshot["status"],
-    delta: Number(row.delta ?? 0),
-    reason: (row.reason as string | null) ?? null,
-    breakdown: parseHealthBreakdown(row.breakdown as never),
-    calculated_at: String(row.calculated_at),
-  };
-}
 
 function sanitizeBreakdown(snapshot: HealthSnapshot): HealthSnapshot {
   const breakdown = snapshot.breakdown;
@@ -41,7 +26,7 @@ export async function getPortalHealth(
     const [latestResult, historyResult] = await Promise.all([
       supabase
         .from("health_snapshots")
-        .select(HEALTH_SNAPSHOT_PORTAL_SELECT)
+        .select(HEALTH_SNAPSHOT_SELECT)
         .eq("organization_id", session.organization.id)
         .eq("client_id", session.client.id)
         .order("calculated_at", { ascending: false })
@@ -49,7 +34,7 @@ export async function getPortalHealth(
         .maybeSingle(),
       supabase
         .from("health_snapshots")
-        .select(HEALTH_SNAPSHOT_PORTAL_SELECT)
+        .select(HEALTH_SNAPSHOT_SELECT)
         .eq("organization_id", session.organization.id)
         .eq("client_id", session.client.id)
         .order("calculated_at", { ascending: false })

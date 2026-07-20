@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
+import { FormAlert } from "@/components/ui/form-alert";
 import { Input } from "@/components/ui/input";
 import {
   acceptInvitationAction,
@@ -47,7 +48,9 @@ export function AcceptInviteForm({
           placeholder="Minimum 8 characters"
         />
         {state.error ? (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-critical">{state.error}</p>
+          <FormAlert variant="error" className="[color-scheme:light]">
+            {state.error}
+          </FormAlert>
         ) : null}
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? "Creating account…" : "Accept invitation"}

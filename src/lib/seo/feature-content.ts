@@ -506,11 +506,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Knowledge base for delivery teams",
+    title: "Knowledge Hub for delivery teams",
     description:
       "Centralize runbooks, procedures, and client context so teams resolve issues consistently across your portfolio.",
     metaDescription:
-      "Operations knowledge base for agencies — runbooks, delivery procedures, and team reference content in Auroranexis.",
+      "Knowledge Hub for agencies — runbooks, delivery procedures, and team reference content in Auroranexis.",
     problem:
       "Institutional knowledge lives in individual inboxes, wikis, and shared drives with no connection to client work. New team members ramp slowly and experienced staff repeat the same explanations.",
     solution:
@@ -562,9 +562,9 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Knowledge Hub docs", href: "/docs/knowledge" },
       { label: "Incidents", href: FEATURE_ROUTES.incidents },
       { label: "Automation", href: FEATURE_ROUTES.automation },
-      { label: "Documentation", href: MARKETING_ROUTES.documentation },
       { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
@@ -702,9 +702,9 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Profitability docs", href: "/docs/profitability" },
       { label: "Executive dashboards", href: FEATURE_ROUTES.executiveDashboards },
       { label: "Customer success", href: FEATURE_ROUTES.customerSuccess },
-      { label: "Reports", href: FEATURE_ROUTES.reports },
       { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
@@ -772,10 +772,10 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Customer success docs", href: "/docs/customer-success" },
       { label: "Health monitoring", href: FEATURE_ROUTES.healthMonitoring },
       { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
       { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
-      { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "contactSales",
@@ -912,10 +912,86 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Activity docs", href: "/docs/activity" },
       { label: "Incidents", href: FEATURE_ROUTES.incidents },
       { label: "Automation", href: FEATURE_ROUTES.automation },
       { label: "Risk intelligence", href: FEATURE_ROUTES.riskIntelligence },
-      { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
+    ],
+    primaryCta: "startFreeTrial",
+    secondaryCta: "contactSales",
+  }),
+
+  "ai-copilot": buildLandingPage({
+    slug: "ai-copilot",
+    pathPrefix: "/features",
+    category: "feature",
+    eyebrow: "Feature",
+    title: "AI Copilot for operational intelligence",
+    description:
+      "Ask operational questions, draft structured summaries, and surface portfolio priorities from verified workspace data — with reviewer control before anything is published.",
+    metaDescription:
+      "AI Copilot for MSPs and agencies — operational Q&A, evidence-backed summaries, and portfolio intelligence in Auroranexis.",
+    problem:
+      "Operations leaders need answers across clients, risks, incidents, and reports, but assembling context from multiple modules slows decisions and weakens executive narratives.",
+    solution:
+      "Auroranexis AI Copilot assists with operational questions and structured summaries grounded in workspace data. Predictive signals and module records remain visible so teams can validate AI output before acting or publishing.",
+    businessValue:
+      "Reduce time spent assembling portfolio briefings while keeping humans accountable for client-facing claims. Copilot accelerates analysis; your team remains the publisher of record.",
+    audience:
+      "Operations leaders, account owners, and delivery managers at MSPs and agencies who need faster portfolio answers without opaque black-box scoring.",
+    enterpriseAdvantages: [
+      "Organization-scoped AI assistance with plan-gated usage",
+      "Evidence-linked summaries tied to operational modules",
+      "Separation between AI drafts and published client content",
+      "Usage visibility in Settings → Usage for governance",
+    ],
+    benefits: [
+      {
+        title: "Faster operational answers",
+        description:
+          "Query portfolio context across clients and modules instead of assembling spreadsheets for every leadership question.",
+      },
+      {
+        title: "Evidence-backed drafts",
+        description:
+          "Keep source signals visible so reviewers can validate AI-assisted summaries before client delivery.",
+      },
+      {
+        title: "Controlled publication",
+        description:
+          "AI assists drafting; portal and report publication remain explicit human actions.",
+      },
+    ],
+    capabilities: [
+      "Operational Q&A within the authenticated workspace",
+      "Structured summaries from incidents, risks, health, and reporting signals",
+      "Links to predictive intelligence and executive reporting workflows",
+      "Plan-gated credits with usage monitoring",
+      "No fabricated certifications, testimonials, or external benchmarks",
+    ],
+    faq: [
+      {
+        question: "Does AI Copilot invent customer metrics?",
+        answer:
+          "No. Assistance is grounded in your workspace operational data. Reviewers remain responsible for validating outputs before publication.",
+      },
+      {
+        question: "Is Copilot available on every plan?",
+        answer:
+          "AI Copilot credits and advanced narrative features are plan-gated. Check Settings → Usage and Settings → Billing for your workspace entitlements.",
+      },
+      {
+        question: "How is this different from AI executive reports?",
+        answer:
+          "AI executive reports focus on recurring client briefings. AI Copilot assists broader operational Q&A and portfolio intelligence inside the workspace.",
+      },
+    ],
+    relatedLinks: [
+      { label: "AI executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
+      { label: "Executive dashboards", href: FEATURE_ROUTES.executiveDashboards },
+      { label: "Predictive docs", href: "/docs/predictive" },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "FAQ", href: MARKETING_ROUTES.faq },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "contactSales",

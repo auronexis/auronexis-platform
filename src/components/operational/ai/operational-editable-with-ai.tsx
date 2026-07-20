@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 import type { OperationalEntityType, OperationalFieldKey } from "@/lib/ai/operational/types";
 import type { AIUsageSummary } from "@/lib/ai/types";

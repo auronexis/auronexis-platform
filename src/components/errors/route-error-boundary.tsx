@@ -18,6 +18,12 @@ export type RouteErrorBoundaryProps = {
   scope?: string;
 };
 
+/** Shared prop contract for Next.js `error.tsx` / `global-error.tsx` route files. */
+export type AppRouterErrorProps = {
+  error: Error & { digest?: string };
+  reset: () => void;
+};
+
 export function RouteErrorBoundary({
   error,
   reset,

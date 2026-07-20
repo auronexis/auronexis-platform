@@ -1,4 +1,5 @@
 import type { Incident, IncidentSeverity, IncidentStatus } from "@/types/database";
+import { formatAppDate, formatAppDateTime } from "@/lib/i18n";
 
 export type IncidentWithRelations = Incident & {
   clients: { name: string } | null;
@@ -92,29 +93,11 @@ export function getIncidentLinkedRiskTitle(incident: IncidentWithRelations): str
 }
 
 export function formatIncidentDate(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatAppDate(value);
 }
 
 export function formatIncidentDateTime(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }
 
 export function toDateTimeLocalValue(value: string | null | undefined): string {

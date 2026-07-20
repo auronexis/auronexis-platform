@@ -1,0 +1,22 @@
+---
+description: Auroranexis Build Bible V2 Chapter 9 — I18N / L10N / regionalization
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 9 (I18N / L10N / Regionalization)
+
+Spec: `docs/11_BUILD_BIBLE_V2_CHAPTER_09_I18N.md`
+
+## Rules
+
+- Format money with `formatWorkspaceMoney` / `useWorkspaceMoney().formatMoney` — never hardcode currency symbols.
+- Format dates/times with `formatAppDate*` or workspace provider helpers — never assume `en-US` / German display.
+- Format numbers/percents with `formatAppNumber` / `formatAppPercent`.
+- Organization regional settings are the primary source; user prefs may override display timezone/date/time.
+- Backend storage stays UTC / ISO / numeric. Presentation owns locale formatting.
+- Do not invent machine translation; use the message catalog scaffold for future packs.
+- Never weaken auth, RBAC, RLS, or Paddle billing behaviour.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 9 work.

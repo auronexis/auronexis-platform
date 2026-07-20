@@ -26,27 +26,37 @@ test.describe("Public smoke", () => {
 
   test("health API returns JSON status", async ({ request }) => {
     const response = await request.get("/api/health");
-    expect(response.ok() || response.status() === 503).toBeTruthy();
+    const status = response.status();
+    expect([200, 503]).toContain(status);
 
     const body = (await response.json()) as {
       status: string;
       version: string;
       timestamp: string;
+      latencyMs?: number;
       configuration: {
         database: boolean;
         supabase: boolean;
+        paddle: boolean;
         stripe: boolean;
         ai: boolean;
       };
     };
 
-    expect(body.status).toMatch(/healthy|degraded|unavailable/);
+    expect(body.status).toMatch(/^(healthy|degraded|unavailable)$/);
     expect(body.version).toBeTruthy();
     expect(typeof body.timestamp).toBe("string");
     expect(body.timestamp.length).toBeGreaterThan(0);
     expect(typeof body.configuration).toBe("object");
     expect(typeof body.configuration.database).toBe("boolean");
     expect(typeof body.configuration.supabase).toBe("boolean");
+    expect(typeof body.configuration.paddle).toBe("boolean");
+    expect(typeof body.configuration.stripe).toBe("boolean");
+    expect(body.configuration.paddle).toBe(body.configuration.stripe);
+    expect(typeof body.configuration.ai).toBe("boolean");
+    if (status === 503) {
+      expect(body.status).toBe("unavailable");
+    }
   });
 
   test("pilot program page renders application form", async ({ page }) => {

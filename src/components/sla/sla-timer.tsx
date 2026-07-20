@@ -1,6 +1,9 @@
+"use client";
+
 import { cn } from "@/lib/utils/cn";
 import type { SlaTimerView } from "@/lib/sla/types";
 import { SLABreachBadge } from "@/components/sla/sla-breach-badge";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 
 type SLATimerProps = {
   timer: SlaTimerView;
@@ -8,6 +11,7 @@ type SLATimerProps = {
 };
 
 export function SLATimer({ timer, className }: SLATimerProps) {
+  const { formatDateTime } = useWorkspaceMoney();
   const isComplete = Boolean(timer.completedAt);
 
   return (
@@ -24,9 +28,7 @@ export function SLATimer({ timer, className }: SLATimerProps) {
           <p className="mt-1 text-sm font-medium text-foreground">
             {isComplete ? "Completed" : timer.remainingLabel ?? "—"}
           </p>
-          <p className="mt-1 text-xs text-muted">
-            Due {new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(timer.dueAt))}
-          </p>
+          <p className="mt-1 text-xs text-muted">Due {formatDateTime(timer.dueAt)}</p>
         </div>
         {timer.breached ? <SLABreachBadge /> : null}
       </div>

@@ -1,0 +1,20 @@
+---
+description: Auroranexis Build Bible V2 Chapter 17 — Definition of Done & release gates
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 17 (Definition of Done)
+
+Spec: `docs/19_BUILD_BIBLE_V2_CHAPTER_17_DEFINITION_OF_DONE.md`  
+Checklist: `docs/enterprise-definition-of-done.md`  
+Report: `docs/enterprise-dod-report.md`
+
+## Rules
+
+- Chapter 17 is a release gate — verify, do not build new features.
+- Every Build Bible chapter 1–17 must remain Status Implemented with always-apply rules where installed.
+- Product UI must not ship Foundation `ModulePlaceholder` shells.
+- `src/` must remain free of `TODO` / `FIXME` / `HACK`.
+- Accept documented Version 2 debt only when catalogued and non-blocking for controlled release.
+- Do not commit, push, or deploy from Chapter 17 work.
+- Preserve auth, RBAC, RLS, Paddle, and API contracts.

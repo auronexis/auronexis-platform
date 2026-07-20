@@ -63,7 +63,7 @@
 ## Form labels
 
 ### PASS
-- `Input`, `Select`, `Textarea`, `Checkbox`, `Switch` associate labels and errors
+- `Input`, `Select`, `Textarea`, `Switch` associate labels and errors (native checkboxes used where needed)
 - CRUD forms use labelled primitives throughout
 
 ### WARN

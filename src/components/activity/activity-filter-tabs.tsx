@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ACTIVITY_FILTER_LABELS, type ActivityFilter } from "@/lib/activity/types";
 import { cn } from "@/lib/utils/cn";
+import { filterTabActive, filterTabInactive } from "@/lib/ui/tokens";
 
 const FILTERS: ActivityFilter[] = [
   "all",
@@ -21,7 +22,7 @@ export function ActivityFilterTabs() {
   const current = (searchParams.get("filter") as ActivityFilter | null) ?? "all";
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <nav aria-label="Filter activity" className="flex flex-wrap gap-2">
       {FILTERS.map((filter) => {
         const params = new URLSearchParams(searchParams.toString());
 
@@ -38,17 +39,17 @@ export function ActivityFilterTabs() {
           <Link
             key={filter}
             href={href}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-              isActive
-                ? "bg-navy-900 text-white"
-                : "bg-muted/10 text-muted hover:bg-muted/20",
+              "rounded-full px-3 py-1.5",
+              isActive ? filterTabActive : filterTabInactive,
+              isActive && "bg-secondary text-primary-foreground no-underline",
             )}
           >
             {ACTIVITY_FILTER_LABELS[filter]}
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }

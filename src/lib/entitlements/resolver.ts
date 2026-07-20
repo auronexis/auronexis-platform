@@ -7,6 +7,7 @@ import {
 } from "@/lib/billing/plans.server";
 import {
   getOrganizationSubscription,
+  ORGANIZATION_SUBSCRIPTION_SELECT,
 } from "@/lib/billing/queries";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
@@ -27,9 +28,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
 
-const SUBSCRIPTION_SELECT =
-  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
-
 export type EntitlementFallbackPath = "paid_plan" | "minimal_access" | "starter_default";
 
 type ResolveOrganizationEntitlementsOptions = {
@@ -49,7 +47,7 @@ async function loadOrganizationSubscription(
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("organization_subscriptions")
-    .select(SUBSCRIPTION_SELECT)
+    .select(ORGANIZATION_SUBSCRIPTION_SELECT)
     .eq("organization_id", organizationId)
     .order("updated_at", { ascending: false });
 
@@ -111,6 +109,13 @@ function resolveMappedPlanKey(
 }
 
 /** Resolve live entitlements from verified active-provider subscription state. */
+/**
+ * Authoritative entitlement resolution for a workspace.
+ *
+ * Single source of truth for plan features/limits used by product gates:
+ * Paddle subscription row → price → PLAN_ENTITLEMENTS (+ enterprise overrides).
+ * Parallel helpers in `src/lib/plans/queries` should defer to this path for access control.
+ */
 export async function resolveOrganizationEntitlements(
   organizationId: string,
   options?: ResolveOrganizationEntitlementsOptions,

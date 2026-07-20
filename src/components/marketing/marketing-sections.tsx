@@ -1,11 +1,7 @@
-"use client";
-
 import Link from "next/link";
-import { resolveMarketingCtaActions } from "@/lib/marketing/auth-context";
-import { useMarketingAuth } from "@/components/marketing/marketing-auth-provider";
 import { cn } from "@/lib/utils/cn";
-import { focusRing } from "@/lib/ui/tokens";
 import { marketingCardHover, marketingSectionFade } from "@/lib/ui/marketing-motion";
+import { focusRing } from "@/lib/ui/tokens";
 
 type MarketingSectionProps = {
   eyebrow?: string;
@@ -43,7 +39,7 @@ export function MarketingSection({
 export function MarketingCardGrid({
   items,
 }: {
-  items: ReadonlyArray<{ title: string; description: string; featured?: boolean }>;
+  items: ReadonlyArray<{ title: string; description: string; featured?: boolean; href?: string }>;
 }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -56,7 +52,15 @@ export function MarketingCardGrid({
             item.featured && "border-primary/30 ring-1 ring-primary/20",
           )}
         >
-          <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+          <h3 className="text-lg font-semibold text-white">
+            {item.href ? (
+              <Link href={item.href} className={cn("hover:underline", focusRing, "rounded")}>
+                {item.title}
+              </Link>
+            ) : (
+              item.title
+            )}
+          </h3>
           <p className="mt-3 text-sm leading-relaxed text-primary-foreground/75">{item.description}</p>
         </article>
       ))}
@@ -83,43 +87,5 @@ export function MarketingFaq({
         </details>
       ))}
     </div>
-  );
-}
-
-/** @deprecated Import from `@/components/marketing/marketing-cta` for server auth-aware CTAs. */
-export function MarketingCta({
-  title,
-  description,
-  href,
-  label,
-}: {
-  title: string;
-  description: string;
-  href: string;
-  label: string;
-}) {
-  const auth = useMarketingAuth();
-  const action = resolveMarketingCtaActions(auth, { href, label });
-
-  return (
-    <section className="border-t border-white/10 bg-white/[0.02]">
-      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-16 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{title}</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 sm:text-base">
-            {description}
-          </p>
-        </div>
-        <Link
-          href={action.href}
-          className={cn(
-            "shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground",
-            focusRing,
-          )}
-        >
-          {action.label}
-        </Link>
-      </div>
-    </section>
   );
 }

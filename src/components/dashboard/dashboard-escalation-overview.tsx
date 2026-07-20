@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { EscalationStatusBadge } from "@/components/escalation/escalation-status-badge";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import { ESCALATION_TRIGGER_LABELS } from "@/lib/escalation/types";
 import type { EscalationDashboardMetrics } from "@/lib/escalation/types";
 import { linkText } from "@/lib/ui/tokens";
@@ -33,16 +36,9 @@ function EscalationCountCard({
   );
 }
 
-function formatExecutedAt(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
 export function DashboardEscalationOverview({ metrics }: DashboardEscalationOverviewProps) {
+  const { formatDateTime } = useWorkspaceMoney();
+
   return (
     <div className="space-y-6">
       <div className="grid gap-3 sm:grid-cols-3">
@@ -87,7 +83,7 @@ export function DashboardEscalationOverview({ metrics }: DashboardEscalationOver
                   </Link>
                   <p className="mt-1 text-xs text-muted">
                     {ESCALATION_TRIGGER_LABELS[item.triggerType]} ·{" "}
-                    {item.clientName ?? "Unassigned client"} · {formatExecutedAt(item.executedAt)}
+                    {item.clientName ?? "Unassigned client"} · {formatDateTime(item.executedAt)}
                   </p>
                 </div>
                 <EscalationStatusBadge

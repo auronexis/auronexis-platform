@@ -42,7 +42,7 @@ export default function FeaturesPage() {
           })),
         })}
       />
-      <ConversionTracker event="cta_clicked" props={{ surface: "features" }} />
+      <ConversionTracker event="features_page_viewed" props={{ surface: "features", module: "marketing" }} />
       <MarketingHero
         eyebrow="Features"
         title="Everything your operations team needs"

@@ -1,0 +1,23 @@
+---
+description: Auroranexis Build Bible V2 Chapter 12 — Enterprise Paddle billing
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 12 (Enterprise Paddle Billing)
+
+Spec: `docs/14_BUILD_BIBLE_V2_CHAPTER_12_PADDLE_BILLING.md`
+
+## Rules
+
+- Paddle is the sole active billing provider (`getActiveBillingProvider()` → `"paddle"`).
+- Entitlements resolve only via `resolveOrganizationEntitlements` after verified sync.
+- Never grant access from browser checkout success callbacks.
+- Webhooks: verify signature, enforce idempotency, fail safely, never corrupt billing state.
+- Emit commercial analytics only through `trackBillingLifecycleEvent` / `emitPaddleWebhookCommercialEvent` without org/customer IDs.
+- Keep secrets server-only (`PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`).
+- Do not reintroduce Stripe as an active checkout/portal path.
+- Do not change auth, RBAC, RLS, SEO, accessibility, or analytics architecture outside billing hooks.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 12 work.

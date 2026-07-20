@@ -1,12 +1,17 @@
 import "server-only";
 
-import type { StatusLevel } from "@/components/marketing/status-badge";
+import type { StatusLevel } from "@/lib/marketing/status-types";
 import { getOpenAIPlatformConfig } from "@/lib/ai/openai/config";
 import {
   getOpenAIPlatformStatus,
   type OpenAIPlatformStatus,
 } from "@/lib/ai/openai/status";
+import { checkDatabaseHealth, type DatabaseHealthLevel } from "@/lib/diagnostics/platform-health";
+import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
+import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
+import { isPaddleConfigured } from "@/lib/paddle/env";
 
+export type { StatusLevel };
 export type PublicStatusComponent = {
   name: string;
   status: StatusLevel;
@@ -168,4 +173,87 @@ export function resolvePublicOverallStatus(components: PublicStatusComponent[]):
   }
 
   return { label: "Operational", tierLabel: "All customer services available", color: "green" };
+}
+
+function mapHealth(ok: boolean, degraded = false): StatusLevel {
+  if (ok) return "operational";
+  if (degraded) return "degraded";
+  return "incident";
+}
+
+function mapDatabaseLevel(level: DatabaseHealthLevel): StatusLevel {
+  if (level === "healthy") return "operational";
+  if (level === "degraded") return "degraded";
+  return "incident";
+}
+
+/** Live probes for the public marketing status page. */
+export async function getLiveStatusOverrides(): Promise<Record<string, PublicStatusComponent>> {
+  const [database, cron, queue] = await Promise.all([
+    checkDatabaseHealth(),
+    getCronDiagnosticsSnapshot(),
+    getQueueDiagnosticsSnapshot(),
+  ]);
+  const billingConfigured = isPaddleConfigured();
+  const aiStatus = await resolvePublicAiStatus();
+
+  return {
+    Platform: {
+      name: "Platform",
+      status: mapDatabaseLevel(database.level),
+      detail: database.level === "healthy" ? "Application services available" : database.message,
+    },
+    API: {
+      name: "API",
+      status: database.level === "unavailable" ? "incident" : "operational",
+      detail: "Application and authenticated API routes",
+    },
+    Database: {
+      name: "Database",
+      status: mapDatabaseLevel(database.level),
+      detail: database.level === "healthy" ? "Data services available" : "Data services impacted",
+    },
+    Billing: {
+      name: "Billing",
+      status: billingConfigured ? "operational" : "degraded",
+      detail: billingConfigured
+        ? "Subscription billing available"
+        : "Billing availability limited",
+    },
+    AI: {
+      name: "AI",
+      status: aiStatus.status,
+      detail: aiStatus.detail,
+    },
+    Connectors: {
+      name: "Connectors",
+      status: "operational",
+      detail: "Integration infrastructure available",
+    },
+    Automation: {
+      name: "Automation",
+      status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
+      detail: "Workflow execution services",
+    },
+    Cron: {
+      name: "Cron",
+      status: mapHealth(cron.tableReachable && cron.status !== "unavailable", cron.status === "degraded"),
+      detail: "Scheduled maintenance jobs",
+    },
+    Queue: {
+      name: "Queue",
+      status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
+      detail: "Background processing",
+    },
+    Observability: {
+      name: "Observability",
+      status:
+        process.env.NEXT_PUBLIC_SENTRY_DSN ||
+        process.env.NEXT_PUBLIC_POSTHOG_KEY ||
+        process.env.SENTRY_DSN
+          ? "operational"
+          : "maintenance",
+      detail: "Platform monitoring",
+    },
+  };
 }

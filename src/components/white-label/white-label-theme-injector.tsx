@@ -1,5 +1,3 @@
-"use client";
-
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
 
 type WhiteLabelThemeInjectorProps = {

@@ -1,4 +1,5 @@
 import type { IntegrationValidationError, IntegrationValidationResult } from "@/lib/integrations/types";
+import { validateOutboundUrl } from "@/lib/security/outbound-url";
 
 export function validateIntegrationConfig(
   config: unknown,
@@ -31,21 +32,13 @@ export function validateIntegrationConfig(
   }
 
   if (record.url != null && typeof record.url === "string" && record.url.trim() !== "") {
-    if (!isValidAbsoluteUrl(record.url)) {
-      errors.push({ field: "url", message: "URL must be a valid absolute URL." });
+    const outbound = validateOutboundUrl(record.url);
+    if (!outbound.ok) {
+      errors.push({ field: "url", message: outbound.reason });
     }
   }
 
   return { valid: errors.length === 0, errors };
-}
-
-function isValidAbsoluteUrl(value: string): boolean {
-  try {
-    const parsed = new URL(value);
-    return Boolean(parsed.protocol && parsed.host);
-  } catch {
-    return false;
-  }
 }
 
 export function mergeValidationResults(

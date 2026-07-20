@@ -1,4 +1,4 @@
-import { MARKETING_ROUTES, SOLUTION_ROUTES } from "@/lib/company/company-links";
+import { FEATURE_ROUTES, MARKETING_ROUTES, SOLUTION_ROUTES, TEMPLATE_ROUTES } from "@/lib/company/company-links";
 
 export type SolutionPageContent = {
   slug: string;
@@ -59,10 +59,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Health monitoring", href: FEATURE_ROUTES.healthMonitoring },
+      { label: "Health score template", href: TEMPLATE_ROUTES.customerHealthScore },
       { label: "Pricing", href: MARKETING_ROUTES.pricing },
       { label: "Risk management", href: SOLUTION_ROUTES.riskManagement },
-      { label: "Documentation", href: MARKETING_ROUTES.documentation },
-      { label: "Security", href: MARKETING_ROUTES.security },
     ],
   },
   "risk-management": {
@@ -108,8 +108,9 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Risk intelligence", href: FEATURE_ROUTES.riskIntelligence },
       { label: "Incident management", href: SOLUTION_ROUTES.incidentManagement },
-      { label: "Risk register template", href: "/templates/risk-register" },
+      { label: "Risk register template", href: TEMPLATE_ROUTES.riskRegister },
       { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
   },
@@ -155,8 +156,9 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Incidents feature", href: FEATURE_ROUTES.incidents },
       { label: "SLA management", href: SOLUTION_ROUTES.slaManagement },
-      { label: "Incident response template", href: "/templates/incident-response" },
+      { label: "Incident response template", href: TEMPLATE_ROUTES.incidentResponse },
       { label: "Contact", href: MARKETING_ROUTES.contact },
     ],
   },
@@ -202,7 +204,8 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "SLA policy template", href: "/templates/sla-policy" },
+      { label: "SLA documentation", href: "/docs/sla" },
+      { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
       { label: "Executive dashboard", href: SOLUTION_ROUTES.executiveDashboard },
       { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
@@ -249,9 +252,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Executive dashboards feature", href: FEATURE_ROUTES.executiveDashboards },
+      { label: "AI Copilot", href: FEATURE_ROUTES.aiCopilot },
       { label: "AI reporting", href: SOLUTION_ROUTES.aiReporting },
       { label: "Features", href: MARKETING_ROUTES.features },
-      { label: "Pilot program", href: MARKETING_ROUTES.pilotProgram },
     ],
   },
   "ai-reporting": {
@@ -296,9 +300,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Executive report template", href: "/templates/executive-report" },
-      { label: "Documentation", href: "/docs/reports" },
-      { label: "Privacy", href: "/privacy" },
+      { label: "AI executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
+      { label: "AI Copilot", href: FEATURE_ROUTES.aiCopilot },
+      { label: "Reports documentation", href: "/docs/reports" },
+      { label: "Executive report template", href: TEMPLATE_ROUTES.executiveReport },
     ],
   },
 };
@@ -512,3 +517,10 @@ export const TEMPLATE_PAGES: Record<string, TemplatePageContent> = {
 };
 
 export const TEMPLATE_SLUGS = Object.keys(TEMPLATE_PAGES);
+
+export const TEMPLATE_HUB_ENTRIES = Object.values(TEMPLATE_PAGES).map((page) => ({
+  slug: page.slug,
+  path: page.path,
+  title: page.title,
+  description: page.description,
+}));

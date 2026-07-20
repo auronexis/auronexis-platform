@@ -91,10 +91,10 @@ export async function fetchResolvedRisks(
 ): Promise<KnowledgeEntityRef[]> {
   const supabase = await createClient();
   let query = supabase
-    .from("risks")
-    .select("id, title, severity, status, description, resolution_notes, updated_at, client_id, clients(name)")
+    .from("client_risks")
+    .select("id, title, severity, status, description, mitigation_plan, updated_at, client_id, clients(name)")
     .eq("organization_id", session.organization.id)
-    .in("status", ["resolved", "archived"]);
+    .in("status", ["resolved", "dismissed"]);
 
   if (clientId) query = query.eq("client_id", clientId);
 
@@ -106,7 +106,7 @@ export async function fetchResolvedRisks(
       severity: string;
       status: string;
       description: string | null;
-      resolution_notes: string | null;
+      mitigation_plan: string | null;
       updated_at: string;
       client_id: string;
       clients: { name: string } | null;
@@ -115,7 +115,7 @@ export async function fetchResolvedRisks(
       id: risk.id,
       title: risk.title,
       href: `/risks/${risk.id}`,
-      excerpt: excerpt(risk.resolution_notes || risk.description),
+      excerpt: excerpt(risk.mitigation_plan || risk.description),
       date: risk.updated_at,
       entityType: "risk",
       clientId: risk.client_id,

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/cn";
+import { StatusBadge } from "@/components/ui/badge";
 
 type SLABreachBadgeProps = {
   className?: string;
@@ -6,13 +6,8 @@ type SLABreachBadgeProps = {
 
 export function SLABreachBadge({ className }: SLABreachBadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20",
-        className,
-      )}
-    >
+    <StatusBadge tone="danger" className={className}>
       Breached
-    </span>
+    </StatusBadge>
   );
 }

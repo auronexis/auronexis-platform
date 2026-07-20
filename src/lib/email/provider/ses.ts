@@ -19,6 +19,7 @@ function getSesConfig(): {
  * For production, prefer IAM credentials scoped to ses:SendEmail only.
  */
 export async function sendViaSes(message: EmailMessage): Promise<EmailSendResult> {
+  void message;
   const config = getSesConfig();
   if (!config) {
     return { success: false, error: "AWS SES credentials or region are not configured." };

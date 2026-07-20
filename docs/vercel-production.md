@@ -1,4 +1,5 @@
-# Vercel Production — Phase 6
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
+# Vercel Production â€” Phase 6
 
 **Date:** 2025-06-23  
 **Version:** v1.0.0-rc.1  
@@ -13,7 +14,7 @@
 | **auroranexis-marketing** | Auroranexis | `auroranexis.com` | Marketing site, legal, pilot program |
 | **auroranexis-app** | Auroranexis | `app.auroranexis.com` | Production SaaS application |
 
-Optional: single monorepo with path-based routing — current setup uses one Next.js app deployed to both hostnames via environment-specific `NEXT_PUBLIC_APP_URL`.
+Optional: single monorepo with path-based routing â€” current setup uses one Next.js app deployed to both hostnames via environment-specific `NEXT_PUBLIC_APP_URL`.
 
 ---
 
@@ -35,7 +36,7 @@ Never mix live Stripe keys with staging hostname.
 | Domain | Project | Redirect |
 |--------|---------|----------|
 | `auroranexis.com` | marketing or app | Apex marketing |
-| `www.auroranexis.com` | marketing | 301 → apex |
+| `www.auroranexis.com` | marketing | 301 â†’ apex |
 | `app.auroranexis.com` | app | Production SaaS |
 | `staging.auroranexis.com` | app (staging) | Pilot / QA |
 
@@ -53,8 +54,8 @@ Never mix live Stripe keys with staging hostname.
 
 | Rule | Implementation |
 |------|----------------|
-| HTTP → HTTPS | Vercel automatic |
-| www → apex | Vercel Domains UI |
+| HTTP â†’ HTTPS | Vercel automatic |
+| www â†’ apex | Vercel Domains UI |
 | Legacy legal paths | Next.js redirects in app |
 | Auth-gated routes | Middleware (`src/lib/supabase/middleware.ts`) |
 
@@ -117,7 +118,7 @@ npm run lint && npm run typecheck && npm run build && npm run test:e2e
 
 ## Environment variables (production app)
 
-Minimum set — full list in [vercel-checklist.md](./vercel-checklist.md):
+Minimum set â€” full list in [vercel-checklist.md](./vercel-checklist.md):
 
 ```
 NEXT_PUBLIC_APP_URL=https://app.auroranexis.com
@@ -139,7 +140,7 @@ NEXT_PUBLIC_POSTHOG_KEY=
 - [ ] Both Vercel projects linked to repository
 - [ ] All four domains assigned and SSL valid
 - [ ] Production vs staging env vars isolated
-- [ ] Cron job visible in Vercel → Crons
+- [ ] Cron job visible in Vercel â†’ Crons
 - [ ] `/api/health` returns JSON (not login redirect)
 - [ ] Security headers present on production deploy
 
@@ -152,3 +153,4 @@ NEXT_PUBLIC_POSTHOG_KEY=
 - [domain-health.md](./domain-health.md)
 
 **Deployment score: 100/100**
+

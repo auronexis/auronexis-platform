@@ -33,7 +33,7 @@ test("organization settings persist currency beside language", () => {
   assert.match(page, /getStoredOrganizationCurrency/);
   assert.match(form, /name="currency"/);
   assert.match(actions, /currency: parsed\.data\.currency/);
-  assert.match(actions, /\.select\("id, name, language, currency"\)/);
+  assert.match(actions, /timezone: parsed\.data\.timezone/);
 });
 
 test("dashboard provides workspace money context", () => {
@@ -42,6 +42,7 @@ test("dashboard provides workspace money context", () => {
   assert.match(layout, /WorkspaceMoneyProvider/);
   assert.match(provider, /useWorkspaceMoney/);
   assert.match(provider, /formatWorkspaceMoney/);
+  assert.match(provider, /formatAppDate/);
 });
 
 test("sales and profitability surfaces no longer hardcode dollar signs", () => {
@@ -49,8 +50,11 @@ test("sales and profitability surfaces no longer hardcode dollar signs", () => {
   const acquisition = readSource("src/app/(dashboard)/sales/acquisition/page.tsx");
   const pipeline = readSource("src/components/sales/pipeline-metric-cards.tsx");
   const profitability = readSource("src/lib/profitability/types.ts");
+  const proposals = readSource("src/components/sales/sales-proposal-list.tsx");
   assert.doesNotMatch(salesPage, /`\$\$\{/);
   assert.doesNotMatch(acquisition, /`\$\$\{/);
   assert.doesNotMatch(pipeline, /currency:\s*"USD"/);
   assert.match(profitability, /formatWorkspaceMoney/);
+  assert.match(proposals, /formatMoney/);
+  assert.doesNotMatch(proposals, />\$/);
 });

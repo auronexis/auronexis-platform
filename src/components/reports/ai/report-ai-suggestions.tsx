@@ -1,5 +1,3 @@
-"use client";
-
 import type { AISmartSuggestion } from "@/lib/ai/types";
 
 type ReportAISuggestionsProps = {

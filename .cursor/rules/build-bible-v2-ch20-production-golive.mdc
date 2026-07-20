@@ -1,0 +1,19 @@
+---
+description: Auroranexis Build Bible V2 Chapter 20 — Production go-live playbook (no auto deploy)
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 20 (Production Go-Live)
+
+Spec: `docs/22_BUILD_BIBLE_V2_CHAPTER_20_PRODUCTION_GOLIVE.md`  
+Playbook: `docs/enterprise-production-golive-playbook.md`
+
+## Rules
+
+- Chapter 20 prepares operator go-live — do not change business logic, features, architecture, or dependencies.
+- Do not automatically commit, push, or deploy.
+- Do not execute git release commands from this chapter; only document recommendations.
+- Recommendation is **READY FOR OPERATOR DEPLOYMENT** unless a new critical engineering blocker is proven.
+- Operators must clear Chapter 19 conditions marked INCOMPLETE before production promote.
+- Preserve auth, RBAC, RLS, and Paddle sole-provider path.
+- Keep Chapters 1–20 Status Implemented with always-apply rules where installed.

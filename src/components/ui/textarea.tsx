@@ -1,7 +1,13 @@
 import type { TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils/cn";
 import { auroraInputFocus, inputErrorShake } from "@/lib/ui/motion";
-import { formFieldShell, formHelper, formLabel } from "@/lib/ui/form-tokens";
+import {
+  formControl,
+  formError,
+  formFieldShell,
+  formHelper,
+  formLabel,
+} from "@/lib/ui/form-tokens";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -35,14 +41,15 @@ export function Textarea({
         id={textareaId}
         rows={rows}
         aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `${textareaId}-error` : description ? `${textareaId}-desc` : undefined}
+        aria-describedby={
+          error ? `${textareaId}-error` : description ? `${textareaId}-desc` : undefined
+        }
         className={cn(
-          "flex min-h-[5rem] w-full cursor-text resize-y rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground shadow-xs",
+          "flex min-h-[5rem] cursor-text resize-y",
+          formControl,
           transitionInteractive,
-          "placeholder:text-muted/80",
           auroraInputFocus,
           focusRing,
-          "disabled:cursor-not-allowed disabled:opacity-50",
           error && "border-danger",
           error && inputErrorShake,
           className,
@@ -50,7 +57,7 @@ export function Textarea({
         {...props}
       />
       {error ? (
-        <p id={`${textareaId}-error`} className="text-sm text-danger" role="alert">
+        <p id={`${textareaId}-error`} className={formError} role="alert">
           {error}
         </p>
       ) : null}

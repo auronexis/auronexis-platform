@@ -36,9 +36,11 @@ export default async function ClientPortalRisksPage() {
     status: risk.status as RiskStatus,
   }));
 
-  const risks = plan.features.sla_tracking
+  type PortalRiskRow = (typeof baseRisks)[number] & { sla?: EntitySlaInfo };
+
+  const risks: PortalRiskRow[] = plan.features.sla_tracking
     ? await attachRiskSlaInfo(session.organization.id, baseRisks)
-    : baseRisks;
+    : baseRisks.map((risk) => ({ ...risk, sla: undefined }));
 
   const showSla = plan.features.sla_tracking;
 
@@ -77,11 +79,9 @@ export default async function ClientPortalRisksPage() {
                   <td className={`whitespace-nowrap ${portalTableCellClass}`}>
                     <RiskStatusBadge status={normalizeRiskStatusForDisplay(risk.status)} />
                   </td>
-                  {showSla ? (
+                  {showSla && risk.sla ? (
                     <td className={`whitespace-nowrap ${portalTableCellClass}`}>
-                      <PortalSlaStatus
-                        sla={(risk as unknown as { sla: EntitySlaInfo }).sla}
-                      />
+                      <PortalSlaStatus sla={risk.sla} />
                     </td>
                   ) : null}
                 </tr>

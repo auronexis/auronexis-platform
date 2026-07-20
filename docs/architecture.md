@@ -1,10 +1,10 @@
 # Auroranexis Architecture
 
-Production architecture overview for the Release Candidate (v0.1.0).
+Production architecture overview (Build Bible V2 — keep aligned with Chapters 2–15).
 
 ## System overview
 
-Auroranexis is a multi-tenant SaaS platform for AI automation agencies. Each **organization** is isolated at the database layer via Supabase Row Level Security (RLS). Users authenticate through Supabase Auth; authorization is enforced server-side through RBAC and plan features.
+Auroranexis is a multi-tenant SaaS platform for AI automation agencies. Each **organization** is isolated at the database layer via Supabase Row Level Security (RLS). Users authenticate through Supabase Auth; authorization is enforced server-side through RBAC and plan features. **Paddle** is the sole active billing provider.
 
 ```mermaid
 flowchart TB
@@ -21,7 +21,7 @@ flowchart TB
 
   subgraph External
     Supabase[(Supabase PostgreSQL + Auth)]
-    Stripe[Stripe Billing]
+    Paddle[Paddle Billing]
     OpenAI[OpenAI API]
     Resend[Resend Email]
   end
@@ -32,7 +32,7 @@ flowchart TB
   SA --> Supabase
   SA --> AI
   AI --> OpenAI
-  API --> Stripe
+  API --> Paddle
   SA --> Resend
 ```
 
@@ -49,8 +49,8 @@ flowchart TB
 
 - `(auth)` — Login, signup, password flows
 - `(dashboard)` — Authenticated workspace (clients, risks, incidents, reports, automation, knowledge, settings)
-- `(portal)` — Client-facing portal (scoped to client records)
-- API routes — Stripe webhooks, health checks
+- `client-portal` — Client-facing portal (scoped to client records)
+- API routes — Paddle webhooks (`/api/paddle/webhook`), health/ready, cron, public API v1
 
 ## Multi-tenancy
 
@@ -58,7 +58,7 @@ Every authenticated request resolves an **organization context** from the user's
 
 ## Plans & billing
 
-Plan resolution combines Stripe subscription state with feature flags in `src/lib/plans/`. Checkout and customer portal use Stripe; feature gates are checked in server actions before sensitive operations.
+Plan resolution combines **Paddle** subscription state with entitlements in `src/lib/entitlements/` and plan features in `src/lib/plans/`. Checkout and customer portal use Paddle; feature gates are checked in server actions before sensitive operations. See [paddle-billing.md](./paddle-billing.md).
 
 ## AI architecture
 
@@ -73,19 +73,21 @@ Detailed AI documentation: [docs/ai.md](./ai.md) and [docs/ai/ARCHITECTURE.md](.
 
 ## Observability
 
-Workspace diagnostics (`/settings/diagnostics`) expose plan source, permissions, AI readiness, Stripe env presence, and platform health (build version, database latency, cache status). Secrets are never displayed—only presence flags and safe previews.
+Workspace diagnostics (`/settings/diagnostics`) expose plan source, permissions, AI readiness, **Paddle** configuration presence, and platform health (build version, database latency, cache status). Secrets are never displayed—only presence flags and safe previews.
 
 ## Key design principles
 
 1. **Server-first** — Sensitive logic and AI calls run on the server only.
 2. **RLS as the security boundary** — Client never trusts org IDs from the browser alone.
 3. **Plan-gated features** — AI and premium modules check plan features before execution.
-4. **Aurora UI consistency** — Shared primitives (`PageSurface`, `PageHeader`, `Button`, etc.) across all modules.
+4. **Aurora UI consistency** — Shared primitives (`StatusBadge`, `EmptyState`, `Button`, etc.) across all modules.
+5. **Typed helpers** — Prefer `src/lib/supabase/typed.ts` over scattered Supabase cast escapes.
 
 ## Related documentation
 
-- [Deployment](./deployment.md)
+- [Enterprise deployment](./enterprise-deployment.md)
+- [Code quality (Chapter 15)](./17_BUILD_BIBLE_V2_CHAPTER_15_CODE_QUALITY.md)
 - [Security](./security.md)
 - [Database](./database.md)
 - [Testing](./testing.md)
-- [Release notes](./release-notes.md)
+- [Build Bible Chapter 2 architecture](./04_BUILD_BIBLE_V2_CHAPTER_02_ARCHITECTURE.md)

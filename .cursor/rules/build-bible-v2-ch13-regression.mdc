@@ -1,0 +1,21 @@
+---
+description: Auroranexis Build Bible V2 Chapter 13 — Enterprise regression & release confidence
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 13 (Enterprise Regression)
+
+Spec: `docs/15_BUILD_BIBLE_V2_CHAPTER_13_REGRESSION.md`
+
+## Rules
+
+- Use `scripts/_test-helpers/read-source.mjs` for new source-contract tests — do not duplicate `rootDir`/`readSource`.
+- Keep `ENTERPRISE_REGRESSION_SUITE` as the curated release-confidence catalog.
+- Prefer source-contract assertions of existing wiring over changing product behaviour.
+- Do not modify business logic, authentication, authorization, RBAC, RLS, Paddle billing behaviour, or API contracts for test convenience.
+- Do not redesign UI or add features unless required to eliminate a proven regression.
+- Playwright smoke includes password-reset; authenticated suites may skip without credentials — CI should treat missing credentials as incomplete coverage, not success theatre.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 13 work.

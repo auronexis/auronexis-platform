@@ -13,7 +13,7 @@ import {
   createNotificationForOwnersAdminsAndAssignee,
   createNotificationForOwnersAndAdmins,
 } from "@/lib/notifications/create";
-import { LEGACY_OPEN_RISK_STATUSES } from "@/lib/risks/types";
+import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ClientStatus } from "@/types/database";
 
@@ -146,12 +146,12 @@ async function countCriticalOpenItems(
 
   const [criticalRisks, criticalIncidents] = await Promise.all([
     admin
-      .from("risks")
+      .from("client_risks")
       .select("id", { count: "exact", head: true })
       .eq("organization_id", organizationId)
       .eq("client_id", clientId)
       .eq("severity", "critical")
-      .in("status", LEGACY_OPEN_RISK_STATUSES),
+      .in("status", OPEN_RISK_STATUSES),
     admin
       .from("incidents")
       .select("id", { count: "exact", head: true })

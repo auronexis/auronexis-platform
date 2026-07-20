@@ -11,7 +11,7 @@ import { PredictiveIncidentForecast } from "@/components/predictive/predictive-i
 import { PredictiveRiskForecast } from "@/components/predictive/predictive-risk-forecast";
 import { PredictiveTimeline } from "@/components/predictive/predictive-timeline";
 import { PredictiveTrendBadge } from "@/components/predictive/predictive-trend-badge";
-import { ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUpgradeCard } from "@/components/ai/ai-usage-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { requireSession } from "@/lib/auth/session";
@@ -49,7 +49,7 @@ export default async function PredictiveClientPage({ params }: PredictiveClientP
       <>
         <PageHeader title="Client Predictive Forecast" description="Client-level predictive forecasts." />
         <PageSurface>
-          <ReportAIUpgradeCard
+          <AIUpgradeCard
             message={getFeatureUpgradeMessage("ai_predictive_intelligence")}
             requiredPlanLabel={getRequiredPlanLabel("ai_predictive_intelligence")}
             title="Predictive Intelligence"

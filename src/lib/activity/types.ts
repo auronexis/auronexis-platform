@@ -1,4 +1,5 @@
 import type { Json } from "@/types/database";
+import { formatAppDateTime } from "@/lib/i18n";
 
 export type ActivityEntityType =
   | "client"
@@ -256,13 +257,7 @@ export function formatActivityEventType(eventType: string): string {
 }
 
 export function formatActivityTimestamp(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }
 
 export function formatActivityRelativeTime(value: string): string {

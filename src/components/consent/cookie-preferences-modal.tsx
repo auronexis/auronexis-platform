@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { LEGAL_ROUTES } from "@/lib/company";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/lib/analytics";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
+import { focusFirstElement, restoreFocus, trapFocus } from "@/lib/a11y/focus";
 
 type CookiePreferencesModalProps = {
   open: boolean;
@@ -19,6 +20,10 @@ type CookiePreferencesModalProps = {
 
 export function CookiePreferencesModal({ open, onClose, onSaved }: CookiePreferencesModalProps) {
   const [prefs, setPrefs] = useState<ConsentPreferences>(getConsentPreferences());
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previouslyFocused = useRef<Element | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
     if (open) setPrefs(getConsentPreferences());
@@ -27,6 +32,15 @@ export function CookiePreferencesModal({ open, onClose, onSaved }: CookiePrefere
   useEffect(() => {
     if (!open) return;
 
+    previouslyFocused.current = document.activeElement;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      focusFirstElement(panel);
+    });
+    const releaseTrap = trapFocus(panel);
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
@@ -34,7 +48,12 @@ export function CookiePreferencesModal({ open, onClose, onSaved }: CookiePrefere
     };
 
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      releaseTrap();
+      window.removeEventListener("keydown", onKeyDown);
+      restoreFocus(previouslyFocused.current);
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -46,16 +65,20 @@ export function CookiePreferencesModal({ open, onClose, onSaved }: CookiePrefere
       role="presentation"
     >
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Cookie preferences"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
         className="w-full max-w-lg rounded-2xl border border-border bg-surface p-6 shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-foreground">Cookie preferences</h2>
-        <p className="mt-2 text-sm text-muted">
+        <h2 id={titleId} className="text-lg font-semibold text-foreground">
+          Cookie preferences
+        </h2>
+        <p id={descriptionId} className="mt-2 text-sm text-muted">
           Choose which optional tools may run. Essential cookies are always active. See{" "}
-          <Link href={LEGAL_ROUTES.cookies} className="text-primary hover:underline">
+          <Link href={LEGAL_ROUTES.cookies} className={cn("text-primary hover:underline", focusRing)}>
             Cookie Policy
           </Link>
           .
@@ -81,7 +104,7 @@ export function CookiePreferencesModal({ open, onClose, onSaved }: CookiePrefere
               type="checkbox"
               checked={prefs.analytics}
               onChange={(e) => setPrefs((p) => ({ ...p, analytics: e.target.checked }))}
-              className="mt-1"
+              className={cn("mt-1", focusRing)}
               aria-label="Analytics cookies"
             />
           </label>
@@ -97,7 +120,7 @@ export function CookiePreferencesModal({ open, onClose, onSaved }: CookiePrefere
               type="checkbox"
               checked={prefs.marketing}
               onChange={(e) => setPrefs((p) => ({ ...p, marketing: e.target.checked }))}
-              className="mt-1"
+              className={cn("mt-1", focusRing)}
               aria-label="Marketing cookies"
             />
           </label>
@@ -143,7 +166,7 @@ export function CookiePreferencesButton({ className }: { className?: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={cn("text-sm hover:underline", className)}
+        className={cn("text-sm hover:underline", focusRing, className)}
       >
         Cookie preferences
       </button>

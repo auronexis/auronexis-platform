@@ -6,9 +6,7 @@ import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
 import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
 import { resolveAuthBranding } from "@/lib/branding/auth-branding";
-import { AUTH_MESSAGES } from "@/lib/auth/messages";
-import { createClient } from "@/lib/supabase/server";
-
+import { resolveResetPasswordSession } from "@/lib/auth/reset-session";
 
 export const metadata: Metadata = createPageMetadataForPath("/reset-password");
 
@@ -20,24 +18,10 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
   const params = await searchParams;
   const host = (await headers()).get("host") ?? "";
   const branding = await resolveAuthBranding(host);
-  const supabase = await createClient();
-
-  let sessionError: string | undefined;
-
-  if (params.code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(params.code);
-    if (error) {
-      sessionError = AUTH_MESSAGES.RESET_TOKEN_INVALID;
-    }
-  } else if (params.error) {
-    sessionError = AUTH_MESSAGES.RESET_TOKEN_INVALID;
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const canReset = Boolean(user) && !sessionError;
+  const { canReset, sessionError } = await resolveResetPasswordSession({
+    code: params.code,
+    error: params.error,
+  });
 
   return (
     <>

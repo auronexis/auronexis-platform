@@ -1,4 +1,6 @@
 import type { AuditEventView } from "@/lib/compliance/types";
+import { formatAppWeekdayDate } from "@/lib/i18n/date";
+import type { AppLocale } from "@/lib/i18n/types";
 
 export function groupAuditTimelineByDay(items: AuditEventView[]): Array<{
   date: string;
@@ -18,11 +20,6 @@ export function groupAuditTimelineByDay(items: AuditEventView[]): Array<{
     .map(([date, groupItems]) => ({ date, items: groupItems }));
 }
 
-export function formatTimelineLabel(isoDate: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(isoDate));
+export function formatTimelineLabel(isoDate: string, locale: AppLocale = "en"): string {
+  return formatAppWeekdayDate(isoDate, locale);
 }

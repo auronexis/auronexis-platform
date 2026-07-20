@@ -1,4 +1,5 @@
 import type { ReportEmailDelivery } from "@/types/database";
+import { formatAppDateTime } from "@/lib/i18n";
 
 export type ReportEmailDeliveryStatus = ReportEmailDelivery["status"];
 
@@ -11,15 +12,5 @@ export const DELIVERY_STATUS_LABELS: Record<ReportEmailDeliveryStatus, string> =
 };
 
 export function formatDeliveryDateTime(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }

@@ -19,7 +19,7 @@ import {
   type OperationalInsight,
   type TrendMetric,
 } from "@/lib/ai/insights/types";
-import { ReportAIUsageCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUsageCard } from "@/components/ai/ai-usage-card";
 import type { AIUsageSummary } from "@/lib/ai/types";
 import { cn } from "@/lib/utils/cn";
 
@@ -76,6 +76,9 @@ function TrendCard({ trend }: { trend: TrendMetric }) {
         </p>
         <div className={cn("flex items-center gap-1 text-sm font-medium", tone)}>
           <Icon className="h-4 w-4" aria-hidden="true" />
+          <span className="sr-only">
+            {trend.direction === "up" ? "Up" : trend.direction === "down" ? "Down" : "Unchanged"}
+          </span>
           {trend.changePercent != null ? `${trend.changePercent > 0 ? "+" : ""}${trend.changePercent}%` : "—"}
         </div>
       </div>
@@ -148,7 +151,7 @@ export function InsightsWorkspace({ initialData, usageSummary, clients }: Insigh
 
   return (
     <div className="space-y-8">
-      <ReportAIUsageCard usageSummary={usageSummary} averageLatencyMs={data.durationMs} />
+      <AIUsageCard usageSummary={usageSummary} averageLatencyMs={data.durationMs} />
 
       {error ? (
         <div className="space-y-2">
@@ -256,7 +259,12 @@ export function InsightsWorkspace({ initialData, usageSummary, clients }: Insigh
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{insight.title}</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        <span className="mr-2 inline-flex rounded-full bg-muted/15 px-2 py-0.5 text-xs font-medium text-foreground">
+                          {INSIGHT_PRIORITY_LABELS[insight.priority]}
+                        </span>
+                        {insight.title}
+                      </p>
                       <p className="mt-1 text-sm text-muted">{insight.description}</p>
                     </div>
                     <span className="text-xs font-medium text-muted">

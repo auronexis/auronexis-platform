@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { AcceptInviteForm } from "@/components/auth/accept-invite-form";
+import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
+import { LegalLinksInline } from "@/components/legal/legal-links-inline";
+import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
+import { LinkButton } from "@/components/ui/link-button";
+import { resolveAuthBranding } from "@/lib/branding/auth-branding";
 import { createPrivateAppMetadata } from "@/lib/seo/metadata";
 import { getInvitationByToken } from "@/lib/team/queries";
 import { INVITE_ROLE_LABELS } from "@/lib/team/types";
@@ -14,6 +20,8 @@ type InvitePageProps = {
 export default async function InvitePage({ params }: InvitePageProps) {
   const { token } = await params;
   const invitation = await getInvitationByToken(token);
+  const host = (await headers()).get("host") ?? "";
+  const branding = await resolveAuthBranding(host);
 
   if (!invitation) {
     notFound();
@@ -21,50 +29,60 @@ export default async function InvitePage({ params }: InvitePageProps) {
 
   if (invitation.accepted_at) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-navy-950 px-4">
-        <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm text-center">
-          <h1 className="text-2xl font-semibold text-navy-950">Invitation already used</h1>
-          <p className="mt-2 text-sm text-muted">
-            This invitation has already been accepted. Sign in to continue.
-          </p>
-          <a
-            href="/login"
-            className="mt-6 inline-block text-sm font-medium text-accent-blue hover:underline"
-          >
-            Go to sign in
-          </a>
+      <>
+        <WhiteLabelThemeInjector branding={branding} scopeId="invite-root" />
+        <div id="invite-root" className="white-label-scope contents">
+          <LoginBrandingShell branding={branding} footer={<LegalLinksInline className="mt-8 px-4" />}>
+            <div className="text-center">
+              <h1 className="text-2xl font-semibold text-navy-950">Invitation already used</h1>
+              <p className="mt-2 text-sm text-muted">
+                This invitation has already been accepted. Sign in to continue.
+              </p>
+              <LinkButton href="/login" className="mt-6">
+                Go to sign in
+              </LinkButton>
+            </div>
+          </LoginBrandingShell>
         </div>
-      </div>
+      </>
     );
   }
 
   if (new Date(invitation.expires_at) < new Date()) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-navy-950 px-4">
-        <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm text-center">
-          <h1 className="text-2xl font-semibold text-navy-950">Invitation expired</h1>
-          <p className="mt-2 text-sm text-muted">
-            Ask your organization admin to send a new invitation.
-          </p>
+      <>
+        <WhiteLabelThemeInjector branding={branding} scopeId="invite-root" />
+        <div id="invite-root" className="white-label-scope contents">
+          <LoginBrandingShell branding={branding} footer={<LegalLinksInline className="mt-8 px-4" />}>
+            <div className="text-center">
+              <h1 className="text-2xl font-semibold text-navy-950">Invitation expired</h1>
+              <p className="mt-2 text-sm text-muted">
+                Ask your organization admin to send a new invitation.
+              </p>
+            </div>
+          </LoginBrandingShell>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-navy-950 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-navy-950">Join Auroranexis</h1>
-          <p className="mt-2 text-sm text-muted">Create your account to accept the invitation.</p>
-        </div>
-        <AcceptInviteForm
-          token={token}
-          email={invitation.email}
-          organizationName={invitation.organization.name}
-          roleLabel={INVITE_ROLE_LABELS[invitation.role]}
-        />
+    <>
+      <WhiteLabelThemeInjector branding={branding} scopeId="invite-root" />
+      <div id="invite-root" className="white-label-scope contents">
+        <LoginBrandingShell branding={branding} footer={<LegalLinksInline className="mt-8 px-4" />}>
+          <div className="mb-8 text-center">
+            <h1 className="text-2xl font-semibold text-navy-950">Join Auroranexis</h1>
+            <p className="mt-2 text-sm text-muted">Create your account to accept the invitation.</p>
+          </div>
+          <AcceptInviteForm
+            token={token}
+            email={invitation.email}
+            organizationName={invitation.organization.name}
+            roleLabel={INVITE_ROLE_LABELS[invitation.role]}
+          />
+        </LoginBrandingShell>
       </div>
-    </div>
+    </>
   );
 }

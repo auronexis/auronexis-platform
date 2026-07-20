@@ -1,4 +1,5 @@
 import type { NotificationType } from "@/types/database";
+import { formatAppDateTime } from "@/lib/i18n";
 
 export type NotificationEntityType =
   | "client"
@@ -69,11 +70,5 @@ export function getNotificationHref(
 }
 
 export function formatNotificationTimestamp(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { focusFirstElement, restoreFocus } from "@/lib/a11y/focus";
 import { cn } from "@/lib/utils/cn";
 import { motionDialogEnter } from "@/lib/ui/motion";
 
@@ -32,6 +33,7 @@ export function ConfirmDialog({
   onConfirm,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const previouslyFocused = useRef<Element | null>(null);
   const titleId = useId();
   const descriptionId = useId();
   const consequencesId = useId();
@@ -43,7 +45,11 @@ export function ConfirmDialog({
     }
 
     if (open && !dialog.open) {
+      previouslyFocused.current = document.activeElement;
       dialog.showModal();
+      window.requestAnimationFrame(() => {
+        focusFirstElement(dialog);
+      });
     }
 
     if (!open && dialog.open) {
@@ -61,6 +67,13 @@ export function ConfirmDialog({
         "fixed left-1/2 top-1/2 z-[120] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-surface p-0 shadow-xl backdrop:bg-foreground/25 backdrop:backdrop-blur-sm open:animate-none",
         motionDialogEnter,
       )}
+      onClose={() => {
+        restoreFocus(previouslyFocused.current);
+        previouslyFocused.current = null;
+        if (open) {
+          onOpenChange(false);
+        }
+      }}
       onCancel={(event) => {
         event.preventDefault();
         onOpenChange(false);

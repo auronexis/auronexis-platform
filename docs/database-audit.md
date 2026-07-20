@@ -1,8 +1,14 @@
 # Database Audit — Sprint 10
 
+> **Superseded for day-to-day standards.** Use
+> [`docs/07_BUILD_BIBLE_V2_CHAPTER_05_DATABASE.md`](./07_BUILD_BIBLE_V2_CHAPTER_05_DATABASE.md)
+> as the current source of truth. This file is retained as a historical Sprint 10 snapshot
+> (2025-06-23, 30 migrations). The repo now has 65+ migrations including Paddle, predictive,
+> executive intelligence, and customer-success tables.
+
 **Version:** Auroranexis v0.9 RC  
 **Date:** 2025-06-23  
-**Migrations:** 30 files in `supabase/migrations/`
+**Migrations:** 30 files in `supabase/migrations/` (historical count)
 
 ## Summary
 

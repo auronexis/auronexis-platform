@@ -1,15 +1,16 @@
-# Production Readiness — v0.99
+﻿> **ARCHIVED (Build Bible V2 Chapter 14).** Use [enterprise-deployment.md](./enterprise-deployment.md), [enterprise-release-checklist.md](./enterprise-release-checklist.md), and [rollback-plan.md](./rollback-plan.md). Historical Stripe-era notes below are not authoritative.
+# Production Readiness â€” v0.99
 
 **Date:** 2025-06-23  
 **Version:** Auroranexis v0.99.0  
 **Status:** Production Deployment Ready  
-**Target score:** ≥ 97/100
+**Target score:** â‰¥ 97/100
 
 ---
 
 ## Readiness dimensions (13)
 
-Production readiness is computed in Settings → Diagnostics from workspace + static checks:
+Production readiness is computed in Settings â†’ Diagnostics from workspace + static checks:
 
 | # | Dimension | Source |
 |---|-----------|--------|
@@ -35,12 +36,12 @@ Implementation: `src/lib/diagnostics/production-readiness.ts`, `deployment-readi
 
 | Score | Label |
 |-------|-------|
-| ≥ 99 | Enterprise Ready |
-| ≥ 97 | **Production Ready** |
-| ≥ 90 | Pilot Ready |
+| â‰¥ 99 | Enterprise Ready |
+| â‰¥ 97 | **Production Ready** |
+| â‰¥ 90 | Pilot Ready |
 | < 90 | Not Ready |
 
-*(Updated from v0.98: Production Ready threshold raised from 88 → 97)*
+*(Updated from v0.98: Production Ready threshold raised from 88 â†’ 97)*
 
 ---
 
@@ -52,12 +53,12 @@ Implementation: `src/lib/diagnostics/production-readiness.ts`, `deployment-readi
 | Pilot acquisition | 100 |
 | Deployment readiness | 100 |
 | Compliance | 90+ |
-| Cron / Queue | 88–95 |
+| Cron / Queue | 88â€“95 |
 | Stripe / Billing | 90+ (with webhook secret) |
-| OAuth | 85+ (≥1 connector configured) |
-| **Overall** | **≥ 97** |
+| OAuth | 85+ (â‰¥1 connector configured) |
+| **Overall** | **â‰¥ 97** |
 
-Local development without `CRON_SECRET`, Stripe webhook, or OAuth may score lower — expected behavior.
+Local development without `CRON_SECRET`, Stripe webhook, or OAuth may score lower â€” expected behavior.
 
 ---
 
@@ -67,9 +68,9 @@ Environment-aware platform status (`getPlatformReadinessStatus`):
 
 | Tier | Score |
 |------|-------|
-| Production Ready | ≥ 97 |
-| Pilot Ready | ≥ 90 |
-| Development | ≥ 75 |
+| Production Ready | â‰¥ 97 |
+| Pilot Ready | â‰¥ 90 |
+| Development | â‰¥ 75 |
 
 Dev environments show **Development** or **Partially Configured** instead of **Unavailable** when optional services (Stripe, Sentry, Cron) are missing.
 
@@ -79,14 +80,14 @@ Dev environments show **Development** or **Partially Configured** instead of **U
 
 | Check | Staging expectation |
 |-------|---------------------|
-| Vercel cron | ✅ `/api/cron/run` every 15 min |
-| Health endpoint | ✅ `/api/health` |
-| Robots + sitemap | ✅ Generated routes |
-| OpenGraph | ✅ Marketing metadata |
-| SSL / HTTPS | ✅ Custom domain |
-| Version | ✅ 0.99.0 |
-| Cron secret | ✅ Vercel env |
-| Vercel deployment | ✅ `VERCEL` env present |
+| Vercel cron | âœ… `/api/cron/run` every 15 min |
+| Health endpoint | âœ… `/api/health` |
+| Robots + sitemap | âœ… Generated routes |
+| OpenGraph | âœ… Marketing metadata |
+| SSL / HTTPS | âœ… Custom domain |
+| Version | âœ… 0.99.0 |
+| Cron secret | âœ… Vercel env |
+| Vercel deployment | âœ… `VERCEL` env present |
 
 ---
 
@@ -94,12 +95,12 @@ Dev environments show **Development** or **Partially Configured** instead of **U
 
 | Gate | v0.98 | v0.99 |
 |------|-------|-------|
-| Marketing site | ✅ | ✅ |
-| Legal pages | ✅ | ✅ |
-| Pilot program page | ✅ | ✅ |
+| Marketing site | âœ… | âœ… |
+| Legal pages | âœ… | âœ… |
+| Pilot program page | âœ… | âœ… |
 | Demo workspace | Documented | Seed + validate |
 | Staging online | Planned | **Target: staging.auroranexis.com** |
-| First pilot customer | — | **Ready after operator sign-off** |
+| First pilot customer | â€” | **Ready after operator sign-off** |
 
 ---
 
@@ -132,8 +133,8 @@ npm run test:e2e   # 29/29 with E2E_EMAIL + E2E_PASSWORD
 - [ ] OAuth callbacks registered ([oauth-validation.md](./oauth-validation.md))
 - [ ] Demo workspace seeded
 - [ ] E2E 29/29 on staging
-- [ ] Diagnostics overall ≥ 97
-- [ ] Bootstrap infra ≤ €100/mo confirmed ([cost-analysis.md](./cost-analysis.md))
+- [ ] Diagnostics overall â‰¥ 97
+- [ ] Bootstrap infra â‰¤ â‚¬100/mo confirmed ([cost-analysis.md](./cost-analysis.md))
 
 ---
 
@@ -142,3 +143,4 @@ npm run test:e2e   # 29/29 with E2E_EMAIL + E2E_PASSWORD
 - [deployment-v0.99.md](./deployment-v0.99.md)
 - [staging-validation.md](./staging-validation.md)
 - [launch-readiness-v0.98.md](./launch-readiness-v0.98.md)
+

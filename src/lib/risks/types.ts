@@ -5,6 +5,7 @@ import type {
   ClientRiskStatus,
   RiskStatus as LegacyRiskStatus,
 } from "@/types/database";
+import { formatAppDate, formatAppDateTime } from "@/lib/i18n";
 
 export type { ClientRiskSource, ClientRiskSeverity, ClientRiskStatus } from "@/types/database";
 
@@ -63,10 +64,6 @@ export type RiskActivityView = {
   metadata: Record<string, unknown>;
   created_at: string;
   actor: { full_name: string } | null;
-};
-
-export type RiskMetrics = RiskSummary & {
-  heatmap: RiskHeatmap;
 };
 
 export type RiskDetectionResult = {
@@ -191,27 +188,9 @@ export const CLIENT_RISK_LIST_SELECT = `
 `;
 
 export function formatRiskDate(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatAppDate(value);
 }
 
 export function formatRiskDateTime(value: string | null | undefined): string {
-  if (!value) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }

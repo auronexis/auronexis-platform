@@ -150,7 +150,7 @@ export async function countClientRisks(
     .select("severity, status")
     .eq("organization_id", organizationId)
     .eq("client_id", clientId)
-    .in("status", ["open", "acknowledged", "mitigating"]);
+    .in("status", ["open", "acknowledged", "mitigated"]);
 
   if (error || !data) {
     return { open: 0, critical: 0 };

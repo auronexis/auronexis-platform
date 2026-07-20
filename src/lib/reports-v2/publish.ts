@@ -109,8 +109,17 @@ export async function publishReport(
       return { data: null, error: "Report not found." };
     }
 
-    if (report.status !== "generated" && report.status !== "draft") {
+    if (report.status !== "generated") {
       return { data: null, error: "Only generated reports can be published." };
+    }
+
+    const { clientBelongsToOrganization } = await import("@/lib/clients/queries");
+    if (
+      !(await clientBelongsToOrganization(session.organization.id, report.client_id, {
+        excludeArchived: true,
+      }))
+    ) {
+      return { data: null, error: "Report client is not valid for publishing." };
     }
 
     const supabase = await createClient();

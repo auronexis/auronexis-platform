@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Select } from "@/components/ui/select";
 import { refreshClientPortfolioServerAction } from "@/lib/ai/client-success/action";
@@ -186,11 +187,9 @@ export function CustomerSuccessDashboardCard({
         {requiredPlanLabel ? (
           <p className="mt-1 text-xs font-medium text-foreground">{requiredPlanLabel} plan required</p>
         ) : null}
-        <Link href="/settings/plans">
-          <Button type="button" variant="primary" size="sm" className="mt-4">
-            View plans
-          </Button>
-        </Link>
+        <LinkButton href="/settings/plans" variant="primary" size="sm" className="mt-4">
+          View plans
+        </LinkButton>
       </div>
     );
   }

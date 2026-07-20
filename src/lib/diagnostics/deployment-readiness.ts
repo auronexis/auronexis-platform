@@ -14,7 +14,7 @@ import { getAppUrl, getCronSecret } from "@/lib/env";
 
 /** Matches `vercel.json` cron configuration — keep in sync on schedule changes. */
 export const DEPLOYMENT_CRON_PATH = "/api/cron/run";
-export const DEPLOYMENT_CRON_SCHEDULE = "*/15 * * * *";
+export const DEPLOYMENT_CRON_SCHEDULE = "*/5 * * * *";
 export const DEPLOYMENT_HEALTH_PATH = "/api/health";
 
 export type DeploymentReadinessSnapshot = {

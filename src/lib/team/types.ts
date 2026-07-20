@@ -1,4 +1,5 @@
 import type { InviteRole, TeamInvitation, UserRole } from "@/types/database";
+import { formatAppDate } from "@/lib/i18n";
 
 export type { InviteRole };
 
@@ -29,11 +30,7 @@ export const USER_ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export function formatTeamDate(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatAppDate(value);
 }
 
 export function buildInviteUrl(token: string, appUrl: string): string {

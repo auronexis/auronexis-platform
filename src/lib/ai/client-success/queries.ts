@@ -199,7 +199,7 @@ async function countSlaBreachesInRange(
     .eq("client_id", clientId);
 
   const { data: risks } = await supabase
-    .from("risks")
+    .from("client_risks")
     .select("id")
     .eq("organization_id", session.organization.id)
     .eq("client_id", clientId);

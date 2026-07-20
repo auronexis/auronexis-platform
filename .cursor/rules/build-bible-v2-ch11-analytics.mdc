@@ -1,0 +1,22 @@
+---
+description: Auroranexis Build Bible V2 Chapter 11 — Enterprise analytics & product telemetry
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 11 (Enterprise Analytics)
+
+Spec: `docs/13_BUILD_BIBLE_V2_CHAPTER_11_ANALYTICS.md`
+
+## Rules
+
+- Emit product/marketing events only via `trackAnalyticsEvent` / `trackConversionEvent` / `trackProductEvent` / `trackAITelemetryEvent`.
+- Register sinks with an explicit consent category (`analytics` vs `marketing`).
+- Never include secrets, passwords, API keys, prompts, org/user/client IDs in analytics props.
+- Prefer `feature`, `module`, `surface`, `result`, `duration_ms`, `funnel_stage` for measurable envelopes.
+- Use `trackBillingLifecycleEvent` as the billing integration point — do not couple analytics into Paddle webhook business logic in this chapter.
+- Keep providers modular (`providers.ts` / `ANALYTICS_CONFIG`) — no hard-coded third-party business rules.
+- Analytics must never change auth, RBAC, RLS, Paddle, API, or application behaviour.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 11 work.

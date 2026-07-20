@@ -4,7 +4,11 @@ import { redirect } from "next/navigation";
 import { OrganizationForm } from "@/components/settings/organization-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
-import { getStoredOrganizationCurrency, getStoredOrganizationLanguage } from "@/lib/i18n";
+import {
+  getStoredOrganizationCurrency,
+  getStoredOrganizationLanguage,
+  getStoredOrganizationRegionalSettings,
+} from "@/lib/i18n";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
@@ -24,13 +28,14 @@ export default async function OrganizationSettingsPage() {
 
   const organizationLanguage = getStoredOrganizationLanguage(session.organization);
   const organizationCurrency = getStoredOrganizationCurrency(session.organization);
+  const regional = getStoredOrganizationRegionalSettings(session.organization);
 
   return (
     <>
       <PageHeader
         module="settings"
         title="Organization"
-        description="Update your agency profile and workspace settings."
+        description="Update your agency profile and workspace regional settings."
       />
       <div className="mb-4 text-sm text-muted">
         <Link href="/settings" className={linkText}>
@@ -45,6 +50,11 @@ export default async function OrganizationSettingsPage() {
           organizationName={session.organization.name}
           organizationLanguage={organizationLanguage}
           organizationCurrency={organizationCurrency}
+          organizationTimezone={regional.timezone}
+          organizationDateFormat={regional.dateFormat}
+          organizationTimeFormat={regional.timeFormat}
+          organizationWeekStart={regional.weekStart}
+          organizationMeasurementSystem={regional.measurementSystem}
         />
       </PageSurface>
     </>

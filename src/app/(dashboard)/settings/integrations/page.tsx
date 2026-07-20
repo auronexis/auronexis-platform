@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IntegrationCenterWorkspace } from "@/components/settings/integration-center-workspace";
+import { IntegrationCenterWorkspaceLazy } from "@/components/performance/lazy-workspaces";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { requireSession } from "@/lib/auth/session";
@@ -51,7 +51,7 @@ export default async function SettingsIntegrationsPage() {
         <span className="mx-2">/</span>
         <span>Integrations</span>
       </div>
-      <IntegrationCenterWorkspace snapshot={snapshot} />
+      <IntegrationCenterWorkspaceLazy snapshot={snapshot} />
     </>
   );
 }

@@ -1,0 +1,36 @@
+---
+description: Auroranexis Build Bible V2 Chapter 3 — Next.js & TypeScript standards
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 3 (Next.js & TypeScript)
+
+Spec: `docs/05_BUILD_BIBLE_V2_CHAPTER_03_NEXT_TYPESCRIPT.md`
+
+## Next.js
+
+- Prefer Server Components; `"use client"` only when technically required.
+- Keep App Router files consistent (`page` / `layout` / `loading` / `error` / `not-found` / `route`).
+- Fetch on the server when possible; avoid duplicate client fetches and waterfalls.
+- Thin API routes; delegate to `src/lib/**`.
+
+## TypeScript
+
+- Strict typing; no `any`, `@ts-ignore`, or `@ts-nocheck` unless unavoidable.
+- Avoid unjustified `as never` / unsafe assertions.
+- Exported functions and services use explicit types.
+- Preserve API and DB contracts.
+
+## Boundaries & security
+
+- Never import `server-only`, `@/lib/supabase/server`, or `@/lib/supabase/admin` into Client Components.
+- No secrets in client bundles.
+
+## Preserve
+
+- Features, RBAC, RLS, Paddle billing, authentication/authorization behaviour.
+- Never reintroduce Stripe.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 3 work.

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import {
+  trackFeatureAdoption,
   trackMonthlyActiveUsage,
   trackWeeklyActiveUsage,
   trackWorkspaceHealthViewed,
@@ -13,7 +14,10 @@ type DashboardAnalyticsTrackerProps = {
   planTier: string;
 };
 
-/** Workspace analytics — dashboard load, signup completion, adoption cadence. */
+/**
+ * Workspace analytics — dashboard load + adoption cadence.
+ * Signup/workspace completion is queued from the signup form (pending events) to avoid double-fire.
+ */
 export function DashboardAnalyticsTracker({
   isRecentSignup,
   planTier,
@@ -21,19 +25,23 @@ export function DashboardAnalyticsTracker({
   useEffect(() => {
     trackAnalyticsEvent("dashboard_loaded", {
       surface: "dashboard",
+      module: "dashboard",
       plan_tier: planTier,
     });
+    trackFeatureAdoption("dashboard", "dashboard");
     trackWeeklyActiveUsage("dashboard");
     trackMonthlyActiveUsage("dashboard");
     trackWorkspaceHealthViewed("dashboard");
 
     if (isRecentSignup) {
-      const signupKey = "auroranexis:signup_completion_tracked";
-      if (!sessionStorage.getItem(signupKey)) {
-        sessionStorage.setItem(signupKey, "1");
-        trackAnalyticsEvent("signup_completed", { surface: "dashboard" });
-        trackAnalyticsEvent("workspace_created", { surface: "dashboard", plan_tier: planTier });
-        trackAnalyticsEvent("activation_completed", { surface: "dashboard" });
+      const activationKey = "auroranexis:activation_completed_tracked";
+      if (!sessionStorage.getItem(activationKey)) {
+        sessionStorage.setItem(activationKey, "1");
+        trackAnalyticsEvent("activation_completed", {
+          surface: "dashboard",
+          module: "dashboard",
+          funnel_stage: "trial_activation",
+        });
       }
     }
   }, [isRecentSignup, planTier]);

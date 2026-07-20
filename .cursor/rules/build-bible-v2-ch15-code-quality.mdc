@@ -1,0 +1,24 @@
+---
+description: Auroranexis Build Bible V2 Chapter 15 — Code quality & maintainability
+alwaysApply: true
+---
+
+# Build Bible V2 — Chapter 15 (Code Quality)
+
+Spec: `docs/17_BUILD_BIBLE_V2_CHAPTER_15_CODE_QUALITY.md`  
+Debt catalog: `docs/technical-debt.md`
+
+## Rules
+
+- Prefer `scripts/_test-helpers/read-source.mjs` for source-contract tests — do not duplicate `readSource`.
+- Domain badges compose `StatusBadge`; compact empty panels compose `CompactEmptyState` / `EmptyState`.
+- Prefer Server Components; keep `"use client"` only when required.
+- New Supabase writes should use `src/lib/supabase/typed.ts` helpers when practical.
+- Do not introduce `as any`, `@ts-ignore`, `TODO`, or `FIXME` in `src/`.
+- Do not reintroduce Stripe packages or `/api/stripe` routes.
+- Do not modify business logic, auth, RBAC, RLS, Paddle behaviour, or API contracts for cleanup convenience.
+- High-risk refactors (mass `as never` removal, Stripe field renames) stay in the debt catalog — do not auto-execute.
+
+## This chapter
+
+- Do not commit, push, or deploy from Chapter 15 work.

@@ -1,5 +1,8 @@
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
 import { getPoweredByLine, PLATFORM_NAME } from "@/lib/branding/defaults";
+import { extractEmailAddress } from "@/lib/email/addresses";
+import { formatAppDate } from "@/lib/i18n/date";
+import type { AppLocale } from "@/lib/i18n/types";
 import type { OrganizationEmailSettings } from "@/types/database";
 
 export type ResolvedEmailSender = {
@@ -17,18 +20,17 @@ export type ReportEmailTemplateInput = {
   executiveSummary: string | null;
   viewReportUrl: string;
   downloadPdfUrl: string;
+  locale?: AppLocale;
 };
 
 export const DEFAULT_EMAIL_FROM_NAME = PLATFORM_NAME;
 
-export function formatReportingPeriod(start: string, end: string): string {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  return `${formatter.format(new Date(start))} – ${formatter.format(new Date(end))}`;
+export function formatReportingPeriod(
+  start: string,
+  end: string,
+  locale: AppLocale = "en",
+): string {
+  return `${formatAppDate(start, locale)} – ${formatAppDate(end, locale)}`;
 }
 
 export function buildReportEmailSubject(clientName: string): string {
@@ -39,6 +41,7 @@ export function buildReportEmailPlainText(input: ReportEmailTemplateInput): stri
   const period = formatReportingPeriod(
     input.reportingPeriodStart,
     input.reportingPeriodEnd,
+    input.locale ?? "en",
   );
   const summary = input.executiveSummary?.trim() || "Your latest operational report is ready.";
 
@@ -63,6 +66,7 @@ export function buildReportEmailHtml(input: ReportEmailTemplateInput): string {
   const period = formatReportingPeriod(
     input.reportingPeriodStart,
     input.reportingPeriodEnd,
+    input.locale ?? "en",
   );
   const summary = input.executiveSummary?.trim() || "Your latest operational report is ready.";
   const escapedSummary = escapeHtml(summary);
@@ -175,11 +179,6 @@ export function resolveEmailSender(
     from: `${fromName} <${extractEmailAddress(fallbackFromEmail)}>`,
     replyTo: extractReplyTo(fallbackFromEmail),
   };
-}
-
-function extractEmailAddress(fromValue: string): string {
-  const match = fromValue.match(/<([^>]+)>/);
-  return match?.[1]?.trim() ?? fromValue.trim();
 }
 
 function extractReplyTo(fromValue: string): string | undefined {

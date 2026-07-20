@@ -24,6 +24,10 @@ export const ESCALATION_TRIGGER_LABELS: Record<EscalationTriggerType, string> = 
   report_overdue: "Report overdue",
 };
 
+/** Canonical PostgREST select for escalation_rules rows. */
+export const ESCALATION_RULE_SELECT =
+  "id, organization_id, name, trigger_type, severity, delay_minutes, notify_owner, notify_assigned_user, create_activity, create_notification, enabled, created_at, updated_at";
+
 export type EscalationContext = {
   organizationId: string;
   triggerType: EscalationTriggerType;

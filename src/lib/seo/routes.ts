@@ -73,6 +73,11 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description:
       "Operational solutions for agencies — customer health, risk management, incidents, SLA tracking, executive dashboards, and AI reporting.",
   },
+  [MARKETING_ROUTES.templates]: {
+    title: "Operational Templates",
+    description:
+      "Free agency templates for customer health scores, risk registers, incident response, SLA policies, and executive reporting frameworks.",
+  },
   [MARKETING_ROUTES.useCases]: {
     title: "Use Cases",
     description:

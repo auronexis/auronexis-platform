@@ -80,10 +80,17 @@ export const CANONICAL_CAPABILITIES = [
   },
   {
     id: "knowledge-base",
-    name: "Knowledge Base",
+    name: "Knowledge Hub",
     description:
       "Organization-scoped operational knowledge for delivery teams and client context.",
     path: FEATURE_ROUTES.knowledgeBase,
+  },
+  {
+    id: "ai-copilot",
+    name: "AI Copilot",
+    description:
+      "Operational Q&A and structured summaries grounded in workspace data with human review before publication.",
+    path: FEATURE_ROUTES.aiCopilot,
   },
   {
     id: "compliance",

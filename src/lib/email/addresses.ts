@@ -12,6 +12,12 @@ export function formatEmailSender(displayName: string, email: string): string {
   return `${displayName} <${email}>`;
 }
 
+/** Extract a bare email from `Name <email>` or return the trimmed string. */
+export function extractEmailAddress(fromValue: string): string {
+  const match = fromValue.match(/<([^>]+)>/);
+  return match?.[1]?.trim() ?? fromValue.trim();
+}
+
 export function getPlatformNoReplySender(displayName = PLATFORM_NAME): string {
   return formatEmailSender(displayName, PLATFORM_EMAIL_ADDRESSES.noReply);
 }

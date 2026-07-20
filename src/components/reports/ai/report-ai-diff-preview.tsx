@@ -1,7 +1,3 @@
-"use client";
-
-
-
 import { AIDiffPreview } from "@/components/ai/ai-diff-preview";
 
 import { REPORT_AI_SECTION_LABELS, type PendingDiff } from "@/lib/ai/types";

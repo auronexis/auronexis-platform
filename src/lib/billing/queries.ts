@@ -21,7 +21,8 @@ import { getPaddleBillingDetails } from "@/lib/paddle/subscription-details";
 
 export { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 
-const SUBSCRIPTION_SELECT =
+/** Canonical PostgREST select for organization_subscriptions rows. */
+export const ORGANIZATION_SUBSCRIPTION_SELECT =
   "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
 
 /** Load the current organization's subscription record for the active billing provider. */
@@ -33,7 +34,7 @@ export async function getOrganizationSubscription(
 
   const { data, error } = await supabase
     .from("organization_subscriptions")
-    .select(SUBSCRIPTION_SELECT)
+    .select(ORGANIZATION_SUBSCRIPTION_SELECT)
     .eq("organization_id", session.organization.id)
     .order("updated_at", { ascending: false });
 

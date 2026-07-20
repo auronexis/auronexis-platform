@@ -1,7 +1,7 @@
 import "server-only";
 
 import { recordBillingEvent } from "@/lib/billing/invoices";
-import { getOrganizationSubscription } from "@/lib/billing/queries";
+import { getOrganizationSubscription, ORGANIZATION_SUBSCRIPTION_SELECT } from "@/lib/billing/queries";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 import { isStaleStripeAbandonedCheckout, hasVerifiedPaddleSubscription } from "@/lib/billing/active-billing";
@@ -9,9 +9,6 @@ import { isSubscriptionUsable } from "@/lib/billing/status";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
-
-const SUBSCRIPTION_SELECT =
-  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
 
 export type BillingMaintenanceActionResult = {
   success: boolean;
@@ -25,7 +22,7 @@ async function listAllOrganizationSubscriptions(
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("organization_subscriptions")
-    .select(SUBSCRIPTION_SELECT)
+    .select(ORGANIZATION_SUBSCRIPTION_SELECT)
     .eq("organization_id", organizationId)
     .order("updated_at", { ascending: false });
 

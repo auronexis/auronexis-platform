@@ -1,63 +1,21 @@
 import "server-only";
 
-import type { AIProvider } from "@/lib/ai/providers/types";
-import { placeholderAIProvider } from "@/lib/ai/providers/placeholder";
-import { createOpenAIProvider } from "@/lib/ai/providers/openai";
-import { getAIConfig } from "@/lib/ai/server/config";
+import {
+  resolveDomainAIProvider,
+  type ResolvedDomainAIProvider,
+} from "@/lib/ai/server/resolve-domain-provider";
 import type { IncidentAIProviderName } from "@/lib/ai-incidents/types";
 
-export type ResolvedIncidentAIProvider = {
-  provider: AIProvider | null;
+export type ResolvedIncidentAIProvider = Omit<ResolvedDomainAIProvider, "providerName"> & {
   providerName: IncidentAIProviderName;
-  model: string;
-  disabled: boolean;
-  devNotice: string | null;
 };
 
 /** Resolve incident AI provider from existing AI settings. */
 export function resolveIncidentAIProvider(): ResolvedIncidentAIProvider {
-  const config = getAIConfig();
-
-  if (config.providerId === "placeholder" && process.env.AI_PROVIDER?.trim().toLowerCase() === "disabled") {
-    return {
-      provider: null,
-      providerName: "Disabled",
-      model: "disabled",
-      disabled: true,
-      devNotice: "AI incident assistant is disabled.",
-    };
-  }
-
-  if (config.providerId === "openai" && config.openaiApiKey) {
-    return {
-      provider: createOpenAIProvider(config.openaiApiKey, config.openaiModel),
-      providerName: "OpenAI",
-      model: config.openaiModel,
-      disabled: false,
-      devNotice: null,
-    };
-  }
-
-  if (config.providerId === "anthropic") {
-    return {
-      provider: placeholderAIProvider,
-      providerName: "Anthropic",
-      model: "claude-mock",
-      disabled: false,
-      devNotice: "Anthropic provider not fully configured — using mock output.",
-    };
-  }
-
-  return {
-    provider: placeholderAIProvider,
-    providerName: "Mock",
-    model: "mock-incident-v1",
-    disabled: false,
-    devNotice:
-      config.providerId === "openai" && !config.openaiApiKey
-        ? "OpenAI key missing — using mock provider."
-        : null,
-  };
+  return resolveDomainAIProvider({
+    mockModel: "mock-incident-v1",
+    disabledNotice: "AI incident assistant is disabled.",
+  }) as ResolvedIncidentAIProvider;
 }
 
 export function mapProviderIdToDisplayName(providerId: string): IncidentAIProviderName {

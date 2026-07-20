@@ -1,4 +1,5 @@
-import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
+import { ACTION_DENIED_MESSAGE, assertPermissionSafe as assertStringPermissionSafe } from "@/lib/authorization/guards";
+import type { Permission } from "@/lib/authorization/permissions";
 import { checkPlanFeature } from "@/lib/plans/guards";
 import type { PlanFeatureKey } from "@/lib/plans/types";
 import { AuthorizationError, requirePermission } from "@/lib/rbac/guards";
@@ -37,6 +38,17 @@ export function requireModulePermissionSafe(
 
     throw error;
   }
+}
+
+/**
+ * Bridge to the string-permission guard API — same behaviour as
+ * `assertPermissionSafe` in `@/lib/authorization/guards`.
+ */
+export function assertPermissionSafe(
+  role: UserRole,
+  permission: Permission,
+): { error: string } | null {
+  return assertStringPermissionSafe(role, permission);
 }
 
 /** Convert unexpected action failures into safe customer copy. */

@@ -137,7 +137,6 @@ function SidebarNavItem({ item, isActive, collapsed = false, onNavigate }: Sideb
           {activeAccent}
           {content}
           <span
-            role="tooltip"
             title={getLockedTooltip(item)}
             className={cn(
               "pointer-events-none absolute bottom-full left-2 z-50 mb-2 whitespace-nowrap rounded-md border border-white/10 bg-navy-900 px-2 py-1 text-xs text-primary-foreground opacity-0 shadow-lg",

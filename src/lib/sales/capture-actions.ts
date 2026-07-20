@@ -105,7 +105,7 @@ async function persistInboundLead(input: CaptureInput): Promise<{ ok: true; lead
 }
 
 async function validatePublicSubmission(email: string, formData: FormData): Promise<CaptureActionState | null> {
-  if (isTurnstileConfigured()) {
+  if (isTurnstileConfigured() || process.env.NODE_ENV === "production") {
     const turnstileOk = await verifyTurnstileFromForm(formData);
     if (!turnstileOk) {
       return { error: "Security verification failed. Please try again." };

@@ -132,6 +132,8 @@ GRANT ALL ON TABLE public.legacy_stripe_subscription_ids TO service_role;
 
 -- ---------------------------------------------------------------------------
 -- Rollback (manual)
+-- DO NOT UNCOMMENT: historical reference only — see Build Bible V2 Chapter 1
+-- non-negotiables (no destructive Stripe archive cleanup in production).
 -- ---------------------------------------------------------------------------
 -- DROP POLICY IF EXISTS legacy_stripe_invoices_select_owner_admin ON public.legacy_stripe_customer_invoices;
 -- DROP POLICY IF EXISTS legacy_stripe_webhooks_select_owner_admin ON public.legacy_stripe_webhook_events;

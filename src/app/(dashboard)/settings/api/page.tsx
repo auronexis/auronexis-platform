@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ApiSettingsWorkspace } from "@/components/settings/api-settings-workspace";
+import { ApiSettingsWorkspaceLazy } from "@/components/performance/lazy-workspaces";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { LinkButton } from "@/components/ui/link-button";
@@ -77,7 +77,7 @@ export default async function SettingsApiPage() {
             </div>
           </div>
         ) : snapshot ? (
-          <ApiSettingsWorkspace snapshot={snapshot} />
+          <ApiSettingsWorkspaceLazy snapshot={snapshot} />
         ) : null}
       </PageSurface>
     </>

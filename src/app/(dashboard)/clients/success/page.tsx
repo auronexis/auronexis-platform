@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Sparkles } from "lucide-react";
 import { ClientsSuccessWorkspace } from "@/components/clients/success/clients-success-workspace";
-import { ReportAIUpgradeCard } from "@/components/reports/ai/report-ai-usage-card";
+import { AIUpgradeCard } from "@/components/ai/ai-usage-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { getClientSuccessPortfolio } from "@/lib/ai/client-success/get-analysis";
@@ -31,7 +31,7 @@ export default async function ClientsSuccessPage() {
 
       <PageSurface>
         {!aiAccess.allowed ? (
-          <ReportAIUpgradeCard
+          <AIUpgradeCard
             message={getFeatureUpgradeMessage("ai_client_analysis")}
             requiredPlanLabel={getRequiredPlanLabel("ai_client_analysis")}
             title="Client Success Intelligence"

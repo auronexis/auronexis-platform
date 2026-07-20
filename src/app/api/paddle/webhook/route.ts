@@ -7,7 +7,11 @@ import {
   markPaddleEventIgnored,
   markPaddleEventProcessed,
 } from "@/lib/paddle/idempotency";
-import { handlePaddleWebhookEvent } from "@/lib/paddle/webhooks";
+import {
+  emitPaddleWebhookCommercialEvent,
+  handlePaddleWebhookEvent,
+  invalidateCachesAfterWebhook,
+} from "@/lib/paddle/webhooks";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,6 +77,13 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
   }
 
+  if (idempotency.status === "unavailable") {
+    return NextResponse.json(
+      { error: "Webhook temporarily unavailable. Please retry." },
+      { status: 503 },
+    );
+  }
+
   try {
     const result = await handlePaddleWebhookEvent(event);
 
@@ -82,15 +93,21 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     await markPaddleEventProcessed(providerEventId, result.organizationId);
+    invalidateCachesAfterWebhook(result.organizationId);
+    await emitPaddleWebhookCommercialEvent(eventType);
     return NextResponse.json(
       { received: true, retried: idempotency.status === "retry" },
       { status: 200 },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Webhook handler failed.";
-    console.error("[paddle] webhook handler failed:", message);
+    console.error("[paddle] webhook handler failed:", {
+      message,
+      eventType,
+      providerEventIdPrefix: providerEventId.slice(0, 12),
+    });
     await markPaddleEventFailed(providerEventId, message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Webhook processing failed." }, { status: 500 });
   }
 }
 
