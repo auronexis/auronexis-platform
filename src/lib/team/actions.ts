@@ -466,6 +466,18 @@ export async function updateOrganizationAction(
   if (saved?.timezone !== parsed.data.timezone) {
     return { error: "Organization timezone did not persist. Please try again." };
   }
+  if (saved?.date_format !== parsed.data.dateFormat) {
+    return { error: "Organization date format did not persist. Please try again." };
+  }
+  if (saved?.time_format !== parsed.data.timeFormat) {
+    return { error: "Organization time format did not persist. Please try again." };
+  }
+  if (saved?.week_start !== parsed.data.weekStart) {
+    return { error: "Organization week start did not persist. Please try again." };
+  }
+  if (saved?.measurement_system !== parsed.data.measurementSystem) {
+    return { error: "Organization measurement system did not persist. Please try again." };
+  }
 
   await recordActivityEvent({
     organizationId: session.organization.id,
