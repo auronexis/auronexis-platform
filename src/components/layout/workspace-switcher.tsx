@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { Icon } from "@/components/ui/icon";
@@ -11,15 +12,15 @@ type WorkspaceSwitcherProps = {
   collapsed?: boolean;
 };
 
-/** Premium workspace header block — visual only, no switching backend. */
+/** Premium workspace header block — navigates to the Operations dashboard. */
 export function WorkspaceSwitcher({
   branding,
   organizationName,
   collapsed = false,
 }: WorkspaceSwitcherProps) {
   return (
-    <button
-      type="button"
+    <Link
+      href="/dashboard"
       className={cn(
         "group/workspace flex w-full cursor-pointer items-center rounded-xl text-left",
         collapsed ? "justify-center px-2 py-2.5" : "gap-3 px-2.5 py-2.5",
@@ -27,7 +28,7 @@ export function WorkspaceSwitcher({
         "hover:bg-white/5 hover:shadow-[0_0_0_1px_rgb(255_255_255_/_0.06)]",
         focusRing,
       )}
-      aria-label={`${branding.companyName} workspace`}
+      aria-label={`${branding.companyName} workspace — go to dashboard`}
     >
       <BrandLogo
         branding={branding}
@@ -52,6 +53,6 @@ export function WorkspaceSwitcher({
           />
         </>
       )}
-    </button>
+    </Link>
   );
 }
