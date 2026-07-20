@@ -5,7 +5,7 @@ import { z } from "zod";
 import { AUTH_MESSAGES, isBenignPasswordResetError, sanitizeAuthError } from "@/lib/auth/messages";
 import { validatePasswordPolicy } from "@/lib/auth/password-policy";
 import { checkPasswordResetThrottle } from "@/lib/security/login-throttle";
-import { isTurnstileConfigured, verifyTurnstileFromForm } from "@/lib/security/turnstile";
+import { requireTurnstileFromForm } from "@/lib/security/turnstile";
 import { getAppUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -68,11 +68,9 @@ export async function requestPasswordResetAction(
     return { error: parsed.error.issues[0]?.message ?? AUTH_MESSAGES.INVALID_EMAIL };
   }
 
-  if (isTurnstileConfigured() || process.env.NODE_ENV === "production") {
-    const turnstileOk = await verifyTurnstileFromForm(formData);
-    if (!turnstileOk) {
-      return { error: AUTH_MESSAGES.GENERIC_ERROR };
-    }
+  const turnstile = await requireTurnstileFromForm(formData);
+  if (!turnstile.ok) {
+    return { error: turnstile.error };
   }
 
   const throttle = checkPasswordResetThrottle(parsed.data.email);

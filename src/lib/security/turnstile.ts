@@ -1,45 +1,64 @@
 import "server-only";
 
 import { isSecurityEnforcementDisabledForE2E } from "@/lib/security/e2e-bypass";
+import {
+  TURNSTILE_MISCONFIGURED_ERROR,
+  TURNSTILE_RESPONSE_FIELD,
+  TURNSTILE_RETRY_ERROR,
+  readTurnstileSecretKeyFromEnv,
+  readTurnstileSiteKeyFromEnv,
+} from "@/lib/security/turnstile-shared";
 
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+export {
+  TURNSTILE_MISCONFIGURED_ERROR,
+  TURNSTILE_RESPONSE_FIELD,
+  TURNSTILE_RETRY_ERROR,
+  TURNSTILE_SECRET_KEY_ENV,
+  TURNSTILE_SITE_KEY_ENV,
+} from "@/lib/security/turnstile-shared";
+
+export function getTurnstileSiteKey(): string | null {
+  return readTurnstileSiteKeyFromEnv();
+}
 
 export function isTurnstileConfigured(): boolean {
   if (isSecurityEnforcementDisabledForE2E()) {
     return false;
   }
   const siteKey = getTurnstileSiteKey();
-  const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
+  const secret = readTurnstileSecretKeyFromEnv();
   return Boolean(siteKey && secret);
 }
 
-export function getTurnstileSiteKey(): string | null {
-  const key = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  return key && key.trim().length > 0 ? key.trim() : null;
+/** Production always requires verification; non-production only when keys are configured. */
+export function isTurnstileRequired(): boolean {
+  return isTurnstileConfigured() || process.env.NODE_ENV === "production";
 }
+
+export type TurnstileVerifyReason =
+  | "not_configured"
+  | "missing_token"
+  | "invalid_token"
+  | "provider_error";
+
+export type TurnstileGateResult =
+  | { ok: true }
+  | { ok: false; reason: TurnstileVerifyReason; error: string };
 
 type TurnstileVerifyResponse = {
   success?: boolean;
   "error-codes"?: string[];
 };
 
-/** Verify Cloudflare Turnstile token — skipped when Turnstile is not configured. */
-export async function verifyTurnstileToken(
-  token: string | null | undefined,
+async function callTurnstileSiteverify(
+  token: string,
   remoteIp?: string | null,
-): Promise<boolean> {
-  if (!isTurnstileConfigured()) {
-    // Fail closed in production when bot protection keys are missing.
-    return process.env.NODE_ENV !== "production";
-  }
-
-  const secret = process.env.TURNSTILE_SECRET_KEY;
+): Promise<{ ok: true } | { ok: false; reason: "invalid_token" | "provider_error" }> {
+  const secret = readTurnstileSecretKeyFromEnv();
   if (!secret) {
-    return false;
-  }
-
-  if (!token || token.trim().length === 0) {
-    return false;
+    return { ok: false, reason: "invalid_token" };
   }
 
   const body: Record<string, string> = {
@@ -51,24 +70,101 @@ export async function verifyTurnstileToken(
     body.remoteip = remoteIp;
   }
 
-  const response = await fetch(TURNSTILE_VERIFY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    return false;
+  let response: Response;
+  try {
+    response = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    return { ok: false, reason: "provider_error" };
   }
 
-  const payload = (await response.json()) as TurnstileVerifyResponse;
-  return payload.success === true;
+  if (!response.ok) {
+    return { ok: false, reason: "provider_error" };
+  }
+
+  let payload: TurnstileVerifyResponse;
+  try {
+    payload = (await response.json()) as TurnstileVerifyResponse;
+  } catch {
+    return { ok: false, reason: "provider_error" };
+  }
+
+  if (payload.success === true) {
+    return { ok: true };
+  }
+
+  return { ok: false, reason: "invalid_token" };
+}
+
+/**
+ * Verify a Turnstile token when protection is configured.
+ * Fail-closed in production when keys are missing.
+ */
+export async function verifyTurnstileToken(
+  token: string | null | undefined,
+  remoteIp?: string | null,
+): Promise<boolean> {
+  const result = await evaluateTurnstileToken(token, remoteIp);
+  return result.ok;
+}
+
+export async function evaluateTurnstileToken(
+  token: string | null | undefined,
+  remoteIp?: string | null,
+): Promise<TurnstileGateResult> {
+  if (!isTurnstileConfigured()) {
+    if (process.env.NODE_ENV === "production") {
+      return {
+        ok: false,
+        reason: "not_configured",
+        error: TURNSTILE_MISCONFIGURED_ERROR,
+      };
+    }
+    return { ok: true };
+  }
+
+  if (!token || token.trim().length === 0) {
+    return { ok: false, reason: "missing_token", error: TURNSTILE_RETRY_ERROR };
+  }
+
+  const verified = await callTurnstileSiteverify(token, remoteIp);
+  if (!verified.ok) {
+    return {
+      ok: false,
+      reason: verified.reason,
+      error: TURNSTILE_RETRY_ERROR,
+    };
+  }
+
+  return { ok: true };
 }
 
 export async function verifyTurnstileFromForm(
   formData: FormData,
   remoteIp?: string | null,
 ): Promise<boolean> {
-  const token = formData.get("cf-turnstile-response");
-  return verifyTurnstileToken(typeof token === "string" ? token : null, remoteIp);
+  const result = await evaluateTurnstileFromForm(formData, remoteIp);
+  return result.ok;
+}
+
+export async function evaluateTurnstileFromForm(
+  formData: FormData,
+  remoteIp?: string | null,
+): Promise<TurnstileGateResult> {
+  const token = formData.get(TURNSTILE_RESPONSE_FIELD);
+  return evaluateTurnstileToken(typeof token === "string" ? token : null, remoteIp);
+}
+
+/** Gate used by auth and public forms — skips only when verification is not required. */
+export async function requireTurnstileFromForm(
+  formData: FormData,
+  remoteIp?: string | null,
+): Promise<TurnstileGateResult> {
+  if (!isTurnstileRequired()) {
+    return { ok: true };
+  }
+  return evaluateTurnstileFromForm(formData, remoteIp);
 }

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { SALES_EMAIL } from "@/lib/company";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkPublicFormThrottle } from "@/lib/security/login-throttle";
-import { isTurnstileConfigured, verifyTurnstileFromForm } from "@/lib/security/turnstile";
+import { requireTurnstileFromForm } from "@/lib/security/turnstile";
 import { buildCalendlyLink, buildDiscoveryMeetLink } from "@/lib/sales/calendar";
 import {
   defaultInboxForSource,
@@ -105,11 +105,9 @@ async function persistInboundLead(input: CaptureInput): Promise<{ ok: true; lead
 }
 
 async function validatePublicSubmission(email: string, formData: FormData): Promise<CaptureActionState | null> {
-  if (isTurnstileConfigured() || process.env.NODE_ENV === "production") {
-    const turnstileOk = await verifyTurnstileFromForm(formData);
-    if (!turnstileOk) {
-      return { error: "Security verification failed. Please try again." };
-    }
+  const turnstile = await requireTurnstileFromForm(formData);
+  if (!turnstile.ok) {
+    return { error: turnstile.error };
   }
 
   const throttle = checkPublicFormThrottle(email);

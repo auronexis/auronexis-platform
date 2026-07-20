@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
-import { isTurnstileConfigured, verifyTurnstileFromForm } from "@/lib/security/turnstile";
+import { requireTurnstileFromForm } from "@/lib/security/turnstile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
@@ -38,11 +38,9 @@ export async function signIn(
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
   }
 
-  if (isTurnstileConfigured() || process.env.NODE_ENV === "production") {
-    const turnstileOk = await verifyTurnstileFromForm(formData);
-    if (!turnstileOk) {
-      return { error: "Security verification failed. Please try again." };
-    }
+  const turnstile = await requireTurnstileFromForm(formData);
+  if (!turnstile.ok) {
+    return { error: turnstile.error };
   }
 
   const throttle = checkLoginThrottle(parsed.data.email);
@@ -92,11 +90,9 @@ export async function signUp(
     return { error: parsed.error.issues[0]?.message ?? "Invalid registration data." };
   }
 
-  if (isTurnstileConfigured() || process.env.NODE_ENV === "production") {
-    const turnstileOk = await verifyTurnstileFromForm(formData);
-    if (!turnstileOk) {
-      return { error: "Security verification failed. Please try again." };
-    }
+  const turnstile = await requireTurnstileFromForm(formData);
+  if (!turnstile.ok) {
+    return { error: turnstile.error };
   }
 
   const throttle = checkSignupThrottle(parsed.data.email);

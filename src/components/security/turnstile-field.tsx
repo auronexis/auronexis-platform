@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  TURNSTILE_MISCONFIGURED_ERROR,
+  TURNSTILE_RESPONSE_FIELD,
+  readTurnstileSiteKeyFromEnv,
+} from "@/lib/security/turnstile-shared";
 
 declare global {
   interface Window {
@@ -16,6 +21,7 @@ declare global {
         },
       ) => string;
       reset: (widgetId: string) => void;
+      remove?: (widgetId: string) => void;
     };
     onTurnstileLoad?: () => void;
   }
@@ -23,16 +29,22 @@ declare global {
 
 type TurnstileFieldProps = {
   className?: string;
+  onTokenChange?: (token: string) => void;
 };
 
 const SCRIPT_ID = "cf-turnstile-script";
-const SCRIPT_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+const SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad";
 
-export function TurnstileField({ className }: TurnstileFieldProps) {
+export function TurnstileField({ className, onTokenChange }: TurnstileFieldProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const [token, setToken] = useState("");
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const siteKey = readTurnstileSiteKeyFromEnv();
+
+  useEffect(() => {
+    onTokenChange?.(token);
+  }, [token, onTokenChange]);
 
   useEffect(() => {
     if (!siteKey || !containerRef.current) {
@@ -53,39 +65,55 @@ export function TurnstileField({ className }: TurnstileFieldProps) {
       });
     }
 
+    const previousOnLoad = window.onTurnstileLoad;
+    window.onTurnstileLoad = () => {
+      previousOnLoad?.();
+      renderWidget();
+    };
+
     if (window.turnstile) {
       renderWidget();
-      return;
-    }
-
-    window.onTurnstileLoad = renderWidget;
-
-    if (!document.getElementById(SCRIPT_ID)) {
+    } else if (!document.getElementById(SCRIPT_ID)) {
       const script = document.createElement("script");
       script.id = SCRIPT_ID;
       script.src = SCRIPT_SRC;
       script.async = true;
       script.defer = true;
-      script.onload = () => window.onTurnstileLoad?.();
       document.head.appendChild(script);
     }
 
     return () => {
       if (widgetIdRef.current && window.turnstile) {
-        window.turnstile.reset(widgetIdRef.current);
+        if (typeof window.turnstile.remove === "function") {
+          window.turnstile.remove(widgetIdRef.current);
+        } else {
+          window.turnstile.reset(widgetIdRef.current);
+        }
       }
       widgetIdRef.current = null;
+      setToken("");
     };
   }, [siteKey]);
 
   if (!siteKey) {
+    if (process.env.NODE_ENV === "production") {
+      return (
+        <p role="alert" className={className ? `${className} text-sm text-red-700` : "text-sm text-red-700"}>
+          {TURNSTILE_MISCONFIGURED_ERROR}
+        </p>
+      );
+    }
     return null;
   }
 
   return (
     <div className={className}>
-      <input type="hidden" name="cf-turnstile-response" value={token} />
+      <input type="hidden" name={TURNSTILE_RESPONSE_FIELD} value={token} />
       <div ref={containerRef} />
     </div>
   );
+}
+
+export function isTurnstileSiteKeyAvailable(): boolean {
+  return Boolean(readTurnstileSiteKeyFromEnv());
 }
