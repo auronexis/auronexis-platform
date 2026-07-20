@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import { TurnstileField } from "@/components/security/turnstile-field";
 import { FormAlert } from "@/components/ui/form-alert";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
@@ -66,7 +65,6 @@ export function ContactForm({ className }: ContactFormProps) {
         />
       </label>
       {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
-      <TurnstileField />
       <button
         type="submit"
         disabled={isPending}

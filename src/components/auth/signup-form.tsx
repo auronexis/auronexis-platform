@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { inputClassName, labelClassName } from "@/components/auth/auth-password-input";
 import { FormAlert } from "@/components/ui/form-alert";
-import {
-  isTurnstileSiteKeyAvailable,
-  TurnstileField,
-} from "@/components/security/turnstile-field";
 import { signUp, type AuthActionState } from "@/lib/auth/actions";
 import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
@@ -17,11 +13,6 @@ const initialState: AuthActionState = {};
 
 export function SignUpForm() {
   const [state, formAction, isPending] = useActionState(signUp, initialState);
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const turnstileEnabled = isTurnstileSiteKeyAvailable();
-  const turnstileMisconfigured = process.env.NODE_ENV === "production" && !turnstileEnabled;
-  const turnstileBlocksSubmit =
-    turnstileMisconfigured || (turnstileEnabled && turnstileToken.trim().length === 0);
 
   return (
     <form
@@ -107,11 +98,9 @@ export function SignUpForm() {
         </FormAlert>
       ) : null}
 
-      <TurnstileField className="pt-1" onTokenChange={setTurnstileToken} />
-
       <button
         type="submit"
-        disabled={isPending || turnstileBlocksSubmit}
+        disabled={isPending}
         aria-busy={isPending}
         className={cn(
           "inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white",

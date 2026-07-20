@@ -7,8 +7,5 @@ export function isSecurityEnforcementDisabledForE2E(): boolean {
     return false;
   }
 
-  return (
-    process.env["TURNSTILE_DISABLE"] === "1" ||
-    process.env["E2E_DISABLE_RATE_LIMIT"] === "1"
-  );
+  return process.env["E2E_DISABLE_RATE_LIMIT"] === "1";
 }

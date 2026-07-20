@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import { TurnstileField } from "@/components/security/turnstile-field";
 import { FormAlert } from "@/components/ui/form-alert";
 import { MarketingButton } from "@/components/marketing/marketing-button";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
@@ -48,7 +47,6 @@ export function DemoBookingForm({ className }: { className?: string }) {
         <textarea name="message" rows={4} className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" />
       </label>
       {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
-      <TurnstileField />
       <MarketingButton type="submit" loading={isPending} ctaId="book_demo" analyticsEvent="demo_requested">
         Book demo
       </MarketingButton>

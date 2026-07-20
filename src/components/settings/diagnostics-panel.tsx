@@ -973,16 +973,12 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
 
       <DiagnosticsSection
         title="Security readiness"
-        description="Security hardening — Turnstile, throttling, headers, uploads, CSRF, and OAuth state."
+        description="Security hardening — throttling, headers, uploads, CSRF, and OAuth state."
       >
         <dl>
           <Row label="Status" value={data.securityReadiness.label} />
           <Row label="Security score" value={`${data.securityReadiness.score}/100`} />
           <Row label="Abuse protection score" value={`${data.abuseProtection.score}/100`} />
-          <Row
-            label="Turnstile configured"
-            value={<BoolBadge value={data.securityReadiness.turnstileConfigured} />}
-          />
           <Row
             label="Login throttling"
             value={<BoolBadge value={data.securityReadiness.loginThrottlingEnabled} />}

@@ -57,20 +57,6 @@ export function auditProductionEnvironment(): ProductionEnvAudit {
       note: "Required for report delivery and lead notifications",
     },
     {
-      key: "TURNSTILE",
-      label: "Cloudflare Turnstile",
-      severity: "recommended",
-      configured: isSet("NEXT_PUBLIC_TURNSTILE_SITE_KEY") && isSet("TURNSTILE_SECRET_KEY"),
-      note: "Never set TURNSTILE_DISABLE or E2E_DISABLE_RATE_LIMIT in production (ignored if set)",
-    },
-    {
-      key: "TURNSTILE_DISABLE",
-      label: "Turnstile disable flag",
-      severity: "optional",
-      configured: !isSet("TURNSTILE_DISABLE"),
-      note: "Must remain unset in production; bypass is blocked when NODE_ENV=production",
-    },
-    {
       key: "E2E_DISABLE_RATE_LIMIT",
       label: "E2E rate-limit disable flag",
       severity: "optional",

@@ -87,7 +87,7 @@ export const ENTERPRISE_REGRESSION_SUITE = [
   "scripts/enterprise-release-approval.test.mjs",
   "scripts/enterprise-production-golive.test.mjs",
   "scripts/enterprise-regression-matrix.test.mjs",
-  "scripts/auth-turnstile-hotfix.test.mjs",
+  "scripts/auth-no-captcha.test.mjs",
   "scripts/paddle-billing.test.mjs",
   "scripts/paddle-sole-provider.test.mjs",
   "scripts/paddle-billing-v2.test.mjs",

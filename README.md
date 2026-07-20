@@ -65,7 +65,7 @@ Production go-live: [docs/22_BUILD_BIBLE_V2_CHAPTER_20_PRODUCTION_GOLIVE.md](doc
 
 Code quality & debt: [docs/17_BUILD_BIBLE_V2_CHAPTER_15_CODE_QUALITY.md](docs/17_BUILD_BIBLE_V2_CHAPTER_15_CODE_QUALITY.md), [docs/18_BUILD_BIBLE_V2_CHAPTER_16_TECHNICAL_DEBT.md](docs/18_BUILD_BIBLE_V2_CHAPTER_16_TECHNICAL_DEBT.md), [docs/technical-debt.md](docs/technical-debt.md).
 
-Do not enable `TURNSTILE_DISABLE` or `E2E_DISABLE_RATE_LIMIT` in production.  
+Do not enable `E2E_DISABLE_RATE_LIMIT` in production.  
 Production deploy / commit / push are owned by Release chapters — not local Chapter 14 prep.
 
 ## Security model

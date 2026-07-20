@@ -3,10 +3,6 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
-import {
-  isTurnstileSiteKeyAvailable,
-  TurnstileField,
-} from "@/components/security/turnstile-field";
 import { signIn, type AuthActionState } from "@/lib/auth/actions";
 import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
@@ -31,11 +27,6 @@ type LoginFormProps = {
 export function LoginForm({ redirectTo, initialError, initialSuccess }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
   const [logoFailed, setLogoFailed] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const turnstileEnabled = isTurnstileSiteKeyAvailable();
-  const turnstileMisconfigured = process.env.NODE_ENV === "production" && !turnstileEnabled;
-  const turnstileBlocksSubmit =
-    turnstileMisconfigured || (turnstileEnabled && turnstileToken.trim().length === 0);
   const errorMessage = state.error ?? initialError;
 
   return (
@@ -112,10 +103,9 @@ export function LoginForm({ redirectTo, initialError, initialSuccess }: LoginFor
           <span aria-live="assertive">{errorMessage}</span>
         </FormAlert>
       ) : null}
-      <TurnstileField className="pt-1" onTokenChange={setTurnstileToken} />
       <button
         type="submit"
-        disabled={isPending || turnstileBlocksSubmit}
+        disabled={isPending}
         className={cn(
           "inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white",
           "hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20",

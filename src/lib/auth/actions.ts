@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
-import { requireTurnstileFromForm } from "@/lib/security/turnstile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
@@ -36,11 +35,6 @@ export async function signIn(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
-  }
-
-  const turnstile = await requireTurnstileFromForm(formData);
-  if (!turnstile.ok) {
-    return { error: turnstile.error };
   }
 
   const throttle = checkLoginThrottle(parsed.data.email);
@@ -88,11 +82,6 @@ export async function signUp(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid registration data." };
-  }
-
-  const turnstile = await requireTurnstileFromForm(formData);
-  if (!turnstile.ok) {
-    return { error: turnstile.error };
   }
 
   const throttle = checkSignupThrottle(parsed.data.email);

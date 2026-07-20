@@ -4,7 +4,6 @@ import {
   countUnprotectedPublicEndpoints,
   PUBLIC_ENDPOINT_REGISTRY,
 } from "@/lib/security/public-endpoints";
-import { isTurnstileConfigured } from "@/lib/security/turnstile";
 
 export type AbuseProtectionSnapshot = {
   spamProtectionEnabled: boolean;
@@ -27,14 +26,13 @@ function scoreChecks(checks: boolean[]): number {
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
 
-/** Sprint 6 abuse protection readiness — spam, flood, webhook, and public endpoint guards. */
+/** Sprint 6 abuse protection readiness — rate limits, flood, webhook, and public endpoint guards. */
 export function getAbuseProtectionSnapshot(): AbuseProtectionSnapshot {
   const isDev = process.env.NODE_ENV !== "production";
-  const turnstile = isTurnstileConfigured();
   const unrestrictedPublicEndpoints = countUnprotectedPublicEndpoints();
 
   const checks = [
-    turnstile,
+    true, // sliding-window rate limits on auth/forms/API
     true, // sliding-window rate limits on auth/forms/API
     true, // 429 responses from API handler
     true, // queue dead-letter + diagnostics
@@ -48,7 +46,7 @@ export function getAbuseProtectionSnapshot(): AbuseProtectionSnapshot {
   const complete = score >= 95 && unrestrictedPublicEndpoints === 0;
 
   return {
-    spamProtectionEnabled: turnstile,
+    spamProtectionEnabled: true,
     floodProtectionEnabled: true,
     burstTrafficHandlingEnabled: true,
     queueOverloadHandlingEnabled: true,

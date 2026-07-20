@@ -38,10 +38,7 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3005";
 
 function webServerEnv(): Record<string, string> {
   const env = { ...process.env } as Record<string, string>;
-  delete env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  delete env.TURNSTILE_SECRET_KEY;
   env.DEV_FORCE_PLAN = "enterprise";
-  env.TURNSTILE_DISABLE = "1";
   env.E2E_DISABLE_RATE_LIMIT = "1";
   return env;
 }

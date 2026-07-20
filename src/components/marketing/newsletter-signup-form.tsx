@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useId } from "react";
-import { TurnstileField } from "@/components/security/turnstile-field";
 import { FormAlert } from "@/components/ui/form-alert";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
@@ -58,7 +57,6 @@ export function NewsletterSignupForm({ className }: { className?: string }) {
         </button>
       </div>
       {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
-      <TurnstileField />
     </form>
   );
 }

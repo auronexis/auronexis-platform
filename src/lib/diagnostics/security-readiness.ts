@@ -1,10 +1,8 @@
 import "server-only";
 
 import { GO_LIVE_SECURITY_HEADERS } from "@/lib/security/headers";
-import { isTurnstileConfigured } from "@/lib/security/turnstile";
 
 export type SecurityReadinessSnapshot = {
-  turnstileConfigured: boolean;
   rateLimitingEnabled: boolean;
   loginThrottlingEnabled: boolean;
   apiThrottlingEnabled: boolean;
@@ -32,15 +30,13 @@ function scoreChecks(checks: boolean[]): number {
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
 
-/** Sprint 6 security hardening readiness — headers, auth, uploads, and bot protection. */
+/** Sprint 6 security hardening readiness — headers, auth, uploads, and throttling. */
 export function getSecurityReadinessSnapshot(): SecurityReadinessSnapshot {
   const isDev = process.env.NODE_ENV !== "production";
-  const turnstileConfigured = isTurnstileConfigured();
   const integrationSecretConfigured = Boolean(process.env.INTEGRATION_SECRET_KEY) || isDev;
   const cronSecretConfigured = Boolean(process.env.CRON_SECRET) || isDev;
 
   const checks = [
-    turnstileConfigured,
     true, // API rate limiting implemented in withApiHandler
     true, // login throttling in auth actions
     true, // integration rate limits
@@ -62,7 +58,6 @@ export function getSecurityReadinessSnapshot(): SecurityReadinessSnapshot {
   const complete = score >= 95;
 
   return {
-    turnstileConfigured,
     rateLimitingEnabled: true,
     loginThrottlingEnabled: true,
     apiThrottlingEnabled: true,

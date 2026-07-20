@@ -17,8 +17,9 @@ test("tracked env example is Paddle-first and documents forbidden prod bypasses"
   assert.match(example, /NEXT_PUBLIC_PADDLE_CLIENT_TOKEN/);
   assert.match(example, /PADDLE_ENVIRONMENT/);
   assert.match(example, /CRON_SECRET/);
-  assert.match(example, /TURNSTILE_DISABLE/);
+  assert.match(example, /E2E_DISABLE_RATE_LIMIT/);
   assert.match(example, /never enable in production/i);
+  assert.doesNotMatch(example, /TURNSTILE/);
   assert.match(example, /\/api\/paddle\/webhook/);
   assert.doesNotMatch(example, /^BILLING_PROVIDER=/m);
   assert.doesNotMatch(example, /^STRIPE_SECRET_KEY=/m);
@@ -73,7 +74,7 @@ test("production env audit requires Paddle and documents cron", () => {
   assert.match(audit, /PADDLE_WEBHOOK_SECRET/);
   assert.match(audit, /PADDLE_ENVIRONMENT/);
   assert.match(audit, /CRON_SECRET/);
-  assert.match(audit, /TURNSTILE/);
+  assert.doesNotMatch(audit, /TURNSTILE/);
   assert.match(audit, /readyForCustomers/);
 });
 
@@ -109,7 +110,7 @@ test("dev plan override and e2e bypasses are not production defaults", () => {
   const example = readSource(".env.example");
   assert.match(example, /# DEV_FORCE_PLAN=/);
   assert.doesNotMatch(example, /^DEV_FORCE_PLAN=/m);
-  assert.doesNotMatch(example, /^TURNSTILE_DISABLE=/m);
+  assert.doesNotMatch(example, /TURNSTILE/);
   assert.doesNotMatch(example, /^E2E_DISABLE_RATE_LIMIT=/m);
 });
 
