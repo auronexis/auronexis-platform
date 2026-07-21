@@ -11,12 +11,8 @@ import { LinkButton } from "@/components/ui/link-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormAlert } from "@/components/ui/form-alert";
 import { FormFooter } from "@/components/ui/form-section";
-import { Input } from "@/components/ui/input";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
-import {
-  createPortalSessionAction,
-  validateDiscountCodeAction,
-} from "@/lib/billing/actions";
+import { createPortalSessionAction } from "@/lib/billing/actions";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import { PADDLE_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
 import type { PaddleCheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
@@ -151,12 +147,7 @@ export function BillingSettingsPanel({
   void locale;
   const { overview } = dashboard;
   const [actionError, setActionError] = useState<string | null>(null);
-  const [discountNotice, setDiscountNotice] = useState<{
-    variant: "success" | "warning";
-    message: string;
-  } | null>(null);
   const [isPortalPending, startPortalTransition] = useTransition();
-  const [isDiscountPending, startDiscountTransition] = useTransition();
 
   const showPortal = canOpenBillingPortal({
     canManage,
@@ -191,27 +182,6 @@ export function BillingSettingsPanel({
         setActionError(
           sanitizeBillingCustomerError(new Error(result.error), "Unable to open billing portal."),
         );
-      }
-    });
-  };
-
-  const previewDiscount = (formData: FormData) => {
-    const code = String(formData.get("discountCode") ?? "").trim();
-    setDiscountNotice(null);
-
-    if (!code) {
-      return;
-    }
-
-    startDiscountTransition(async () => {
-      const result = await validateDiscountCodeAction({}, formData);
-      if (result.error) {
-        setDiscountNotice({ variant: "warning", message: result.error });
-        return;
-      }
-
-      if (result.success) {
-        setDiscountNotice({ variant: "success", message: result.success });
       }
     });
   };
@@ -550,30 +520,18 @@ export function BillingSettingsPanel({
 
       {showPromotions ? (
         <PageSurface>
-          <PageSurfaceHeading title="Promotions" description="Check whether a promo code applies to your plan before checkout." />
-          <form action={previewDiscount} className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-            <input type="hidden" name="planKey" value={overview.currentPlanKey ?? "professional"} />
-            <div className="min-w-0 flex-1 sm:min-w-[220px]">
-              <Input name="discountCode" label="Promo code" placeholder="LAUNCH20" />
-            </div>
-            <Button type="submit" variant="secondary" loading={isDiscountPending}>
-              Check promotion
-            </Button>
-          </form>
-          {discountNotice ? (
-            <FormAlert variant={discountNotice.variant}>{discountNotice.message}</FormAlert>
-          ) : null}
-          {dashboard.discounts.length > 0 ? (
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {dashboard.discounts.map((discount) => (
-                <div key={discount.code} className="rounded-lg border border-border/70 p-3 text-sm">
-                  <p className="font-semibold text-foreground">{discount.code}</p>
-                  <p className="text-muted">{discount.description ?? "Available promotion"}</p>
-                  <p className="mt-1 text-foreground">Saves {discount.formattedSavings}</p>
-                </div>
-              ))}
-            </div>
-          ) : null}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <h2 className="text-sm font-semibold tracking-tight text-foreground">Promotions</h2>
+            <StatusBadge tone="slate" label="Coming Soon" />
+          </div>
+          <p className="text-sm text-muted">
+            Promotion codes are currently under development and will become available in a future
+            release.
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            Customers will be able to redeem promotional and campaign codes directly during checkout
+            once this feature becomes available.
+          </p>
         </PageSurface>
       ) : null}
 
