@@ -1,7 +1,6 @@
 import { buildBillingOverview } from "@/lib/billing/types";
 import type { BillingDashboardData, BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
 import { resolveCheckoutBlockState, type CheckoutBlockState } from "@/lib/billing/checkout-block";
-import { listActiveDiscountPreviews } from "@/lib/billing/discounts";
 import { listProrationPreviews } from "@/lib/billing/proration";
 import { getCurrentUsageSummary } from "@/lib/billing/usage";
 import {
@@ -109,8 +108,7 @@ export async function getBillingDashboardData(
   ]);
 
   const currentPlanKey = overview.currentPlanKey ?? getDefaultPlanKey();
-  const [discounts, prorationPreviews, paddleDetails] = await Promise.all([
-    listActiveDiscountPreviews(currentPlanKey),
+  const [prorationPreviews, paddleDetails] = await Promise.all([
     Promise.resolve(
       listProrationPreviews({
         currentPlanKey,
@@ -144,7 +142,8 @@ export async function getBillingDashboardData(
     invoices: [],
     billingHistory,
     paddleDetails,
-    discounts,
+    // Promotions UI is Coming Soon — do not serialize active discount codes into the Billing page.
+    discounts: [],
     prorationPreviews,
     forecastStatus,
     checkoutBlock,

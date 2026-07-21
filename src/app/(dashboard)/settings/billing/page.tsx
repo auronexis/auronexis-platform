@@ -31,7 +31,7 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
       <PageHeader
         module="settings"
         title="Subscription & Billing"
-        description="Manage your plan, usage limits, invoices, promotions, and billing preferences."
+        description="Manage your plan, usage limits, invoices, and billing preferences."
       />
 
       <div className="mb-4 text-sm text-muted">
