@@ -264,6 +264,13 @@ export function BillingSettingsPanel({
               <Link href="/settings/billing/diagnostics" className="font-medium text-primary hover:underline">
                 Billing diagnostics
               </Link>
+              . FastSpring TEST checkout (does not replace Paddle):{" "}
+              <Link
+                href="/settings/billing/fastspring-test"
+                className="font-medium text-primary hover:underline"
+              >
+                FastSpring Test Checkout
+              </Link>
               .
             </p>
           ) : null}

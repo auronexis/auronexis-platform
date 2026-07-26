@@ -179,6 +179,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
         <Link href="/settings/billing" className="font-medium underline">
           Subscription &amp; Billing
         </Link>
+        . Owner/admin FastSpring TEST checkout (isolated; does not switch production provider):{" "}
+        <Link href="/settings/billing/fastspring-test" className="font-medium underline">
+          FastSpring Test Checkout
+        </Link>
         .
       </FormAlert>
 

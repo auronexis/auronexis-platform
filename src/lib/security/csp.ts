@@ -28,6 +28,7 @@ export function buildContentSecurityPolicy(): string {
       "https://challenges.cloudflare.com",
       "https://cdn.paddle.com",
       "https://sandbox-cdn.paddle.com",
+      "https://sbl.onfastspring.com",
     ].join(" "),
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
@@ -50,6 +51,8 @@ export function buildContentSecurityPolicy(): string {
       "https://region1.google-analytics.com",
       "https://www.google-analytics.com",
       "https://challenges.cloudflare.com",
+      "https://*.onfastspring.com",
+      "https://sbl.onfastspring.com",
     ].join(" "),
     [
       "frame-src",
@@ -58,6 +61,7 @@ export function buildContentSecurityPolicy(): string {
       "https://sandbox-buy.paddle.com",
       "https://cdn.paddle.com",
       "https://sandbox-cdn.paddle.com",
+      "https://*.onfastspring.com",
     ].join(" "),
   ].join("; ");
 }
