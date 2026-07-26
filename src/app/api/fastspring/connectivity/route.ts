@@ -1,16 +1,28 @@
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth/session";
 import { verifyCronAuthorization } from "@/lib/env";
 import { probeFastSpringApiConnectivity } from "@/lib/fastspring/connectivity";
+import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+async function isAuthorized(request: Request): Promise<boolean> {
+  if (verifyCronAuthorization(request)) {
+    return true;
+  }
+
+  const session = await getSession();
+  return Boolean(session && canManageOrganizationSettings(session));
+}
+
 /**
  * Production-safe FastSpring API connectivity probe.
- * Requires Bearer CRON_SECRET. Returns only sanitized booleans/status — never secrets.
+ * Requires Bearer CRON_SECRET or an authenticated owner/admin session.
+ * Returns only sanitized booleans/status — never secrets.
  */
 export async function GET(request: Request): Promise<Response> {
-  if (!verifyCronAuthorization(request)) {
+  if (!(await isAuthorized(request))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 

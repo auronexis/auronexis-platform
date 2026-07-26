@@ -243,6 +243,7 @@ test("fastspring API connectivity probe uses Basic Auth and read-only accounts l
   assert.doesNotMatch(connectivity, /console\.error\([^\n]*Authorization/i);
   assert.doesNotMatch(connectivity, /console\.(error|log|warn)\([^\n]*FASTSPRING_API_/);
   assert.match(route, /verifyCronAuthorization/);
+  assert.match(route, /canManageOrganizationSettings|getSession/);
   assert.match(route, /probeFastSpringApiConnectivity/);
   assert.match(route, /Cache-Control.*no-store/);
   assert.doesNotMatch(route, /FASTSPRING_API_PASSWORD/);
