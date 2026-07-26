@@ -1075,7 +1075,7 @@ export type Database = {
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
           stripe_price_id: string | null;
-          billing_provider: "stripe" | "paddle";
+          billing_provider: "stripe" | "paddle" | "fastspring";
           provider_customer_id: string | null;
           provider_subscription_id: string | null;
           provider_price_id: string | null;
@@ -1095,7 +1095,7 @@ export type Database = {
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
           stripe_price_id?: string | null;
-          billing_provider?: "stripe" | "paddle";
+          billing_provider?: "stripe" | "paddle" | "fastspring";
           provider_customer_id?: string | null;
           provider_subscription_id?: string | null;
           provider_price_id?: string | null;
@@ -1115,7 +1115,7 @@ export type Database = {
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
           stripe_price_id?: string | null;
-          billing_provider?: "stripe" | "paddle";
+          billing_provider?: "stripe" | "paddle" | "fastspring";
           provider_customer_id?: string | null;
           provider_subscription_id?: string | null;
           provider_price_id?: string | null;
@@ -4305,11 +4305,64 @@ export type Database = {
           },
         ];
       };
+      fastspring_webhook_events: {
+        Row: {
+          id: string;
+          provider: string;
+          provider_event_id: string;
+          event_type: string;
+          occurred_at: string | null;
+          received_at: string;
+          processed_at: string | null;
+          status: "processing" | "processed" | "failed" | "duplicate" | "ignored";
+          last_error: string | null;
+          payload_hash: string | null;
+          organization_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          provider?: string;
+          provider_event_id: string;
+          event_type: string;
+          occurred_at?: string | null;
+          received_at?: string;
+          processed_at?: string | null;
+          status?: "processing" | "processed" | "failed" | "duplicate" | "ignored";
+          last_error?: string | null;
+          payload_hash?: string | null;
+          organization_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          provider?: string;
+          provider_event_id?: string;
+          event_type?: string;
+          occurred_at?: string | null;
+          received_at?: string;
+          processed_at?: string | null;
+          status?: "processing" | "processed" | "failed" | "duplicate" | "ignored";
+          last_error?: string | null;
+          payload_hash?: string | null;
+          organization_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fastspring_webhook_events_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       billing_provider_transactions: {
         Row: {
           id: string;
           organization_id: string;
-          billing_provider: "stripe" | "paddle";
+          billing_provider: "stripe" | "paddle" | "fastspring";
           provider_transaction_id: string;
           provider_customer_id: string | null;
           provider_subscription_id: string | null;
@@ -4333,7 +4386,7 @@ export type Database = {
         Insert: {
           id?: string;
           organization_id: string;
-          billing_provider: "stripe" | "paddle";
+          billing_provider: "stripe" | "paddle" | "fastspring";
           provider_transaction_id: string;
           provider_customer_id?: string | null;
           provider_subscription_id?: string | null;
@@ -4357,7 +4410,7 @@ export type Database = {
         Update: {
           id?: string;
           organization_id?: string;
-          billing_provider?: "stripe" | "paddle";
+          billing_provider?: "stripe" | "paddle" | "fastspring";
           provider_transaction_id?: string;
           provider_customer_id?: string | null;
           provider_subscription_id?: string | null;

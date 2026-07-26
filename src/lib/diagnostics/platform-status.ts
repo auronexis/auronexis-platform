@@ -1,6 +1,6 @@
 import "server-only";
 
-import { checkDatabaseHealth } from "@/lib/diagnostics/platform-health";
+import { checkDatabaseHealth, checkFastSpringWebhookHealth } from "@/lib/diagnostics/platform-health";
 import {
   buildHealthProbeOk,
   evaluateServiceStatus,
@@ -41,6 +41,7 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
     getCronDiagnosticsSnapshot(),
     getQueueDiagnosticsSnapshot(),
   ]);
+  const fastspringWebhook = checkFastSpringWebhookHealth();
 
   const environment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
   const nodeEnv = process.env.NODE_ENV ?? "development";
@@ -88,6 +89,16 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
         : nodeEnv === "development"
           ? "Not configured (optional in development)"
           : "Missing Paddle env",
+    },
+    {
+      key: "fastspring_webhook",
+      label: "FastSpring webhook",
+      status: fastspringWebhook.ok
+        ? "healthy"
+        : nodeEnv === "development"
+          ? "degraded"
+          : "degraded",
+      detail: fastspringWebhook.message,
     },
     {
       key: "cron",

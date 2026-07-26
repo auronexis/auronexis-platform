@@ -5,11 +5,12 @@ import {
   hasVerifiedPaddleSubscription,
 } from "@/lib/billing/active-billing";
 import { getBillingOverview } from "@/lib/billing/queries";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 export type PaddleCheckoutSyncStatus = {
-  provider: "paddle" | "stripe";
+  provider: BillingProvider;
   syncPending: boolean;
   isUsable: boolean;
   hasVerifiedPaddleCustomer: boolean;

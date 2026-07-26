@@ -22,7 +22,7 @@ test("billing provider abstraction is Paddle-only and unconditional", () => {
   assert.match(provider, /return "paddle"/);
   assert.match(provider, /Stripe has been removed from active billing/);
   assert.doesNotMatch(provider, /return "stripe"/);
-  assert.match(types, /BillingProvider = "stripe" \| "paddle"/);
+  assert.match(types, /BillingProvider = "stripe" \| "paddle" \| "fastspring"/);
   assert.match(types, /InternalPlan/);
 });
 

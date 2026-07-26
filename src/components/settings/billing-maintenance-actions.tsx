@@ -8,10 +8,11 @@ import {
   type BillingMaintenanceActionState,
 } from "@/lib/billing/maintenance-actions";
 import type { CleanupRecommendation } from "@/lib/billing/cleanup-recommendations";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 
 type BillingMaintenanceActionsProps = {
   recommendations: CleanupRecommendation[];
-  activeProvider?: "stripe" | "paddle";
+  activeProvider?: BillingProvider;
 };
 
 function ActionResultAlert({ result }: { result: BillingMaintenanceActionState | null }) {

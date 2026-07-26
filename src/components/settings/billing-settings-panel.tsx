@@ -28,6 +28,7 @@ import {
   formatProrationSummary,
 } from "@/lib/billing/messages";
 import type { BillingDashboardData, BillingUiStatus } from "@/lib/billing/types";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 import type { AppLocale } from "@/lib/i18n";
 import { formatBillingDateTime } from "@/lib/billing/types";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
@@ -45,7 +46,7 @@ type BillingSettingsPanelProps = {
   canManage: boolean;
   stripeStatus: BillingUiStatus;
   /** Active billing provider — Paddle is the sole active provider. */
-  activeProvider?: "stripe" | "paddle";
+  activeProvider?: BillingProvider;
   locale: AppLocale;
   success?: boolean;
   successMessage?: string | null;

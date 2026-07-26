@@ -4,6 +4,7 @@ import { getPlansPageBillingState, type PlansPageBillingState } from "@/lib/bill
 import { getBillingUiStatus } from "@/lib/billing/ui-status";
 import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 import { hasVerifiedPaddleCustomer } from "@/lib/billing/active-billing";
 import {
   FALLBACK_BILLING_UI_STATUS,
@@ -30,7 +31,7 @@ export type WorkspacePlansPageModel = {
   showPortalAction: boolean;
 };
 
-function resolveActiveProviderSafe(): "stripe" | "paddle" {
+function resolveActiveProviderSafe(): BillingProvider {
   try {
     return getActiveBillingProvider();
   } catch {

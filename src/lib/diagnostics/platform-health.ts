@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
 import { isPaddleConfigured } from "@/lib/paddle/env";
 
 export type DatabaseHealthLevel = "healthy" | "degraded" | "unavailable";
@@ -133,6 +134,25 @@ export function checkPaddleHealth(): HealthCheckResult {
   }
 
   return { ok: true, level: "healthy", message: "Paddle environment configured" };
+}
+
+/**
+ * FastSpring inbound webhook secret presence — never returns or logs the secret.
+ */
+export function checkFastSpringWebhookHealth(): HealthCheckResult {
+  if (!isFastSpringWebhookConfigured()) {
+    return {
+      ok: false,
+      level: "degraded",
+      message: "FASTSPRING_WEBHOOK_SECRET configured: no",
+    };
+  }
+
+  return {
+    ok: true,
+    level: "healthy",
+    message: "FASTSPRING_WEBHOOK_SECRET configured: yes",
+  };
 }
 
 export function getBuildInfo() {

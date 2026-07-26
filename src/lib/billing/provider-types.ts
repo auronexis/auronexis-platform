@@ -6,9 +6,13 @@
  * union only to label historical/archived data (legacy subscription rows,
  * invoices, webhook events) — it must never be returned by
  * getActiveBillingProvider() and must never drive checkout, portal, or
- * entitlement decisions. Paddle is the sole active billing provider.
+ * entitlement decisions.
+ *
+ * "fastspring" labels FastSpring webhook-synced subscription/transaction
+ * rows. Paddle remains the sole active checkout/portal provider until a
+ * later cutover phase explicitly changes getActiveBillingProvider().
  */
-export type BillingProvider = "stripe" | "paddle";
+export type BillingProvider = "stripe" | "paddle" | "fastspring";
 
 /** Self-serve / commercial plans sold via checkout (excludes internal starter fallback). */
 export type InternalPlan = "professional" | "business" | "enterprise";

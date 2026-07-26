@@ -1,4 +1,5 @@
 import type { CustomerInvoiceView } from "@/lib/billing/types";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 import type { AppLocale } from "@/lib/i18n/types";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 
@@ -268,7 +269,7 @@ export function canOpenBillingPortal(input: {
   stripeCustomerId: string | null | undefined;
   providerCustomerId?: string | null | undefined;
   /** When paddle, only a verified Paddle customer id opens the portal. */
-  activeProvider?: "stripe" | "paddle";
+  activeProvider?: BillingProvider;
   billingProvider?: string | null;
 }): boolean {
   if (!input.canManage || !input.portalAvailable) {
