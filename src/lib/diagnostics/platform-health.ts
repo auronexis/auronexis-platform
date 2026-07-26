@@ -2,11 +2,13 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { probeFastSpringApiConnectivity } from "@/lib/fastspring/connectivity";
 import {
   getFastSpringApiCredentialPresence,
   isFastSpringWebhookConfigured,
 } from "@/lib/fastspring/env";
+import { isFastSpringStorefrontConfigured } from "@/lib/fastspring/storefront";
 import { isPaddleConfigured } from "@/lib/paddle/env";
 
 export type DatabaseHealthLevel = "healthy" | "degraded" | "unavailable";
@@ -206,6 +208,39 @@ export async function checkFastSpringApiConnectivityHealth(): Promise<HealthChec
     message: `FastSpring API not connected (${result.errorCategory ?? "unknown"}${
       result.httpStatus ? `, HTTP ${result.httpStatus}` : ""
     })`,
+  };
+}
+
+/** FastSpring Store Builder storefront presence (exact data-storefront). */
+export function checkFastSpringStorefrontHealth(): HealthCheckResult {
+  if (!isFastSpringStorefrontConfigured()) {
+    return {
+      ok: false,
+      level: "degraded",
+      message: "FastSpring storefront configured: no",
+    };
+  }
+  return {
+    ok: true,
+    level: "healthy",
+    message: "FastSpring storefront configured: yes",
+  };
+}
+
+/** Active billing provider label for diagnostics (no secrets). */
+export function checkActiveBillingProviderHealth(): HealthCheckResult {
+  const provider = getActiveBillingProvider();
+  if (provider === "fastspring") {
+    return {
+      ok: true,
+      level: "healthy",
+      message: "Active billing provider: fastspring (legacy Paddle entitlements preserved)",
+    };
+  }
+  return {
+    ok: true,
+    level: "healthy",
+    message: `Active billing provider: ${provider}`,
   };
 }
 

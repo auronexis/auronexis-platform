@@ -11,15 +11,25 @@ import {
   isExpectedPortalUnavailableError,
   sanitizeBillingCustomerError,
 } from "@/lib/billing/errors";
-import { PADDLE_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
+import {
+  FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE,
+  PADDLE_PORTAL_UNAVAILABLE_MESSAGE,
+} from "@/lib/billing/active-billing";
 import { BILLING_PROMO_MESSAGES, formatPromoValidationSuccess } from "@/lib/billing/messages";
 import { validateDiscountCode } from "@/lib/billing/discounts";
 import { calculateProrationPreview } from "@/lib/billing/proration";
 import { getBillingOverview } from "@/lib/billing/queries";
+import { getActiveBillingProvider } from "@/lib/billing/provider";
 import type { PaddleCheckoutCustomData } from "@/lib/billing/provider-types";
 import { isInternalPlan } from "@/lib/billing/provider-types";
 import type { PlanKey } from "@/lib/billing/plans";
+import type { FastSpringProductPath } from "@/lib/billing/catalog";
 import { getDefaultPlanKey } from "@/lib/plans/features";
+import {
+  createFastSpringCheckoutPayloadForPlan,
+  isFastSpringCheckoutConfigured,
+} from "@/lib/fastspring/checkout";
+import type { FastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
 import { createPaddleCheckoutPayload } from "@/lib/paddle/checkout";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
@@ -29,6 +39,7 @@ export type BillingActionState = {
 };
 
 export type CheckoutActionResult = BillingActionState & {
+  /** @deprecated New checkouts use fastspringCheckout after cutover. */
   paddleCheckout?: {
     priceId: string;
     clientToken: string;
@@ -37,11 +48,19 @@ export type CheckoutActionResult = BillingActionState & {
     pendingSyncMessage: string;
     customerEmail?: string;
   };
+  fastspringCheckout?: {
+    storefront: string;
+    sblScriptSrc: string;
+    productPath: FastSpringProductPath;
+    tags: FastSpringCheckoutTags;
+    checkoutMode: "test" | "live";
+    pendingSyncMessage: string;
+  };
 };
 
 const planKeySchema = z.enum(["starter", "professional", "business", "enterprise"]);
 
-/** Create a Paddle checkout — the sole active billing provider. Owner/Admin only. */
+/** Create checkout for the active billing provider. Owner/Admin only. */
 export async function createCheckoutSessionAction(
   planKey: string,
 ): Promise<CheckoutActionResult> {
@@ -57,10 +76,6 @@ export async function createCheckoutSessionAction(
     return { error: "Invalid subscription plan selected." };
   }
 
-  if (parsed.data === "enterprise") {
-    return { error: "Contact sales for Enterprise plans." };
-  }
-
   if (parsed.data === "starter") {
     return { error: "Invalid subscription plan selected." };
   }
@@ -69,8 +84,45 @@ export async function createCheckoutSessionAction(
     return { error: "Invalid subscription plan selected." };
   }
 
+  const activeProvider = getActiveBillingProvider();
+
   try {
     await assertCheckoutAllowed(session, parsed.data);
+
+    if (activeProvider === "fastspring") {
+      if (!isFastSpringCheckoutConfigured()) {
+        return {
+          error:
+            "FastSpring checkout is not configured yet. Set FASTSPRING_STOREFRONT to the exact data-storefront value from the FastSpring dashboard.",
+        };
+      }
+
+      const checkout = createFastSpringCheckoutPayloadForPlan({
+        organizationId: session.organization.id,
+        userId: session.user.id,
+        planKey: parsed.data,
+      });
+
+      const pendingSyncMessage =
+        "Checkout opened. Access updates after FastSpring confirms payment — this may take a moment.";
+
+      return {
+        success: pendingSyncMessage,
+        fastspringCheckout: {
+          storefront: checkout.storefront,
+          sblScriptSrc: checkout.sblScriptSrc,
+          productPath: checkout.productPath,
+          tags: checkout.tags,
+          checkoutMode: checkout.mode,
+          pendingSyncMessage,
+        },
+      };
+    }
+
+    // Legacy path — only if active provider is still paddle.
+    if (parsed.data === "enterprise") {
+      return { error: "Contact sales for Enterprise plans." };
+    }
 
     const paddleCheckout = await createPaddleCheckoutPayload({
       organizationId: session.organization.id,
@@ -121,7 +173,12 @@ export async function createPortalSessionAction(): Promise<BillingActionState> {
     if (isExpectedPortalUnavailableError(error)) {
       // Expected before first completed Paddle purchase — informational only.
       return {
-        error: sanitizeBillingCustomerError(error, PADDLE_PORTAL_UNAVAILABLE_MESSAGE),
+        error: sanitizeBillingCustomerError(
+          error,
+          getActiveBillingProvider() === "fastspring"
+            ? FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE
+            : PADDLE_PORTAL_UNAVAILABLE_MESSAGE,
+        ),
       };
     }
     console.error(

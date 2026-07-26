@@ -27,6 +27,7 @@ import { createFallbackPricingSelection } from "@/lib/pricing/selection-context"
 import { normalizeBillingUiStatus } from "@/lib/billing/ui-status-client";
 import { FormAlert } from "@/components/ui/form-alert";
 import { trackConversionEvent } from "@/lib/analytics/events";
+import { openFastSpringCheckout } from "@/lib/fastspring/browser-checkout";
 import { openPaddleCheckout } from "@/lib/paddle/browser-checkout";
 
 export type { PricingSelectionContext } from "@/lib/pricing/selection-context";
@@ -41,6 +42,8 @@ type PricingGridProps = {
   canManage?: boolean;
   /** When false, do not offer portal CTA (no verified Paddle customer yet). */
   showPortalAction?: boolean;
+  /** Optional localized display strings keyed by plan key. */
+  localizedDisplayPrices?: Partial<Record<PlanKey, string>>;
 };
 
 export function PricingGrid({
@@ -51,6 +54,7 @@ export function PricingGrid({
   checkoutBlock,
   canManage = false,
   showPortalAction = true,
+  localizedDisplayPrices,
 }: PricingGridProps) {
   const [pendingPlanKey, setPendingPlanKey] = useState<PlanKey | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,10 +73,6 @@ export function PricingGrid({
     });
 
   const selectPlan = (planKey: PlanKey) => {
-    if (planKey === "enterprise") {
-      return;
-    }
-
     setError(null);
     setPendingSyncMessage(null);
     setPendingPlanKey(planKey);
@@ -88,13 +88,27 @@ export function PricingGrid({
         return;
       }
 
+      if (result?.fastspringCheckout) {
+        try {
+          await openFastSpringCheckout(result.fastspringCheckout);
+          setPendingSyncMessage(result.fastspringCheckout.pendingSyncMessage);
+        } catch (checkoutError) {
+          setError(
+            sanitizeBillingCustomerError(checkoutError, "Unable to open FastSpring checkout."),
+          );
+        } finally {
+          setPendingPlanKey(null);
+        }
+        return;
+      }
+
       if (result?.paddleCheckout) {
         try {
           await openPaddleCheckout(result.paddleCheckout);
           setPendingSyncMessage(result.paddleCheckout.pendingSyncMessage);
         } catch (checkoutError) {
           setError(
-            sanitizeBillingCustomerError(checkoutError, "Unable to open Paddle checkout."),
+            sanitizeBillingCustomerError(checkoutError, "Unable to open checkout."),
           );
         } finally {
           setPendingPlanKey(null);
@@ -179,7 +193,7 @@ export function PricingGrid({
               canManage={safeSelection.canManage}
               seatBlockMessage={seatBlock.blocked ? seatBlock.message : null}
               blockedCheckoutMessage={
-                resolvedCheckoutBlock.blocked && plan.key !== "enterprise"
+                resolvedCheckoutBlock.blocked
                   ? (resolvedCheckoutBlock.bannerMessage ?? resolvedCheckoutBlock.message)
                   : null
               }
@@ -187,6 +201,7 @@ export function PricingGrid({
               isDisabled={isPricingButtonDisabled(plan.key, disabledReasons)}
               stripeStatus={safeStripeStatus}
               enterpriseContactHref={enterpriseContactHref}
+              displayPrice={localizedDisplayPrices?.[plan.key] ?? null}
               onSelect={() => {
                 if (
                   isDowngrade &&

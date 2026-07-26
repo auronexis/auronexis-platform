@@ -17,11 +17,19 @@ test("Build Bible V2 Chapter 12 billing doc and rule exist", () => {
   assert.match(rule, /resolveOrganizationEntitlements/);
 });
 
-test("paddle remains the sole active billing provider", () => {
+test("FastSpring is the active checkout provider; legacy Paddle remains entitled", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "paddle"/);
+  const selection = readSource("src/lib/billing/subscription-selection.ts");
+  const actions = readSource("src/lib/billing/actions.ts");
+  assert.match(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "stripe"/);
+  assert.match(provider, /Usable legacy Paddle subscription/);
+  assert.match(provider, /isPaddleCheckoutEnabled/);
+  assert.match(selection, /legacy Paddle/i);
+  assert.match(actions, /activeProvider === "fastspring"/);
+  assert.match(actions, /Legacy path — only if active provider is still paddle/);
   assert.ok(!pathExists("src/lib/stripe"));
+  assert.ok(pathExists("src/app/api/paddle/webhook/route.ts"));
 });
 
 test("webhook route verifies signature and emits commercial events", () => {

@@ -77,8 +77,11 @@ test("src has no TODO or FIXME comment markers", () => {
   assert.deepEqual(hits, [], `Forbidden TODO/FIXME comments:\n${hits.join("\n")}`);
 });
 
-test("active billing provider remains Paddle-only", () => {
+test("active billing provider is FastSpring with legacy Paddle entitlement path", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "paddle"/);
+  assert.match(provider, /return "fastspring"/);
+  assert.doesNotMatch(provider, /return "stripe"/);
   assert.doesNotMatch(provider, /readLegacyBillingProviderEnv/);
+  assert.match(provider, /Usable legacy Paddle subscription/);
+  assert.match(provider, /isPaddleCheckoutEnabled/);
 });

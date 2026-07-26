@@ -12,6 +12,7 @@ import {
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 import {
+  isFastSpringBackedSubscription,
   isPaddleBackedSubscription,
   resolveActiveBillingStatusFlags,
 } from "@/lib/billing/active-billing";
@@ -68,7 +69,24 @@ function resolveMappedPlanKey(
 ): PlanKey | null {
   let planKey: PlanKey | null = null;
 
-  if (activeProvider === "paddle") {
+  if (activeProvider === "fastspring") {
+    if (isFastSpringBackedSubscription(subscription)) {
+      planKey = safeGetPlanKeyFromSubscriptionPrice({
+        billingProvider: "fastspring",
+        stripePriceId: null,
+        providerPriceId: subscription?.provider_price_id,
+      });
+    } else if (isPaddleBackedSubscription(subscription)) {
+      // Legacy usable Paddle customers keep entitlements after FastSpring cutover.
+      planKey = safeGetPlanKeyFromSubscriptionPrice({
+        billingProvider: "paddle",
+        stripePriceId: null,
+        providerPriceId: subscription?.provider_price_id,
+      });
+    } else {
+      planKey = null;
+    }
+  } else if (activeProvider === "paddle") {
     if (!isPaddleBackedSubscription(subscription)) {
       planKey = null;
     } else {
@@ -113,7 +131,8 @@ function resolveMappedPlanKey(
  * Authoritative entitlement resolution for a workspace.
  *
  * Single source of truth for plan features/limits used by product gates:
- * Paddle subscription row → price → PLAN_ENTITLEMENTS (+ enterprise overrides).
+ * FastSpring (active) or legacy Paddle subscription row → product/price →
+ * PLAN_ENTITLEMENTS (+ enterprise overrides).
  * Parallel helpers in `src/lib/plans/queries` should defer to this path for access control.
  */
 export async function resolveOrganizationEntitlements(

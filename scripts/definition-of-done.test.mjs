@@ -119,7 +119,9 @@ test("critical production surfaces remain present", () => {
     assert.ok(pathExists(relative), `missing ${relative}`);
   }
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "paddle"/);
+  assert.match(provider, /return "fastspring"/);
+  assert.doesNotMatch(provider, /return "stripe"/);
+  assert.match(provider, /Usable legacy Paddle subscription/);
 });
 
 test("DEV_FORCE_PLAN is ignored in production", () => {

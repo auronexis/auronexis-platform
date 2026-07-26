@@ -5,13 +5,15 @@
  * Stripe has been removed from active billing. "stripe" remains in this
  * union only to label historical/archived data (legacy subscription rows,
  * invoices, webhook events) — it must never be returned by
- * getActiveBillingProvider() and must never drive checkout, portal, or
- * entitlement decisions.
+ * getActiveBillingProvider() and must never drive new checkout.
  *
- * "fastspring" labels FastSpring webhook-synced subscription/transaction
- * rows. Paddle remains the sole active checkout/portal provider until a
- * later cutover phase explicitly changes getActiveBillingProvider().
+ * "fastspring" is the active checkout provider for NEW purchases.
+ * Usable legacy Paddle rows continue to grant entitlements until natural end.
  */
+
+import type { FastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
+import type { FastSpringProductPath } from "@/lib/billing/catalog";
+
 export type BillingProvider = "stripe" | "paddle" | "fastspring";
 
 /** Self-serve / commercial plans sold via checkout (excludes internal starter fallback). */
@@ -41,6 +43,16 @@ export type CheckoutResult =
       clientToken: string;
       environment: "sandbox" | "production";
       customData: PaddleCheckoutCustomData;
+      pendingSyncMessage: string;
+    }
+  | {
+      provider: "fastspring";
+      mode: "popup";
+      storefront: string;
+      sblScriptSrc: string;
+      productPath: FastSpringProductPath;
+      tags: FastSpringCheckoutTags;
+      checkoutMode: "test" | "live";
       pendingSyncMessage: string;
     };
 

@@ -164,25 +164,29 @@ export const USE_CASES = [
 export const PUBLIC_PRICING_PLANS = [
   {
     name: "Professional",
-    price: "€149",
+    /** Fallback only — public pages prefer FastSpring localized display. */
+    price: "$179",
     period: "/ month",
+    productPath: "professional" as const,
     description: "For growing agencies starting with automation and client portal delivery.",
     highlights: ["Up to 25 clients", "Automation workflows", "Client portal", "Integrations"],
     featured: false,
   },
   {
     name: "Business",
-    price: "€499",
+    price: "$599",
     period: "/ month",
+    productPath: "business" as const,
     description: "For established agencies with compliance, white-label, and higher operational limits.",
     highlights: ["Higher limits", "White label", "Compliance center", "Advanced operations"],
     featured: true,
   },
   {
     name: "Enterprise",
-    price: "From €1,499",
+    price: "$1,799",
     period: "/ month",
-    description: "For large portfolios and custom requirements. Contact Sales for tailored limits and onboarding.",
+    productPath: "enterprise" as const,
+    description: "For large portfolios and custom requirements. Contact Sales for tailored agreements when needed.",
     highlights: ["Custom client limits", "Dedicated onboarding", "Priority support", "Plan overrides"],
     featured: false,
   },
@@ -190,7 +194,7 @@ export const PUBLIC_PRICING_PLANS = [
 
 /** Copy-only footnote for public pricing pages — invite-only programs are not listed here. */
 export const PUBLIC_PRICING_NOTE =
-  "Enterprise pricing is negotiated. Contact sales for custom limits and onboarding.";
+  "Prices shown are localized by FastSpring for your region when available. Final tax treatment is calculated at checkout. Contact sales for custom enterprise agreements when needed.";
 
 export const INVITE_ONLY_PROGRAMS_NOTE = "Pilot and Founding programs are invite-only.";
 

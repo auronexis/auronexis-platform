@@ -16,12 +16,14 @@ test("paddle packages are installed for Billing (not Classic)", () => {
   assert.ok(pkg.dependencies["@paddle/paddle-js"]);
 });
 
-test("billing provider abstraction is Paddle-only and unconditional", () => {
+test("billing provider abstraction is FastSpring-active with legacy Paddle support", () => {
   const provider = readSource("src/lib/billing/provider.ts");
   const types = readSource("src/lib/billing/provider-types.ts");
-  assert.match(provider, /return "paddle"/);
-  assert.match(provider, /Stripe has been removed from active billing/);
+  assert.match(provider, /return "fastspring"/);
+  assert.match(provider, /Usable legacy Paddle subscription/);
+  assert.match(provider, /Stripe remains archive-only/);
   assert.doesNotMatch(provider, /return "stripe"/);
+  assert.match(provider, /isPaddleCheckoutEnabled/);
   assert.match(types, /BillingProvider = "stripe" \| "paddle" \| "fastspring"/);
   assert.match(types, /InternalPlan/);
 });
@@ -73,12 +75,19 @@ test("additive migration preserves stripe columns", () => {
   assert.match(migration, /billing_provider_transactions/);
 });
 
-test("checkout and portal are Paddle-unconditional", () => {
+test("checkout uses FastSpring when active; Paddle checkout remains legacy-only", () => {
   const actions = readSource("src/lib/billing/actions.ts");
   const portal = readSource("src/lib/billing/customer-portal.ts");
   const checkout = readSource("src/lib/paddle/checkout.ts");
+  const provider = readSource("src/lib/billing/provider.ts");
+  assert.match(actions, /activeProvider === "fastspring"/);
+  assert.match(actions, /createFastSpringCheckoutPayloadForPlan/);
+  assert.match(actions, /fastspringCheckout/);
+  assert.match(actions, /Legacy path — only if active provider is still paddle/);
   assert.match(actions, /createPaddleCheckoutPayload/);
   assert.match(actions, /paddleCheckout/);
+  assert.match(provider, /return "fastspring"/);
+  assert.match(provider, /isPaddleCheckoutEnabled/);
   assert.doesNotMatch(actions, /createCheckoutSessionWithDiscount/);
   assert.doesNotMatch(actions, /assertPlanCheckoutReady/);
   assert.match(portal, /createPaddlePortalSession/);
@@ -151,13 +160,15 @@ test("CSP allows minimum official Paddle domains", () => {
   }
 });
 
-test("env example documents paddle names without secret values", () => {
+test("env example documents paddle legacy and FastSpring names without secret values", () => {
   const envExample = readSource(".env.example");
-  assert.match(envExample, /Paddle Billing|sole active provider/i);
+  assert.match(envExample, /Paddle Billing/i);
   assert.match(envExample, /PADDLE_API_KEY=/);
   assert.match(envExample, /PADDLE_WEBHOOK_SECRET=/);
   assert.match(envExample, /NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=/);
   assert.match(envExample, /PADDLE_ENVIRONMENT=sandbox/);
+  assert.match(envExample, /FASTSPRING_STOREFRONT=/);
+  assert.match(envExample, /FASTSPRING_WEBHOOK_SECRET=/);
   assert.doesNotMatch(envExample, /^BILLING_PROVIDER=/m);
   assert.doesNotMatch(envExample, /^STRIPE_SECRET_KEY=/m);
   assert.doesNotMatch(envExample, /pdl_[a-zA-Z0-9]|pri_[a-zA-Z0-9]{6,}/);
@@ -190,8 +201,12 @@ test("paddle mode ignores stale Stripe incomplete rows for checkout and selectio
   assert.match(active, /resolveActiveBillingStatusFlags/);
   assert.match(active, /hasVerifiedPaddleCustomer/);
   assert.match(active, /PADDLE_PORTAL_UNAVAILABLE_MESSAGE/);
+  assert.match(active, /activeProvider === "fastspring"/);
+  assert.match(active, /usable\/legacy Paddle|usable legacy Paddle|legacy Paddle/i);
+  assert.match(selection, /activeProvider === "fastspring"/);
+  assert.match(selection, /legacy Paddle/i);
   assert.match(selection, /activeProvider === "paddle"/);
-  assert.match(selection, /do not fall back to stale Stripe/i);
+  assert.match(selection, /isStaleStripeAbandonedCheckout/);
   assert.match(block, /activeProvider === "paddle"/);
   assert.match(block, /Stripe open invoices and incomplete Stripe rows never block/);
   assert.match(overview, /resolveActiveBillingStatusFlags/);
@@ -258,7 +273,7 @@ test("paddle checkout success closes overlay and redirects to billing", () => {
     /console\.error\("\[billing\]\[portal\] failed", error\)/,
   );
   assert.match(errors, /isExpectedPortalUnavailableError/);
-  assert.match(portal, /Never falls back to a Stripe portal/);
+  assert.match(portal, /only verified legacy Paddle customers can open the Paddle portal/i);
   assert.match(portal, /createPaddlePortalSession/);
   assert.doesNotMatch(portal, /getActiveBillingProvider/);
 });

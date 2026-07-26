@@ -66,15 +66,18 @@ function buildTestStorefront(storeId) {
 }
 
 test("product path allowlist is exactly the five FastSpring paths", () => {
+  const catalog = readSource("src/lib/billing/catalog.ts");
   const products = readSource("src/lib/fastspring/products.ts");
   for (const path of ALLOWED_PATHS) {
-    assert.match(products, new RegExp(`"${path}"`));
+    assert.match(catalog, new RegExp(`"${path}"`));
     assert.equal(isAllowedPath(path), true);
   }
   assert.equal(isAllowedPath("starter"), false);
   assert.equal(isAllowedPath("unknown"), false);
-  assert.doesNotMatch(products, /"starter"/);
+  assert.doesNotMatch(catalog, /"starter"/);
+  assert.match(catalog, /FASTSPRING_PRODUCT_PATHS/);
   assert.match(products, /FASTSPRING_PRODUCT_PATHS/);
+  assert.match(products, /@\/lib\/billing\/catalog/);
 });
 
 test("product mapping covers display names and internal plans", () => {
@@ -85,29 +88,30 @@ test("product mapping covers display names and internal plans", () => {
   assert.equal(mapProduct("pilot-client"), "pilot");
   assert.equal(mapProduct("starter"), null);
 
+  const catalog = readSource("src/lib/billing/catalog.ts");
   const products = readSource("src/lib/fastspring/products.ts");
-  assert.match(products, /displayName: "Professional"/);
-  assert.match(products, /displayName: "Business"/);
-  assert.match(products, /displayName: "Enterprise"/);
-  assert.match(products, /displayName: "Founding Partner"/);
-  assert.match(products, /displayName: "Pilot Client"/);
-  assert.match(products, /visibility: "private"/);
+  assert.match(catalog, /displayName: "Professional"/);
+  assert.match(catalog, /displayName: "Business"/);
+  assert.match(catalog, /displayName: "Enterprise"/);
+  assert.match(catalog, /displayName: "Founding Partner"/);
+  assert.match(catalog, /displayName: "Pilot Client"/);
+  assert.match(catalog, /visibility: "private"/);
   assert.match(products, /listPublicFastSpringProductPaths/);
 });
 
 test("public vs private plan visibility preserves Pilot and Founding as private", () => {
-  const products = readSource("src/lib/fastspring/products.ts");
+  const catalog = readSource("src/lib/billing/catalog.ts");
   assert.match(
-    products,
-    /path: "founding-member"[\s\S]*?visibility: "private"/,
+    catalog,
+    /productPath: "founding-member"[\s\S]*?visibility: "private"/,
   );
   assert.match(
-    products,
-    /path: "pilot-client"[\s\S]*?visibility: "private"/,
+    catalog,
+    /productPath: "pilot-client"[\s\S]*?visibility: "private"/,
   );
   assert.match(
-    products,
-    /path: "professional"[\s\S]*?visibility: "public"/,
+    catalog,
+    /productPath: "professional"[\s\S]*?visibility: "public"/,
   );
 });
 
@@ -210,10 +214,11 @@ test("client panel uses Store Builder tag then add then checkout", () => {
   assert.doesNotMatch(panel, /FASTSPRING_API_PASSWORD|WEBHOOK_SECRET/);
 });
 
-test("active billing provider remains paddle and sync refuses paddle overwrite", () => {
+test("active billing provider is fastspring and sync refuses usable paddle overwrite", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "paddle"/);
-  assert.doesNotMatch(provider, /return "fastspring"/);
+  assert.match(provider, /return "fastspring"/);
+  assert.doesNotMatch(provider, /return "paddle"/);
+  assert.doesNotMatch(provider, /return "stripe"/);
 
   const sync = readSource("src/lib/fastspring/sync.ts");
   assert.match(sync, /usable_paddle_subscription_present/);

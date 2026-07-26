@@ -152,10 +152,13 @@ test("product path mapping preserves founding-member and pilot-client", () => {
   assert.equal(mapProduct("starter"), null);
   assert.equal(mapProduct("unknown"), null);
 
+  const catalog = readSource("src/lib/billing/catalog.ts");
   const products = readSource("src/lib/fastspring/products.ts");
-  assert.match(products, /founding-member/);
-  assert.match(products, /pilot-client/);
-  assert.doesNotMatch(products, /"starter"/);
+  assert.match(catalog, /founding-member/);
+  assert.match(catalog, /pilot-client/);
+  assert.doesNotMatch(catalog, /"starter"/);
+  assert.match(products, /FASTSPRING_PRODUCT_PATHS/);
+  assert.match(products, /@\/lib\/billing\/catalog/);
 });
 
 test("subscription status mapping covers activated updated canceled charge events", () => {
@@ -220,10 +223,13 @@ test("diagnostics report secret presence without value", () => {
   assert.doesNotMatch(health, /slice\(0,\s*[0-9]+\)/);
 });
 
-test("active billing provider remains paddle", () => {
+test("active billing provider is fastspring after cutover", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "paddle"/);
-  assert.doesNotMatch(provider, /return "fastspring"/);
+  assert.match(provider, /return "fastspring"/);
+  assert.doesNotMatch(provider, /return "paddle"/);
+  assert.doesNotMatch(provider, /return "stripe"/);
+  assert.match(provider, /Usable legacy Paddle subscription/);
+  assert.match(provider, /isPaddleCheckoutEnabled/);
 });
 
 test("fastspring webhook route file exists at expected path", () => {

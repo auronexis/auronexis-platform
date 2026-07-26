@@ -1,7 +1,9 @@
 /**
- * Executable regression tests for Paddle-only active billing predicates.
+ * Executable regression tests for active-billing predicates after FastSpring cutover.
  * Mirrors the pure helpers in src/lib/billing/active-billing.ts —
  * keep in sync when those predicates change.
+ *
+ * New checkouts use FastSpring; usable legacy Paddle rows remain entitled.
  */
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -30,7 +32,9 @@ function hasVerifiedPaddleSubscription(row) {
 }
 
 function isStripeBacked(row) {
-  if (!row || row.billing_provider === "paddle") return false;
+  if (!row || row.billing_provider === "paddle" || row.billing_provider === "fastspring") {
+    return false;
+  }
   return (
     row.billing_provider === "stripe" ||
     Boolean(row.stripe_customer_id || row.stripe_subscription_id || row.stripe_price_id)
@@ -45,10 +49,21 @@ function isStaleStripeAbandonedCheckout(row) {
   return ABANDONED.has(normalize(row.status));
 }
 
+function isFastSpringBacked(row) {
+  return row?.billing_provider === "fastspring";
+}
+
+function hasVerifiedFastSpringSubscription(row) {
+  return isFastSpringBacked(row) && Boolean(row?.provider_subscription_id?.trim());
+}
+
 function isActiveBillingRow(row, activeProvider) {
   if (!row) return false;
+  if (isStaleStripeAbandonedCheckout(row)) return false;
+  if (activeProvider === "fastspring") {
+    return isFastSpringBacked(row) || isPaddleBacked(row);
+  }
   if (activeProvider === "paddle") {
-    if (isStaleStripeAbandonedCheckout(row)) return false;
     if (isStripeBacked(row) && !isPaddleBacked(row)) return false;
     return isPaddleBacked(row);
   }
@@ -57,6 +72,17 @@ function isActiveBillingRow(row, activeProvider) {
 
 function selectPreferred(rows, activeProvider) {
   const candidates = rows.filter((row) => isActiveBillingRow(row, activeProvider));
+  if (activeProvider === "fastspring") {
+    const fs = candidates.find((row) => isFastSpringBacked(row) && isUsable(row.status));
+    if (fs) return fs;
+    const paddle = candidates.find((row) => isPaddleBacked(row) && isUsable(row.status));
+    if (paddle) return paddle;
+    return (
+      candidates.find((row) => isFastSpringBacked(row)) ??
+      candidates.find((row) => isPaddleBacked(row)) ??
+      null
+    );
+  }
   if (activeProvider === "paddle") {
     return candidates.find((row) => isPaddleBacked(row)) ?? null;
   }
@@ -69,6 +95,22 @@ function resolveFlags(row, activeProvider) {
       isUsable: false,
       isPaymentPending: false,
       hasSubscription: false,
+    };
+  }
+  if (activeProvider === "fastspring") {
+    if (isPaddleBacked(row)) {
+      const status = row.provider_status ?? row.status;
+      return {
+        isUsable: isUsable(status),
+        isPaymentPending: Boolean(row.sync_pending) || ABANDONED.has(normalize(status)),
+        hasSubscription: hasVerifiedPaddleSubscription(row),
+      };
+    }
+    const status = row.provider_status ?? row.status;
+    return {
+      isUsable: isUsable(status),
+      isPaymentPending: Boolean(row.sync_pending) || ABANDONED.has(normalize(status)),
+      hasSubscription: hasVerifiedFastSpringSubscription(row),
     };
   }
   if (activeProvider === "paddle") {
@@ -246,4 +288,29 @@ test("12. no entitlement from client callback — sync requires usable verified 
   assert.equal(flags.isUsable, false);
   assert.equal(flags.hasSubscription, false);
   assert.equal(resolveFlags(paddleActive, "paddle").isUsable, true);
+});
+
+test("13. fastspring mode: usable legacy Paddle row remains entitled", () => {
+  assert.equal(isActiveBillingRow(paddleActive, "fastspring"), true);
+  const flags = resolveFlags(paddleActive, "fastspring");
+  assert.equal(flags.isUsable, true);
+  assert.equal(flags.hasSubscription, true);
+  assert.equal(selectPreferred([staleStripeIncomplete, paddleActive], "fastspring")?.provider_customer_id, "ctm_verified");
+});
+
+test("14. fastspring mode: stale Stripe incomplete never preferred", () => {
+  assert.equal(selectPreferred([staleStripeIncomplete], "fastspring"), null);
+  assert.equal(resolveFlags(staleStripeIncomplete, "fastspring").isUsable, false);
+});
+
+test("15. provider source: FastSpring active, Paddle checkout disabled, no Stripe", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { dirname, join } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+  const provider = readFileSync(join(root, "src/lib/billing/provider.ts"), "utf8");
+  assert.match(provider, /return "fastspring"/);
+  assert.doesNotMatch(provider, /return "stripe"/);
+  assert.match(provider, /isPaddleCheckoutEnabled/);
+  assert.match(provider, /Usable legacy Paddle subscription/);
 });

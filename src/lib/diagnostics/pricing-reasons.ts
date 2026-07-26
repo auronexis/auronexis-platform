@@ -44,10 +44,6 @@ export function getPricingButtonDisabledReasons(input: {
 }): string[] {
   const reasons: string[] = [];
 
-  if (input.planKey === "enterprise") {
-    return reasons;
-  }
-
   if (!input.canManage) {
     reasons.push("Organization owners and admins can change plans.");
   }
@@ -112,13 +108,9 @@ export function getPricingButtonDisabledReasons(input: {
 }
 
 export function isPricingButtonDisabled(
-  planKey: PlanKey,
+  _planKey: PlanKey,
   reasons: string[],
 ): boolean {
-  if (planKey === "enterprise") {
-    return false;
-  }
-
   return reasons.length > 0;
 }
 
@@ -134,10 +126,6 @@ export function getPlanCheckoutHint(
   planKey: PlanKey,
   stripeStatus: StripeBillingUiStatus | null | undefined,
 ): string | null {
-  if (planKey === "enterprise") {
-    return null;
-  }
-
   if (stripeStatus?.planCheckoutReady?.[planKey]) {
     return null;
   }

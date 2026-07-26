@@ -1,8 +1,10 @@
 import "server-only";
 
 import {
+  checkActiveBillingProviderHealth,
   checkDatabaseHealth,
   checkFastSpringApiConfigHealth,
+  checkFastSpringStorefrontHealth,
   checkFastSpringWebhookHealth,
 } from "@/lib/diagnostics/platform-health";
 import {
@@ -47,6 +49,8 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
   ]);
   const fastspringWebhook = checkFastSpringWebhookHealth();
   const fastspringApi = checkFastSpringApiConfigHealth();
+  const fastspringStorefront = checkFastSpringStorefrontHealth();
+  const activeBillingProvider = checkActiveBillingProviderHealth();
 
   const environment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
   const nodeEnv = process.env.NODE_ENV ?? "development";
@@ -86,11 +90,17 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
       detail: database.message,
     },
     {
+      key: "active_billing_provider",
+      label: "Active billing provider",
+      status: "healthy",
+      detail: activeBillingProvider.message,
+    },
+    {
       key: "stripe",
-      label: "Billing (Paddle)",
+      label: "Legacy billing (Paddle)",
       status: evaluateServiceStatus("stripe", readinessInput),
       detail: stripeConfigured
-        ? "Paddle env configured"
+        ? "Paddle env configured (legacy portal / historical customers)"
         : nodeEnv === "development"
           ? "Not configured (optional in development)"
           : "Missing Paddle env",
@@ -110,6 +120,12 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
       label: "FastSpring API",
       status: fastspringApi.ok ? "healthy" : "degraded",
       detail: fastspringApi.message,
+    },
+    {
+      key: "fastspring_storefront",
+      label: "FastSpring storefront",
+      status: fastspringStorefront.ok ? "healthy" : "degraded",
+      detail: fastspringStorefront.message,
     },
     {
       key: "cron",

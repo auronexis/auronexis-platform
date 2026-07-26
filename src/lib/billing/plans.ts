@@ -7,8 +7,10 @@ export type PlanActionLabel = "current" | "choose" | "upgrade" | "downgrade";
 export type SubscriptionPlanDefinition = {
   key: PlanKey;
   name: string;
+  /** Fallback base monthly amount (USD) when FastSpring localized pricing is unavailable. */
   priceMonthly: number;
-  currency: "EUR";
+  /** Fallback currency for priceMonthly — FastSpring localized display overrides this in UI. */
+  currency: "USD";
   description: string;
   features: string[];
   recommended?: boolean;
@@ -22,8 +24,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
   {
     key: "starter",
     name: "Professional",
-    priceMonthly: 149,
-    currency: "EUR",
+    priceMonthly: 179,
+    currency: "USD",
     description: "Internal fallback tier — Professional limits apply without an active subscription",
     order: 0,
     features: [
@@ -37,8 +39,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
   {
     key: "professional",
     name: "Professional",
-    priceMonthly: 149,
-    currency: "EUR",
+    priceMonthly: 179,
+    currency: "USD",
     description: "For growing agencies starting with automation and client portal delivery",
     order: 1,
     features: [
@@ -53,8 +55,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
   {
     key: "business",
     name: "Business",
-    priceMonthly: 499,
-    currency: "EUR",
+    priceMonthly: 599,
+    currency: "USD",
     description: "For established agencies with compliance, white-label, and higher limits",
     order: 2,
     recommended: true,
@@ -70,8 +72,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
   {
     key: "enterprise",
     name: "Enterprise",
-    priceMonthly: 1499,
-    currency: "EUR",
+    priceMonthly: 1799,
+    currency: "USD",
     description: "For large portfolios and custom requirements",
     order: 3,
     features: [
@@ -161,13 +163,7 @@ export function getPublicSelfServePlans(): SubscriptionPlanDefinition[] {
 }
 
 export function formatPlanPrice(plan: SubscriptionPlanDefinition): string {
-  const formatted = formatWorkspaceMoney(plan.priceMonthly, plan.currency, "en");
-
-  if (plan.key === "enterprise") {
-    return `From ${formatted}`;
-  }
-
-  return formatted;
+  return formatWorkspaceMoney(plan.priceMonthly, plan.currency, "en");
 }
 
 export function getPlanActionButtonLabel(action: PlanActionLabel): string {

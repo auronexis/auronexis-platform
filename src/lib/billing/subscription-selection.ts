@@ -1,6 +1,8 @@
 import {
+  hasVerifiedFastSpringSubscription,
   hasVerifiedPaddleSubscription,
   isActiveBillingSubscriptionRow,
+  isFastSpringBackedSubscription,
   isPaddleBackedSubscription,
   isStaleStripeAbandonedCheckout,
 } from "@/lib/billing/active-billing";
@@ -17,11 +19,11 @@ function sortByUpdatedAtDesc(
 
 /**
  * Pick the best subscription row for active billing.
- * When activeProvider is paddle, Stripe-backed / abandoned Stripe rows are never preferred.
+ * FastSpring cutover: prefer usable FastSpring, then usable legacy Paddle.
  */
 export function selectPreferredSubscriptionRow(
   rows: OrganizationSubscription[],
-  activeProvider: BillingProvider = "paddle",
+  activeProvider: BillingProvider = "fastspring",
 ): OrganizationSubscription | null {
   if (rows.length === 0) {
     return null;
@@ -30,6 +32,42 @@ export function selectPreferredSubscriptionRow(
   const candidates = rows
     .filter((row) => isActiveBillingSubscriptionRow(row, activeProvider))
     .sort(sortByUpdatedAtDesc);
+
+  if (activeProvider === "fastspring") {
+    const usableFastSpring = candidates.find(
+      (row) =>
+        isFastSpringBackedSubscription(row) &&
+        isSubscriptionUsable(row.provider_status ?? row.status),
+    );
+    if (usableFastSpring) {
+      return usableFastSpring;
+    }
+
+    const usablePaddle = candidates.find(
+      (row) =>
+        isPaddleBackedSubscription(row) &&
+        isSubscriptionUsable(row.provider_status ?? row.status),
+    );
+    if (usablePaddle) {
+      return usablePaddle;
+    }
+
+    const withFastSpringSub = candidates.find((row) => hasVerifiedFastSpringSubscription(row));
+    if (withFastSpringSub) {
+      return withFastSpringSub;
+    }
+
+    const withPaddleSub = candidates.find((row) => hasVerifiedPaddleSubscription(row));
+    if (withPaddleSub) {
+      return withPaddleSub;
+    }
+
+    return (
+      candidates.find((row) => isFastSpringBackedSubscription(row)) ??
+      candidates.find((row) => isPaddleBackedSubscription(row)) ??
+      null
+    );
+  }
 
   if (activeProvider === "paddle") {
     const usablePaddle = candidates.find(
@@ -51,7 +89,6 @@ export function selectPreferredSubscriptionRow(
       return newestPaddle;
     }
 
-    // No Paddle row — do not fall back to stale Stripe remnants.
     return null;
   }
 
@@ -71,13 +108,31 @@ export function selectPreferredSubscriptionSummaryRow<
     billing_provider?: string | null;
     provider_subscription_id?: string | null;
   },
->(rows: T[], activeProvider: BillingProvider = "paddle"): T | null {
+>(rows: T[], activeProvider: BillingProvider = "fastspring"): T | null {
   if (rows.length === 0) {
     return null;
   }
 
+  if (activeProvider === "fastspring") {
+    const fastspringRows = rows.filter((row) => row.billing_provider === "fastspring");
+    const paddleRows = rows.filter((row) => row.billing_provider === "paddle");
+
+    const usableFs = fastspringRows.find((row) => isSubscriptionUsable(row.status));
+    if (usableFs) return usableFs;
+    const usablePaddle = paddleRows.find((row) => isSubscriptionUsable(row.status));
+    if (usablePaddle) return usablePaddle;
+
+    const withFsSub = fastspringRows.find((row) => Boolean(row.provider_subscription_id?.trim()));
+    if (withFsSub) return withFsSub;
+    const withPaddleSub = paddleRows.find((row) =>
+      Boolean(row.provider_subscription_id?.startsWith("sub_")),
+    );
+    if (withPaddleSub) return withPaddleSub;
+
+    return fastspringRows[0] ?? paddleRows[0] ?? null;
+  }
+
   if (activeProvider === "paddle") {
-    // Prefer Paddle-backed rows only — never fall back to Stripe remnants.
     const paddleRows = rows.filter((row) => row.billing_provider === "paddle");
     const candidates = paddleRows.length > 0 ? paddleRows : [];
     const usable = candidates.find((row) => isSubscriptionUsable(row.status));

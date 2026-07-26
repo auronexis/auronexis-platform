@@ -13,7 +13,8 @@ export const FASTSPRING_SBL_SCRIPT_SRC =
  * Built only on the server; consumed by the Store Builder panel.
  */
 export type FastSpringTestCheckoutPayload = {
-  mode: "test";
+  /** Derived from storefront host (.test. → test, otherwise live). */
+  mode: "test" | "live";
   provider: "fastspring";
   storefront: string;
   popupCheckoutPath: typeof FASTSPRING_POPUP_CHECKOUT_PATH;

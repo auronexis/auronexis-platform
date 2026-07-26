@@ -1,14 +1,18 @@
 import "server-only";
 
+import {
+  getCatalogEntryByProductPath,
+  isFastSpringProductPath,
+} from "@/lib/billing/catalog";
 import { buildFastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
 import {
-  getFastSpringProductCatalogEntry,
-  isFastSpringProductPath,
-} from "@/lib/fastspring/products";
+  getFastSpringStorefront,
+  isFastSpringStorefrontConfigured,
+  isFastSpringTestStorefront,
+} from "@/lib/fastspring/storefront";
 import {
   FASTSPRING_POPUP_CHECKOUT_PATH,
   FASTSPRING_SBL_SCRIPT_SRC,
-  buildFastSpringTestStorefront,
   type FastSpringTestCheckoutPayload,
 } from "@/lib/fastspring/test-checkout-types";
 
@@ -19,11 +23,7 @@ export {
   type FastSpringTestCheckoutPayload,
 } from "@/lib/fastspring/test-checkout-types";
 
-/**
- * Store subdomain only (e.g. `yourstore`).
- * Test storefront becomes: `{storeId}.test.onfastspring.com/popup-defaultB2B`
- * https://developer.fastspring.com/docs/add-checkout-to-your-site
- */
+/** @deprecated Prefer isFastSpringStorefrontConfigured / FASTSPRING_STOREFRONT. */
 export function getFastSpringStoreId(): string {
   const value = process.env.FASTSPRING_STORE_ID?.trim();
   if (!value) {
@@ -36,12 +36,12 @@ export function getFastSpringStoreId(): string {
 }
 
 export function isFastSpringStoreConfigured(): boolean {
-  return Boolean(process.env.FASTSPRING_STORE_ID?.trim());
+  return isFastSpringStorefrontConfigured();
 }
 
 /**
- * Build a server-validated FastSpring TEST checkout payload for Store Builder.
- * Does not grant entitlements — webhook sync does.
+ * Build a server-validated FastSpring checkout payload for the owner/admin test page.
+ * Prefer test storefronts; production storefronts are allowed when explicitly configured.
  */
 export function createFastSpringTestCheckoutPayload(input: {
   organizationId: string;
@@ -52,27 +52,28 @@ export function createFastSpringTestCheckoutPayload(input: {
     throw new Error("Invalid FastSpring product path.");
   }
 
-  const entry = getFastSpringProductCatalogEntry(input.productPath);
+  const entry = getCatalogEntryByProductPath(input.productPath);
   if (!entry) {
     throw new Error("Unknown FastSpring product path.");
   }
 
-  const storeId = getFastSpringStoreId();
+  const storefront = getFastSpringStorefront();
+  const isTest = isFastSpringTestStorefront(storefront);
   const tags = buildFastSpringCheckoutTags({
     organizationId: input.organizationId,
     userId: input.userId,
-    internalPlan: entry.mappedPlan,
+    internalPlan: entry.internalKey,
   });
 
   return {
-    mode: "test",
+    mode: isTest ? "test" : "live",
     provider: "fastspring",
-    storefront: buildFastSpringTestStorefront(storeId),
+    storefront,
     popupCheckoutPath: FASTSPRING_POPUP_CHECKOUT_PATH,
     sblScriptSrc: FASTSPRING_SBL_SCRIPT_SRC,
-    productPath: entry.path,
+    productPath: entry.productPath,
     displayName: entry.displayName,
     tags,
-    monthlyPriceUsd: entry.monthlyPriceUsd,
+    monthlyPriceUsd: entry.fallbackMonthlyUsd,
   };
 }

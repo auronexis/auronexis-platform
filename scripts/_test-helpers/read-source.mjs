@@ -95,6 +95,7 @@ export const ENTERPRISE_REGRESSION_SUITE = [
   "scripts/paddle-billing-v2.test.mjs",
   "scripts/fastspring-webhook.test.mjs",
   "scripts/fastspring-test-checkout.test.mjs",
+  "scripts/fastspring-billing-migration.test.mjs",
   "scripts/technical-seo.test.mjs",
   "scripts/analytics-conversion.test.mjs",
   "scripts/workspace-currency.test.mjs",

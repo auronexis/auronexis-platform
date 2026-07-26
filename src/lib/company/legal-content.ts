@@ -178,13 +178,13 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "11. Prices, payment, invoices, and taxes",
         body:
-          "Listed self-serve plans: Professional €149/month; Business €499/month; Enterprise from €1,499/month subject to individual quotation. Prices shown at checkout and in billing settings apply. Applicable taxes (including VAT where required) are calculated and displayed by Paddle at checkout. Invoices or receipts are issued electronically by Paddle, our Merchant of Record. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
-      },
-      {
-        heading: "11a. Paddle as Merchant of Record",
+          "Listed self-serve plans (base USD catalog): Professional $179/month; Business $599/month; Enterprise $1,799/month. Localized prices shown on the website are provided by FastSpring for the visitor's region when available; final amounts and applicable taxes are confirmed at checkout. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
+        },
+        {
+        heading: "11a. Merchant of Record",
         body:
-          "For purchases completed through Paddle Checkout, Paddle acts as Merchant of Record and authorized reseller for the payment transaction. The buyer purchases through Paddle while Auroranexis supplies and licenses software access. Paddle's Buyer Terms, checkout terms, privacy notice, and Refund Policy govern payment processing, Paddle-handled taxes, payment methods, refunds, and mandatory buyer rights for those transactions. These Terms continue to govern use of Auroranexis. Paddle Buyer Terms: https://www.paddle.com/legal/checkout-buyer-terms — Paddle Refund Policy: https://www.paddle.com/legal/refund-policy.",
-      },
+          "For new self-serve purchases completed through FastSpring Checkout, FastSpring acts as Merchant of Record and authorized reseller for the payment transaction. The buyer purchases through FastSpring while Auroranexis supplies and licenses software access. FastSpring's applicable buyer terms, checkout terms, privacy notice, and refund policies govern payment processing, taxes handled by FastSpring, payment methods, refunds, and mandatory buyer rights for those transactions. For legacy subscriptions originally purchased through Paddle Checkout, Paddle remains Merchant of Record for those transactions and Paddle's Buyer Terms and Refund Policy continue to apply to those purchases. These Terms continue to govern use of Auroranexis. Paddle Buyer Terms: https://www.paddle.com/legal/checkout-buyer-terms — Paddle Refund Policy: https://www.paddle.com/legal/refund-policy.",
+        },
       {
         heading: "12. Upgrades, downgrades, and renewal",
         body:

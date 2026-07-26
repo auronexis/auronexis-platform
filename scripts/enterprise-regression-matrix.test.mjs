@@ -109,13 +109,19 @@ test("API v1 routes use withApiHandler and scoped handlers", () => {
   assert.match(me, /apiGetMe|withApiHandler/);
 });
 
-test("Paddle webhook and entitlements remain fail-closed", () => {
-  const route = readSource("src/app/api/paddle/webhook/route.ts");
+test("billing webhooks and entitlements remain fail-closed after FastSpring cutover", () => {
+  const paddleRoute = readSource("src/app/api/paddle/webhook/route.ts");
+  const fastspringRoute = readSource("src/app/api/fastspring/webhook/route.ts");
   const provider = readSource("src/lib/billing/provider.ts");
   const entitlements = readSource("src/lib/entitlements/resolver.ts");
-  assert.match(route, /unmarshal/);
-  assert.match(route, /ensurePaddleIdempotency/);
-  assert.match(provider, /return "paddle"/);
+  const selection = readSource("src/lib/billing/subscription-selection.ts");
+  assert.match(paddleRoute, /unmarshal/);
+  assert.match(paddleRoute, /ensurePaddleIdempotency/);
+  assert.match(fastspringRoute, /verifyFastSpringSignature|ensureFastSpringIdempotency|signature/i);
+  assert.match(provider, /return "fastspring"/);
+  assert.doesNotMatch(provider, /return "stripe"/);
+  assert.match(provider, /Usable legacy Paddle subscription/);
+  assert.match(selection, /usable legacy Paddle|legacy Paddle/i);
   assert.match(entitlements, /resolveOrganizationEntitlements/);
   assert.ok(!pathExists("src/lib/stripe"));
 });

@@ -5,21 +5,26 @@ import type { BillingProvider } from "@/lib/billing/provider-types";
 /**
  * Active checkout provider for new self-serve purchases.
  *
- * Stripe has been removed from active billing — Paddle is the sole active
- * provider. Any Stripe code, rows, or env vars that still exist are a
- * historical archive only and must never be selected here. This always
- * returns "paddle" regardless of the BILLING_PROVIDER env value.
+ * FastSpring is the active provider for NEW checkouts after the production
+ * cutover. Usable legacy Paddle subscription rows continue to grant
+ * entitlements via provider-aware selection — they are never auto-migrated.
+ *
+ * Stripe remains archive-only and must never be returned here.
  */
 export function getActiveBillingProvider(): BillingProvider {
-  return "paddle";
+  return "fastspring";
 }
 
-/** Paddle checkout is unconditionally enabled — there is no other active provider. */
+/** True when new self-serve checkouts should use Paddle (disabled after FastSpring cutover). */
 export function isPaddleCheckoutEnabled(): boolean {
-  return true;
+  return getActiveBillingProvider() === "paddle";
 }
 
-/** Paddle is unconditionally the sole active billing provider. */
+/** @deprecated Prefer getActiveBillingProvider() === "paddle". */
 export function isPaddleActiveBillingProvider(): boolean {
-  return true;
+  return getActiveBillingProvider() === "paddle";
+}
+
+export function isFastSpringActiveBillingProvider(): boolean {
+  return getActiveBillingProvider() === "fastspring";
 }

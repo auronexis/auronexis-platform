@@ -1,3 +1,4 @@
+import { isEntitlementDrivingFastSpringPlan, mapFastSpringProductPath } from "@/lib/billing/catalog";
 import type { PlanKey, SubscriptionPlanDefinition } from "@/lib/billing/plans";
 import { resolveInternalPlanFromPaddlePriceId } from "@/lib/paddle/prices";
 
@@ -47,6 +48,14 @@ export function safeGetPlanKeyFromSubscriptionPrice(input: {
   stripePriceId?: string | null;
   providerPriceId?: string | null;
 }): PlanKey | null {
+  if (input.billingProvider === "fastspring") {
+    const mapped = mapFastSpringProductPath(input.providerPriceId);
+    if (isEntitlementDrivingFastSpringPlan(mapped)) {
+      return mapped;
+    }
+    return null;
+  }
+
   if (input.billingProvider === "paddle") {
     const priceId = input.providerPriceId?.trim();
     if (!priceId) {

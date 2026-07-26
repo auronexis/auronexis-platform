@@ -35,7 +35,7 @@ function resolveActiveProviderSafe(): BillingProvider {
   try {
     return getActiveBillingProvider();
   } catch {
-    return "paddle";
+    return "fastspring";
   }
 }
 
@@ -47,7 +47,13 @@ export async function loadWorkspacePlansPageModel(
 ): Promise<WorkspacePlansPageModel> {
   let sandboxCheckoutNotice: string | null = null;
   try {
-    if (resolveActiveProviderSafe() === "paddle" && isPaddleConfigured()) {
+    if (resolveActiveProviderSafe() === "fastspring") {
+      const storefront = process.env.FASTSPRING_STOREFRONT?.trim() ?? "";
+      if (storefront.includes(".test.onfastspring.com/")) {
+        sandboxCheckoutNotice =
+          "FastSpring TEST storefront is configured. Purchases use test mode — not live production charges.";
+      }
+    } else if (resolveActiveProviderSafe() === "paddle" && isPaddleConfigured()) {
       if (getPaddleEnvironment() === "sandbox") {
         sandboxCheckoutNotice =
           "Sandbox checkout is active for billing tests. This is not a live production payment flow.";
@@ -98,11 +104,7 @@ export async function loadWorkspacePlansPageModel(
     ignoredStripeInvoiceIds: billingState.ignoredStripeInvoiceIds,
   });
 
-  const activeProvider = resolveActiveProviderSafe();
-  const showPortalAction =
-    activeProvider === "paddle"
-      ? hasVerifiedPaddleCustomer(billingState.overview.subscription)
-      : true;
+  const showPortalAction = hasVerifiedPaddleCustomer(billingState.overview.subscription);
 
   return {
     billingState,

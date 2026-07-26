@@ -216,15 +216,21 @@ export async function getBillingProductionDiagnostics(
 
   const subscription = overview.subscription;
   const resolvedPlanKey =
-    activeProvider === "paddle"
+    activeProvider === "fastspring"
       ? safeGetPlanKeyFromSubscriptionPrice({
-          billingProvider: "paddle",
+          billingProvider: subscription?.billing_provider ?? "fastspring",
           stripePriceId: null,
           providerPriceId: subscription?.provider_price_id,
-        })
-      : subscription?.stripe_price_id
-        ? safeGetPlanKeyByStripePriceId(subscription.stripe_price_id)
-        : overview.currentPlanKey;
+        }) ?? overview.currentPlanKey
+      : activeProvider === "paddle"
+        ? safeGetPlanKeyFromSubscriptionPrice({
+            billingProvider: "paddle",
+            stripePriceId: null,
+            providerPriceId: subscription?.provider_price_id,
+          })
+        : subscription?.stripe_price_id
+          ? safeGetPlanKeyByStripePriceId(subscription.stripe_price_id)
+          : overview.currentPlanKey;
   const resolvedPlanLabel = resolvedPlanKey
     ? (safeGetPlanByKey(resolvedPlanKey)?.name ?? null)
     : null;
@@ -279,13 +285,15 @@ export async function getBillingProductionDiagnostics(
     dangerRecommendationCount: severityCounts.danger,
   });
 
-  const paddleCheckoutAllowed = activeProvider === "paddle" ? !checkoutBlock.blocked : false;
+  const paddleCheckoutAllowed = false;
   const paddleCheckoutBlockReason =
-    activeProvider === "paddle" && checkoutBlock.blocked
-      ? (checkoutBlock.message ?? checkoutBlock.bannerMessage)
-      : activeProvider === "paddle" && paddleSubscriptionBlocksCheckout(subscription)
-        ? "Verified Paddle subscription state blocks checkout."
-        : null;
+    activeProvider === "fastspring"
+      ? "New checkout uses FastSpring. Legacy Paddle checkout is disabled."
+      : activeProvider === "paddle" && checkoutBlock.blocked
+        ? (checkoutBlock.message ?? checkoutBlock.bannerMessage)
+        : activeProvider === "paddle" && paddleSubscriptionBlocksCheckout(subscription)
+          ? "Verified Paddle subscription state blocks checkout."
+          : null;
 
   return {
     organizationId,

@@ -72,7 +72,10 @@ test("chapter 19 always-apply rule is installed", () => {
   assert.match(readSource(rule), /alwaysApply:\s*true/);
 });
 
-test("paddle sole webhook path still required for release", () => {
+test("paddle legacy and fastspring webhook paths still required for release", () => {
   assert.ok(pathExists("src/app/api/paddle/webhook/route.ts"));
+  assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
   assert.equal(pathExists("src/app/api/stripe"), false);
+  const provider = readSource("src/lib/billing/provider.ts");
+  assert.match(provider, /return "fastspring"/);
 });

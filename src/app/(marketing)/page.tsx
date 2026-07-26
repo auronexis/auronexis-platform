@@ -23,11 +23,11 @@ import {
   MARKETING_LOGO_CLOUD,
   MARKETING_STATS,
   MARKETING_TESTIMONIALS,
-  PUBLIC_PRICING_PLANS,
   PUBLIC_PRICING_NOTE,
   INVITE_ONLY_PROGRAMS_NOTE,
   USE_CASES,
 } from "@/lib/marketing/content";
+import { loadPublicPricingPlanViews } from "@/lib/marketing/public-pricing";
 import { MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company";
 import { COMPANY_SEO } from "@/lib/company/company-seo";
 import { createPageMetadataForPath } from "@/lib/seo";
@@ -43,6 +43,8 @@ export default async function MarketingHomePage() {
   if (session) {
     redirect("/dashboard");
   }
+
+  const { plans: publicPricingPlans } = await loadPublicPricingPlanViews();
 
   return (
     <MarketingShell>
@@ -202,9 +204,9 @@ export default async function MarketingHomePage() {
       <MarketingPace bordered>
         <MarketingSection eyebrow="Pricing" title="Plans that scale with your agency" description="Professional, Business, and Enterprise — three public subscription tiers with transparent pricing.">
         <div className="grid gap-4 lg:grid-cols-3">
-          {PUBLIC_PRICING_PLANS.map((plan) => (
+          {publicPricingPlans.map((plan) => (
             <article
-              key={plan.name}
+              key={plan.productPath}
               className={cn(
                 "relative rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm",
                 plan.featured && "border-primary/20 ring-1 ring-primary/10",

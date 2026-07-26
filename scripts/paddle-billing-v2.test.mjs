@@ -50,8 +50,9 @@ test("stripe cannot affect active billing after removal", () => {
   const pkg = JSON.parse(readSource("package.json"));
   assert.equal(pkg.dependencies.stripe, undefined);
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "paddle"/);
+  assert.match(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "stripe"/);
+  assert.match(provider, /Usable legacy Paddle subscription/);
   const portal = readSource("src/lib/billing/customer-portal.ts");
   assert.match(portal, /createPaddlePortalSession/);
   assert.doesNotMatch(portal, /createStripePortalSession|createPortalSession as/);

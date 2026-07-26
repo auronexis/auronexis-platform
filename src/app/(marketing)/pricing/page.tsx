@@ -13,8 +13,8 @@ import {
   INVITE_ONLY_PROGRAMS_NOTE,
   PLAN_COMPARISON_ROWS,
   PUBLIC_PRICING_NOTE,
-  PUBLIC_PRICING_PLANS,
 } from "@/lib/marketing/content";
+import { loadPublicPricingPlanViews } from "@/lib/marketing/public-pricing";
 import { MARKETING_ROUTES, SALES_EMAIL } from "@/lib/company/contact";
 import { JsonLdScript, pricingPageJsonLd } from "@/lib/marketing/seo";
 import { pricingGraphJsonLd } from "@/lib/seo/geo-schema";
@@ -23,7 +23,9 @@ import { focusRing } from "@/lib/ui/tokens";
 
 export const metadata: Metadata = createPageMetadataForPath("/pricing");
 
-export default function PublicPricingPage() {
+export default async function PublicPricingPage() {
+  const { plans } = await loadPublicPricingPlanViews();
+
   return (
     <MarketingShell>
       <JsonLdScript data={pricingGraphJsonLd(pricingPageJsonLd())} />
@@ -39,9 +41,9 @@ export default function PublicPricingPage() {
       />
       <MarketingSection title="Plans">
         <div className="grid gap-4 lg:grid-cols-3">
-          {PUBLIC_PRICING_PLANS.map((plan) => (
+          {plans.map((plan) => (
             <article
-              key={plan.name}
+              key={plan.productPath}
               className={cn(
                 "relative rounded-2xl border border-border-subtle bg-surface-1 p-6 shadow-sm",
                 plan.featured && "border-primary/20 ring-1 ring-primary/10",
@@ -55,11 +57,7 @@ export default function PublicPricingPage() {
               <h3 className="text-lg font-semibold">{plan.name}</h3>
               <p className="mt-2 text-3xl font-semibold tracking-tight">
                 {plan.price}
-                {plan.period ? (
-                  <span className="text-base font-normal text-muted">{plan.period}</span>
-                ) : (
-                  <span className="block text-base font-normal text-muted">pricing</span>
-                )}
+                <span className="text-base font-normal text-muted">{plan.period}</span>
               </p>
               <p className="mt-3 text-sm text-muted">{plan.description}</p>
               <ul className="mt-4 space-y-2 text-sm text-muted">

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LinkButton } from "@/components/ui/link-button";
 import {
   formatPlanPrice,
   getPlanActionButtonLabel,
@@ -26,6 +25,8 @@ type PricingCardProps = {
   isDisabled?: boolean;
   stripeStatus: BillingUiStatus;
   enterpriseContactHref: string;
+  /** Server-resolved localized display string; falls back to plan.priceMonthly. */
+  displayPrice?: string | null;
   onSelect: () => void;
 };
 
@@ -41,6 +42,7 @@ export function PricingCard({
   isDisabled = false,
   stripeStatus,
   enterpriseContactHref,
+  displayPrice = null,
   onSelect,
 }: PricingCardProps) {
   const isRecommended = Boolean(plan.recommended);
@@ -52,6 +54,7 @@ export function PricingCard({
   const supplementalReasons = disabledReasons.filter(
     (reason) => !blockedCheckoutMessage || reason !== blockedCheckoutMessage,
   );
+  const priceLabel = displayPrice?.trim() || formatPlanPrice(plan);
 
   return (
     <article
@@ -82,7 +85,7 @@ export function PricingCard({
 
       <div className="mb-8">
         <p className="text-4xl font-semibold tracking-tight text-foreground">
-          {formatPlanPrice(plan)}
+          {priceLabel}
         </p>
         <p className="mt-1 text-sm text-muted">per month</p>
         <div className="mt-2 space-y-1">
@@ -128,27 +131,28 @@ export function PricingCard({
           ) : null}
           {!safeStripeStatus.planCheckoutReady[plan.key] &&
           checkoutHint &&
-          !isEnterprise &&
           disabledReasons.length === 0 ? (
             <p className="text-sm text-muted">{checkoutHint}</p>
           ) : null}
+          <Button
+            type="button"
+            className={cn("w-full", isCurrent && "border-success/30 text-success hover:text-success")}
+            variant={isCurrent ? "outline" : "primary"}
+            disabled={buttonDisabled}
+            loading={isLoading}
+            loadingText="Opening checkout…"
+            onClick={onSelect}
+          >
+            {getPlanActionButtonLabel(action)}
+          </Button>
           {isEnterprise ? (
-            <LinkButton href={enterpriseContactHref} className="w-full" variant="outline">
-              Contact Sales
-            </LinkButton>
-          ) : (
-            <Button
-              type="button"
-              className={cn("w-full", isCurrent && "border-success/30 text-success hover:text-success")}
-              variant={isCurrent ? "outline" : "primary"}
-              disabled={buttonDisabled}
-              loading={isLoading}
-              loadingText="Redirecting…"
-              onClick={onSelect}
-            >
-              {getPlanActionButtonLabel(action)}
-            </Button>
-          )}
+            <p className="text-center text-sm text-muted">
+              Need a custom agreement?{" "}
+              <Link href={enterpriseContactHref} className="font-medium text-primary hover:underline">
+                Contact Sales
+              </Link>
+            </p>
+          ) : null}
         </div>
       ) : (
         <p className="text-center text-sm text-muted">
@@ -157,14 +161,6 @@ export function PricingCard({
             : "Organization owners and admins can change plans."}
         </p>
       )}
-
-      {isEnterprise && !canManage ? (
-        <p className="mt-4 text-center text-sm text-muted">
-          <Link href={enterpriseContactHref} className="font-medium text-primary hover:underline">
-            Contact Sales
-          </Link>
-        </p>
-      ) : null}
     </article>
   );
 }
