@@ -2,7 +2,11 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
+import { probeFastSpringApiConnectivity } from "@/lib/fastspring/connectivity";
+import {
+  getFastSpringApiCredentialPresence,
+  isFastSpringWebhookConfigured,
+} from "@/lib/fastspring/env";
 import { isPaddleConfigured } from "@/lib/paddle/env";
 
 export type DatabaseHealthLevel = "healthy" | "degraded" | "unavailable";
@@ -152,6 +156,56 @@ export function checkFastSpringWebhookHealth(): HealthCheckResult {
     ok: true,
     level: "healthy",
     message: "FASTSPRING_WEBHOOK_SECRET configured: yes",
+  };
+}
+
+/**
+ * FastSpring REST API credential presence — never returns or logs credential values.
+ */
+export function checkFastSpringApiConfigHealth(): HealthCheckResult {
+  const presence = getFastSpringApiCredentialPresence();
+  if (!presence.configured) {
+    return {
+      ok: false,
+      level: "degraded",
+      message: "FASTSPRING_API credentials configured: no",
+    };
+  }
+
+  return {
+    ok: true,
+    level: "healthy",
+    message: "FASTSPRING_API credentials configured: yes",
+  };
+}
+
+/**
+ * Live FastSpring API auth probe (read-only). Sanitized result only — no secrets.
+ */
+export async function checkFastSpringApiConnectivityHealth(): Promise<HealthCheckResult> {
+  const result = await probeFastSpringApiConnectivity();
+  if (result.connected) {
+    return {
+      ok: true,
+      level: "healthy",
+      message: `FastSpring API connected (HTTP ${result.httpStatus ?? 200})`,
+    };
+  }
+
+  if (result.errorCategory === "not_configured") {
+    return {
+      ok: false,
+      level: "degraded",
+      message: "FastSpring API credentials configured: no",
+    };
+  }
+
+  return {
+    ok: false,
+    level: "degraded",
+    message: `FastSpring API not connected (${result.errorCategory ?? "unknown"}${
+      result.httpStatus ? `, HTTP ${result.httpStatus}` : ""
+    })`,
   };
 }
 

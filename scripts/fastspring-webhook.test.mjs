@@ -201,16 +201,22 @@ test("fastspring secrets stay server-only", () => {
   const envExample = readSource(".env.example");
   assert.match(env, /server-only/);
   assert.match(env, /FASTSPRING_WEBHOOK_SECRET/);
+  assert.match(env, /FASTSPRING_API_USERNAME/);
+  assert.match(env, /FASTSPRING_API_PASSWORD/);
   assert.doesNotMatch(env, /NEXT_PUBLIC_FASTSPRING/);
   assert.match(envExample, /^FASTSPRING_WEBHOOK_SECRET=/m);
+  assert.match(envExample, /^FASTSPRING_API_USERNAME=/m);
+  assert.match(envExample, /^FASTSPRING_API_PASSWORD=/m);
   assert.doesNotMatch(envExample, /NEXT_PUBLIC_FASTSPRING/);
 });
 
 test("diagnostics report secret presence without value", () => {
   const health = readSource("src/lib/diagnostics/platform-health.ts");
   assert.match(health, /checkFastSpringWebhookHealth/);
+  assert.match(health, /checkFastSpringApiConfigHealth/);
   assert.match(health, /FASTSPRING_WEBHOOK_SECRET configured: yes/);
   assert.match(health, /FASTSPRING_WEBHOOK_SECRET configured: no/);
+  assert.match(health, /FASTSPRING_API credentials configured/);
   assert.doesNotMatch(health, /slice\(0,\s*[0-9]+\)/);
 });
 
@@ -223,4 +229,22 @@ test("active billing provider remains paddle", () => {
 test("fastspring webhook route file exists at expected path", () => {
   assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
   assert.ok(pathExists("src/lib/fastspring/signature.ts"));
+});
+
+test("fastspring API connectivity probe uses Basic Auth and read-only accounts list", () => {
+  const connectivity = readSource("src/lib/fastspring/connectivity.ts");
+  const route = readSource("src/app/api/fastspring/connectivity/route.ts");
+  assert.match(connectivity, /api\.fastspring\.com/);
+  assert.match(connectivity, /\/accounts\?limit=1/);
+  assert.match(connectivity, /Basic /);
+  assert.match(connectivity, /User-Agent/);
+  assert.match(connectivity, /developer\.fastspring\.com\/reference\/api-overview/);
+  assert.match(connectivity, /errorCategory/);
+  assert.doesNotMatch(connectivity, /console\.error\([^\n]*Authorization/i);
+  assert.doesNotMatch(connectivity, /console\.(error|log|warn)\([^\n]*FASTSPRING_API_/);
+  assert.match(route, /verifyCronAuthorization/);
+  assert.match(route, /probeFastSpringApiConnectivity/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.doesNotMatch(route, /FASTSPRING_API_PASSWORD/);
+  assert.doesNotMatch(route, /Authorization.*Basic/);
 });

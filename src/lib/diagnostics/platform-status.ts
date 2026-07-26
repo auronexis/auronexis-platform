@@ -1,6 +1,10 @@
 import "server-only";
 
-import { checkDatabaseHealth, checkFastSpringWebhookHealth } from "@/lib/diagnostics/platform-health";
+import {
+  checkDatabaseHealth,
+  checkFastSpringApiConfigHealth,
+  checkFastSpringWebhookHealth,
+} from "@/lib/diagnostics/platform-health";
 import {
   buildHealthProbeOk,
   evaluateServiceStatus,
@@ -42,6 +46,7 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
     getQueueDiagnosticsSnapshot(),
   ]);
   const fastspringWebhook = checkFastSpringWebhookHealth();
+  const fastspringApi = checkFastSpringApiConfigHealth();
 
   const environment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
   const nodeEnv = process.env.NODE_ENV ?? "development";
@@ -99,6 +104,12 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
           ? "degraded"
           : "degraded",
       detail: fastspringWebhook.message,
+    },
+    {
+      key: "fastspring_api",
+      label: "FastSpring API",
+      status: fastspringApi.ok ? "healthy" : "degraded",
+      detail: fastspringApi.message,
     },
     {
       key: "cron",
