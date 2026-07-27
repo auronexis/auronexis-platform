@@ -103,12 +103,60 @@ test("metadata uses absolute canonical URLs and OG images", () => {
 test("pricing structured data matches canonical billing plan prices", () => {
   const schema = readSource("src/lib/company/company-schema.ts");
   const plans = readSource("src/lib/billing/plans.ts");
+  const catalog = readSource("src/lib/billing/catalog.ts");
+
+  // JSON-LD offers are built from public self-serve keys via getPlanByKey (deterministic USD fallback).
   assert.match(schema, /pricingPageJsonLd/);
+  assert.match(schema, /function buildPlanOffers/);
   assert.match(schema, /PUBLIC_SELF_SERVE_PLAN_KEYS/);
   assert.match(schema, /getPlanByKey/);
-  assert.match(plans, /priceMonthly: 149/);
-  assert.match(plans, /priceMonthly: 499/);
-  assert.match(plans, /priceMonthly: 1499/);
+  assert.match(
+    plans,
+    /PUBLIC_SELF_SERVE_PLAN_KEYS = \["professional", "business", "enterprise"\]/,
+  );
+
+  // Canonical FastSpring public base USD fallbacks — structured data must stay aligned.
+  const publicUsdFallbacks = {
+    professional: 179,
+    business: 599,
+    enterprise: 1799,
+  };
+
+  for (const [planKey, usd] of Object.entries(publicUsdFallbacks)) {
+    assert.match(
+      catalog,
+      new RegExp(
+        `productPath: "${planKey}"[\\s\\S]*?visibility: "public"[\\s\\S]*?fallbackMonthlyUsd: ${usd}`,
+      ),
+      `catalog missing public ${planKey}=${usd}`,
+    );
+    assert.match(
+      plans,
+      new RegExp(`key: "${planKey}"[\\s\\S]*?priceMonthly: ${usd}[\\s\\S]*?currency: "USD"`),
+      `plans.ts missing ${planKey} USD fallback ${usd} used by JSON-LD`,
+    );
+  }
+
+  // No FastSpring Starter product; starter PlanKey remains internal entitlement fallback only.
+  assert.doesNotMatch(catalog, /productPath:\s*"starter"/);
+  assert.doesNotMatch(catalog, /"starter"/);
+  assert.match(plans, /key: "starter"/);
+  assert.match(plans, /Internal fallback tier/);
+  assert.doesNotMatch(
+    plans,
+    /PUBLIC_SELF_SERVE_PLAN_KEYS = \[[^\]]*starter/,
+  );
+
+  // Private FastSpring programs must not enter public offer generation.
+  assert.match(catalog, /productPath: "founding-member"[\s\S]*?visibility: "private"/);
+  assert.match(catalog, /productPath: "pilot-client"[\s\S]*?visibility: "private"/);
+  assert.doesNotMatch(schema, /founding-member|pilot-client|Founding Partner|Pilot Client/);
+
+  // Stale pre-migration EUR literals must not drive structured data.
+  assert.doesNotMatch(plans, /currency: "EUR"/);
+  assert.doesNotMatch(plans, /priceMonthly: 499\b/);
+  assert.doesNotMatch(plans, /priceMonthly: 1499\b/);
+
   assert.doesNotMatch(schema, /aggregateRating/);
   assert.doesNotMatch(schema, /reviewCount/);
 });
