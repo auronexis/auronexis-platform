@@ -90,11 +90,12 @@ test("FASTSPRING_STOREFRONT documented in .env.example", () => {
   assert.doesNotMatch(envExample, /NEXT_PUBLIC_FASTSPRING/);
 });
 
-test("CSP still allows sbl.onfastspring.com", () => {
+test("CSP allows FastSpring Store Builder script and stylesheet origins", () => {
   const csp = readSource("src/lib/security/csp.ts");
   const vercel = readSource("vercel.json");
-  assert.match(csp, /sbl\.onfastspring\.com/);
-  assert.match(csp, /\*\.onfastspring\.com/);
+  assert.match(csp, /script-src[\s\S]*sbl\.onfastspring\.com/);
+  assert.match(csp, /style-src[\s\S]*sbl\.onfastspring\.com/);
+  assert.match(vercel, /style-src 'self' 'unsafe-inline' https:\/\/sbl\.onfastspring\.com/);
   assert.match(vercel, /sbl\.onfastspring\.com/);
 });
 

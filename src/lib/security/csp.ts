@@ -6,6 +6,11 @@
  * - script-src / connect-src / frame-src: cdn.paddle.com, sandbox-cdn.paddle.com
  * - connect-src: api.paddle.com, sandbox-api.paddle.com
  * - frame-src: buy.paddle.com, sandbox-buy.paddle.com
+ *
+ * FastSpring Store Builder (popup checkout):
+ * - script-src: https://sbl.onfastspring.com (fastspring-builder.min.js)
+ * - style-src: https://sbl.onfastspring.com (fastspring.css)
+ * - connect-src / frame-src: storefront hosts under *.onfastspring.com
  */
 export function buildContentSecurityPolicy(): string {
   return [
@@ -30,7 +35,10 @@ export function buildContentSecurityPolicy(): string {
       "https://sandbox-cdn.paddle.com",
       "https://sbl.onfastspring.com",
     ].join(" "),
-    "style-src 'self' 'unsafe-inline'",
+    [
+      "style-src 'self' 'unsafe-inline'",
+      "https://sbl.onfastspring.com",
+    ].join(" "),
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     [
