@@ -1,11 +1,11 @@
 /**
  * Active-billing helpers for the configured checkout provider.
- * Historical Stripe rows may remain in the database but must not drive
- * checkout, portal, entitlements, or preferred-row selection.
+ * Historical Stripe and Paddle rows may remain in the database but must
+ * never drive checkout, portal, entitlements, or preferred-row selection.
  *
- * After FastSpring cutover:
- * - NEW checkouts use FastSpring
- * - usable legacy Paddle rows continue to grant access
+ * FastSpring is the sole active billing provider. Paddle detection helpers
+ * below exist only for historical labeling/diagnostics — they must never be
+ * used to grant portal access, checkout eligibility, or entitlements.
  */
 
 import type { BillingProvider } from "@/lib/billing/provider-types";
@@ -24,7 +24,7 @@ const ABANDONED_CHECKOUT_STATUSES = new Set([
   "processing",
 ]);
 
-/** True when the row is explicitly Paddle-backed (not a copied Stripe ID). */
+/** True when the row is explicitly Paddle-backed (historical detection only). */
 export function isPaddleBackedSubscription(
   row: OrganizationSubscription | null | undefined,
 ): boolean {
@@ -37,7 +37,7 @@ export function isFastSpringBackedSubscription(
   return row?.billing_provider === "fastspring";
 }
 
-/** True when a verified Paddle customer id is present on a Paddle-backed row. */
+/** True when a verified Paddle customer id is present (historical detection only). */
 export function hasVerifiedPaddleCustomer(
   row: OrganizationSubscription | null | undefined,
 ): boolean {
@@ -48,7 +48,7 @@ export function hasVerifiedPaddleCustomer(
   return customerId.startsWith("ctm_");
 }
 
-/** True when a verified Paddle subscription id is present on a Paddle-backed row. */
+/** True when a verified Paddle subscription id is present (historical detection only). */
 export function hasVerifiedPaddleSubscription(
   row: OrganizationSubscription | null | undefined,
 ): boolean {
@@ -128,11 +128,9 @@ export function isActiveBillingSubscriptionRow(
   }
 
   if (activeProvider === "fastspring") {
-    // FastSpring cutover: accept FastSpring rows and usable/legacy Paddle rows.
-    if (isFastSpringBackedSubscription(row) || isPaddleBackedSubscription(row)) {
-      return true;
-    }
-    return false;
+    // FastSpring is the sole active provider — Paddle rows are historical only
+    // and never drive active billing, checkout, portal, or entitlements.
+    return isFastSpringBackedSubscription(row);
   }
 
   if (activeProvider === "paddle") {
@@ -176,17 +174,6 @@ export function resolveActiveBillingStatusFlags(
   }
 
   if (activeProvider === "fastspring") {
-    if (isPaddleBackedSubscription(row)) {
-      const status = row.provider_status ?? row.status;
-      return {
-        rawStatus: status,
-        isUsable: isSubscriptionUsable(status),
-        hasPaymentProblem: isPaymentProblem(status),
-        isPaymentPending: Boolean(row.sync_pending) || isPaymentPending(status),
-        hasSubscription: hasVerifiedPaddleSubscription(row),
-      };
-    }
-
     const status = row.provider_status ?? row.status;
     return {
       rawStatus: status,
@@ -217,11 +204,11 @@ export function resolveActiveBillingStatusFlags(
   };
 }
 
-/** Whether verified provider state alone justifies blocking new checkout. */
-export function paddleSubscriptionBlocksCheckout(
+/** Whether verified active-provider state alone justifies blocking new checkout. */
+export function providerSubscriptionBlocksCheckout(
   row: OrganizationSubscription | null | undefined,
 ): boolean {
-  if (!isPaddleBackedSubscription(row) && !isFastSpringBackedSubscription(row)) {
+  if (!isFastSpringBackedSubscription(row)) {
     return false;
   }
 
@@ -230,9 +217,7 @@ export function paddleSubscriptionBlocksCheckout(
   }
 
   const status = row?.provider_status ?? row?.status;
-  const hasSub =
-    (isPaddleBackedSubscription(row) && hasVerifiedPaddleSubscription(row)) ||
-    (isFastSpringBackedSubscription(row) && hasVerifiedFastSpringSubscription(row));
+  const hasSub = hasVerifiedFastSpringSubscription(row);
 
   if (isPaymentProblem(status) && hasSub) {
     return true;
@@ -245,20 +230,5 @@ export function paddleSubscriptionBlocksCheckout(
   return false;
 }
 
-/** Portal eligibility for legacy Paddle customers only. */
-export function canOpenPaddleBillingPortal(input: {
-  canManage: boolean;
-  portalAvailable: boolean;
-  subscription: OrganizationSubscription | null | undefined;
-}): boolean {
-  if (!input.canManage || !input.portalAvailable) {
-    return false;
-  }
-  return hasVerifiedPaddleCustomer(input.subscription);
-}
-
-export const PADDLE_PORTAL_UNAVAILABLE_MESSAGE =
-  "A billing portal will be available after your first completed subscription.";
-
 export const FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE =
-  "Subscription changes for FastSpring billing are managed through FastSpring purchase emails or by contacting support. Legacy Paddle customers can still open the Paddle portal when available.";
+  "A billing portal is not available. Manage changes via your FastSpring purchase email or contact support.";

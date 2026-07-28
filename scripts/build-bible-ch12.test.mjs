@@ -17,34 +17,35 @@ test("Build Bible V2 Chapter 12 billing doc and rule exist", () => {
   assert.match(rule, /resolveOrganizationEntitlements/);
 });
 
-test("FastSpring is the active checkout provider; legacy Paddle remains entitled", () => {
+test("FastSpring is the sole active checkout provider; legacy Paddle remains entitled", () => {
   const provider = readSource("src/lib/billing/provider.ts");
   const selection = readSource("src/lib/billing/subscription-selection.ts");
   const actions = readSource("src/lib/billing/actions.ts");
   assert.match(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "stripe"/);
+  assert.doesNotMatch(provider, /return "paddle"/);
   assert.match(provider, /Usable legacy Paddle subscription/);
-  assert.match(provider, /isPaddleCheckoutEnabled/);
   assert.match(selection, /legacy Paddle/i);
-  assert.match(actions, /activeProvider === "fastspring"/);
-  assert.match(actions, /Legacy path — only if active provider is still paddle/);
+  assert.match(actions, /activeProvider|createFastSpringCheckoutPayloadForPlan/);
   assert.ok(!pathExists("src/lib/stripe"));
-  assert.ok(pathExists("src/app/api/paddle/webhook/route.ts"));
+  assert.ok(!pathExists("src/lib/paddle"));
+  assert.ok(!pathExists("src/app/api/paddle/webhook/route.ts"));
+  assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
 });
 
-test("webhook route verifies signature and emits commercial events", () => {
-  const route = readSource("src/app/api/paddle/webhook/route.ts");
-  const webhooks = readSource("src/lib/paddle/webhooks.ts");
-  assert.match(route, /unmarshal/);
-  assert.match(route, /ensurePaddleIdempotency/);
-  assert.match(route, /emitPaddleWebhookCommercialEvent/);
-  assert.match(route, /invalidateCachesAfterWebhook/);
+test("fastspring webhook route verifies signature and emits commercial events", () => {
+  const route = readSource("src/app/api/fastspring/webhook/route.ts");
+  const webhooks = readSource("src/lib/fastspring/webhooks.ts");
+  assert.match(route, /verifyFastSpringSignature/);
+  assert.match(route, /ensureFastSpringIdempotency/);
   assert.match(webhooks, /trackBillingLifecycleEvent/);
-  assert.match(webhooks, /PADDLE_WEBHOOK_EVENT_TYPES/);
+  const events = readSource("src/lib/fastspring/events.ts");
+  assert.match(events, /order\.completed/);
+  assert.match(events, /subscription\.activated/);
 });
 
 test("idempotency recovers stale processing and checks payload hash", () => {
-  const idempotency = readSource("src/lib/paddle/idempotency.ts");
+  const idempotency = readSource("src/lib/fastspring/idempotency.ts");
   assert.match(idempotency, /PROCESSING_STALE_MS/);
   assert.match(idempotency, /payload hash mismatch/);
   assert.match(idempotency, /retrying stale processing webhook/);
@@ -62,11 +63,11 @@ test("customer portal emits billing_portal_opened commercial event", () => {
   assert.match(actions, /trackBillingLifecycleEvent/);
 });
 
-test("commercial event catalog and ops doc are paddle-sole", () => {
+test("commercial event catalog and ops doc are FastSpring-sole", () => {
   const commercial = readSource("src/lib/billing/commercial-events.ts");
   const docs = readSource("docs/paddle-billing.md");
-  assert.match(commercial, /PADDLE_WEBHOOK_EVENT_TYPES/);
   assert.match(commercial, /COMMERCIAL_EVENT_NAMES/);
+  assert.doesNotMatch(commercial, /PADDLE_WEBHOOK_EVENT_TYPES/);
   assert.match(docs, /sole active billing provider/i);
   assert.doesNotMatch(docs, /Set `BILLING_PROVIDER=stripe`/);
 });

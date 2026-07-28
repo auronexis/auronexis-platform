@@ -105,9 +105,9 @@ Every modification must be:
 
 ## Billing
 
-- **Paddle is the only active billing provider.**
-- Do not reintroduce Stripe runtime (SDK, `/api/stripe`, checkout/portal branching on Stripe).
-- Historical Stripe data remains archive-only.
+- **FastSpring is the sole active billing provider.**
+- Do not reintroduce Stripe or Paddle runtime (SDKs, `/api/stripe`, `/api/paddle`, checkout/portal branching on Stripe or Paddle).
+- Historical Stripe and Paddle data remains archive-only.
 - Platform catalog prices use the plan's billed currency (currently EUR); workspace CRM currency (`organizations.currency`) is a separate domain.
 
 ### Money formatting

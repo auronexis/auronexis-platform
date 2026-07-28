@@ -4,7 +4,7 @@ import { isAIProviderConfigured } from "@/lib/ai/provider-labels";
 import { resolveAIProvider } from "@/lib/ai/server/resolve-provider";
 import { APP_VERSION } from "@/lib/company/contact";
 import { checkDatabaseHealth } from "@/lib/diagnostics/platform-health";
-import { isPaddleConfigured } from "@/lib/paddle/env";
+import { isFastSpringApiConfigured, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 
 export type PlatformHealthStatus = "healthy" | "degraded" | "unavailable";
@@ -17,11 +17,16 @@ export type PlatformHealthSnapshot = {
   configuration: {
     database: boolean;
     supabase: boolean;
-    /** Paddle billing configured (sole active provider). */
+    /** FastSpring billing configured (sole active provider). */
+    fastspring: boolean;
+    /**
+     * @deprecated Alias of `fastspring` for older monitors that read `paddle`.
+     * Prefer `fastspring`.
+     */
     paddle: boolean;
     /**
-     * @deprecated Alias of `paddle` for older monitors — not Stripe.
-     * Prefer `paddle`.
+     * @deprecated Alias of `fastspring` for older monitors — not Stripe.
+     * Prefer `fastspring`.
      */
     stripe: boolean;
     ai: boolean;
@@ -42,15 +47,16 @@ export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapsho
     supabaseConfigured = false;
   }
 
-  const paddleConfigured = isPaddleConfigured();
+  const fastspringConfigured = isFastSpringApiConfigured() && isFastSpringWebhookConfigured();
 
   const aiConfigured = isAIProviderConfigured(provider.id);
 
   const configuration = {
     database: database.level !== "unavailable",
     supabase: supabaseConfigured,
-    paddle: paddleConfigured,
-    stripe: paddleConfigured,
+    fastspring: fastspringConfigured,
+    paddle: fastspringConfigured,
+    stripe: fastspringConfigured,
     ai: aiConfigured,
   };
 
@@ -58,7 +64,7 @@ export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapsho
     database.level === "unavailable"
       ? "unavailable"
       : configuration.supabase && configuration.database
-        ? configuration.paddle && configuration.ai
+        ? configuration.fastspring && configuration.ai
           ? "healthy"
           : "degraded"
         : "degraded";

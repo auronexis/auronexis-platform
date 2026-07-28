@@ -1,4 +1,4 @@
-> **ARCHIVED (Build Bible V2 Chapter 18).** Historical Phase 5 DNS notes. Authoritative production DNS and webhook guidance: [enterprise-deployment.md](./enterprise-deployment.md). Live billing webhook is `/api/paddle/webhook` — ignore Stripe webhook URLs below.
+> **ARCHIVED (Build Bible V2 Chapter 18).** Historical Phase 5 DNS notes. Authoritative production DNS and webhook guidance: [enterprise-deployment.md](./enterprise-deployment.md). Live billing webhook is `/api/fastspring/webhook` — ignore the Stripe and legacy Paddle webhook URLs below.
 
 # DNS Report — Phase 5 Sprint 2
 

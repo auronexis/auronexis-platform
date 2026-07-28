@@ -60,15 +60,15 @@ test("src still has no TODO FIXME HACK markers", () => {
   assert.deepEqual(hits, [], `Forbidden markers:\n${hits.join("\n")}`);
 });
 
-test("billing docs no longer describe active Stripe checkout", () => {
+test("billing docs no longer describe active Stripe or Paddle checkout", () => {
   const billing = readSource("docs/billing.md");
-  assert.match(billing, /Paddle-only|Paddle/);
+  assert.match(billing, /FastSpring-only|FastSpring/);
   assert.doesNotMatch(billing, /Stripe Checkout \/ Customer Portal \/ Webhooks \(existing integration\)/);
   const website = readSource("docs/website.md");
-  assert.match(website, /Paddle Checkout/);
+  assert.match(website, /FastSpring Checkout/);
   assert.doesNotMatch(website, /Link to Stripe Checkout/);
   const domain = readSource("docs/domain-setup.md");
-  assert.match(domain, /\/api\/paddle\/webhook/);
+  assert.match(domain, /\/api\/fastspring\/webhook/);
   assert.doesNotMatch(domain, /\/api\/stripe\/webhook/);
 });
 

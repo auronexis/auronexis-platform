@@ -11,6 +11,8 @@ import type { InternalPlan } from "@/lib/billing/provider-types";
 import { buildFastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
 import {
   getFastSpringStorefront,
+  getLiveFastSpringStorefront,
+  isFastSpringLiveCheckoutConfigured,
   isFastSpringStorefrontConfigured,
   isFastSpringTestStorefront,
 } from "@/lib/fastspring/storefront";
@@ -25,7 +27,15 @@ export type FastSpringCheckoutPayload = FastSpringTestCheckoutPayload & {
   isTestStorefront: boolean;
 };
 
+/**
+ * Public self-serve checkout readiness. In production this requires a live
+ * (non-test) `FASTSPRING_STOREFRONT` — a test storefront never counts as
+ * "configured" for the customer-facing checkout flow.
+ */
 export function isFastSpringCheckoutConfigured(): boolean {
+  if (process.env.NODE_ENV === "production") {
+    return isFastSpringLiveCheckoutConfigured();
+  }
   return isFastSpringStorefrontConfigured();
 }
 
@@ -33,12 +43,19 @@ export function isFastSpringCheckoutConfigured(): boolean {
  * Build a server-validated FastSpring checkout payload for Store Builder.
  * Public self-serve allows professional/business/enterprise only.
  * Private paths require allowPrivateProducts.
+ *
+ * Storefront safety: in production this always resolves the exact live
+ * `FASTSPRING_STOREFRONT` and fails closed — it never falls back to a
+ * `FASTSPRING_STORE_ID`-derived test storefront. `allowTestStorefront` is
+ * reserved for internal test-checkout callers only and must never be set
+ * from a public/customer-facing code path.
  */
 export function createFastSpringCheckoutPayload(input: {
   organizationId: string;
   userId: string;
   productPath: string;
   allowPrivateProducts?: boolean;
+  allowTestStorefront?: boolean;
 }): FastSpringCheckoutPayload {
   const path = normalizeFastSpringProductPath(input.productPath);
   if (!path) {
@@ -54,7 +71,10 @@ export function createFastSpringCheckoutPayload(input: {
     throw new Error("Unknown FastSpring product path.");
   }
 
-  const storefront = getFastSpringStorefront();
+  const storefront =
+    process.env.NODE_ENV === "production" && !input.allowTestStorefront
+      ? getLiveFastSpringStorefront()
+      : getFastSpringStorefront();
   const tags = buildFastSpringCheckoutTags({
     organizationId: input.organizationId,
     userId: input.userId,

@@ -1,6 +1,7 @@
 /**
  * Neutral billing-history display type for the invoice/transaction history UI.
- * Provider-agnostic on purpose — currently populated from Paddle transactions only.
+ * Provider-agnostic on purpose — populated from billing_provider_transactions,
+ * which stores FastSpring (active) and legacy Paddle (historical) rows.
  */
 
 /** Normalized transaction lifecycle status as persisted on billing_provider_transactions. */
@@ -25,7 +26,9 @@ export type BillingHistoryItem = {
   /** Coarse paid/unpaid flag for filtering — derived from `status`, not stored separately. */
   paymentStatus: "paid" | "unpaid";
   invoiceNumber: string | null;
-  /** True when we can attempt paddle.transactions.getInvoicePDF for this row. */
+  /** Stored invoice/receipt URL persisted from the provider webhook, if any. */
+  invoicePdfUrl: string | null;
+  /** True when a stored invoice URL exists for this paid transaction. */
   hasPdfAvailable: boolean;
 };
 
@@ -65,7 +68,10 @@ export function derivePaymentStatus(status: BillingHistoryStatus): "paid" | "unp
   return status === "paid" ? "paid" : "unpaid";
 }
 
-/** Only completed/paid transactions have a Paddle-generated invoice to fetch. */
-export function hasPdfAvailableForStatus(status: BillingHistoryStatus): boolean {
-  return status === "paid";
+/** Only completed/paid transactions with a persisted invoice URL can be opened. */
+export function hasPdfAvailableForStatus(
+  status: BillingHistoryStatus,
+  invoiceUrl?: string | null,
+): boolean {
+  return status === "paid" && Boolean(invoiceUrl?.trim());
 }

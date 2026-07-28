@@ -48,11 +48,8 @@ export {
   shortenStripeId,
 } from "./status";
 export type { BillingStatusTone } from "./status";
-export {
-  COMMERCIAL_EVENT_NAMES,
-  PADDLE_WEBHOOK_EVENT_TYPES,
-} from "./commercial-events";
-export type { CommercialEventName, PaddleWebhookEventType } from "./commercial-events";
+export { COMMERCIAL_EVENT_NAMES } from "./commercial-events";
+export type { CommercialEventName } from "./commercial-events";
 export { getUsageDashboardData, getCurrentUsageSummary } from "./usage";
 export { getBillingDiagnosticsSnapshot } from "./diagnostics";
 export { getBillingProductionDiagnostics } from "./production-diagnostics";

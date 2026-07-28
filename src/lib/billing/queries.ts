@@ -15,8 +15,8 @@ import { getDefaultPlanKey } from "@/lib/plans/features";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { resolveActiveBillingStatusFlags } from "@/lib/billing/active-billing";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
-import { listOrganizationBillingTransactions } from "@/lib/paddle/transactions";
-import { getPaddleBillingDetails } from "@/lib/paddle/subscription-details";
+import { listOrganizationBillingTransactions } from "@/lib/billing/transactions";
+import { getBillingProviderDetails } from "@/lib/billing/provider-details";
 
 export { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 
@@ -47,7 +47,7 @@ export async function getOrganizationSubscription(
   );
 }
 
-/** Billing overview for settings UI. Paddle is the sole active billing provider. */
+/** Billing overview for settings UI. FastSpring is the sole active billing provider. */
 export async function getBillingOverview(session: SessionContext): Promise<BillingOverview> {
   const activeProvider = getActiveBillingProvider();
   const subscription = await getOrganizationSubscription(session);
@@ -99,7 +99,7 @@ export async function getBillingDashboardData(
     getBillingOverview(session),
     getCurrentUsageSummary(session),
     listOrganizationBillingTransactions(session).catch((error) => {
-      console.warn("[billing] Failed to load Paddle billing history", {
+      console.warn("[billing] Failed to load billing history", {
         organizationId: session.organization.id,
         message: error instanceof Error ? error.message : String(error),
       });
@@ -108,7 +108,7 @@ export async function getBillingDashboardData(
   ]);
 
   const currentPlanKey = overview.currentPlanKey ?? getDefaultPlanKey();
-  const [prorationPreviews, paddleDetails] = await Promise.all([
+  const [prorationPreviews, providerDetails] = await Promise.all([
     Promise.resolve(
       listProrationPreviews({
         currentPlanKey,
@@ -116,8 +116,8 @@ export async function getBillingDashboardData(
         periodEnd: overview.subscription?.current_period_end ?? null,
       }),
     ),
-    getPaddleBillingDetails(session).catch((error) => {
-      console.warn("[billing] Failed to load Paddle billing details", {
+    getBillingProviderDetails(session).catch((error) => {
+      console.warn("[billing] Failed to load billing provider details", {
         organizationId: session.organization.id,
         message: error instanceof Error ? error.message : String(error),
       });
@@ -141,7 +141,7 @@ export async function getBillingDashboardData(
     limits: usage.metrics.filter((metric) => metric.limit !== null),
     invoices: [],
     billingHistory,
-    paddleDetails,
+    providerDetails,
     // Promotions UI is Coming Soon — do not serialize active discount codes into the Billing page.
     discounts: [],
     prorationPreviews,

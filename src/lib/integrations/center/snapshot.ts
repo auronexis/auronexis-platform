@@ -8,6 +8,7 @@ import { getBillingUiStatus } from "@/lib/billing/ui-status";
 import { getConnectorConnectionByConnectorId } from "@/lib/connectors/queries";
 import { checkSlackHealth } from "@/lib/connectors/slack/health";
 import { getEmailProviderId, isEmailConfigured } from "@/lib/env/email";
+import { getFastSpringStorefront, isFastSpringTestStorefront } from "@/lib/fastspring/storefront";
 import type {
   IntegrationCenterSnapshot,
   IntegrationConnectionLabel,
@@ -25,15 +26,13 @@ function connectionLabel(connected: boolean): IntegrationConnectionLabel {
   return connected ? "Connected" : "Not Connected";
 }
 
-function resolvePaddleMode(): string | null {
-  const environment = process.env.PADDLE_ENVIRONMENT?.trim().toLowerCase();
-  if (environment === "production") {
-    return "Live";
+function resolveFastSpringMode(): string | null {
+  try {
+    const storefront = getFastSpringStorefront();
+    return isFastSpringTestStorefront(storefront) ? "Test" : "Live";
+  } catch {
+    return null;
   }
-  if (environment === "sandbox") {
-    return "Test";
-  }
-  return null;
 }
 
 async function getLastReportEmail(organizationId: string): Promise<string | null> {
@@ -156,8 +155,8 @@ export async function getIntegrationCenterSnapshot(
     countWebhookFailures(session.organization.id),
   ]);
 
-  const paddleStatus = getBillingUiStatus();
-  const paddleConnected = paddleStatus.portalAvailable || paddleStatus.checkoutAvailable;
+  const billingStatus = getBillingUiStatus();
+  const fastspringConnected = billingStatus.checkoutAvailable;
 
   let slackStatus = NO_DATA;
   if (slackConnection) {
@@ -195,10 +194,10 @@ export async function getIntegrationCenterSnapshot(
       connectedChannels: null,
       status: slackStatus,
     },
-    paddle: {
-      connectionStatus: connectionLabel(paddleConnected),
-      mode: resolvePaddleMode(),
-      customerPortal: paddleStatus.portalAvailable ? "Available" : "Not available",
+    fastspring: {
+      connectionStatus: connectionLabel(fastspringConnected),
+      mode: resolveFastSpringMode(),
+      accountManagement: "Managed via FastSpring purchase emails / support",
       invoices: invoiceCount > 0 ? `${invoiceCount} synced` : NO_DATA,
     },
     webhooks: {

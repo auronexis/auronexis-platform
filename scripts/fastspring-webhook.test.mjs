@@ -192,11 +192,11 @@ test("org matching never uses email alone", () => {
   assert.match(matching, /lookup\.custom|customLookupId/);
 });
 
-test("usable paddle rows are never overwritten by fastspring sync", () => {
+test("fastspring sync always writes for the matched org — legacy Paddle rows are historical only", () => {
   const sync = readSource("src/lib/fastspring/sync.ts");
-  assert.match(sync, /usable_paddle_subscription_present/);
-  assert.match(sync, /refusing to overwrite usable Paddle/);
+  assert.match(sync, /FastSpring is the sole active billing provider/);
   assert.match(sync, /billing_provider: "fastspring"/);
+  assert.match(sync, /Never invent entitlements for unknown product paths/);
 });
 
 test("fastspring secrets stay server-only", () => {
@@ -228,8 +228,8 @@ test("active billing provider is fastspring after cutover", () => {
   assert.match(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "paddle"/);
   assert.doesNotMatch(provider, /return "stripe"/);
-  assert.match(provider, /Usable legacy Paddle subscription/);
-  assert.match(provider, /isPaddleCheckoutEnabled/);
+  assert.match(provider, /FastSpring is the sole active provider/);
+  assert.match(provider, /isFastSpringActiveBillingProvider/);
 });
 
 test("fastspring webhook route file exists at expected path", () => {

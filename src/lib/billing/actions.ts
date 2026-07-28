@@ -11,16 +11,11 @@ import {
   isExpectedPortalUnavailableError,
   sanitizeBillingCustomerError,
 } from "@/lib/billing/errors";
-import {
-  FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE,
-  PADDLE_PORTAL_UNAVAILABLE_MESSAGE,
-} from "@/lib/billing/active-billing";
+import { FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
 import { BILLING_PROMO_MESSAGES, formatPromoValidationSuccess } from "@/lib/billing/messages";
 import { validateDiscountCode } from "@/lib/billing/discounts";
 import { calculateProrationPreview } from "@/lib/billing/proration";
 import { getBillingOverview } from "@/lib/billing/queries";
-import { getActiveBillingProvider } from "@/lib/billing/provider";
-import type { PaddleCheckoutCustomData } from "@/lib/billing/provider-types";
 import { isInternalPlan } from "@/lib/billing/provider-types";
 import type { PlanKey } from "@/lib/billing/plans";
 import type { FastSpringProductPath } from "@/lib/billing/catalog";
@@ -30,7 +25,6 @@ import {
   isFastSpringCheckoutConfigured,
 } from "@/lib/fastspring/checkout";
 import type { FastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
-import { createPaddleCheckoutPayload } from "@/lib/paddle/checkout";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export type BillingActionState = {
@@ -39,15 +33,6 @@ export type BillingActionState = {
 };
 
 export type CheckoutActionResult = BillingActionState & {
-  /** @deprecated New checkouts use fastspringCheckout after cutover. */
-  paddleCheckout?: {
-    priceId: string;
-    clientToken: string;
-    environment: "sandbox" | "production";
-    customData: PaddleCheckoutCustomData;
-    pendingSyncMessage: string;
-    customerEmail?: string;
-  };
   fastspringCheckout?: {
     storefront: string;
     sblScriptSrc: string;
@@ -84,62 +69,34 @@ export async function createCheckoutSessionAction(
     return { error: "Invalid subscription plan selected." };
   }
 
-  const activeProvider = getActiveBillingProvider();
-
   try {
     await assertCheckoutAllowed(session, parsed.data);
 
-    if (activeProvider === "fastspring") {
-      if (!isFastSpringCheckoutConfigured()) {
-        return {
-          error:
-            "FastSpring checkout is not configured yet. Set FASTSPRING_STOREFRONT to the exact data-storefront value from the FastSpring dashboard.",
-        };
-      }
-
-      const checkout = createFastSpringCheckoutPayloadForPlan({
-        organizationId: session.organization.id,
-        userId: session.user.id,
-        planKey: parsed.data,
-      });
-
-      const pendingSyncMessage =
-        "Checkout opened. Access updates after FastSpring confirms payment — this may take a moment.";
-
+    if (!isFastSpringCheckoutConfigured()) {
       return {
-        success: pendingSyncMessage,
-        fastspringCheckout: {
-          storefront: checkout.storefront,
-          sblScriptSrc: checkout.sblScriptSrc,
-          productPath: checkout.productPath,
-          tags: checkout.tags,
-          checkoutMode: checkout.mode,
-          pendingSyncMessage,
-        },
+        error:
+          "FastSpring checkout is not configured yet. Set FASTSPRING_STOREFRONT to the exact data-storefront value from the FastSpring dashboard.",
       };
     }
 
-    // Legacy path — only if active provider is still paddle.
-    if (parsed.data === "enterprise") {
-      return { error: "Contact sales for Enterprise plans." };
-    }
-
-    const paddleCheckout = await createPaddleCheckoutPayload({
+    const checkout = createFastSpringCheckoutPayloadForPlan({
       organizationId: session.organization.id,
       userId: session.user.id,
       planKey: parsed.data,
-      email: session.email,
     });
 
+    const pendingSyncMessage =
+      "Checkout opened. Access updates after FastSpring confirms payment — this may take a moment.";
+
     return {
-      success: paddleCheckout.pendingSyncMessage,
-      paddleCheckout: {
-        priceId: paddleCheckout.priceId,
-        clientToken: paddleCheckout.clientToken,
-        environment: paddleCheckout.environment,
-        customData: paddleCheckout.customData,
-        pendingSyncMessage: paddleCheckout.pendingSyncMessage,
-        customerEmail: session.email,
+      success: pendingSyncMessage,
+      fastspringCheckout: {
+        storefront: checkout.storefront,
+        sblScriptSrc: checkout.sblScriptSrc,
+        productPath: checkout.productPath,
+        tags: checkout.tags,
+        checkoutMode: checkout.mode,
+        pendingSyncMessage,
       },
     };
   } catch (error) {
@@ -171,14 +128,9 @@ export async function createPortalSessionAction(): Promise<BillingActionState> {
     });
   } catch (error) {
     if (isExpectedPortalUnavailableError(error)) {
-      // Expected before first completed Paddle purchase — informational only.
+      // Expected — FastSpring does not expose a hosted customer portal.
       return {
-        error: sanitizeBillingCustomerError(
-          error,
-          getActiveBillingProvider() === "fastspring"
-            ? FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE
-            : PADDLE_PORTAL_UNAVAILABLE_MESSAGE,
-        ),
+        error: sanitizeBillingCustomerError(error, FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE),
       };
     }
     console.error(

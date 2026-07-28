@@ -42,7 +42,7 @@ test("release decision is APPROVED WITH CONDITIONS with explicit conditions", ()
   assert.match(chapter, /APPROVED WITH CONDITIONS/);
   assert.match(report, /# APPROVED WITH CONDITIONS|# Final decision: APPROVED WITH CONDITIONS/);
   assert.match(report, /enterprise-release-checklist/);
-  assert.match(report, /PADDLE_ENVIRONMENT=production|Paddle live|live keys/i);
+  assert.match(report, /FASTSPRING_STOREFRONT|FastSpring live|live keys/i);
   assert.match(report, /rollback-plan/);
   assert.match(report, /does \*\*not\*\* itself perform commit|Do not commit|does \*\*not\*\* authorize commit/i);
 });
@@ -72,8 +72,8 @@ test("chapter 19 always-apply rule is installed", () => {
   assert.match(readSource(rule), /alwaysApply:\s*true/);
 });
 
-test("paddle legacy and fastspring webhook paths still required for release", () => {
-  assert.ok(pathExists("src/app/api/paddle/webhook/route.ts"));
+test("fastspring webhook path is required for release; paddle and stripe absent", () => {
+  assert.equal(pathExists("src/app/api/paddle/webhook/route.ts"), false);
   assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
   assert.equal(pathExists("src/app/api/stripe"), false);
   const provider = readSource("src/lib/billing/provider.ts");

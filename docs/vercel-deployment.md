@@ -145,7 +145,7 @@ After each deploy:
 
 1. Vercel â†’ Deployments â†’ select deployment â†’ **Building** tab
 2. Confirm: `Compiled successfully`, no TypeScript errors
-3. **Functions** tab: verify `/api/health`, `/api/cron/run`, `/api/paddle/webhook` (Stripe webhook path retired — see enterprise-deployment.md)
+3. **Functions** tab: verify `/api/health`, `/api/cron/run`, `/api/fastspring/webhook` (Stripe and legacy Paddle webhook paths retired — see enterprise-deployment.md)
 4. **Runtime Logs**: smoke test login + health endpoint
 
 Common failures:

@@ -5,9 +5,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 /**
- * @deprecated Stripe invoice mirror retired — Paddle is the sole active billing
- * provider. Use listOrganizationBillingTransactions from "@/lib/paddle/transactions"
- * for active billing history. Always returns an empty list.
+ * @deprecated Stripe invoice mirror retired — FastSpring is the sole active
+ * billing provider. Use listOrganizationBillingTransactions from
+ * "@/lib/billing/transactions" for active billing history. Always returns an
+ * empty list.
  */
 export async function listCustomerInvoices(
   _session: SessionContext,

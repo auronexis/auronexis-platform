@@ -22,7 +22,7 @@ export type CleanupRecommendation = {
   message: string;
   entityType: "subscription" | "invoice" | "checkout" | "organization";
   entityId?: string;
-  /** Provider id (Paddle or archived Stripe) for diagnostics display. */
+  /** Provider id (FastSpring or archived Stripe/Paddle) for diagnostics display. */
   providerId?: string;
   /** @deprecated Use providerId — kept for existing diagnostics consumers. */
   stripeId?: string;
@@ -50,13 +50,13 @@ export function collectCleanupRecommendations(input: {
         code: "open_unpaid_invoice",
         severity: input.checkoutBlock.blocked ? "warning" : "info",
         title: "Open unpaid invoice (archive)",
-        message: `Archived invoice ${invoice.stripeInvoiceId} is open with ${invoice.formattedAmount} due. Active billing uses Paddle transactions.`,
+        message: `Archived invoice ${invoice.stripeInvoiceId} is open with ${invoice.formattedAmount} due. Active billing uses FastSpring transactions.`,
         entityType: "invoice",
         entityId: invoice.id,
         providerId: invoice.stripeInvoiceId,
         stripeId: invoice.stripeInvoiceId,
         actionable: true,
-        suggestedAction: "Confirm status in Paddle customer portal; treat Stripe rows as archive-only.",
+        suggestedAction: "Confirm status in the FastSpring dashboard; treat Stripe rows as archive-only.",
       });
     }
   }
@@ -74,7 +74,7 @@ export function collectCleanupRecommendations(input: {
           providerId: invoice.stripeInvoiceId,
           stripeId: invoice.stripeInvoiceId,
           actionable: true,
-          suggestedAction: "Reconcile from Paddle; clear stale archive rows only after confirmation.",
+          suggestedAction: "Reconcile from FastSpring; clear stale archive rows only after confirmation.",
         });
       }
     }
@@ -99,7 +99,7 @@ export function collectCleanupRecommendations(input: {
         providerId: archiveInvoiceId,
         stripeId: archiveInvoiceId,
         actionable: true,
-        suggestedAction: "Deduplicate archive rows; live invoices come from Paddle transactions.",
+        suggestedAction: "Deduplicate archive rows; live invoices come from FastSpring transactions.",
       });
     }
   }
@@ -116,7 +116,7 @@ export function collectCleanupRecommendations(input: {
       message: `${openUnpaidCount} open unpaid archive invoices exist — likely stale test remnants.`,
       entityType: "checkout",
       actionable: true,
-      suggestedAction: "Clear confirmed void/uncollectible archive rows; use Paddle for live billing state.",
+      suggestedAction: "Clear confirmed void/uncollectible archive rows; use FastSpring for live billing state.",
     });
   }
 
@@ -131,7 +131,7 @@ export function collectCleanupRecommendations(input: {
         code: "inactive_row_without_provider_ids",
         severity: "info",
         title: "Inactive row without provider IDs",
-        message: "A subscription row has no Paddle provider_customer_id / provider_subscription_id.",
+        message: "A subscription row has no FastSpring provider_customer_id / provider_subscription_id.",
         entityType: "subscription",
         entityId: row.id,
         actionable: false,
@@ -145,10 +145,10 @@ export function collectCleanupRecommendations(input: {
       code: "multiple_subscription_rows",
       severity: "danger",
       title: "Multiple subscription rows",
-      message: `${input.allSubscriptions.length} organization_subscriptions rows exist for this workspace. Preferred Paddle-backed row is used for billing UI.`,
+      message: `${input.allSubscriptions.length} organization_subscriptions rows exist for this workspace. Preferred FastSpring-backed row is used for billing UI.`,
       entityType: "organization",
       actionable: true,
-      suggestedAction: "Reconcile from Paddle via webhook/sync. Do not delete rows without provider confirmation.",
+      suggestedAction: "Reconcile from FastSpring via webhook/sync. Do not delete rows without provider confirmation.",
     });
   }
 
@@ -169,7 +169,7 @@ export function collectCleanupRecommendations(input: {
       message: `${staleCheckoutEvents.length} recent billing audit events reference checkout or incomplete sessions.`,
       entityType: "checkout",
       actionable: true,
-      suggestedAction: "Confirm subscription state in Paddle customer portal and local sync_pending flags.",
+      suggestedAction: "Confirm subscription state in the FastSpring dashboard and local sync_pending flags.",
     });
   }
 
@@ -185,11 +185,11 @@ export function collectCleanupRecommendations(input: {
         severity: "info",
         title: "Stale subscription row",
         message:
-          "Preferred subscription row appears inactive/canceled with no active Paddle subscription id for 90+ days.",
+          "Preferred subscription row appears inactive/canceled with no active FastSpring subscription id for 90+ days.",
         entityType: "subscription",
         entityId: subscription.id,
         actionable: true,
-        suggestedAction: "Reconcile from Paddle if the customer still has active billing.",
+        suggestedAction: "Reconcile from FastSpring if the customer still has active billing.",
       });
     }
   }

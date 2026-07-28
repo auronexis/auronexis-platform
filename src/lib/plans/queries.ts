@@ -34,7 +34,7 @@ export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {
 /** Alias for effective plan resolution. */
 export const getEffectivePlan = getCurrentPlan;
 
-/** Full plan context for an organization — override > Stripe/Paddle > starter fallback. */
+/** Full plan context for an organization — override > FastSpring (or archived Stripe/Paddle) > starter fallback. */
 export const getOrganizationPlanContext = cache(async function getOrganizationPlanContext(
   organizationId: string,
 ): Promise<OrganizationPlanContext> {
@@ -63,9 +63,9 @@ export const getOrganizationPlanContext = cache(async function getOrganizationPl
       updated_at?: string;
     }>,
   );
-  const billingProvider = subscription?.billing_provider ?? "paddle";
+  const billingProvider = subscription?.billing_provider ?? "fastspring";
   const subscriptionPriceId =
-    billingProvider === "paddle"
+    billingProvider === "fastspring" || billingProvider === "paddle"
       ? (subscription?.provider_price_id ?? null)
       : (subscription?.stripe_price_id ?? subscription?.provider_price_id ?? null);
   const subscriptionStatus = subscription?.status ?? null;
@@ -86,7 +86,7 @@ export const getOrganizationPlanContext = cache(async function getOrganizationPl
     });
     const plan = mappedPlanKeyFromPriceId
       ? safeGetPlanByKey(mappedPlanKeyFromPriceId)
-      : billingProvider === "paddle"
+      : billingProvider === "fastspring" || billingProvider === "paddle"
         ? null
         : getPlanByPriceId(subscriptionPriceId);
 

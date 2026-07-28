@@ -15,5 +15,5 @@ Catalog: `docs/technical-debt.md`
 - Remove only zero-caller / zero-runtime-impact debt.
 - Preserve deprecated-but-live compatibility layers (Paddle aliases, archive stubs, health `stripe` field).
 - Do not mass-migrate `as never`, rename Stripe fields, or change billing/auth/RBAC/RLS behaviour.
-- Keep documentation synchronized with Paddle-only reality.
+- Keep documentation synchronized with FastSpring-only reality (Paddle is legacy/historical).
 - Do not commit, push, or deploy from Chapter 16 work.

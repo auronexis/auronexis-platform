@@ -19,7 +19,8 @@ function sortByUpdatedAtDesc(
 
 /**
  * Pick the best subscription row for active billing.
- * FastSpring cutover: prefer usable FastSpring, then usable legacy Paddle.
+ * FastSpring is the sole active provider — legacy Paddle rows are excluded
+ * from selection entirely and never grant checkout, portal, or entitlements.
  */
 export function selectPreferredSubscriptionRow(
   rows: OrganizationSubscription[],
@@ -43,30 +44,12 @@ export function selectPreferredSubscriptionRow(
       return usableFastSpring;
     }
 
-    const usablePaddle = candidates.find(
-      (row) =>
-        isPaddleBackedSubscription(row) &&
-        isSubscriptionUsable(row.provider_status ?? row.status),
-    );
-    if (usablePaddle) {
-      return usablePaddle;
-    }
-
     const withFastSpringSub = candidates.find((row) => hasVerifiedFastSpringSubscription(row));
     if (withFastSpringSub) {
       return withFastSpringSub;
     }
 
-    const withPaddleSub = candidates.find((row) => hasVerifiedPaddleSubscription(row));
-    if (withPaddleSub) {
-      return withPaddleSub;
-    }
-
-    return (
-      candidates.find((row) => isFastSpringBackedSubscription(row)) ??
-      candidates.find((row) => isPaddleBackedSubscription(row)) ??
-      null
-    );
+    return candidates.find((row) => isFastSpringBackedSubscription(row)) ?? null;
   }
 
   if (activeProvider === "paddle") {
@@ -115,21 +98,14 @@ export function selectPreferredSubscriptionSummaryRow<
 
   if (activeProvider === "fastspring") {
     const fastspringRows = rows.filter((row) => row.billing_provider === "fastspring");
-    const paddleRows = rows.filter((row) => row.billing_provider === "paddle");
 
     const usableFs = fastspringRows.find((row) => isSubscriptionUsable(row.status));
     if (usableFs) return usableFs;
-    const usablePaddle = paddleRows.find((row) => isSubscriptionUsable(row.status));
-    if (usablePaddle) return usablePaddle;
 
     const withFsSub = fastspringRows.find((row) => Boolean(row.provider_subscription_id?.trim()));
     if (withFsSub) return withFsSub;
-    const withPaddleSub = paddleRows.find((row) =>
-      Boolean(row.provider_subscription_id?.startsWith("sub_")),
-    );
-    if (withPaddleSub) return withPaddleSub;
 
-    return fastspringRows[0] ?? paddleRows[0] ?? null;
+    return fastspringRows[0] ?? null;
   }
 
   if (activeProvider === "paddle") {

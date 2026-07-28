@@ -114,7 +114,7 @@ export function OrganizationForm({
           <Select
             name="currency"
             label="Workspace currency"
-            description="Used across Sales, Profitability, forecasts, and financial widgets. Paddle subscription invoices keep their charged currency."
+            description="Used across Sales, Profitability, forecasts, and financial widgets. FastSpring subscription invoices keep their charged currency."
             defaultValue={organizationCurrency}
             options={CURRENCY_OPTIONS}
           />

@@ -45,6 +45,44 @@ export function isFastSpringTestStorefront(storefront: string): boolean {
   return storefront.includes(".test.onfastspring.com/");
 }
 
+/**
+ * Exact, non-test `FASTSPRING_STOREFRONT` only — no `FASTSPRING_STORE_ID`
+ * test-storefront fallback. Required for public/production self-serve
+ * checkout so a misconfigured environment can never silently charge through
+ * a FastSpring test storefront. Fails closed (throws) when unmet.
+ */
+export function getLiveFastSpringStorefront(): string {
+  const exact = process.env.FASTSPRING_STOREFRONT?.trim();
+  if (!exact) {
+    throw new Error(
+      "Missing FASTSPRING_STOREFRONT. Public checkout requires the exact live data-storefront value from the FastSpring dashboard.",
+    );
+  }
+
+  if (!isPlausibleStorefront(exact)) {
+    throw new Error("Invalid FASTSPRING_STOREFRONT.");
+  }
+
+  const normalized = stripProtocol(exact);
+  if (isFastSpringTestStorefront(normalized)) {
+    throw new Error(
+      "FASTSPRING_STOREFRONT is a test storefront (.test.onfastspring.com). Public checkout requires a live storefront.",
+    );
+  }
+
+  return normalized;
+}
+
+/** True when a live (non-test), exact `FASTSPRING_STOREFRONT` is configured. Fails closed. */
+export function isFastSpringLiveCheckoutConfigured(): boolean {
+  try {
+    getLiveFastSpringStorefront();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function stripProtocol(value: string): string {
   return value.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
 }

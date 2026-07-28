@@ -26,9 +26,9 @@ export const PUBLIC_ENDPOINT_REGISTRY: PublicEndpointProtection[] = [
     authenticated: false,
   },
   {
-    path: "/api/paddle/webhook",
+    path: "/api/fastspring/webhook",
     methods: ["POST"],
-    protection: "Paddle signature (PADDLE_WEBHOOK_SECRET) + idempotency table",
+    protection: "FastSpring HMAC signature (FASTSPRING_WEBHOOK_SECRET) + idempotency table",
     authenticated: false,
   },
   {

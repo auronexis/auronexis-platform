@@ -291,7 +291,7 @@ export const CONTACT_EMAILS = PRIMARY_CONTACT_EMAILS;
 export const STATUS_COMPONENTS_STATIC = [
   { name: "Platform", status: "operational" as const, detail: "Application and web services" },
   { name: "API", status: "operational" as const, detail: "REST API and public endpoints" },
-  { name: "Billing", status: "operational" as const, detail: "Paddle subscriptions and invoices" },
+  { name: "Billing", status: "operational" as const, detail: "FastSpring subscriptions and invoices" },
   { name: "AI", status: "operational" as const, detail: "AI generation and insights" },
   { name: "Connectors", status: "operational" as const, detail: "OAuth and sync infrastructure" },
   { name: "Automation", status: "operational" as const, detail: "Workflow engine and executions" },

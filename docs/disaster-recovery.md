@@ -8,9 +8,9 @@
 
 ## Summary
 
-Recovery focuses on restoring database state, replaying background work, and re-establishing integrations (**Paddle webhooks**, cron, email, AI). Idempotency and queue layers tolerate replay when procedures below are followed.
+Recovery focuses on restoring database state, replaying background work, and re-establishing integrations (**FastSpring webhooks**, cron, email, AI). Idempotency and queue layers tolerate replay when procedures below are followed.
 
-Stripe paths are **historical archive only** — do not re-enable Stripe webhooks for active billing.
+Stripe and Paddle paths are **historical archive only** — do not re-enable Stripe or Paddle webhooks for active billing.
 
 ---
 
@@ -18,7 +18,7 @@ Stripe paths are **historical archive only** — do not re-enable Stripe webhook
 
 | System | Data store | Recovery mechanism |
 |--------|------------|-------------------|
-| Paddle webhooks | Billing webhook idempotency + subscription rows | Paddle dashboard replay + signature verify |
+| FastSpring webhooks | Billing webhook idempotency + subscription rows | FastSpring dashboard replay + signature verify |
 | Cron jobs | `job_*` / execution history | Reschedule + authorized force-run |
 | Background queue | `queue_jobs`, `queue_dead_letters` | Re-enqueue from dead letters |
 | Application | Vercel deployments | Instant rollback to last good |
@@ -30,7 +30,7 @@ Stripe paths are **historical archive only** — do not re-enable Stripe webhook
 
 ### Tier 1 — Partial degradation
 
-Examples: Cron misconfigured, queue stalled, transient Paddle API errors, AI provider outage.
+Examples: Cron misconfigured, queue stalled, transient FastSpring API errors, AI provider outage.
 
 1. Follow [operations-runbook.md](./operations-runbook.md).
 2. Use kill-switches (`AI_PROVIDER=disabled`) when needed.
@@ -47,8 +47,8 @@ Examples: Cron misconfigured, queue stalled, transient Paddle API errors, AI pro
 
 1. Provision deployment from known-good git tag.
 2. Restore Supabase from backup.
-3. Rotate secrets: `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `INTEGRATION_SECRET_KEY`, email keys.
-4. Re-register Paddle webhook with new signing secret.
+3. Rotate secrets: `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `FASTSPRING_API_USERNAME`, `FASTSPRING_API_PASSWORD`, `FASTSPRING_WEBHOOK_SECRET`, `INTEGRATION_SECRET_KEY`, email keys.
+4. Re-register FastSpring webhook with new signing secret.
 5. Reconfigure Vercel Cron Authorization.
 6. Complete [enterprise-release-checklist.md](./enterprise-release-checklist.md) before traffic.
 
@@ -69,7 +69,7 @@ Examples: Cron misconfigured, queue stalled, transient Paddle API errors, AI pro
 
 | Provider | Degraded behaviour | Operator action |
 |----------|--------------------|-----------------|
-| Paddle | Checkout/portal unavailable; entitlements unchanged until webhook sync | Status page; pause non-critical billing UI messaging |
+| FastSpring | Checkout unavailable; entitlements unchanged until webhook sync | Status page; pause non-critical billing UI messaging |
 | Supabase | App unavailable | Failover / restore; communicate outage |
 | Email | Queue outbound; surface soft errors | Switch provider credentials if prolonged |
 | OpenAI | AI features empty/disabled | `AI_PROVIDER=disabled` |
@@ -82,7 +82,7 @@ Examples: Cron misconfigured, queue stalled, transient Paddle API errors, AI pro
 1. Rotate compromised secret in provider dashboard.
 2. Update Vercel Production env.
 3. Redeploy/restart to pick up values.
-4. For Paddle webhook secret: update Paddle notification secret in the same change window.
+4. For FastSpring webhook secret: update the FastSpring notification secret in the same change window.
 5. Invalidate old cron bearer by setting new `CRON_SECRET` (old callers fail closed).
 
 ---
@@ -96,7 +96,7 @@ Follow [rollback-plan.md](./rollback-plan.md) §6 — leave Production on last g
 ## Webhook backlog recovery
 
 1. Confirm handler healthy (signature + idempotency).
-2. Replay from Paddle dashboard for missed event IDs.
+2. Replay from the FastSpring dashboard for missed event IDs.
 3. Confirm no duplicate side effects (idempotency keys).
 4. Monitor billing diagnostics panel.
 
@@ -134,7 +134,7 @@ WHERE relname IN ('organizations', 'clients', 'reports', 'subscriptions')
 - `GET /api/ready` → 200
 - `GET /api/health` → not `unavailable`
 - Login + one client list query
-- Paddle webhook test notification
+- FastSpring webhook test notification
 - Cron authorized POST `/api/cron/run`
 
 ---
@@ -143,7 +143,7 @@ WHERE relname IN ('organizations', 'clients', 'reports', 'subscriptions')
 
 - [ ] Supabase service role
 - [ ] Cron secret
-- [ ] Paddle API key + webhook secret + client token (as needed)
+- [ ] FastSpring API username + password + webhook secret (as needed)
 - [ ] Integration vault key
 - [ ] Email provider API key
 - [ ] Turnstile secret

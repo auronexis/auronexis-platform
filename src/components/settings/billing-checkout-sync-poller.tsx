@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormAlert } from "@/components/ui/form-alert";
-import { getPaddleCheckoutSyncStatusAction } from "@/lib/billing/checkout-sync-actions";
-import type { PaddleCheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
+import { getCheckoutSyncStatusAction } from "@/lib/billing/checkout-sync-actions";
+import type { CheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
 import {
-  PADDLE_CHECKOUT_SUCCESS_MESSAGE,
-  PADDLE_CHECKOUT_SYNC_SLOW_MESSAGE,
-} from "@/lib/paddle/checkout-success";
+  CHECKOUT_SUCCESS_MESSAGE,
+  CHECKOUT_SYNC_SLOW_MESSAGE,
+} from "@/lib/billing/checkout-success";
 
 const POLL_INTERVAL_MS = 2000;
 const SLOW_AFTER_MS = 12_000;
@@ -16,12 +16,12 @@ const STOP_AFTER_MS = 45_000;
 
 type BillingCheckoutSyncPollerProps = {
   enabled: boolean;
-  initialStatus: PaddleCheckoutSyncStatus | null;
+  initialStatus: CheckoutSyncStatus | null;
 };
 
 /**
  * Bounded post-checkout poller. Refreshes verified server state only —
- * never grants access from the Paddle.js success event.
+ * never grants access from a browser checkout event.
  */
 export function BillingCheckoutSyncPoller({
   enabled,
@@ -35,9 +35,9 @@ export function BillingCheckoutSyncPoller({
     if (initialStatus?.synchronized) {
       return null;
     }
-    return PADDLE_CHECKOUT_SUCCESS_MESSAGE;
+    return CHECKOUT_SUCCESS_MESSAGE;
   });
-  const [status, setStatus] = useState<PaddleCheckoutSyncStatus | null>(initialStatus);
+  const [status, setStatus] = useState<CheckoutSyncStatus | null>(initialStatus);
   const startedAtRef = useRef<number>(Date.now());
   const refreshedRef = useRef(false);
 
@@ -53,7 +53,7 @@ export function BillingCheckoutSyncPoller({
       return;
     }
 
-    setMessage(PADDLE_CHECKOUT_SUCCESS_MESSAGE);
+    setMessage(CHECKOUT_SUCCESS_MESSAGE);
 
     let cancelled = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -65,10 +65,10 @@ export function BillingCheckoutSyncPoller({
 
       const elapsed = Date.now() - startedAtRef.current;
       if (elapsed >= SLOW_AFTER_MS) {
-        setMessage(PADDLE_CHECKOUT_SYNC_SLOW_MESSAGE);
+        setMessage(CHECKOUT_SYNC_SLOW_MESSAGE);
       }
 
-      const result = await getPaddleCheckoutSyncStatusAction();
+      const result = await getCheckoutSyncStatusAction();
       if (cancelled) {
         return;
       }
@@ -86,7 +86,7 @@ export function BillingCheckoutSyncPoller({
       }
 
       if (elapsed >= STOP_AFTER_MS) {
-        setMessage(PADDLE_CHECKOUT_SYNC_SLOW_MESSAGE);
+        setMessage(CHECKOUT_SYNC_SLOW_MESSAGE);
         if (!refreshedRef.current) {
           refreshedRef.current = true;
           router.refresh();

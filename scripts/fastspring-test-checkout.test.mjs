@@ -214,15 +214,15 @@ test("client panel uses Store Builder tag then add then checkout", () => {
   assert.doesNotMatch(panel, /FASTSPRING_API_PASSWORD|WEBHOOK_SECRET/);
 });
 
-test("active billing provider is fastspring and sync refuses usable paddle overwrite", () => {
+test("active billing provider is fastspring and sync always writes for the matched org", () => {
   const provider = readSource("src/lib/billing/provider.ts");
   assert.match(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "paddle"/);
   assert.doesNotMatch(provider, /return "stripe"/);
 
   const sync = readSource("src/lib/fastspring/sync.ts");
-  assert.match(sync, /usable_paddle_subscription_present/);
-  assert.match(sync, /refusing to overwrite usable Paddle/);
+  assert.match(sync, /FastSpring is the sole active billing provider/);
+  assert.match(sync, /billing_provider: "fastspring"/);
 });
 
 test("CSP and env example allow FastSpring Store Builder without exposing secrets", () => {

@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 
 const INTEGRATION_ICONS: Record<string, LucideIcon> = {
-  paddle: CreditCard,
+  fastspring: CreditCard,
   supabase: Database,
   openai: Sparkles,
   anthropic: Bot,

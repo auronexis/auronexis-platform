@@ -51,8 +51,8 @@ export default async function BillingSettingsPage({ searchParams }: BillingSetti
         activeProvider={model.activeProvider}
         success={model.showLegacySuccessBanner}
         successMessage={model.showLegacySuccessBanner ? model.checkoutSuccessMessage : null}
-        paddleCheckoutSuccess={model.pollCheckoutSuccess}
-        paddleSyncStatus={model.paddleSyncStatus}
+        checkoutSuccessParam={model.pollCheckoutSuccess}
+        checkoutSyncStatus={model.checkoutSyncStatus}
         cancelled={model.cancelled}
         billingContactCard={model.billingContactCard}
         enterpriseStatus={model.enterpriseStatus}

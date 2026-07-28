@@ -55,12 +55,13 @@ test("module certification table has no FAIL verdicts", () => {
   assert.doesNotMatch(report, /\|\s*[^*]+\s*\|\s*\*\*FAIL\*\*/);
 });
 
-test("billing webhooks remain paddle legacy + fastspring; stripe absent", () => {
-  assert.ok(pathExists("src/app/api/paddle/webhook/route.ts"));
+test("billing webhooks are fastspring-only; paddle and stripe routes absent", () => {
+  assert.equal(pathExists("src/app/api/paddle/webhook/route.ts"), false);
   assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
   const provider = readSource("src/lib/billing/provider.ts");
   assert.match(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "stripe"/);
+  assert.doesNotMatch(provider, /return "paddle"/);
   const stripeApi = join(rootDir, "src", "app", "api", "stripe");
   assert.equal(existsSync(stripeApi), false, "src/app/api/stripe must not exist");
 });

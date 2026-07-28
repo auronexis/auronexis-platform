@@ -50,27 +50,25 @@ test("getActiveBillingProvider returns fastspring", () => {
   assert.match(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "paddle"/);
   assert.doesNotMatch(provider, /return "stripe"/);
-  assert.match(provider, /Usable legacy Paddle subscription/);
-  assert.match(provider, /isPaddleCheckoutEnabled/);
+  assert.match(provider, /FastSpring is the sole active provider/);
   assert.match(provider, /isFastSpringActiveBillingProvider/);
 });
 
-test("createCheckoutSessionAction uses FastSpring when active", () => {
+test("createCheckoutSessionAction uses FastSpring unconditionally (sole active provider)", () => {
   const actions = readSource("src/lib/billing/actions.ts");
-  assert.match(actions, /getActiveBillingProvider/);
-  assert.match(actions, /activeProvider === "fastspring"/);
   assert.match(actions, /createFastSpringCheckoutPayloadForPlan/);
+  assert.match(actions, /isFastSpringCheckoutConfigured/);
   assert.match(actions, /fastspringCheckout/);
   assert.match(actions, /FASTSPRING_STOREFRONT/);
-  assert.match(actions, /Legacy path — only if active provider is still paddle/);
-  assert.match(actions, /createPaddleCheckoutPayload/);
+  assert.doesNotMatch(actions, /createPaddleCheckoutPayload/);
+  assert.doesNotMatch(actions, /@\/lib\/paddle/);
 });
 
-test("usable paddle overwrite refused in FastSpring sync", () => {
+test("fastspring sync always writes for the matched org — legacy Paddle rows are historical only", () => {
   const sync = readSource("src/lib/fastspring/sync.ts");
-  assert.match(sync, /usable_paddle_subscription_present/);
-  assert.match(sync, /refusing to overwrite usable Paddle/);
-  assert.match(sync, /isPaddleBackedSubscription|billing_provider === "paddle"/);
+  assert.match(sync, /FastSpring is the sole active billing provider/);
+  assert.match(sync, /Historical Paddle rows \(if any\) are overwritten/);
+  assert.match(sync, /billing_provider: "fastspring"/);
 });
 
 test("localized pricing falls back to USD without inventing FX", () => {

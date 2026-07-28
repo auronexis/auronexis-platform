@@ -1,48 +1,27 @@
 import "server-only";
 
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
-import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { isFastSpringApiConfigured, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
 import { isFastSpringCheckoutConfigured } from "@/lib/fastspring/checkout";
-import { isPaddleConfigured } from "@/lib/paddle/env";
 
 /**
  * Resolve customer-safe billing capability flags for pricing and billing UI.
- * Active provider is FastSpring; Paddle flags remain for legacy portal eligibility only.
+ * FastSpring is the sole active billing provider — no hosted customer
+ * portal is available in this integration.
  */
 export function getBillingUiStatus(): StripeBillingUiStatus {
-  const activeProvider = getActiveBillingProvider();
+  const fastspringReady =
+    isFastSpringApiConfigured() && isFastSpringWebhookConfigured() && isFastSpringCheckoutConfigured();
 
-  if (activeProvider === "fastspring") {
-    const fastspringReady =
-      isFastSpringApiConfigured() &&
-      isFastSpringWebhookConfigured() &&
-      isFastSpringCheckoutConfigured();
-
-    return {
-      checkoutAvailable: fastspringReady,
-      // Portal is only for legacy Paddle customers; UI gates separately.
-      portalAvailable: isPaddleConfigured(),
-      portalCancellationAvailable: false,
-      planCheckoutReady: {
-        starter: false,
-        professional: fastspringReady,
-        business: fastspringReady,
-        enterprise: fastspringReady,
-      },
-    };
-  }
-
-  const paddleReady = isPaddleConfigured();
   return {
-    checkoutAvailable: paddleReady,
-    portalAvailable: paddleReady,
+    checkoutAvailable: fastspringReady,
+    portalAvailable: false,
     portalCancellationAvailable: false,
     planCheckoutReady: {
       starter: false,
-      professional: paddleReady,
-      business: paddleReady,
-      enterprise: false,
+      professional: fastspringReady,
+      business: fastspringReady,
+      enterprise: fastspringReady,
     },
   };
 }

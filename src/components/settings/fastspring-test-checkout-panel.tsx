@@ -114,7 +114,7 @@ export function FastSpringTestCheckoutPanel({
     <PageSurface>
       <PageSurfaceHeading
         title="FastSpring Test Checkout"
-        description="TEST MODE only. Opens FastSpring popup-defaultB2B for webhook and subscription verification. Paddle remains the production checkout provider."
+        description="TEST MODE only. Opens FastSpring popup-defaultB2B for webhook and subscription verification. Does not affect the live production storefront."
       />
 
       {!storeConfigured ? (

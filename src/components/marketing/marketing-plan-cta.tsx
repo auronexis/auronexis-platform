@@ -13,7 +13,7 @@ type MarketingPlanCtaProps = {
 };
 
 /**
- * Public pricing CTAs preserve the Paddle review path:
+ * Public pricing CTAs preserve the FastSpring checkout review path:
  * logged out → /signup → auth → /settings/plans
  * logged in → /settings/plans (real checkout location)
  * Enterprise → contact sales

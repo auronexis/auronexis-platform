@@ -2,6 +2,7 @@ import "server-only";
 
 import { ANALYTICS_CONFIG } from "@/lib/analytics/config";
 import { isEmailConfigured, getEmailProviderId } from "@/lib/env/email";
+import { getFastSpringApiCredentialPresence, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
 
 export type EnvAuditSeverity = "required" | "recommended" | "optional";
 
@@ -31,16 +32,30 @@ export function auditProductionEnvironment(): ProductionEnvAudit {
     { key: "NEXT_PUBLIC_SUPABASE_ANON_KEY", label: "Supabase anon key", severity: "required", configured: isSet("NEXT_PUBLIC_SUPABASE_ANON_KEY") },
     { key: "SUPABASE_SERVICE_ROLE_KEY", label: "Supabase service role", severity: "required", configured: isSet("SUPABASE_SERVICE_ROLE_KEY") },
     { key: "NEXT_PUBLIC_APP_URL", label: "Application URL", severity: "required", configured: isSet("NEXT_PUBLIC_APP_URL") },
-    { key: "PADDLE_API_KEY", label: "Paddle API key", severity: "required", configured: isSet("PADDLE_API_KEY") },
-    { key: "PADDLE_WEBHOOK_SECRET", label: "Paddle webhook secret", severity: "required", configured: isSet("PADDLE_WEBHOOK_SECRET") },
-    { key: "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", label: "Paddle client token", severity: "required", configured: isSet("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN") },
     {
-      key: "PADDLE_ENVIRONMENT",
-      label: "Paddle environment",
+      key: "FASTSPRING_API_USERNAME",
+      label: "FastSpring API username",
       severity: "required",
-      configured:
-        process.env.PADDLE_ENVIRONMENT === "sandbox" || process.env.PADDLE_ENVIRONMENT === "production",
-      note: 'Must be exactly "sandbox" or "production"',
+      configured: getFastSpringApiCredentialPresence().usernameConfigured,
+    },
+    {
+      key: "FASTSPRING_API_PASSWORD",
+      label: "FastSpring API password",
+      severity: "required",
+      configured: getFastSpringApiCredentialPresence().passwordConfigured,
+    },
+    {
+      key: "FASTSPRING_WEBHOOK_SECRET",
+      label: "FastSpring webhook secret",
+      severity: "required",
+      configured: isFastSpringWebhookConfigured(),
+    },
+    {
+      key: "FASTSPRING_STOREFRONT",
+      label: "FastSpring storefront",
+      severity: "required",
+      configured: isSet("FASTSPRING_STOREFRONT"),
+      note: "Live storefront required in production — FASTSPRING_STORE_ID alone only builds a test storefront",
     },
     {
       key: "CRON_SECRET",

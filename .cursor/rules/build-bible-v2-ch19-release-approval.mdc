@@ -14,7 +14,7 @@ Checklist: `docs/enterprise-release-checklist.md`
 - Chapter 19 is a Release Board decision — do not implement features, refactor, change dependencies, or redesign architecture.
 - Decision is **APPROVED WITH CONDITIONS** unless a new critical blocker or critical security finding is proven.
 - Live cutover requires explicit conditions in the Release Approval Report and [enterprise-release-checklist.md](../../docs/enterprise-release-checklist.md) sign-off.
-- Preserve auth, RBAC, RLS, Paddle sole-provider path, and API contracts.
+- Preserve auth, RBAC, RLS, FastSpring sole-provider path, and API contracts.
 - Keep Chapters 1–19 Status Implemented with always-apply rules where installed.
 - Do not commit, push, or deploy from Chapter 19 work.
 - Documentation changes only when strictly required for release accuracy.

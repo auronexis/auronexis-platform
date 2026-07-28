@@ -45,7 +45,7 @@ This document defines sections and messaging for the public marketing site. Impl
 
 Mirror [pricing-beta.md](./pricing-beta.md) list prices (not pilot discount).  
 Highlight: 14-day trial, no credit card optional (product decision).  
-Link to **Paddle Checkout** on the app subdomain (see [paddle-billing.md](./paddle-billing.md)).
+Link to **FastSpring Checkout** on the app subdomain (see [paddle-billing.md](./paddle-billing.md)).
 
 ---
 

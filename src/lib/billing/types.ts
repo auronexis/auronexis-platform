@@ -14,7 +14,7 @@ import {
   isSubscriptionCanceled,
 } from "@/lib/billing/status";
 import type { BillingHistoryItem } from "@/lib/billing/history-types";
-import type { PaddleBillingDetails } from "@/lib/paddle/subscription-details";
+import type { BillingProviderDetails } from "@/lib/billing/provider-details";
 import { formatAppDateOrNull, formatAppDateTimeOrNull } from "@/lib/i18n";
 
 export type UsageMetricKey =
@@ -80,10 +80,10 @@ export type BillingDashboardData = {
   limits: UsageMetricSnapshot[];
   /** @deprecated Legacy Stripe invoice mirror — always empty now. Use billingHistory. */
   invoices: CustomerInvoiceView[];
-  /** Paddle transaction history — the sole active billing history source. */
+  /** FastSpring (+ historical Paddle) transaction history — the active billing history source. */
   billingHistory: BillingHistoryItem[];
-  /** Live Paddle subscription/payment details, when a verified Paddle subscription exists. */
-  paddleDetails: PaddleBillingDetails | null;
+  /** Billing provider summary derived from the locally persisted subscription row. */
+  providerDetails: BillingProviderDetails | null;
   discounts: DiscountPreview[];
   prorationPreviews: ProrationPreview[];
   forecastStatus: "healthy" | "warning" | "critical";
@@ -144,7 +144,7 @@ export type BillingDiagnosticsSnapshot = {
   platformVersion: string;
   currentPlanKey: PlanKey;
   subscriptionState: string | null;
-  /** @deprecated Field name kept for compat — now reflects Paddle configuration, not Stripe. */
+  /** @deprecated Field name kept for compat — Paddle runtime removed; always reports not-configured. */
   stripeConnected: boolean;
   usageMeteringEnabled: boolean;
   invoiceCount: number;
@@ -216,7 +216,7 @@ export function buildBillingOverview(
   _organizationPlan: string,
   currentPlanName: string | null,
   currentPlanKey: PlanKey | null,
-  activeProvider: BillingProvider = "paddle",
+  activeProvider: BillingProvider = "fastspring",
 ): BillingOverview {
   const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
   const displaySubscription =

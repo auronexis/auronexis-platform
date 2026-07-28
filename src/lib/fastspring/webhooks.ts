@@ -1,5 +1,6 @@
 import "server-only";
 
+import { trackBillingLifecycleEvent } from "@/lib/analytics/billing-lifecycle";
 import { invalidateBillingCache } from "@/lib/billing/cache";
 import {
   isFastSpringHandledEventType,
@@ -161,6 +162,18 @@ async function handleSubscriptionEvent(
       invoiceNumber: order.reference,
       productName: snapshot.productPath ?? order.productPath,
     });
+
+    void trackBillingLifecycleEvent(
+      event.type === "subscription.charge.completed" ? "invoice_paid" : "invoice_failed",
+      { source: "fastspring_webhook", result: "success" },
+    );
+  }
+
+  if (event.type === "subscription.canceled") {
+    void trackBillingLifecycleEvent("subscription_cancelled", {
+      source: "fastspring_webhook",
+      result: "success",
+    });
   }
 
   return { handled: true, ignored: false, organizationId };
@@ -212,6 +225,13 @@ async function handleOrderEvent(
     invoiceNumber: order.reference,
     productName: order.productPath,
   });
+
+  if (event.type === "order.completed" || event.type === "order.failed") {
+    void trackBillingLifecycleEvent(event.type === "order.completed" ? "invoice_paid" : "invoice_failed", {
+      source: "fastspring_webhook",
+      result: "success",
+    });
+  }
 
   return { handled: true, ignored: false, organizationId };
 }

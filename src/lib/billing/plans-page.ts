@@ -5,13 +5,11 @@ import { getBillingUiStatus } from "@/lib/billing/ui-status";
 import { resolveEnterpriseContactHref } from "@/lib/billing/enterprise-contact";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import type { BillingProvider } from "@/lib/billing/provider-types";
-import { hasVerifiedPaddleCustomer } from "@/lib/billing/active-billing";
 import {
   FALLBACK_BILLING_UI_STATUS,
   normalizeBillingUiStatus,
 } from "@/lib/billing/ui-status-client";
 import type { BillingUiStatus } from "@/lib/billing/types";
-import { getPaddleEnvironment, isPaddleConfigured } from "@/lib/paddle/env";
 import { getClientLimitUsageForSession } from "@/lib/plans/queries";
 import { getOrganizationSeatUsageFromSession } from "@/lib/seats/queries";
 import {
@@ -52,11 +50,6 @@ export async function loadWorkspacePlansPageModel(
       if (storefront.includes(".test.onfastspring.com/")) {
         sandboxCheckoutNotice =
           "FastSpring TEST storefront is configured. Purchases use test mode — not live production charges.";
-      }
-    } else if (resolveActiveProviderSafe() === "paddle" && isPaddleConfigured()) {
-      if (getPaddleEnvironment() === "sandbox") {
-        sandboxCheckoutNotice =
-          "Sandbox checkout is active for billing tests. This is not a live production payment flow.";
       }
     }
   } catch {
@@ -104,7 +97,8 @@ export async function loadWorkspacePlansPageModel(
     ignoredStripeInvoiceIds: billingState.ignoredStripeInvoiceIds,
   });
 
-  const showPortalAction = hasVerifiedPaddleCustomer(billingState.overview.subscription);
+  // FastSpring does not expose a hosted customer portal in this integration.
+  const showPortalAction = false;
 
   return {
     billingState,

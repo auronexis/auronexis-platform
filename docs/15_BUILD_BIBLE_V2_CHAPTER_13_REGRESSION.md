@@ -23,7 +23,7 @@ Full requirements are enforced by this document and `.cursor/rules/build-bible-v
 |--------|---------|
 | `npm run test:build-bible-ch13` | Chapter 13 compliance contracts |
 | `npm run test:enterprise-regression` | Full curated regression matrix (ch1–13 + domain suites) |
-| `npm run test:paddle-billing` | Billing sole-provider suites |
+| `npm run test:fastspring-billing` | Billing sole-provider suites |
 | `npm run test:technical-seo` | SEO contracts |
 | `npm run test:e2e` | Playwright browser QA (includes password-reset smoke) |
 

@@ -30,10 +30,10 @@ export type IntegrationCenterSlack = {
   status: string;
 };
 
-export type IntegrationCenterPaddle = {
+export type IntegrationCenterFastSpring = {
   connectionStatus: IntegrationConnectionLabel;
   mode: string | null;
-  customerPortal: string;
+  accountManagement: string;
   invoices: string;
 };
 
@@ -60,7 +60,7 @@ export type IntegrationCenterSnapshot = {
   openai: IntegrationCenterOpenAI;
   anthropic: IntegrationCenterAnthropic;
   slack: IntegrationCenterSlack;
-  paddle: IntegrationCenterPaddle;
+  fastspring: IntegrationCenterFastSpring;
   webhooks: IntegrationCenterWebhooks;
   resend: IntegrationCenterResend;
   restApi: IntegrationCenterRestApi;

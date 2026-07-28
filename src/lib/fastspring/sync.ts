@@ -25,9 +25,11 @@ function asString(value: unknown): string | null {
 
 /**
  * Upsert FastSpring subscription state for a deterministically matched org.
+ * FastSpring is the sole active billing provider — this always writes for a
+ * matched organization. Historical Paddle rows (if any) are overwritten,
+ * since Paddle no longer drives entitlements, checkout, or portal access.
  *
  * Safety:
- * - Never overwrite a usable Paddle subscription row.
  * - Never invent entitlements for unknown product paths.
  * - pilot / founding product paths are stored on provider_price_id but do not
  *   flip organizations.plan to paid (InternalPlan only).
@@ -58,18 +60,6 @@ export async function upsertFastSpringOrganizationSubscription(
     provider_subscription_id: string | null;
     provider_price_id: string | null;
   } | null;
-
-  const usablePaddle =
-    existingRow?.billing_provider === "paddle" &&
-    isSubscriptionUsable(existingRow.provider_status ?? existingRow.status);
-
-  if (usablePaddle) {
-    console.warn("[fastspring] refusing to overwrite usable Paddle subscription", {
-      organizationIdPrefix: input.organizationId.slice(0, 8),
-      subscriptionIdPrefix: input.providerSubscriptionId.slice(0, 8),
-    });
-    return { wrote: false, reason: "usable_paddle_subscription_present" };
-  }
 
   const mappedPlan = mapFastSpringProductPath(input.providerPriceId);
   if (input.providerPriceId && !mappedPlan) {

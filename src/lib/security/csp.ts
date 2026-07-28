@@ -2,12 +2,7 @@
  * Single source of truth for Content-Security-Policy.
  * Used by middleware, next.config headers, and vercel.json (keep in sync).
  *
- * Paddle Billing domains (minimum required for Paddle.js overlay checkout):
- * - script-src / connect-src / frame-src: cdn.paddle.com, sandbox-cdn.paddle.com
- * - connect-src: api.paddle.com, sandbox-api.paddle.com
- * - frame-src: buy.paddle.com, sandbox-buy.paddle.com
- *
- * FastSpring Store Builder (popup checkout):
+ * FastSpring Store Builder (popup checkout) — sole active checkout provider:
  * - script-src: https://sbl.onfastspring.com (fastspring-builder.min.js)
  * - style-src: https://sbl.onfastspring.com (fastspring.css)
  * - connect-src / frame-src: storefront hosts under *.onfastspring.com
@@ -31,8 +26,6 @@ export function buildContentSecurityPolicy(): string {
       "https://*.clarity.ms",
       "https://www.googletagmanager.com",
       "https://challenges.cloudflare.com",
-      "https://cdn.paddle.com",
-      "https://sandbox-cdn.paddle.com",
       "https://sbl.onfastspring.com",
     ].join(" "),
     [
@@ -45,10 +38,6 @@ export function buildContentSecurityPolicy(): string {
       "connect-src 'self'",
       "https://*.supabase.co",
       "wss://*.supabase.co",
-      "https://api.paddle.com",
-      "https://sandbox-api.paddle.com",
-      "https://cdn.paddle.com",
-      "https://sandbox-cdn.paddle.com",
       "https://us.i.posthog.com",
       "https://eu.i.posthog.com",
       "https://*.sentry.io",
@@ -65,10 +54,6 @@ export function buildContentSecurityPolicy(): string {
     [
       "frame-src",
       "https://challenges.cloudflare.com",
-      "https://buy.paddle.com",
-      "https://sandbox-buy.paddle.com",
-      "https://cdn.paddle.com",
-      "https://sandbox-cdn.paddle.com",
       "https://*.onfastspring.com",
     ].join(" "),
   ].join("; ");

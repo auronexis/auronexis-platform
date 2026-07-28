@@ -4,7 +4,7 @@ import {
   SUPPORT_CONTACT_CARD,
   type BillingContactCardContent,
 } from "@/lib/billing/billing-contact";
-import { getPaddleCheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
+import { getCheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
 import { getBillingDashboardData } from "@/lib/billing/queries";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { getBillingUiStatusWithPortalFeatures } from "@/lib/billing/ui-status";
@@ -14,9 +14,9 @@ import { getOrganizationSeatUsageFromSession } from "@/lib/seats/queries";
 import { getEnterpriseStatus } from "@/lib/enterprise/queries";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import {
-  isPaddleCheckoutSuccessParam,
-  PADDLE_CHECKOUT_SUCCESS_MESSAGE,
-} from "@/lib/paddle/checkout-success";
+  isCheckoutSuccessParam,
+  CHECKOUT_SUCCESS_MESSAGE,
+} from "@/lib/billing/checkout-success";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 export type BillingSettingsSearchParams = {
@@ -46,17 +46,17 @@ export function resolveBillingCheckoutMessages(input: {
 }): {
   checkoutSuccessMessage: string | null;
   showLegacySuccessBanner: boolean;
-  paddleCheckoutSuccess: boolean;
+  checkoutSuccessParam: boolean;
   pollCheckoutSuccess: boolean;
 } {
-  const paddleCheckoutSuccess = isPaddleCheckoutSuccessParam(input.checkout);
+  const checkoutSuccessParam = isCheckoutSuccessParam(input.checkout);
   let checkoutSuccessMessage: string | null = null;
   let showLegacySuccessBanner = false;
 
-  if (paddleCheckoutSuccess) {
-    checkoutSuccessMessage = PADDLE_CHECKOUT_SUCCESS_MESSAGE;
+  if (checkoutSuccessParam) {
+    checkoutSuccessMessage = CHECKOUT_SUCCESS_MESSAGE;
   } else if (input.success === "1" && input.canManage) {
-    checkoutSuccessMessage = PADDLE_CHECKOUT_SUCCESS_MESSAGE;
+    checkoutSuccessMessage = CHECKOUT_SUCCESS_MESSAGE;
     showLegacySuccessBanner = false;
   } else if (input.success === "1") {
     checkoutSuccessMessage = "Payment received. Your plan may update shortly.";
@@ -66,8 +66,8 @@ export function resolveBillingCheckoutMessages(input: {
   return {
     checkoutSuccessMessage,
     showLegacySuccessBanner,
-    paddleCheckoutSuccess,
-    pollCheckoutSuccess: paddleCheckoutSuccess || input.success === "1",
+    checkoutSuccessParam,
+    pollCheckoutSuccess: checkoutSuccessParam || input.success === "1",
   };
 }
 
@@ -85,11 +85,11 @@ export async function loadBillingSettingsPageModel(
     success: params.success,
   });
 
-  const [dashboard, seatUsage, enterpriseStatus, paddleSyncStatus] = await Promise.all([
+  const [dashboard, seatUsage, enterpriseStatus, checkoutSyncStatus] = await Promise.all([
     getBillingDashboardData(session),
     getOrganizationSeatUsageFromSession(session),
     getEnterpriseStatus(session.organization.id),
-    getPaddleCheckoutSyncStatus(session),
+    getCheckoutSyncStatus(session),
   ]);
   const planUsage = await getOrganizationPlanUsageSummary(
     session,
@@ -105,7 +105,7 @@ export async function loadBillingSettingsPageModel(
     seatUsage,
     planUsage,
     enterpriseStatus,
-    paddleSyncStatus,
+    checkoutSyncStatus,
     locale: resolveLocaleFromOrganization(session.organization),
     cancelled: params.cancelled === "1",
     billingContactCard: resolveBillingContactCard(

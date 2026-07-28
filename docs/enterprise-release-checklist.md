@@ -12,8 +12,9 @@ Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content
 - [ ] `.env.example` reviewed against Vercel Production secrets
 - [ ] `NEXT_PUBLIC_APP_URL` is HTTPS production host (no localhost)
 - [ ] Supabase URL / anon / service role set (service role server-only)
-- [ ] `PADDLE_ENVIRONMENT=production` with live API key, webhook secret, client token
-- [ ] Paddle price IDs mapped for sold plans
+- [ ] `FASTSPRING_STOREFRONT` set to the live production storefront (not a test storefront)
+- [ ] `FASTSPRING_API_USERNAME` / `FASTSPRING_API_PASSWORD` / `FASTSPRING_WEBHOOK_SECRET` set
+- [ ] FastSpring product paths mapped for sold plans
 - [ ] `CRON_SECRET` set; cron Authorization works
 - [ ] Email provider configured and domain verified
 - [ ] Turnstile keys set; `TURNSTILE_DISABLE` **unset**
@@ -39,14 +40,15 @@ Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content
 - [ ] `npm run build` pass
 - [ ] CI workflow green on release commit (`.github/workflows/ci.yml`)
 
-## D. Billing validation (Paddle)
+## D. Billing validation (FastSpring)
 
-- [ ] Webhook URL `/api/paddle/webhook` registered in Paddle dashboard
+- [ ] Webhook URL `/api/fastspring/webhook` registered in the FastSpring dashboard
 - [ ] Signature verification + idempotency confirmed on staging
 - [ ] Checkout creates/updates subscription entitlements
-- [ ] Customer portal opens only with verified Paddle customer
+- [ ] No hosted customer portal is promised (FastSpring purchase emails / support only)
 - [ ] Invoice / transaction history org-scoped
 - [ ] Payment failure path degrade-safe (no entitlement from client callback alone)
+- [ ] Historical Paddle/Stripe rows remain read-only archive and never drive checkout
 
 ## E. Portal validation
 
@@ -108,13 +110,13 @@ Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content
 - [ ] `/api/health` and `/api/ready` monitored
 - [ ] Error reporting (Sentry) receiving events from staging/prod
 - [ ] Queue / webhook diagnostics reviewed
-- [ ] Health payload billing flag reflects Paddle (`configuration.paddle`)
+- [ ] Health payload billing flag reflects FastSpring (`configuration.fastspring`)
 
 ## O. Rollback readiness
 
 - [ ] Previous Vercel deployment identified for instant rollback
 - [ ] [rollback-plan.md](./rollback-plan.md) reviewed by on-call
-- [ ] Paddle webhook disable / secret rotate steps known
+- [ ] FastSpring webhook disable / secret rotate steps known
 - [ ] Supabase PITR / backup restore owner assigned
 
 ## Sign-off

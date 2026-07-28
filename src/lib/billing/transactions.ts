@@ -1,7 +1,6 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { getPaddleClient } from "@/lib/paddle/client";
 import {
   derivePaymentStatus,
   getBillingHistoryStatusLabel,
@@ -31,12 +30,15 @@ function toBillingHistoryItem(row: BillingProviderTransaction): BillingHistoryIt
     currency: row.currency,
     paymentStatus: derivePaymentStatus(status),
     invoiceNumber: row.invoice_number,
-    hasPdfAvailable: hasPdfAvailableForStatus(status),
+    invoicePdfUrl: row.invoice_url,
+    hasPdfAvailable: hasPdfAvailableForStatus(status, row.invoice_url),
   };
 }
 
 /**
- * Paginated Paddle billing history for the current organization.
+ * Paginated billing history for the current organization, sourced entirely
+ * from locally persisted `billing_provider_transactions` rows (FastSpring
+ * webhook sync and legacy Paddle history). Never calls a provider API.
  * Ordered newest-first by when the transaction occurred (falls back to created_at).
  */
 export async function listOrganizationBillingTransactions(
@@ -51,7 +53,6 @@ export async function listOrganizationBillingTransactions(
     .from("billing_provider_transactions")
     .select(TRANSACTION_SELECT)
     .eq("organization_id", session.organization.id)
-    .eq("billing_provider", "paddle")
     .order("occurred_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
@@ -64,7 +65,7 @@ export async function listOrganizationBillingTransactions(
 }
 
 /**
- * Load a single Paddle transaction for the current organization.
+ * Load a single billing transaction for the current organization.
  * Returns null when it does not exist or belongs to another organization —
  * callers must treat null as "not found", never fall back to an unscoped lookup.
  */
@@ -82,7 +83,6 @@ export async function getOrganizationBillingTransaction(
     .from("billing_provider_transactions")
     .select(TRANSACTION_SELECT)
     .eq("organization_id", session.organization.id)
-    .eq("billing_provider", "paddle")
     .eq("provider_transaction_id", trimmedId)
     .maybeSingle();
 
@@ -95,62 +95,4 @@ export async function getOrganizationBillingTransaction(
   }
 
   return toBillingHistoryItem(data as BillingProviderTransaction);
-}
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
-}
-
-function extractPdfUrl(response: unknown): string | null {
-  const record = asRecord(response);
-  const directUrl = record.url;
-  if (typeof directUrl === "string" && directUrl.trim().length > 0) {
-    return directUrl.trim();
-  }
-
-  const nestedUrl = asRecord(record.data).url;
-  return typeof nestedUrl === "string" && nestedUrl.trim().length > 0 ? nestedUrl.trim() : null;
-}
-
-/**
- * Fetch a temporary Paddle-hosted invoice PDF URL for a transaction owned by
- * the current organization. Never invents a URL — only returns what Paddle's
- * API returns for this exact request. Ownership is re-verified on every call.
- */
-export async function getPaddleInvoicePdfUrl(
-  session: SessionContext,
-  providerTransactionId: string,
-): Promise<string> {
-  const transaction = await getOrganizationBillingTransaction(session, providerTransactionId);
-
-  if (!transaction) {
-    throw new Error("Invoice not found.");
-  }
-
-  if (!transaction.hasPdfAvailable) {
-    throw new Error("An invoice PDF is not available for this transaction.");
-  }
-
-  const paddle = getPaddleClient();
-
-  let response: unknown;
-  try {
-    response = await paddle.transactions.getInvoicePDF(transaction.providerTransactionId);
-  } catch (error) {
-    console.error("[paddle] getInvoicePDF failed", {
-      organizationId: session.organization.id,
-      message: error instanceof Error ? error.message : String(error),
-    });
-    throw new Error("Unable to retrieve the invoice PDF right now. Try again later.");
-  }
-
-  const url = extractPdfUrl(response);
-  if (!url) {
-    console.error("[paddle] getInvoicePDF returned no url", {
-      organizationId: session.organization.id,
-    });
-    throw new Error("Unable to retrieve the invoice PDF right now. Try again later.");
-  }
-
-  return url;
 }

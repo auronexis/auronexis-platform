@@ -1,6 +1,5 @@
 import { isEntitlementDrivingFastSpringPlan, mapFastSpringProductPath } from "@/lib/billing/catalog";
 import type { PlanKey, SubscriptionPlanDefinition } from "@/lib/billing/plans";
-import { resolveInternalPlanFromPaddlePriceId } from "@/lib/paddle/prices";
 
 /** Mask a provider price ID for logs — never log full values. */
 export function maskStripePriceId(priceId: string): string {
@@ -13,9 +12,8 @@ export function maskStripePriceId(priceId: string): string {
 }
 
 /**
- * @deprecated Stripe checkout removed — Paddle price resolution lives in
- * "@/lib/paddle/prices" and "@/lib/paddle/checkout". Legacy archive only;
- * always returns null so callers fail closed instead of inventing a plan.
+ * @deprecated Stripe checkout removed. Legacy archive only; always returns
+ * null so callers fail closed instead of inventing a plan.
  */
 export function safeGetPlanByStripePriceId(
   _priceId: string | null | undefined,
@@ -39,8 +37,8 @@ export function safeGetPlanKeyByStripePriceId(priceId: string | null | undefined
 }
 
 /**
- * Resolve plan key from a subscription row that may be Paddle-backed or a
- * legacy Stripe-backed row. Legacy Stripe price ids never map (fail closed —
+ * Resolve plan key from a subscription row. FastSpring is the sole active
+ * provider — legacy Paddle and Stripe price ids never map (fail closed —
  * caller must not invent a plan). Unknown price IDs return null.
  */
 export function safeGetPlanKeyFromSubscriptionPrice(input: {
@@ -57,15 +55,8 @@ export function safeGetPlanKeyFromSubscriptionPrice(input: {
   }
 
   if (input.billingProvider === "paddle") {
-    const priceId = input.providerPriceId?.trim();
-    if (!priceId) {
-      return null;
-    }
-    try {
-      return resolveInternalPlanFromPaddlePriceId(priceId);
-    } catch {
-      return null;
-    }
+    // Legacy Paddle price ids are historical only — never grant entitlements.
+    return null;
   }
 
   return safeGetPlanKeyByStripePriceId(input.stripePriceId ?? input.providerPriceId);

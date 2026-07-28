@@ -192,7 +192,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [LEGAL_ROUTES.refundPolicy]: {
     title: "Refund and Cancellation Policy",
     description:
-      "Refund and cancellation rules for Auroranexis subscriptions, including Paddle Merchant of Record purchases.",
+      "Refund and cancellation rules for Auroranexis subscriptions, including FastSpring Merchant of Record purchases.",
   },
   "/docs": {
     title: "Documentation Hub",

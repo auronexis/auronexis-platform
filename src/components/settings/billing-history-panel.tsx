@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import type { BillingHistoryItem } from "@/lib/billing/history-types";
 import {
-  openPaddleInvoicePdfAction,
+  openInvoicePdfAction,
   getBillingHistoryAction,
 } from "@/lib/billing/invoice-actions";
 import { formatMoneyFromCents } from "@/lib/billing/status";
@@ -65,7 +65,7 @@ export function BillingHistoryPanel({
     setError(null);
     setPdfPendingId(providerTransactionId);
     startTransition(async () => {
-      const result = await openPaddleInvoicePdfAction(providerTransactionId);
+      const result = await openInvoicePdfAction(providerTransactionId);
       setPdfPendingId(null);
       if ("error" in result) {
         setError(result.error);
@@ -79,7 +79,7 @@ export function BillingHistoryPanel({
     <PageSurface>
       <PageSurfaceHeading
         title="Billing history"
-        description="Invoices and payments from Paddle. Tax amounts are shown as provided by Paddle as Merchant of Record."
+        description="Invoices and payments from FastSpring. Tax amounts are shown as provided by FastSpring as Merchant of Record."
       />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">

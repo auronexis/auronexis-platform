@@ -1,26 +1,10 @@
 /**
  * Standardized commercial / billing event catalog — maps to analytics + webhook outcomes.
  * Never attach org/customer/secret identifiers to third-party analytics payloads.
+ *
+ * FastSpring webhook event names live in `src/lib/fastspring/events.ts` —
+ * the historical Paddle event-type catalog was removed with the Paddle runtime.
  */
-
-export const PADDLE_WEBHOOK_EVENT_TYPES = [
-  "subscription.created",
-  "subscription.activated",
-  "subscription.updated",
-  "subscription.canceled",
-  "subscription.paused",
-  "subscription.resumed",
-  "subscription.trialing",
-  "subscription.past_due",
-  "transaction.completed",
-  "transaction.paid",
-  "transaction.payment_failed",
-  "transaction.updated",
-  "customer.created",
-  "customer.updated",
-] as const;
-
-export type PaddleWebhookEventType = (typeof PADDLE_WEBHOOK_EVENT_TYPES)[number];
 
 export const COMMERCIAL_EVENT_NAMES = [
   "checkout_started",

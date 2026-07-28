@@ -9,21 +9,25 @@ import {
   rootDir,
 } from "./_test-helpers/read-source.mjs";
 
-test("tracked env example is Paddle-first and documents forbidden prod bypasses", () => {
+test("tracked env example is FastSpring-first and documents forbidden prod bypasses", () => {
   assertFileExists(".env.example");
   const example = readSource(".env.example");
-  assert.match(example, /PADDLE_API_KEY/);
-  assert.match(example, /PADDLE_WEBHOOK_SECRET/);
-  assert.match(example, /NEXT_PUBLIC_PADDLE_CLIENT_TOKEN/);
-  assert.match(example, /PADDLE_ENVIRONMENT/);
+  assert.match(example, /FastSpring-first/i);
+  assert.match(example, /FASTSPRING_WEBHOOK_SECRET=/);
+  assert.match(example, /FASTSPRING_API_USERNAME=/);
+  assert.match(example, /FASTSPRING_API_PASSWORD=/);
+  assert.match(example, /FASTSPRING_STOREFRONT=/);
   assert.match(example, /CRON_SECRET/);
   assert.match(example, /E2E_DISABLE_RATE_LIMIT/);
   assert.match(example, /never enable in production/i);
   assert.doesNotMatch(example, /TURNSTILE/);
-  assert.match(example, /\/api\/paddle\/webhook/);
+  assert.match(example, /\/api\/fastspring\/webhook/);
   assert.doesNotMatch(example, /^BILLING_PROVIDER=/m);
   assert.doesNotMatch(example, /^STRIPE_SECRET_KEY=/m);
   assert.doesNotMatch(example, /^NEXT_PUBLIC_STRIPE_/m);
+  assert.doesNotMatch(example, /^PADDLE_API_KEY=/m);
+  assert.doesNotMatch(example, /^PADDLE_WEBHOOK_SECRET=/m);
+  assert.doesNotMatch(example, /^NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=/m);
 });
 
 test("gitignore keeps .env.example trackable", () => {
@@ -49,7 +53,6 @@ test("production domains and redirects protect API hosts", () => {
   assert.match(domains, /www\.auroranexis\.com/);
   assert.match(domains, /app\.auroranexis\.com/);
   assert.match(domains, /excludePathPrefixes:\s*\[\s*"\/api\/"/);
-  assert.match(domains, /Paddle/);
 
   const vercel = readSource("vercel.json");
   assert.match(vercel, /auroranexis\.com/);
@@ -60,7 +63,10 @@ test("health and ready probes remain production-safe", () => {
   assertFileExists("src/app/api/health/route.ts");
   assertFileExists("src/app/api/ready/route.ts");
   const health = readSource("src/lib/observability/health.ts");
-  assert.match(health, /isPaddleConfigured/);
+  assert.match(health, /isFastSpringApiConfigured/);
+  assert.match(health, /isFastSpringWebhookConfigured/);
+  assert.match(health, /fastspring:/);
+  // Deprecated aliases retained for older monitors — never the active provider.
   assert.match(health, /paddle:/);
   assert.match(health, /getPlatformHealthSnapshot/);
   const ready = readSource("src/app/api/ready/route.ts");
@@ -68,11 +74,12 @@ test("health and ready probes remain production-safe", () => {
   assert.match(ready, /503/);
 });
 
-test("production env audit requires Paddle and documents cron", () => {
+test("production env audit requires FastSpring and documents cron", () => {
   const audit = readSource("src/lib/env/production-audit.ts");
-  assert.match(audit, /PADDLE_API_KEY/);
-  assert.match(audit, /PADDLE_WEBHOOK_SECRET/);
-  assert.match(audit, /PADDLE_ENVIRONMENT/);
+  assert.match(audit, /FASTSPRING_API_USERNAME/);
+  assert.match(audit, /FASTSPRING_API_PASSWORD/);
+  assert.match(audit, /FASTSPRING_WEBHOOK_SECRET/);
+  assert.match(audit, /FASTSPRING_STOREFRONT/);
   assert.match(audit, /CRON_SECRET/);
   assert.doesNotMatch(audit, /TURNSTILE/);
   assert.match(audit, /readyForCustomers/);
@@ -98,14 +105,17 @@ test("cron authorization fails closed outside development", () => {
   assert.match(cronRoute, /probe/);
 });
 
-test("paddle secrets stay server-only; webhook route exists", () => {
-  const paddleEnv = readSource("src/lib/paddle/env.ts");
-  assert.match(paddleEnv, /server-only/);
-  assert.match(paddleEnv, /PADDLE_API_KEY/);
-  assert.match(paddleEnv, /PADDLE_WEBHOOK_SECRET/);
-  assert.doesNotMatch(paddleEnv, /NEXT_PUBLIC_PADDLE_API_KEY/);
-  assertFileExists("src/app/api/paddle/webhook/route.ts");
+test("fastspring secrets stay server-only; webhook route exists; paddle/stripe routes absent", () => {
+  const fastspringEnv = readSource("src/lib/fastspring/env.ts");
+  assert.match(fastspringEnv, /server-only/);
+  assert.match(fastspringEnv, /FASTSPRING_WEBHOOK_SECRET/);
+  assert.match(fastspringEnv, /FASTSPRING_API_USERNAME/);
+  assert.match(fastspringEnv, /FASTSPRING_API_PASSWORD/);
+  assert.doesNotMatch(fastspringEnv, /NEXT_PUBLIC_FASTSPRING/);
+  assertFileExists("src/app/api/fastspring/webhook/route.ts");
   assert.equal(pathExists("src/app/api/stripe/webhook/route.ts"), false);
+  assert.equal(pathExists("src/app/api/paddle/webhook/route.ts"), false);
+  assert.equal(pathExists("src/lib/paddle"), false);
 });
 
 test("dev plan override and e2e bypasses are not production defaults", () => {
@@ -126,6 +136,8 @@ test("CI workflow gates lint typecheck readiness regression and build", () => {
   assert.match(ci, /test:production-readiness/);
   assert.match(ci, /test:enterprise-regression/);
   assert.match(ci, /npm run build/);
+  assert.doesNotMatch(ci, /NEXT_PUBLIC_PADDLE_CLIENT_TOKEN/);
+  assert.doesNotMatch(ci, /PADDLE_ENVIRONMENT/);
 });
 
 test("migrations directory is ordered and non-empty", () => {
@@ -137,7 +149,8 @@ test("migrations directory is ordered and non-empty", () => {
   const stamps = files.map((name) => name.slice(0, 14));
   const sorted = [...stamps].sort();
   assert.deepEqual(stamps, sorted, "migration filenames must sort by timestamp prefix");
-  assert.ok(files.some((name) => name.includes("paddle")));
+  assert.ok(files.some((name) => name.includes("paddle")), "historical paddle migration retained");
+  assert.ok(files.some((name) => name.includes("fastspring")), "fastspring migration present");
 });
 
 test("enterprise release checklist covers required validation domains", () => {

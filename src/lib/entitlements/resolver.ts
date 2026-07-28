@@ -13,7 +13,6 @@ import { getActiveBillingProvider } from "@/lib/billing/provider";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 import {
   isFastSpringBackedSubscription,
-  isPaddleBackedSubscription,
   resolveActiveBillingStatusFlags,
 } from "@/lib/billing/active-billing";
 import { getEffectiveLimits } from "@/lib/enterprise/limits";
@@ -70,32 +69,15 @@ function resolveMappedPlanKey(
   let planKey: PlanKey | null = null;
 
   if (activeProvider === "fastspring") {
-    if (isFastSpringBackedSubscription(subscription)) {
-      planKey = safeGetPlanKeyFromSubscriptionPrice({
-        billingProvider: "fastspring",
-        stripePriceId: null,
-        providerPriceId: subscription?.provider_price_id,
-      });
-    } else if (isPaddleBackedSubscription(subscription)) {
-      // Legacy usable Paddle customers keep entitlements after FastSpring cutover.
-      planKey = safeGetPlanKeyFromSubscriptionPrice({
-        billingProvider: "paddle",
-        stripePriceId: null,
-        providerPriceId: subscription?.provider_price_id,
-      });
-    } else {
-      planKey = null;
-    }
-  } else if (activeProvider === "paddle") {
-    if (!isPaddleBackedSubscription(subscription)) {
-      planKey = null;
-    } else {
-      planKey = safeGetPlanKeyFromSubscriptionPrice({
-        billingProvider: "paddle",
-        stripePriceId: null,
-        providerPriceId: subscription?.provider_price_id,
-      });
-    }
+    // FastSpring is the sole active entitlement provider — Paddle rows are
+    // historical only and never grant entitlements after the cutover.
+    planKey = isFastSpringBackedSubscription(subscription)
+      ? safeGetPlanKeyFromSubscriptionPrice({
+          billingProvider: "fastspring",
+          stripePriceId: null,
+          providerPriceId: subscription?.provider_price_id,
+        })
+      : null;
   } else {
     planKey = safeGetPlanKeyFromSubscriptionPrice({
       billingProvider: subscription?.billing_provider,
@@ -131,8 +113,9 @@ function resolveMappedPlanKey(
  * Authoritative entitlement resolution for a workspace.
  *
  * Single source of truth for plan features/limits used by product gates:
- * FastSpring (active) or legacy Paddle subscription row → product/price →
- * PLAN_ENTITLEMENTS (+ enterprise overrides).
+ * FastSpring subscription row (sole active provider) → product/price →
+ * PLAN_ENTITLEMENTS (+ enterprise overrides). Legacy Paddle rows are
+ * historical only and never grant entitlements.
  * Parallel helpers in `src/lib/plans/queries` should defer to this path for access control.
  */
 export async function resolveOrganizationEntitlements(

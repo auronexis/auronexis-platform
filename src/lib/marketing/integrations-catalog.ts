@@ -31,9 +31,9 @@ export const INTEGRATION_SECTION_LABELS: Record<IntegrationSectionKey, string> =
 
 export const INTEGRATION_CATALOG: IntegrationCatalogItem[] = [
   {
-    id: "paddle",
-    title: "Paddle",
-    description: "Merchant of Record for subscription billing, checkout, customer portal, and invoice sync.",
+    id: "fastspring",
+    title: "FastSpring",
+    description: "Merchant of Record for subscription billing, checkout, tax handling, and invoice sync.",
     status: "connected",
     section: "connected",
   },

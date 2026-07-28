@@ -14,8 +14,8 @@ import { FormFooter } from "@/components/ui/form-section";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { createPortalSessionAction } from "@/lib/billing/actions";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
-import { PADDLE_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
-import type { PaddleCheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
+import { FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
+import type { CheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
 import {
   billingStatusToneToBadge,
   canOpenBillingPortal,
@@ -45,14 +45,14 @@ type BillingSettingsPanelProps = {
   planUsage: OrganizationPlanUsageSummary;
   canManage: boolean;
   stripeStatus: BillingUiStatus;
-  /** Active billing provider — Paddle is the sole active provider. */
+  /** Active billing provider — FastSpring is the sole active provider. */
   activeProvider?: BillingProvider;
   locale: AppLocale;
   success?: boolean;
   successMessage?: string | null;
-  /** Paddle overlay redirected here with ?checkout=success */
-  paddleCheckoutSuccess?: boolean;
-  paddleSyncStatus?: PaddleCheckoutSyncStatus | null;
+  /** Checkout redirected here with ?checkout=success */
+  checkoutSuccessParam?: boolean;
+  checkoutSyncStatus?: CheckoutSyncStatus | null;
   cancelled?: boolean;
   billingContactCard?: BillingContactCardContent | null;
   enterpriseStatus?: EnterpriseStatus;
@@ -134,12 +134,12 @@ export function BillingSettingsPanel({
   planUsage,
   canManage,
   stripeStatus,
-  activeProvider = "paddle",
+  activeProvider = "fastspring",
   locale,
   success,
   successMessage,
-  paddleCheckoutSuccess = false,
-  paddleSyncStatus = null,
+  checkoutSuccessParam = false,
+  checkoutSyncStatus = null,
   cancelled,
   billingContactCard,
   enterpriseStatus,
@@ -161,8 +161,7 @@ export function BillingSettingsPanel({
     activeProvider,
     billingProvider: overview.subscription?.billing_provider,
   });
-  const showPortalUnavailableHint =
-    activeProvider === "paddle" && canManage && stripeStatus.portalAvailable && !showPortal;
+  const showPortalUnavailableHint = canManage && stripeStatus.portalAvailable && !showPortal;
   const showPromotions = canManage && !enterpriseAutoOpen;
   const usingStarterFallback =
     planUsage.plan.planSource === "starter_fallback" ||
@@ -173,7 +172,7 @@ export function BillingSettingsPanel({
 
   const runPortal = () => {
     if (!showPortal) {
-      setActionError(PADDLE_PORTAL_UNAVAILABLE_MESSAGE);
+      setActionError(FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE);
       return;
     }
     setActionError(null);
@@ -190,14 +189,14 @@ export function BillingSettingsPanel({
   return (
     <div className="space-y-8">
       <BillingConversionTracker
-        checkoutSuccess={Boolean(success) || paddleCheckoutSuccess}
+        checkoutSuccess={Boolean(success) || checkoutSuccessParam}
         checkoutCancelled={Boolean(cancelled)}
         planTier={overview.currentPlanKey ?? "free"}
       />
-      {paddleCheckoutSuccess ? (
+      {checkoutSuccessParam ? (
         <BillingCheckoutSyncPoller
-          enabled={paddleCheckoutSuccess}
-          initialStatus={paddleSyncStatus}
+          enabled={checkoutSuccessParam}
+          initialStatus={checkoutSyncStatus}
         />
       ) : null}
       {success ? (
@@ -264,7 +263,7 @@ export function BillingSettingsPanel({
               <Link href="/settings/billing/diagnostics" className="font-medium text-primary hover:underline">
                 Billing diagnostics
               </Link>
-              . FastSpring TEST checkout (does not replace Paddle):{" "}
+              . FastSpring TEST checkout:{" "}
               <Link
                 href="/settings/billing/fastspring-test"
                 className="font-medium text-primary hover:underline"
@@ -316,7 +315,11 @@ export function BillingSettingsPanel({
             <p className="text-muted">
               Provider:{" "}
               <span className="font-medium text-foreground">
-                {overview.subscription.billing_provider === "paddle" ? "Paddle" : "Stripe"}
+                {overview.subscription.billing_provider === "fastspring"
+                  ? "FastSpring"
+                  : overview.subscription.billing_provider === "paddle"
+                    ? "Paddle (legacy)"
+                    : "Stripe"}
               </span>
               {overview.subscription.provider_status
                 ? ` · provider status: ${overview.subscription.provider_status}`
@@ -387,8 +390,8 @@ export function BillingSettingsPanel({
           <PageSurfaceHeading
             title="Subscription management"
             description={
-              activeProvider === "paddle"
-                ? "Manage your subscription, payment methods, and invoices in the Paddle customer portal."
+              activeProvider === "fastspring"
+                ? "Manage your subscription, payment methods, and invoices via FastSpring."
                 : "Manage your subscription, payment methods, and invoices in the Stripe Customer Portal."
             }
           />
@@ -449,20 +452,20 @@ export function BillingSettingsPanel({
         </p>
       </PageSurface>
 
-      {dashboard.paddleDetails ? (
+      {dashboard.providerDetails ? (
         <div className="grid gap-4 md:grid-cols-2">
           <BillingCard title="Payment method">
-            {dashboard.paddleDetails.paymentMethod?.brand ||
-            dashboard.paddleDetails.paymentMethod?.last4 ? (
+            {dashboard.providerDetails.paymentMethod?.brand ||
+            dashboard.providerDetails.paymentMethod?.last4 ? (
               <p className="text-foreground">
-                {[dashboard.paddleDetails.paymentMethod.brand, dashboard.paddleDetails.paymentMethod.last4
-                  ? `•••• ${dashboard.paddleDetails.paymentMethod.last4}`
+                {[dashboard.providerDetails.paymentMethod.brand, dashboard.providerDetails.paymentMethod.last4
+                  ? `•••• ${dashboard.providerDetails.paymentMethod.last4}`
                   : null]
                   .filter(Boolean)
                   .join(" ")}
-                {dashboard.paddleDetails.paymentMethod.expMonth &&
-                dashboard.paddleDetails.paymentMethod.expYear
-                  ? ` · expires ${String(dashboard.paddleDetails.paymentMethod.expMonth).padStart(2, "0")}/${dashboard.paddleDetails.paymentMethod.expYear}`
+                {dashboard.providerDetails.paymentMethod.expMonth &&
+                dashboard.providerDetails.paymentMethod.expYear
+                  ? ` · expires ${String(dashboard.providerDetails.paymentMethod.expMonth).padStart(2, "0")}/${dashboard.providerDetails.paymentMethod.expYear}`
                   : null}
               </p>
             ) : (
@@ -486,27 +489,27 @@ export function BillingSettingsPanel({
             ) : null}
           </BillingCard>
           <BillingCard title="Next payment">
-            {dashboard.paddleDetails.nextPayment?.date ||
-            dashboard.paddleDetails.nextPayment?.total != null ? (
+            {dashboard.providerDetails.nextPayment?.date ||
+            dashboard.providerDetails.nextPayment?.total != null ? (
               <>
                 <p className="text-foreground">
-                  {dashboard.paddleDetails.nextPayment.date
-                    ? formatBillingDateTime(dashboard.paddleDetails.nextPayment.date)
+                  {dashboard.providerDetails.nextPayment.date
+                    ? formatBillingDateTime(dashboard.providerDetails.nextPayment.date)
                     : "Date unavailable"}
                 </p>
-                {dashboard.paddleDetails.nextPayment.total != null &&
-                dashboard.paddleDetails.nextPayment.currency ? (
+                {dashboard.providerDetails.nextPayment.total != null &&
+                dashboard.providerDetails.nextPayment.currency ? (
                   <p className="text-muted">
                     Total{" "}
                     {formatMoneyFromCents(
-                      dashboard.paddleDetails.nextPayment.total,
-                      dashboard.paddleDetails.nextPayment.currency,
+                      dashboard.providerDetails.nextPayment.total,
+                      dashboard.providerDetails.nextPayment.currency,
                     )}
-                    {dashboard.paddleDetails.nextPayment.subtotal != null
-                      ? ` · subtotal ${formatMoneyFromCents(dashboard.paddleDetails.nextPayment.subtotal, dashboard.paddleDetails.nextPayment.currency)}`
+                    {dashboard.providerDetails.nextPayment.subtotal != null
+                      ? ` · subtotal ${formatMoneyFromCents(dashboard.providerDetails.nextPayment.subtotal, dashboard.providerDetails.nextPayment.currency)}`
                       : null}
-                    {dashboard.paddleDetails.nextPayment.tax != null
-                      ? ` · tax ${formatMoneyFromCents(dashboard.paddleDetails.nextPayment.tax, dashboard.paddleDetails.nextPayment.currency)}`
+                    {dashboard.providerDetails.nextPayment.tax != null
+                      ? ` · tax ${formatMoneyFromCents(dashboard.providerDetails.nextPayment.tax, dashboard.providerDetails.nextPayment.currency)}`
                       : null}
                   </p>
                 ) : (

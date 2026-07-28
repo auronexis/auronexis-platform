@@ -52,16 +52,16 @@ export async function loadBillingMaintenanceContext(session: SessionContext): Pr
 }
 
 /**
- * Neutralize abandoned Stripe checkout remnants so they cannot block Paddle.
+ * Neutralize abandoned Stripe checkout remnants so they cannot block active billing.
  * Never deletes rows, never calls Stripe, never clears historical stripe_customer_id.
  */
 export async function neutralizeStaleStripeCheckoutRemnants(
   session: SessionContext,
 ): Promise<BillingMaintenanceActionResult> {
-  if (getActiveBillingProvider() !== "paddle") {
+  if (getActiveBillingProvider() !== "fastspring") {
     return {
       success: false,
-      message: "Stale Stripe neutralization is only available when BILLING_PROVIDER=paddle.",
+      message: "Stale Stripe neutralization is only available when FastSpring is the active billing provider.",
     };
   }
 

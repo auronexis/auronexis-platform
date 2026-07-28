@@ -27,12 +27,14 @@ test("technical debt catalog exists with severity matrix", () => {
   assert.match(debt, /Completed in Chapter 15/);
 });
 
-test("architecture doc is Paddle-only", () => {
+test("architecture doc is FastSpring-only", () => {
   const architecture = readSource("docs/architecture.md");
-  assert.match(architecture, /Paddle/);
-  assert.match(architecture, /\/api\/paddle\/webhook/);
+  assert.match(architecture, /FastSpring/);
+  assert.match(architecture, /\/api\/fastspring\/webhook/);
   assert.doesNotMatch(architecture, /API --> Stripe/);
+  assert.doesNotMatch(architecture, /API --> Paddle/);
   assert.doesNotMatch(architecture, /Checkout and customer portal use Stripe/);
+  assert.doesNotMatch(architecture, /Checkout and customer portal use Paddle/);
 });
 
 test("build-bible chapter tests use shared readSource helpers", () => {

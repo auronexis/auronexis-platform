@@ -1,5 +1,5 @@
 import {
-  paddleSubscriptionBlocksCheckout,
+  providerSubscriptionBlocksCheckout,
 } from "@/lib/billing/active-billing";
 import type { BillingProvider } from "@/lib/billing/provider-types";
 import type { BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
@@ -44,8 +44,8 @@ function isBlockingOpenInvoice(
 
 /**
  * Resolve whether checkout should be blocked.
- * When activeProvider is paddle, Stripe invoices and Stripe subscription remnants
- * never block — only verified Paddle state may block.
+ * When activeProvider is fastspring, Stripe invoices and Stripe subscription remnants
+ * never block — only verified FastSpring state may block.
  */
 export function resolveCheckoutBlockState(input: {
   overview: BillingOverview;
@@ -53,12 +53,12 @@ export function resolveCheckoutBlockState(input: {
   ignoredStripeInvoiceIds?: ReadonlySet<string>;
   activeProvider?: BillingProvider;
 }): CheckoutBlockState {
-  const activeProvider = input.activeProvider ?? "paddle";
+  const activeProvider = input.activeProvider ?? "fastspring";
 
-  if (activeProvider === "paddle") {
+  if (activeProvider === "fastspring") {
     const subscription = input.overview.subscription;
 
-    if (paddleSubscriptionBlocksCheckout(subscription)) {
+    if (providerSubscriptionBlocksCheckout(subscription)) {
       if (input.overview.hasPaymentProblem) {
         return {
           blocked: true,
@@ -82,7 +82,7 @@ export function resolveCheckoutBlockState(input: {
       };
     }
 
-    // Stripe open invoices and incomplete Stripe rows never block Paddle checkout.
+    // Stripe open invoices and incomplete Stripe rows never block FastSpring checkout.
     return {
       blocked: false,
       code: "none",

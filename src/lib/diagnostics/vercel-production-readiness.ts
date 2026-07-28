@@ -9,7 +9,7 @@ export type VercelProductionReadinessSnapshot = {
   productionConfigured: boolean;
   previewConfigured: boolean;
   developmentConfigured: boolean;
-  paddleEnvReady: boolean;
+  fastspringEnvReady: boolean;
   oauthEnvReady: boolean;
   mailEnvReady: boolean;
   domainsDocumented: boolean;
@@ -25,10 +25,11 @@ const CORE_ENV_KEYS = [
   "NEXT_PUBLIC_APP_URL",
 ] as const;
 
-const PADDLE_ENV_KEYS = [
-  "PADDLE_API_KEY",
-  "PADDLE_WEBHOOK_SECRET",
-  "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
+const FASTSPRING_ENV_KEYS = [
+  "FASTSPRING_API_USERNAME",
+  "FASTSPRING_API_PASSWORD",
+  "FASTSPRING_WEBHOOK_SECRET",
+  "FASTSPRING_STOREFRONT",
 ] as const;
 
 const MAIL_ENV_KEYS = ["EMAIL_PROVIDER", "RESEND_API_KEY", "RESEND_FROM_EMAIL", "EMAIL_FROM"] as const;
@@ -57,7 +58,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
   const isDev = process.env.NODE_ENV !== "production";
   const scope = resolveVercelScope();
   const coreEnvReady = envPresent(CORE_ENV_KEYS) || isDev;
-  const paddleEnvReady = envPresent(PADDLE_ENV_KEYS) || isDev;
+  const fastspringEnvReady = envPresent(FASTSPRING_ENV_KEYS) || isDev;
   const oauthEnvReady = envPresent(OAUTH_ENV_KEYS) || isDev;
   const mailEnvReady = isEmailConfigured() || isDev;
   const domainsDocumented = PRODUCTION_DOMAIN_LIST.length === 4;
@@ -72,7 +73,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
     productionConfigured,
     previewConfigured,
     developmentConfigured,
-    paddleEnvReady,
+    fastspringEnvReady,
     oauthEnvReady,
     mailEnvReady,
     domainsDocumented,
@@ -86,7 +87,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
     productionConfigured,
     previewConfigured,
     developmentConfigured,
-    paddleEnvReady,
+    fastspringEnvReady,
     oauthEnvReady,
     mailEnvReady,
     domainsDocumented,
@@ -98,7 +99,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
 
 export const VERCEL_ENV_GROUPS = {
   core: CORE_ENV_KEYS,
-  paddle: PADDLE_ENV_KEYS,
+  fastspring: FASTSPRING_ENV_KEYS,
   oauth: OAUTH_ENV_KEYS,
   mail: MAIL_ENV_KEYS,
 } as const;

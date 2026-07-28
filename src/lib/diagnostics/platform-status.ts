@@ -18,7 +18,6 @@ import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
 import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
 import { getStripeWebhookDiagnostics } from "@/lib/diagnostics/webhook-archive";
 import { getCronSecret } from "@/lib/env";
-import { isPaddleConfigured } from "@/lib/paddle/env";
 
 export type PlatformStatusItem = {
   key: string;
@@ -57,8 +56,16 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
   const cronOk = cron.tableReachable && cron.status !== "unavailable";
   const queueOk = queue.tableReachable && queue.status !== "unavailable";
   const cronSecretConfigured = Boolean(getCronSecret());
-  /** Field name kept for compat with platform-readiness scoring — now reflects Paddle, not Stripe. */
-  const stripeConfigured = isPaddleConfigured();
+  /**
+   * Paddle SDK/runtime has been fully removed — legacy/historical display
+   * only; always false and never gates readiness.
+   */
+  const paddleConfigured = false;
+  /**
+   * Field name kept for compat with platform-readiness scoring — now reflects
+   * FastSpring (the active billing provider), not Paddle or Stripe.
+   */
+  const stripeConfigured = fastspringApi.ok && fastspringWebhook.ok;
   const sentryConfigured = Boolean(process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN);
   const posthogConfigured = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
 
@@ -98,12 +105,8 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
     {
       key: "stripe",
       label: "Legacy billing (Paddle)",
-      status: evaluateServiceStatus("stripe", readinessInput),
-      detail: stripeConfigured
-        ? "Paddle env configured (legacy portal / historical customers)"
-        : nodeEnv === "development"
-          ? "Not configured (optional in development)"
-          : "Missing Paddle env",
+      status: paddleConfigured ? "healthy" : "degraded",
+      detail: "Paddle runtime removed (legacy-only, does not block active billing)",
     },
     {
       key: "fastspring_webhook",

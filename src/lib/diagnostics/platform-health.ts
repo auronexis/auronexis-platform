@@ -9,7 +9,6 @@ import {
   isFastSpringWebhookConfigured,
 } from "@/lib/fastspring/env";
 import { isFastSpringStorefrontConfigured } from "@/lib/fastspring/storefront";
-import { isPaddleConfigured } from "@/lib/paddle/env";
 
 export type DatabaseHealthLevel = "healthy" | "degraded" | "unavailable";
 
@@ -130,16 +129,18 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
 }
 
 /**
- * Paddle billing configuration health — Stripe has been removed from active
- * billing. Field name kept as `stripeHealth` on diagnostics snapshots for
- * backward compatibility with existing dashboards.
+ * Legacy Paddle billing configuration health — the Paddle SDK/runtime has
+ * been fully removed; FastSpring is the sole active billing provider.
+ * Always reports not-configured. Retained (function name + field) only for
+ * backward compatibility with existing dashboards reading `stripeHealth` /
+ * `stripeConnected` on diagnostics snapshots.
  */
 export function checkPaddleHealth(): HealthCheckResult {
-  if (!isPaddleConfigured()) {
-    return { ok: false, level: "degraded", message: "Paddle environment not configured" };
-  }
-
-  return { ok: true, level: "healthy", message: "Paddle environment configured" };
+  return {
+    ok: false,
+    level: "degraded",
+    message: "Paddle runtime removed — FastSpring is the sole active billing provider",
+  };
 }
 
 /**

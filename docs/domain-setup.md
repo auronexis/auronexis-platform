@@ -92,14 +92,14 @@ Supabase Auth redirect URLs (Supabase Dashboard → Authentication → URL Confi
 
 ---
 
-## Paddle webhook URLs
+## FastSpring webhook URLs
 
 | Environment | Endpoint |
 |-------------|----------|
-| Staging | `https://staging.auroranexis.com/api/paddle/webhook` |
-| Production | `https://www.auroranexis.com/api/paddle/webhook` (or app host matching DNS) |
+| Staging | `https://staging.auroranexis.com/api/fastspring/webhook` |
+| Production | `https://www.auroranexis.com/api/fastspring/webhook` (or app host matching DNS) |
 
-> Historical Stripe webhook routes are removed. See [paddle-billing.md](./paddle-billing.md).
+> Historical Stripe and Paddle webhook routes are removed. See [paddle-billing.md](./paddle-billing.md).
 
 ---
 

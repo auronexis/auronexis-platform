@@ -160,16 +160,16 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
     mappedPlanKey: data.resolvedPlanKey,
   });
   const statusLabel = getSubscriptionHygieneLabel(subscription);
-  const isPaddleMode = data.activeProvider === "paddle";
+  const isFastSpringMode = data.activeProvider === "fastspring";
 
   return (
     <div className="space-y-6">
       <FormAlert variant="warning">
         Internal billing maintenance and diagnostics only. No records are deleted automatically.{" "}
-        {isPaddleMode ? (
+        {isFastSpringMode ? (
           <>
-            Paddle is the active billing provider. Historical Stripe data is read-only and never blocks
-            checkout. Customer-facing billing remains on{" "}
+            FastSpring is the active billing provider. Historical Stripe and Paddle data is read-only and
+            never blocks checkout. Customer-facing billing remains on{" "}
           </>
         ) : (
           <>
@@ -193,7 +193,7 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
         <dl>
           <Row
             label="Active configured provider"
-            value={isPaddleMode ? "Paddle" : "Stripe"}
+            value={isFastSpringMode ? "FastSpring" : "Stripe"}
           />
           <Row label="Status" value={<HealthBadge health={data.productionHealth} />} />
           <Row
@@ -204,15 +204,15 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
             label="Blocking reason"
             value={data.checkoutBlock.message ?? "None"}
           />
-          {isPaddleMode ? (
+          {isFastSpringMode ? (
             <>
               <Row
-                label="Paddle checkout allowed"
-                value={data.paddleCheckoutAllowed ? "Yes" : "No"}
+                label="FastSpring checkout blocked"
+                value={data.fastspringCheckoutBlocked ? "Yes" : "No"}
               />
               <Row
-                label="Paddle blocking reason"
-                value={data.paddleCheckoutBlockReason ?? "None"}
+                label="FastSpring blocking reason"
+                value={data.fastspringCheckoutBlockReason ?? "None"}
               />
               <Row
                 label="Stale Stripe remnants"
@@ -285,10 +285,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
       </DiagnosticsSection>
 
       <DiagnosticsSection
-        title={isPaddleMode ? "Active Paddle subscription" : "organization_subscriptions"}
+        title={isFastSpringMode ? "Active FastSpring subscription" : "organization_subscriptions"}
         description={
-          isPaddleMode
-            ? `Preferred Paddle-backed subscription for active billing. ${data.allSubscriptions.length} row(s) found for this workspace.`
+          isFastSpringMode
+            ? `Preferred FastSpring-backed subscription for active billing. ${data.allSubscriptions.length} row(s) found for this workspace.`
             : `Preferred subscription row synced from Stripe. ${data.allSubscriptions.length} row(s) found for this workspace.`
         }
       >
@@ -298,24 +298,21 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
             <Row label="Status label" value={statusLabel} />
             <Row label="Raw status" value={subscription.status} />
             <Row label="Billing provider" value={subscription.billing_provider ?? "—"} />
-            {isPaddleMode ? (
+            {isFastSpringMode ? (
               <>
                 <Row
-                  label="Paddle customer ID"
+                  label="FastSpring customer/account ID"
                   value={
-                    <span className="inline-flex flex-wrap items-center gap-2">
-                      <PresenceBadge present={data.hasPaddleCustomerId} />
-                      <code className="font-mono text-xs">
-                        {maskStripeId(subscription.provider_customer_id)}
-                      </code>
-                    </span>
+                    <code className="font-mono text-xs">
+                      {maskStripeId(subscription.provider_customer_id)}
+                    </code>
                   }
                 />
                 <Row
-                  label="Paddle subscription ID"
+                  label="FastSpring subscription ID"
                   value={
                     <span className="inline-flex flex-wrap items-center gap-2">
-                      <PresenceBadge present={data.hasPaddleSubscriptionId} />
+                      <PresenceBadge present={data.hasFastSpringSubscriptionId} />
                       <code className="font-mono text-xs">
                         {maskStripeId(subscription.provider_subscription_id)}
                       </code>
@@ -384,17 +381,17 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
           </dl>
         ) : (
           <p className="text-sm text-muted">
-            {isPaddleMode
-              ? "No active Paddle subscription row selected for this workspace."
+            {isFastSpringMode
+              ? "No active FastSpring subscription row selected for this workspace."
               : "No organization_subscriptions row found."}
           </p>
         )}
       </DiagnosticsSection>
 
-      {isPaddleMode ? (
+      {data.paddleWebhookEvents.length > 0 ? (
         <DiagnosticsSection
-          title="Latest paddle_webhook_events"
-          description={`Latest ${data.paddleWebhookEvents.length} Paddle webhook rows for this workspace.`}
+          title="Legacy paddle_webhook_events (historical archive)"
+          description={`Latest ${data.paddleWebhookEvents.length} historical Paddle webhook rows — retained for audit, never drives active billing.`}
         >
           {data.paddleWebhookEvents.length === 0 ? (
             <p className="text-sm text-muted">No paddle_webhook_events rows for this organization yet.</p>
@@ -433,12 +430,12 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
 
       <DiagnosticsSection
         title={
-          isPaddleMode
+          isFastSpringMode
             ? "Legacy Stripe history — not used for active billing"
             : "Latest customer_invoices"
         }
         description={
-          isPaddleMode
+          isFastSpringMode
             ? "Historical Stripe invoice and webhook rows are preserved for audit and never drive checkout or entitlements."
             : `Latest ${data.invoices.length} invoice rows — stale/demo rows are labeled, never deleted.`
         }

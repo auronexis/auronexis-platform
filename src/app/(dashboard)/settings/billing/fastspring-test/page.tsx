@@ -39,7 +39,7 @@ export default async function FastSpringTestCheckoutPage() {
         module="settings"
         eyebrow="Internal · TEST MODE"
         title="FastSpring Test Checkout"
-        description="Launch an isolated FastSpring test purchase to verify webhook → Supabase subscription sync. Public checkout remains on Paddle."
+        description="Launch an isolated FastSpring test purchase to verify webhook → Supabase subscription sync. Does not affect the live production storefront."
       />
 
       <FastSpringTestCheckoutPanel

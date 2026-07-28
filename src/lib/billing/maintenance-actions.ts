@@ -48,17 +48,17 @@ async function runMaintenanceAction(
 }
 
 /**
- * Neutralize abandoned Stripe checkout remnants so they cannot block Paddle.
+ * Neutralize abandoned Stripe checkout remnants so they cannot block active billing.
  * Stripe API sync actions (refresh/resync) have been removed — Stripe is no
  * longer an active billing provider.
  */
 export async function neutralizeStaleStripeCheckoutAction(): Promise<BillingMaintenanceActionState> {
   return runMaintenanceAction(async () => {
     const session = await requireSession();
-    if (getActiveBillingProvider() !== "paddle") {
+    if (getActiveBillingProvider() !== "fastspring") {
       return {
         success: false,
-        message: "Stale Stripe neutralization requires BILLING_PROVIDER=paddle.",
+        message: "Stale Stripe neutralization requires FastSpring as the active billing provider.",
       };
     }
     return neutralizeStaleStripeCheckoutRemnants(session);

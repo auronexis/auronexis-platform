@@ -25,7 +25,7 @@ Full spec: `docs/02_BUILD_BIBLE_V2_CHAPTER_01_FOUNDATION.md`
 - RLS stays enabled; never weaken tenant isolation
 - Never expose secrets to the client
 - Preserve RBAC; do not widen or shrink roles accidentally
-- **Paddle-only billing** — do not reintroduce Stripe runtime
+- **FastSpring sole billing provider** — do not reintroduce Paddle or Stripe as active runtime billing providers
 - Stripe historical data is archive-only
 - Money: `formatWorkspaceMoney` (CRM) / `formatMoneyFromCentsLocale` (billing cents)
 - No destructive production-data migrations

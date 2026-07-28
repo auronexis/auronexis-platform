@@ -13,18 +13,6 @@ export function isApiRoute(pathname: string): boolean {
   return pathname === "/api" || pathname.startsWith("/api/");
 }
 
-export function isPaddleWebhookRoute(pathname: string): boolean {
-  return pathname === "/api/paddle/webhook" || pathname.startsWith("/api/paddle/");
-}
-
-export function isInboundWebhookRoute(pathname: string): boolean {
-  return (
-    isPaddleWebhookRoute(pathname) ||
-    pathname === "/api/webhooks" ||
-    pathname.startsWith("/api/webhooks/")
-  );
-}
-
 /** Static assets and metadata routes that must never redirect to login. */
 export function isStaticPublicAssetPath(pathname: string): boolean {
   return (
@@ -42,7 +30,7 @@ export function shouldBypassSessionMiddleware(pathname: string): boolean {
 
 /**
  * Marketing apex → www redirect for HTML/marketing traffic only.
- * API routes stay on the requested host so Paddle and other POST webhooks never get 308.
+ * API routes stay on the requested host so FastSpring and other POST webhooks never get 308.
  *
  * Requires removing the blanket apex redirect in Vercel Domains — use vercel.json redirects instead.
  */

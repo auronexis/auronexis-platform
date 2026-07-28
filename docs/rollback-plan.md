@@ -51,7 +51,7 @@ Migrations are **forward-only**. There are no guaranteed down scripts.
 ## 3. Environment rollback
 
 1. Diff Vercel Production env against last known good export / password manager snapshot.
-2. Revert accidental localhost URLs, sandbox Paddle keys on live, missing `CRON_SECRET`, or E2E bypass flags.
+2. Revert accidental localhost URLs, a test FastSpring storefront on live, missing `CRON_SECRET`, or E2E bypass flags.
 3. Redeploy or restart serverless so cold starts pick up secrets.
 4. Re-run environment section of [enterprise-release-checklist.md](./enterprise-release-checklist.md).
 
@@ -64,20 +64,20 @@ Migrations are **forward-only**. There are no guaranteed down scripts.
 | Lever | Action |
 |-------|--------|
 | AI outage / cost spike | Set `AI_PROVIDER=disabled` and redeploy/restart |
-| Plan confusion | Ensure `DEV_FORCE_PLAN` unset; entitlements resolve from Paddle subscriptions |
-| Abandoned `BILLING_PROVIDER` | Ignore — code path is Paddle-only |
+| Plan confusion | Ensure `DEV_FORCE_PLAN` unset; entitlements resolve from FastSpring subscriptions (usable legacy Paddle rows remain entitled) |
+| Abandoned `BILLING_PROVIDER` | Ignore — code path is FastSpring-only |
 
 **Deterministic exit:** Affected surface returns safe empty/degraded state without 500 loops.
 
 ---
 
-## 5. Webhook rollback (Paddle)
+## 5. Webhook rollback (FastSpring)
 
-1. In Paddle dashboard, pause or disable the production notification destination if the handler is poison.
+1. In the FastSpring dashboard, pause or disable the production notification destination if the handler is poison.
 2. Application-rollback the release that broke verification / processing.
 3. Confirm idempotency store still accepts replays (`provider` + event id).
-4. Re-enable webhook; replay failed events from Paddle (or rely on retry + `webhook_retries` job for outbound).
-5. Rotate `PADDLE_WEBHOOK_SECRET` only if secret leakage is suspected — update Vercel then Paddle in the same window.
+4. Re-enable webhook; replay failed events from FastSpring (or rely on retry + `webhook_retries` job for outbound).
+5. Rotate `FASTSPRING_WEBHOOK_SECRET` only if secret leakage is suspected — update Vercel then FastSpring in the same window.
 
 **Deterministic exit:** Test notification verifies; no duplicate entitlement grants.
 

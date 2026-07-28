@@ -2,7 +2,7 @@
 
 **Role:** Independent Enterprise Release Board  
 **Date:** 2026-07-19  
-**Product:** Auroranexis (Next.js 15 / Supabase / Paddle)  
+**Product:** Auroranexis (Next.js 15 / Supabase / FastSpring)  
 **Inputs:** Chapters 1–18 (DoD GO WITH CONDITIONS; Certification CERTIFIED WITH OBSERVATIONS)  
 **Constraints:** No implementation, no features, no architecture/refactor/dependency changes, no commit / push / deploy
 
@@ -12,7 +12,7 @@
 
 The Release Board finds Auroranexis **engineering-ready for a controlled production release**. Chapters 1–18 are Status Implemented; enterprise certification recorded **CERTIFIED WITH OBSERVATIONS**; automated gates (lint, typecheck, build, enterprise regression) pass.
 
-Live production cutover is **not** unconditionally authorized. Operator-owned checklist items (secrets, Paddle live, migrations on target, staging smoke, rollback owners, sign-off) remain open by design until Release execution.
+Live production cutover is **not** unconditionally authorized. Operator-owned checklist items (secrets, FastSpring live storefront, migrations on target, staging smoke, rollback owners, sign-off) remain open by design until Release execution.
 
 # Final decision: APPROVED WITH CONDITIONS
 
@@ -208,12 +208,12 @@ See [technical-debt.md](./technical-debt.md) and Chapter 18 deferred improvement
 ### Conditions (every condition explicit)
 
 1. **Checklist:** Complete [enterprise-release-approval-report.md](./enterprise-release-approval-report.md)-referenced [enterprise-release-checklist.md](./enterprise-release-checklist.md) sections A–O with owners and timestamps before promote.
-2. **Secrets:** Production Vercel/hosting env matches `.env.example` contract; `TURNSTILE_DISABLE`, `E2E_DISABLE_RATE_LIMIT`, and `DEV_FORCE_PLAN` unset; `PADDLE_ENVIRONMENT=production` with live keys.
+2. **Secrets:** Production Vercel/hosting env matches `.env.example` contract; `TURNSTILE_DISABLE`, `E2E_DISABLE_RATE_LIMIT`, and `DEV_FORCE_PLAN` unset; `FASTSPRING_STOREFRONT` set to the live production storefront with live keys (not a test storefront).
 3. **Migrations:** Staging migrations applied successfully; production migration plan + Supabase backup/PITR confirmed.
-4. **Billing smoke:** Staging verification of `/api/paddle/webhook` signature + idempotency, checkout entitlements, portal with verified Paddle customer.
+4. **Billing smoke:** Staging verification of `/api/fastspring/webhook` signature + idempotency, checkout entitlements; no hosted customer portal is promised (FastSpring purchase emails / support only).
 5. **Auth / portal smoke:** Login, reset, portal isolation spot-check on staging.
 6. **Monitoring:** `/api/health` and `/api/ready` monitored; error reporting receiving events from staging/prod target.
-7. **Rollback:** Prior Vercel deployment identified; rollback-plan reviewed by on-call; Paddle webhook disable/rotate steps known.
+7. **Rollback:** Prior Vercel deployment identified; rollback-plan reviewed by on-call; FastSpring webhook disable/rotate steps known.
 8. **Sign-off:** Engineering, Founder/Product, and On-call rows completed on the checklist.
 9. **Deferred debt:** Typed-write / Stripe archive debt remains accepted for V2 and must not be treated as “fixed” by this approval.
 10. **Shipping authority:** This chapter does **not** itself perform commit, push, or deploy — Release operators execute those steps only after conditions 1–8.

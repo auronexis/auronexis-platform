@@ -5,7 +5,7 @@
 > **Rollback:** [rollback-plan.md](./rollback-plan.md)  
 > **Build Bible:** [16_BUILD_BIBLE_V2_CHAPTER_14_PRODUCTION_READINESS.md](./16_BUILD_BIBLE_V2_CHAPTER_14_PRODUCTION_READINESS.md)
 
-This file is retained as a stable entry point. Stripe-era instructions previously here are **obsolete**. Auroranexis billing is **Paddle-only**.
+This file is retained as a stable entry point. Stripe-era and Paddle-era instructions previously here are **obsolete**. Auroranexis billing is **FastSpring-only**.
 
 ## Quick path
 
@@ -18,12 +18,12 @@ npm run test:enterprise-regression
 npm run build
 ```
 
-Configure secrets from `.env.example` (Paddle-first). Never commit real secrets. Never set `TURNSTILE_DISABLE` or `E2E_DISABLE_RATE_LIMIT` in production.
+Configure secrets from `.env.example` (FastSpring-first). Never commit real secrets. Never set `TURNSTILE_DISABLE` or `E2E_DISABLE_RATE_LIMIT` in production.
 
 Webhook endpoint:
 
 ```text
-https://www.auroranexis.com/api/paddle/webhook
+https://www.auroranexis.com/api/fastspring/webhook
 ```
 
 Cron: Vercel hits `GET /api/cron/run` every 5 minutes with `Authorization: Bearer $CRON_SECRET` (requires `CRON_SECRET` in Production).

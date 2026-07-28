@@ -13,7 +13,7 @@ Report: `docs/enterprise-certification-report.md`
 - Chapter 18 is an independent audit — do not implement features, redesign architecture, or perform cosmetic refactors.
 - Certification decision is **CERTIFIED WITH OBSERVATIONS** unless a new critical security or production blocker is proven.
 - Every production module must remain PASS or PASS WITH OBSERVATIONS (no FAIL without explicit remediating work owned by a later release chapter).
-- Preserve auth, RBAC, RLS, Paddle sole-provider path, and API contracts.
+- Preserve auth, RBAC, RLS, FastSpring sole-provider path, and API contracts.
 - Keep Chapters 1–18 Status Implemented with always-apply rules where installed.
 - Do not commit, push, or deploy from Chapter 18 work.
 - Accept documented Version 2 debt only when catalogued and non-blocking.

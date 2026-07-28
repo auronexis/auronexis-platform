@@ -9,19 +9,19 @@ The Operations Command Center for AI Automation Agencies.
 - Next.js 15 App Router + TypeScript + Tailwind CSS
 - Supabase Auth + PostgreSQL multi-tenancy (RLS)
 - RBAC + client portal isolation
-- **Paddle** sole active billing provider
+- **FastSpring** sole active billing provider (Merchant of Record)
 - Background jobs / queue via `/api/cron/run`
 
 ## Prerequisites
 
 - Node.js 22+ / npm 10+
 - [Supabase](https://supabase.com) project
-- Paddle sandbox (or production) credentials for billing
+- FastSpring credentials for billing (API username/password, webhook secret, storefront)
 
 ## Setup
 
 1. `npm install`
-2. `cp .env.example .env.local` — fill Supabase + Paddle + `CRON_SECRET`
+2. `cp .env.example .env.local` — fill Supabase + FastSpring + `CRON_SECRET`
 3. Apply migrations: `supabase db push` (or SQL editor) — all files under `supabase/migrations/` in timestamp order
 4. Configure Supabase Auth Site URL + redirect URLs for your `NEXT_PUBLIC_APP_URL`
 5. `npm run dev` → open the app URL
@@ -43,7 +43,7 @@ The Operations Command Center for AI Automation Agencies.
 | `npm run test:production-readiness` | Chapter 14 deploy readiness contracts |
 | `npm run test:enterprise-regression` | Chapter 13+ regression catalog |
 | `npm run verify:domain-routing` | Domain redirect safety checks |
-| `npm run test:paddle-billing` | Paddle sole-provider suites |
+| `npm run test:fastspring-billing` | FastSpring sole-provider suites (legacy Paddle regression checks) |
 
 ## Production readiness
 
@@ -75,6 +75,6 @@ Production deploy / commit / push are owned by Release chapters — not local Ch
 | PostgreSQL RLS | Organization isolation |
 | Server Actions | Role-based authorization |
 | Middleware | Session refresh + route protection |
-| Paddle webhooks | Signature verify + idempotency |
+| FastSpring webhooks | Signature verify + idempotency (legacy Paddle webhooks retained for historical customers) |
 
 Legal: `/terms`, `/refund-policy`, `/privacy`, `/imprint`.

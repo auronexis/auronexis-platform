@@ -1,7 +1,7 @@
 # Enterprise Deployment Guide
 
 **Canonical** production deployment sequence for Auroranexis.  
-**Billing:** Paddle only.  
+**Billing:** FastSpring only (sole active provider and Merchant of Record). Legacy Paddle/Stripe data is archive-only.  
 **Related:** [enterprise-release-checklist.md](./enterprise-release-checklist.md) · [rollback-plan.md](./rollback-plan.md) · [disaster-recovery.md](./disaster-recovery.md) · [paddle-billing.md](./paddle-billing.md)
 
 This document prepares and describes release steps. **Chapter 14 does not execute production deployment.**
@@ -14,7 +14,7 @@ This document prepares and describes release steps. **Chapter 14 does not execut
 |-------------|--------|
 | Node.js 22+ / npm 10+ | Match CI |
 | Supabase project | Migrations applied in timestamp order (67 files under `supabase/migrations/`) |
-| Paddle Billing (live or sandbox) | Price IDs + webhook endpoint |
+| FastSpring Billing (live storefront) | Product paths + webhook endpoint |
 | Email provider | Resend (or configured SMTP/SES/Mailgun) |
 | Optional AI | `OPENAI_API_KEY` + `AI_PROVIDER` — degrade gracefully if unset |
 | Hosting | Vercel (see `vercel.json`) |
@@ -27,8 +27,8 @@ This document prepares and describes release steps. **Chapter 14 does not execut
 2. Confirm **required** keys from `auditProductionEnvironment()`:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
    - `NEXT_PUBLIC_APP_URL` — production HTTPS host (**no localhost**)
-   - `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`
-   - `PADDLE_ENVIRONMENT=production` for live traffic
+   - `FASTSPRING_API_USERNAME`, `FASTSPRING_API_PASSWORD`, `FASTSPRING_WEBHOOK_SECRET`
+   - `FASTSPRING_STOREFRONT` set to the live production storefront (not a test storefront) for live traffic
 3. Confirm **recommended**:
    - `CRON_SECRET` (required for non-development cron auth)
    - Email provider credentials
@@ -81,8 +81,8 @@ CI workflow: `.github/workflows/ci.yml`.
 ## 5. Application deploy sequence
 
 1. Confirm staging green (same gates as §3).
-2. Set production env vars in Vercel (Paddle **production** tokens).
-3. Register Paddle webhook: `https://www.auroranexis.com/api/paddle/webhook` (or app host matching DNS).
+2. Set production env vars in Vercel (FastSpring **live storefront** and API credentials).
+3. Register FastSpring webhook: `https://www.auroranexis.com/api/fastspring/webhook` (or app host matching DNS).
 4. Confirm Vercel Cron calls `GET /api/cron/run` with `Authorization: Bearer $CRON_SECRET` every **5 minutes** (`vercel.json`). Vercel Cron always uses GET; when `CRON_SECRET` is set, Vercel attaches the Bearer header automatically.
 5. Promote deployment (Release chapter only).
 6. Do **not** enable apex→`/api` redirects that break webhooks (`vercel.json` already excludes `api`).
@@ -95,11 +95,11 @@ CI workflow: `.github/workflows/ci.yml`.
 |-------|-------------|
 | `GET /api/ready` | `200` + `ready: true` |
 | `GET /api/health` | `healthy` or intentional `degraded` (AI optional) |
-| Paddle webhook | Signature verify + idempotent event store |
+| FastSpring webhook | Signature verify + idempotent event store |
 | Cron | Authorized; `queue_worker` / `webhook_retries` execute |
 | Auth | Login / logout / session refresh |
 | Portal | Client portal login + report visibility |
-| Billing | Checkout overlay / customer portal (Paddle customer) |
+| Billing | Checkout overlay (no hosted customer portal — FastSpring purchase emails / support) |
 | SEO | `robots.txt` / sitemap public-only |
 | Observability | Sentry/analytics consent-gated |
 
@@ -125,7 +125,7 @@ See `src/lib/deployment/production-domains.ts`.
 | Plan entitlements | Source of truth — not ad-hoc flags |
 | `AI_PROVIDER=disabled` | Safe AI kill-switch |
 | `DEV_FORCE_PLAN` | Ignored when `NODE_ENV=production` |
-| `BILLING_PROVIDER` | Abandoned — Paddle is always active |
+| `BILLING_PROVIDER` | Abandoned — FastSpring is always active |
 | E2E bypass env vars | Never set on Vercel Production |
 
 ---

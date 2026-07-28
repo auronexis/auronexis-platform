@@ -23,10 +23,11 @@ import {
   type CheckoutBlockState,
 } from "@/lib/billing/checkout-block";
 import {
+  hasVerifiedFastSpringSubscription,
   hasVerifiedPaddleCustomer,
   hasVerifiedPaddleSubscription,
   isStaleStripeAbandonedCheckout,
-  paddleSubscriptionBlocksCheckout,
+  providerSubscriptionBlocksCheckout,
 } from "@/lib/billing/active-billing";
 import { listIgnoredStripeInvoiceIds } from "@/lib/billing/invoices";
 import { getBillingOverview } from "@/lib/billing/queries";
@@ -52,6 +53,11 @@ export type BillingInvoiceDiagnosticView = CustomerInvoiceView & {
   hygieneLabel: string;
 };
 
+/**
+ * Historical-archive-only view. FastSpring is the active billing provider —
+ * `paddle_webhook_events` rows are legacy Paddle webhook deliveries retained
+ * for audit and never drive current checkout, portal, or entitlement logic.
+ */
 export type PaddleWebhookDiagnosticView = {
   id: string;
   providerEventId: string;
@@ -71,12 +77,16 @@ export type BillingProductionDiagnostics = {
   resolvedPlanLabel: string | null;
   hasStripeCustomerId: boolean;
   hasStripeSubscriptionId: boolean;
+  /** Active FastSpring subscription verification. */
+  hasFastSpringSubscriptionId: boolean;
+  fastspringCheckoutBlocked: boolean;
+  fastspringCheckoutBlockReason: string | null;
+  /** Legacy/historical Paddle fields — FastSpring is the active provider. */
   hasPaddleCustomerId: boolean;
   hasPaddleSubscriptionId: boolean;
-  paddleCheckoutAllowed: boolean;
-  paddleCheckoutBlockReason: string | null;
   invoices: BillingInvoiceDiagnosticView[];
   webhookEvents: BillingWebhookEventDiagnosticView[];
+  /** Historical-archive-only Paddle webhook rows — never drives active billing. */
   paddleWebhookEvents: PaddleWebhookDiagnosticView[];
   billingEvents: BillingEventDiagnosticView[];
   hygieneFlags: BillingHygieneFlag[];
@@ -155,6 +165,7 @@ async function listStripeWebhookEventsForOrganization(
     .slice(0, limit);
 }
 
+/** Historical-archive-only — Paddle is not the active billing provider. */
 async function listPaddleWebhookEventsForOrganization(
   organizationId: string,
   limit: number,
@@ -285,15 +296,13 @@ export async function getBillingProductionDiagnostics(
     dangerRecommendationCount: severityCounts.danger,
   });
 
-  const paddleCheckoutAllowed = false;
-  const paddleCheckoutBlockReason =
-    activeProvider === "fastspring"
-      ? "New checkout uses FastSpring. Legacy Paddle checkout is disabled."
-      : activeProvider === "paddle" && checkoutBlock.blocked
-        ? (checkoutBlock.message ?? checkoutBlock.bannerMessage)
-        : activeProvider === "paddle" && paddleSubscriptionBlocksCheckout(subscription)
-          ? "Verified Paddle subscription state blocks checkout."
-          : null;
+  const fastspringCheckoutBlocked =
+    checkoutBlock.blocked || providerSubscriptionBlocksCheckout(subscription);
+  const fastspringCheckoutBlockReason = checkoutBlock.blocked
+    ? (checkoutBlock.message ?? checkoutBlock.bannerMessage)
+    : providerSubscriptionBlocksCheckout(subscription)
+      ? "Verified FastSpring subscription state blocks checkout."
+      : null;
 
   return {
     organizationId,
@@ -305,10 +314,11 @@ export async function getBillingProductionDiagnostics(
     resolvedPlanLabel,
     hasStripeCustomerId: Boolean(subscription?.stripe_customer_id),
     hasStripeSubscriptionId: Boolean(subscription?.stripe_subscription_id),
+    hasFastSpringSubscriptionId: hasVerifiedFastSpringSubscription(subscription),
+    fastspringCheckoutBlocked,
+    fastspringCheckoutBlockReason,
     hasPaddleCustomerId: hasVerifiedPaddleCustomer(subscription),
     hasPaddleSubscriptionId: hasVerifiedPaddleSubscription(subscription),
-    paddleCheckoutAllowed,
-    paddleCheckoutBlockReason,
     invoices: invoiceDiagnostics,
     webhookEvents,
     paddleWebhookEvents,

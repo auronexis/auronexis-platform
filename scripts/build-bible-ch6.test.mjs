@@ -52,11 +52,11 @@ test("cron job actions require session authorization", () => {
   assert.match(jobs, /canManageOrganizationSettings/);
 });
 
-test("paddle webhook fails closed on idempotency store errors", () => {
-  const idem = readSource("src/lib/paddle/idempotency.ts");
-  const route = readSource("src/app/api/paddle/webhook/route.ts");
+test("fastspring webhook fails closed on idempotency store errors", () => {
+  const idem = readSource("src/lib/fastspring/idempotency.ts");
+  const route = readSource("src/app/api/fastspring/webhook/route.ts");
   assert.match(idem, /unavailable/);
-  assert.match(route, /status === \"unavailable\"/);
+  assert.match(route, /status === "unavailable"/);
   assert.match(route, /Webhook processing failed/);
   assert.doesNotMatch(route, /error: message/);
 });

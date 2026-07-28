@@ -4,7 +4,7 @@ Production architecture overview (Build Bible V2 — keep aligned with Chapters 
 
 ## System overview
 
-Auroranexis is a multi-tenant SaaS platform for AI automation agencies. Each **organization** is isolated at the database layer via Supabase Row Level Security (RLS). Users authenticate through Supabase Auth; authorization is enforced server-side through RBAC and plan features. **Paddle** is the sole active billing provider.
+Auroranexis is a multi-tenant SaaS platform for AI automation agencies. Each **organization** is isolated at the database layer via Supabase Row Level Security (RLS). Users authenticate through Supabase Auth; authorization is enforced server-side through RBAC and plan features. **FastSpring** is the sole active billing provider (legacy Paddle runtime removed; historical Paddle/Stripe rows remain archive-only).
 
 ```mermaid
 flowchart TB
@@ -21,7 +21,7 @@ flowchart TB
 
   subgraph External
     Supabase[(Supabase PostgreSQL + Auth)]
-    Paddle[Paddle Billing]
+    FastSpring[FastSpring Billing]
     OpenAI[OpenAI API]
     Resend[Resend Email]
   end
@@ -32,7 +32,7 @@ flowchart TB
   SA --> Supabase
   SA --> AI
   AI --> OpenAI
-  API --> Paddle
+  API --> FastSpring
   SA --> Resend
 ```
 
@@ -50,7 +50,7 @@ flowchart TB
 - `(auth)` — Login, signup, password flows
 - `(dashboard)` — Authenticated workspace (clients, risks, incidents, reports, automation, knowledge, settings)
 - `client-portal` — Client-facing portal (scoped to client records)
-- API routes — Paddle webhooks (`/api/paddle/webhook`), health/ready, cron, public API v1
+- API routes — FastSpring webhooks (`/api/fastspring/webhook`), health/ready, cron, public API v1
 
 ## Multi-tenancy
 
@@ -58,7 +58,7 @@ Every authenticated request resolves an **organization context** from the user's
 
 ## Plans & billing
 
-Plan resolution combines **Paddle** subscription state with entitlements in `src/lib/entitlements/` and plan features in `src/lib/plans/`. Checkout and customer portal use Paddle; feature gates are checked in server actions before sensitive operations. See [paddle-billing.md](./paddle-billing.md).
+Plan resolution combines **FastSpring** subscription state with entitlements in `src/lib/entitlements/` and plan features in `src/lib/plans/`. Checkout uses the FastSpring Store Builder popup; there is no hosted customer portal. Feature gates are checked in server actions before sensitive operations. See [paddle-billing.md](./paddle-billing.md).
 
 ## AI architecture
 
@@ -73,7 +73,7 @@ Detailed AI documentation: [docs/ai.md](./ai.md) and [docs/ai/ARCHITECTURE.md](.
 
 ## Observability
 
-Workspace diagnostics (`/settings/diagnostics`) expose plan source, permissions, AI readiness, **Paddle** configuration presence, and platform health (build version, database latency, cache status). Secrets are never displayed—only presence flags and safe previews.
+Workspace diagnostics (`/settings/diagnostics`) expose plan source, permissions, AI readiness, **FastSpring** configuration presence, and platform health (build version, database latency, cache status). Secrets are never displayed—only presence flags and safe previews.
 
 ## Key design principles
 

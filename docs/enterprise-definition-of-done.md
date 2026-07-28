@@ -105,7 +105,7 @@ npm run typecheck
 npm run build
 npm run test:definition-of-done
 npm run test:enterprise-regression
-npm run test:paddle-billing
+npm run test:fastspring-billing
 ```
 
 Domain suites covered by enterprise regression: SEO, analytics, i18n/currency, a11y (ch10), AI safety, OpenAI contracts.

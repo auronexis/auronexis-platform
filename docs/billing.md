@@ -3,12 +3,12 @@
 > **Canonical billing:** [paddle-billing.md](./paddle-billing.md)  
 > **Ops:** [enterprise-deployment.md](./enterprise-deployment.md) · Build Bible Chapter 12
 
-Auroranexis billing is **Paddle-only**. Historical Stripe tables/columns may remain for archive/diagnostics; they do not drive checkout, portal, or entitlements.
+Auroranexis billing is **FastSpring-only**. Historical Stripe and Paddle tables/columns may remain for archive/diagnostics; they do not drive checkout, portal, or entitlements.
 
 ## Architecture
 
 ```
-organization_subscriptions (Paddle sync)
+organization_subscriptions (FastSpring sync)
         ↓
 billing/ platform (metering, usage, enforcement, history)
         ↓
@@ -17,7 +17,7 @@ billing_events + discount_codes
         ↓
 /settings/billing + /settings/usage + Diagnostics
         ↓
-Paddle Checkout / Customer Portal / Webhooks (/api/paddle/webhook)
+FastSpring Store Builder Checkout / Webhooks (/api/fastspring/webhook)
 ```
 
 ### Module layout (`src/lib/billing/`)
@@ -26,9 +26,9 @@ Paddle Checkout / Customer Portal / Webhooks (/api/paddle/webhook)
 |---------|----------|
 | Types & overview | `types.ts`, `queries.ts` |
 | Plans & pricing | `plans.ts`, `plans.server.ts` (Stripe resolvers retired stubs) |
-| Paddle sync / checkout | `src/lib/paddle/*`, `checkout` actions |
+| FastSpring sync / checkout | `src/lib/fastspring/*`, `checkout` actions |
 | Usage metering | `usage.ts`, `metering.ts`, `enforcement.ts` |
-| Invoices / history | Paddle transaction history; Stripe invoice mirror retired |
+| Invoices / history | FastSpring transaction history; Stripe invoice mirror retired |
 | Diagnostics | `diagnostics.ts`, Settings → Billing → Diagnostics |
 
 ## Related

@@ -101,7 +101,7 @@ test("src has no TODO FIXME HACK markers or console.log", () => {
 
 test("critical production surfaces remain present", () => {
   for (const relative of [
-    "src/app/api/paddle/webhook/route.ts",
+    "src/app/api/fastspring/webhook/route.ts",
     "src/app/api/cron/run/route.ts",
     "src/app/api/health/route.ts",
     "src/app/api/ready/route.ts",
@@ -121,7 +121,10 @@ test("critical production surfaces remain present", () => {
   const provider = readSource("src/lib/billing/provider.ts");
   assert.match(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "stripe"/);
+  assert.doesNotMatch(provider, /return "paddle"/);
   assert.match(provider, /Usable legacy Paddle subscription/);
+  assert.equal(pathExists("src/app/api/paddle/webhook/route.ts"), false);
+  assert.equal(pathExists("src/lib/paddle"), false);
 });
 
 test("DEV_FORCE_PLAN is ignored in production", () => {

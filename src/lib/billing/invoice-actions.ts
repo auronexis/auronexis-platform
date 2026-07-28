@@ -6,15 +6,15 @@ import { canManageOrganizationSettings } from "@/lib/team/guards";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import type { BillingHistoryItem } from "@/lib/billing/history-types";
 import {
-  getPaddleInvoicePdfUrl,
+  getOrganizationBillingTransaction,
   listOrganizationBillingTransactions,
-} from "@/lib/paddle/transactions";
+} from "@/lib/billing/transactions";
 
 export type GetBillingHistoryActionResult =
   | { ok: true; items: BillingHistoryItem[] }
   | { ok: false; error: string };
 
-/** Paginated Paddle billing history for the settings billing history UI. */
+/** Paginated billing history for the settings billing history UI. */
 export async function getBillingHistoryAction(
   options: { limit?: number; offset?: number } = {},
 ): Promise<GetBillingHistoryActionResult> {
@@ -35,15 +35,17 @@ export async function getBillingHistoryAction(
   }
 }
 
-export type OpenPaddleInvoicePdfActionResult = { url: string } | { error: string };
+export type OpenInvoicePdfActionResult = { url: string } | { error: string };
 
 /**
- * Returns a temporary Paddle invoice PDF URL for a transaction owned by the
- * caller's organization. Never returns a URL for a transaction it does not own.
+ * Returns the persisted invoice/receipt URL for a transaction owned by the
+ * caller's organization. Never returns a URL for a transaction it does not
+ * own, and never calls a provider API — only what was stored at webhook
+ * sync time. Legacy Paddle rows without a stored URL report unavailable.
  */
-export async function openPaddleInvoicePdfAction(
+export async function openInvoicePdfAction(
   providerTransactionId: string,
-): Promise<OpenPaddleInvoicePdfActionResult> {
+): Promise<OpenInvoicePdfActionResult> {
   try {
     const session = await requireSession();
 
@@ -56,8 +58,16 @@ export async function openPaddleInvoicePdfAction(
       return { error: "Invoice not found." };
     }
 
-    const url = await getPaddleInvoicePdfUrl(session, trimmedId);
-    return { url };
+    const transaction = await getOrganizationBillingTransaction(session, trimmedId);
+    if (!transaction) {
+      return { error: "Invoice not found." };
+    }
+
+    if (!transaction.hasPdfAvailable || !transaction.invoicePdfUrl) {
+      return { error: "An invoice PDF is not available for this transaction." };
+    }
+
+    return { url: transaction.invoicePdfUrl };
   } catch (error) {
     return {
       error: sanitizeBillingCustomerError(error, "Unable to open the invoice PDF."),
