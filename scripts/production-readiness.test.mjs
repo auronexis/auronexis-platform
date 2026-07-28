@@ -92,6 +92,10 @@ test("cron authorization fails closed outside development", () => {
   assert.match(env, /NODE_ENV === "development"/);
   const cronRoute = readSource("src/app/api/cron/run/route.ts");
   assert.match(cronRoute, /verifyCronAuthorization/);
+  // Vercel Cron invokes GET; authorized GET must dispatch (not health-only).
+  assert.match(cronRoute, /export async function GET/);
+  assert.match(cronRoute, /dispatchDueJobs/);
+  assert.match(cronRoute, /probe/);
 });
 
 test("paddle secrets stay server-only; webhook route exists", () => {

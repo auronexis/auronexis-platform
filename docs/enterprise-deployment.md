@@ -83,7 +83,7 @@ CI workflow: `.github/workflows/ci.yml`.
 1. Confirm staging green (same gates as §3).
 2. Set production env vars in Vercel (Paddle **production** tokens).
 3. Register Paddle webhook: `https://www.auroranexis.com/api/paddle/webhook` (or app host matching DNS).
-4. Confirm Vercel Cron calls `POST /api/cron/run` with `Authorization: Bearer $CRON_SECRET` every **5 minutes** (`vercel.json`).
+4. Confirm Vercel Cron calls `GET /api/cron/run` with `Authorization: Bearer $CRON_SECRET` every **5 minutes** (`vercel.json`). Vercel Cron always uses GET; when `CRON_SECRET` is set, Vercel attaches the Bearer header automatically.
 5. Promote deployment (Release chapter only).
 6. Do **not** enable apex→`/api` redirects that break webhooks (`vercel.json` already excludes `api`).
 

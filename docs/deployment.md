@@ -26,4 +26,4 @@ Webhook endpoint:
 https://www.auroranexis.com/api/paddle/webhook
 ```
 
-Cron: Vercel hits `POST /api/cron/run` every 5 minutes with `Authorization: Bearer $CRON_SECRET`.
+Cron: Vercel hits `GET /api/cron/run` every 5 minutes with `Authorization: Bearer $CRON_SECRET` (requires `CRON_SECRET` in Production).

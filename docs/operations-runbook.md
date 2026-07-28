@@ -22,9 +22,10 @@ Diagnostics: Settings → Diagnostics and Billing → Diagnostics (owner/admin).
 | Endpoint | Method | Auth | Purpose |
 |----------|--------|------|---------|
 | `/api/paddle/webhook` | POST | Paddle signature | Subscription and billing sync |
-| `/api/cron/run` | POST | `Bearer CRON_SECRET` | Execute due cron jobs |
-| `/api/cron/run` | GET | `Bearer CRON_SECRET` | List registered jobs |
-| `/api/cron/run?job=<id>` | POST | `Bearer CRON_SECRET` | Force single job |
+| `/api/cron/run` | GET | `Bearer CRON_SECRET` | Execute due cron jobs (Vercel Cron entrypoint) |
+| `/api/cron/run` | POST | `Bearer CRON_SECRET` | Execute due cron jobs (manual ops) |
+| `/api/cron/run?probe=1` | GET/POST | `Bearer CRON_SECRET` | List registered jobs (no execution) |
+| `/api/cron/run?job=<id>` | GET/POST | `Bearer CRON_SECRET` | Force single job |
 | `/api/health` | GET | Public (rate-limited) | Platform health snapshot |
 | `/api/ready` | GET | Public | Readiness probe |
 
@@ -58,7 +59,7 @@ Diagnostics: Settings → Diagnostics and Billing → Diagnostics (owner/admin).
 
 ### Cron / queue stalled
 
-1. `GET /api/cron/run` with bearer — list jobs.
+1. `GET /api/cron/run?probe=1` with bearer — list jobs.
 2. Confirm Vercel cron schedule is `*/5 * * * *`.
 3. Force `queue_worker` or `webhook_retries` if due work is backed up.
 4. Inspect dead letters before mass replay.

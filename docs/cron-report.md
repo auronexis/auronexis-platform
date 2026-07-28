@@ -68,7 +68,7 @@ Auroranexis now runs scheduled background work through a database-backed cron sy
 | Method | Behavior |
 |--------|----------|
 | `POST` | Dispatch all due jobs, or single job when `?job=<id>` |
-| `GET` | Health probe — returns registered job IDs without execution |
+| `GET` | Execute due jobs (Vercel Cron entrypoint); `?probe=1` lists job IDs without execution |
 
 **Auth:** `verifyCronAuthorization` — `Authorization: Bearer <CRON_SECRET>`. Development bypass when secret unset.
 
@@ -94,10 +94,11 @@ Auroranexis now runs scheduled background work through a database-backed cron sy
 ### Endpoint tests
 
 ```bash
-# Health probe
-curl -H "Authorization: Bearer $CRON_SECRET" https://<domain>/api/cron/run
+# Health probe (no execution)
+curl -H "Authorization: Bearer $CRON_SECRET" "https://<domain>/api/cron/run?probe=1"
 
-# Dispatch all due jobs
+# Dispatch all due jobs (GET is what Vercel Cron uses)
+curl -H "Authorization: Bearer $CRON_SECRET" https://<domain>/api/cron/run
 curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://<domain>/api/cron/run
 
 # Force single job

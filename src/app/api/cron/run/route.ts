@@ -6,13 +6,25 @@ import { listRegisteredJobIds } from "@/lib/jobs/registry";
 
 export const runtime = "nodejs";
 
-/** Cron endpoint — invoke registered background jobs. Requires Bearer CRON_SECRET. */
-export async function POST(request: Request): Promise<Response> {
+/**
+ * Cron dispatcher — requires Bearer CRON_SECRET.
+ * GET is the Vercel Cron entrypoint; POST supports manual ops.
+ * Optional `?job=<id>` forces a single registered job.
+ * Optional `?probe=1` lists registered job IDs without execution.
+ */
+async function handleCron(request: Request): Promise<Response> {
   if (!verifyCronAuthorization(request)) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
   const url = new URL(request.url);
+  if (url.searchParams.get("probe") === "1") {
+    return NextResponse.json({
+      ok: true,
+      jobs: listRegisteredJobIds(),
+    });
+  }
+
   const jobParam = url.searchParams.get("job");
 
   try {
@@ -33,14 +45,10 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-/** Health probe for cron infrastructure (no job execution). */
 export async function GET(request: Request): Promise<Response> {
-  if (!verifyCronAuthorization(request)) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
+  return handleCron(request);
+}
 
-  return NextResponse.json({
-    ok: true,
-    jobs: listRegisteredJobIds(),
-  });
+export async function POST(request: Request): Promise<Response> {
+  return handleCron(request);
 }

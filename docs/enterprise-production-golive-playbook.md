@@ -142,7 +142,7 @@ Canonical narrative: [enterprise-deployment.md](./enterprise-deployment.md). Exa
 ### 4.5 Vercel
 
 1. Deploy Production from `v1.1.0` / `main` release commit.
-2. Confirm cron `POST /api/cron/run` every 5 minutes with bearer secret.
+2. Confirm cron `GET /api/cron/run` every 5 minutes with bearer secret (`CRON_SECRET` must be set in Production).
 3. Confirm apex→www redirects **exclude** `/api`.
 
 ### 4.6 Cache / CDN
