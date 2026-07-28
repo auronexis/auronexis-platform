@@ -193,7 +193,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "13. Cancellation and termination",
         body:
-          "You may cancel future renewals via billing settings, through your FastSpring order confirmation email or FastSpring account access, or by contacting support. Customers with a legacy Paddle-processed subscription may still use the Paddle customer portal where available for that historical subscription. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
+          "You may cancel future renewals via billing settings, through your FastSpring order confirmation email or FastSpring account access, or by contacting support. For questions about a legacy subscription originally purchased through Paddle before our FastSpring transition, contact support with your account email and any available transaction reference. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
       },
       {
         heading: "14. Refunds and withdrawal rights",
