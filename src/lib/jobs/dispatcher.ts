@@ -55,8 +55,15 @@ export async function dispatchJob(jobId: JobId, options?: { force?: boolean }): 
   }
 
   const started = Date.now();
-  const executionId = await createJobExecution(jobId);
   const handler = JOB_HANDLERS[jobId];
+
+  let executionId: string;
+  try {
+    executionId = await createJobExecution(jobId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to create job execution.";
+    return { jobId, status: "failed", durationMs: Date.now() - started, errorMessage: message };
+  }
 
   try {
     const metadata = await handler();
@@ -83,9 +90,14 @@ export async function dispatchDueJobs(): Promise<JobRunResult[]> {
   const results: JobRunResult[] = [];
 
   for (const jobId of jobIds) {
-    const due = await isJobDue(jobId);
-    if (due) {
-      results.push(await dispatchJob(jobId));
+    try {
+      const due = await isJobDue(jobId);
+      if (due) {
+        results.push(await dispatchJob(jobId));
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Job dispatch failed.";
+      results.push({ jobId, status: "failed", durationMs: 0, errorMessage: message });
     }
   }
 
