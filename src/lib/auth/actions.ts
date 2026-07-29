@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { sendEmail } from "@/lib/email/provider";
+import { getDefaultFromEmail, isEmailConfigured } from "@/lib/env/email";
 import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -139,13 +141,39 @@ export async function signUp(
   }
 
   if (isProduction) {
-    await admin.auth.admin
-      .generateLink({
-        type: "signup",
-        email: parsed.data.email,
-        password: parsed.data.password,
-      })
-      .catch(() => undefined);
+    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+      type: "signup",
+      email: parsed.data.email,
+      password: parsed.data.password,
+    });
+
+    const actionLink = linkData?.properties?.action_link?.trim() ?? null;
+
+    if (!actionLink) {
+      console.error("[auth] Signup confirmation link missing:", linkError?.message ?? "unknown");
+    } else if (!isEmailConfigured()) {
+      console.error("[auth] Signup confirmation email skipped — email provider not configured.");
+    } else {
+      const sent = await sendEmail({
+        from: getDefaultFromEmail(),
+        to: parsed.data.email,
+        subject: "Confirm your Auroranexis account",
+        text: [
+          `Hi ${parsed.data.fullName.trim()},`,
+          "",
+          "Confirm your email to finish creating your Auroranexis account:",
+          "",
+          actionLink,
+          "",
+          "If you did not create this account, you can ignore this email.",
+        ].join("\n"),
+      });
+
+      if (!sent.success) {
+        console.error("[auth] Signup confirmation email failed:", sent.error);
+      }
+    }
+
     return { error: "Account created. Confirm your email, then sign in." };
   }
 

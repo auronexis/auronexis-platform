@@ -2,6 +2,7 @@
 
 import { requireSession } from "@/lib/auth/session";
 import { recordEnterpriseActivitySafe } from "@/lib/enterprise/activity";
+import { sendEnterpriseRequestNotificationEmail } from "@/lib/enterprise/notify";
 import type { CreateEnterpriseRequestInput, EnterpriseRequestView } from "@/lib/enterprise/types";
 import { getLatestEnterpriseRequest } from "@/lib/enterprise/queries";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
@@ -60,6 +61,16 @@ export async function createEnterpriseRequestAction(
       eventType: "enterprise.request_created",
       title: "Enterprise plan request submitted",
       metadata: { requestId: request.id },
+    });
+
+    await sendEnterpriseRequestNotificationEmail({
+      contactEmail: request.contact_email ?? session.user.email,
+      companyName: request.company_name ?? session.organization.name,
+      requestedSeats: request.requested_seats,
+      requestedClients: request.requested_clients,
+      notes: request.notes,
+      organizationId: request.organization_id,
+      requestId: request.id,
     });
 
     return {

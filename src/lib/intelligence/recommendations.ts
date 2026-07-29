@@ -1,5 +1,5 @@
 import type { OperationalSnapshot } from "@/lib/ai/insights/queries";
-import { getFirstName, getTimeGreeting } from "@/lib/dashboard/display";
+import { getFirstName } from "@/lib/dashboard/display";
 import type { AppCurrency } from "@/lib/i18n/currency";
 import { formatCurrency } from "@/lib/profitability/types";
 import type {
@@ -57,7 +57,6 @@ export function buildExecutiveBrief(
   ];
 
   return {
-    greeting: getTimeGreeting(),
     firstName: getFirstName(userFullName),
     clientsRequiringAttention,
     overdueReportsCount,

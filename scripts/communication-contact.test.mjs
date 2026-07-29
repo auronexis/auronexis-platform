@@ -64,7 +64,9 @@ test("public AI status maps configured provider to operational with explicit fai
   assert.doesNotMatch(publicStatus, /mapOpenAIStateToPublicDetail/);
   assert.doesNotMatch(publicStatus, /detail: "Unknown"/);
   assert.match(publicStatus, /try \{/);
-  assert.match(statusPage, /await resolvePublicAiStatus/);
+  assert.match(publicStatus, /export async function resolvePublicAiStatus/);
+  assert.match(statusPage, /await getLiveStatusOverrides/);
+  assert.match(statusPage, /resolvePublicOverallStatus/);
 });
 
 test("public contact surfaces do not expose internal mailbox pending state", () => {

@@ -70,5 +70,6 @@ export function getNotificationHref(
 }
 
 export function formatNotificationTimestamp(value: string): string {
-  return formatAppDateTime(value);
+  // Explicit UTC + en locale keeps SSR Client Component output identical across regions.
+  return formatAppDateTime(value, { locale: "en", timeZone: "UTC", timeFormat: "24h" });
 }

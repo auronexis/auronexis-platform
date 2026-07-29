@@ -16,7 +16,7 @@ export type ClientPriorityResult = {
 };
 
 export type ExecutiveBrief = {
-  greeting: string;
+  /** Display name — time-of-day greeting is applied client-side to avoid hydration mismatch. */
   firstName: string;
   clientsRequiringAttention: number;
   overdueReportsCount: number;

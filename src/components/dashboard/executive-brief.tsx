@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { ExecutiveBriefAiLink } from "@/components/dashboard/executive-brief-ai-link";
+import { TimeOfDayGreeting } from "@/components/dashboard/time-of-day-greeting";
 import type { ExecutiveBrief } from "@/lib/intelligence/types";
 import { cn } from "@/lib/utils/cn";
 import { focusRing, linkText, transitionInteractive } from "@/lib/ui/tokens";
@@ -38,7 +39,7 @@ export function ExecutiveBriefPanel({ brief, aiBriefEnabled = false }: Executive
 
           <div>
             <p className="text-lg font-medium text-foreground sm:text-xl">
-              {brief.greeting}, {brief.firstName}.
+              <TimeOfDayGreeting userName={brief.firstName} trailing="." />
             </p>
             <ul className="mt-3 space-y-1.5 text-sm text-muted">
               {brief.summaryLines.map((line) => (
