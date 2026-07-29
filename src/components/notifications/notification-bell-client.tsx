@@ -14,7 +14,7 @@ type NotificationBellClientProps = {
   recent: Notification[];
 };
 
-/** Interactive notification preview — keyboard, touch, and hover accessible. */
+/** Interactive notification preview — click/touch primary; hover keeps one hit zone open. */
 export function NotificationBellClient({ unreadCount, recent }: NotificationBellClientProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ export function NotificationBellClient({ unreadCount, recent }: NotificationBell
   return (
     <div
       ref={rootRef}
-      className="group relative"
+      className="relative"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
@@ -89,34 +89,45 @@ export function NotificationBellClient({ unreadCount, recent }: NotificationBell
         ) : null}
       </button>
 
+      {/*
+        Visual offset uses padding on this bridge (not margin on the panel) so the
+        pointer never leaves the interactive zone when moving from bell → panel.
+      */}
       <div
         id={panelId}
         role="region"
         aria-label="Recent notifications"
         hidden={!open}
         className={cn(
-          "absolute right-0 top-full z-50 mt-2 w-80 origin-top-right rounded-xl border border-border bg-surface shadow-lg",
-          "translate-y-0 scale-100 opacity-100 transition-all duration-150 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]",
-          !open && "pointer-events-none invisible translate-y-1.5 scale-[0.98] opacity-0",
+          "absolute right-0 top-full z-50 w-80 pt-2",
+          !open && "pointer-events-none",
         )}
       >
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <p className="text-sm font-semibold text-foreground">Notifications</p>
-          <Link
-            href="/notifications"
-            className={cn(linkText, "text-xs")}
-            onClick={() => setOpen(false)}
-          >
-            View all
-          </Link>
-        </div>
-        <div className="max-h-80 overflow-y-auto p-3">
-          <NotificationList
-            notifications={recent}
-            compact
-            emptyMessage="You're all caught up"
-            emptyDescription="New alerts for risks, incidents, and reports will appear here."
-          />
+        <div
+          className={cn(
+            "origin-top-right rounded-xl border border-border bg-surface shadow-lg",
+            "translate-y-0 scale-100 opacity-100 transition-all duration-150 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]",
+            !open && "invisible translate-y-1.5 scale-[0.98] opacity-0",
+          )}
+        >
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <p className="text-sm font-semibold text-foreground">Notifications</p>
+            <Link
+              href="/notifications"
+              className={cn(linkText, "text-xs")}
+              onClick={() => setOpen(false)}
+            >
+              View all
+            </Link>
+          </div>
+          <div className="max-h-80 overflow-y-auto p-3">
+            <NotificationList
+              notifications={recent}
+              compact
+              emptyMessage="You're all caught up"
+              emptyDescription="New alerts for risks, incidents, and reports will appear here."
+            />
+          </div>
         </div>
       </div>
     </div>
