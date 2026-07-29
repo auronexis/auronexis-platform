@@ -6,9 +6,9 @@ import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/components/ui/toast";
+import { useWorkspaceMoney } from "@/components/workspace/workspace-money-provider";
 import { markNotificationRead } from "@/lib/notifications/actions";
 import {
-  formatNotificationTimestamp,
   getNotificationHref,
   NOTIFICATION_TYPE_LABELS,
 } from "@/lib/notifications/types";
@@ -61,6 +61,7 @@ type NotificationListItemProps = {
 function NotificationListItem({ notification, compact }: NotificationListItemProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { formatDateTime } = useWorkspaceMoney();
   const isUnread = !notification.read_at;
   const href = getNotificationHref(notification.entity_type, notification.entity_id);
 
@@ -99,7 +100,7 @@ function NotificationListItem({ notification, compact }: NotificationListItemPro
         <p className="mt-1 text-sm text-muted">{notification.message}</p>
       ) : null}
       <p className="mt-1 text-xs text-muted">
-        {formatNotificationTimestamp(notification.created_at)}
+        {formatDateTime(notification.created_at)}
       </p>
     </div>
   );

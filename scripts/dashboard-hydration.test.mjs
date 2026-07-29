@@ -13,6 +13,10 @@ test("executive brief does not bake timezone greeting into SSR payload", () => {
   assert.match(panel, /TimeOfDayGreeting/);
   assert.match(greeting, /useState<string \| null>\(null\)/);
   assert.match(greeting, /setGreeting\(getTimeGreeting\(\)\)/);
+  assert.match(
+    greeting,
+    /greeting \? `\$\{greeting\}, \$\{firstName\}\$\{trailing\}` : firstName/,
+  );
   assert.doesNotMatch(greeting, /suppressHydrationWarning/);
 });
 
@@ -23,7 +27,13 @@ test("command center greeting uses client post-hydration time greeting without s
   assert.doesNotMatch(command, /getTimeGreeting/);
 });
 
-test("notification timestamps use fixed UTC locale for deterministic SSR/client text", () => {
+test("notification timestamps use workspace formatter — not host OS timezone", () => {
+  const list = readSource("src/components/notifications/notification-list.tsx");
   const types = readSource("src/lib/notifications/types.ts");
-  assert.match(types, /formatAppDateTime\(value,\s*\{\s*locale:\s*"en",\s*timeZone:\s*"UTC",\s*timeFormat:\s*"24h"\s*\}\)/);
+
+  assert.match(list, /useWorkspaceMoney/);
+  assert.match(list, /formatDateTime\(notification\.created_at\)/);
+  assert.doesNotMatch(list, /formatNotificationTimestamp/);
+  // Helper keeps an explicit default timezone for non-React callers.
+  assert.match(types, /timeZone: options\?\.timeZone \?\? DEFAULT_TIMEZONE/);
 });

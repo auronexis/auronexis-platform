@@ -1,5 +1,6 @@
 import type { NotificationType } from "@/types/database";
-import { formatAppDateTime } from "@/lib/i18n";
+import { formatAppDateTime, type FormatDateOptions } from "@/lib/i18n";
+import { DEFAULT_TIME_FORMAT, DEFAULT_TIMEZONE } from "@/lib/i18n/regional";
 
 export type NotificationEntityType =
   | "client"
@@ -69,7 +70,17 @@ export function getNotificationHref(
   }
 }
 
-export function formatNotificationTimestamp(value: string): string {
-  // Explicit UTC + en locale keeps SSR Client Component output identical across regions.
-  return formatAppDateTime(value, { locale: "en", timeZone: "UTC", timeFormat: "24h" });
+export function formatNotificationTimestamp(
+  value: string,
+  options?: FormatDateOptions,
+): string {
+  // Prefer explicit workspace/org options from the caller. Default to product
+  // regional defaults (DEFAULT_TIMEZONE is UTC) — never rely on the host OS zone,
+  // which diverges between Vercel SSR and the browser and can hydrate-mismatch.
+  return formatAppDateTime(value, {
+    locale: options?.locale ?? "en",
+    timeZone: options?.timeZone ?? DEFAULT_TIMEZONE,
+    dateFormat: options?.dateFormat,
+    timeFormat: options?.timeFormat ?? DEFAULT_TIME_FORMAT,
+  });
 }

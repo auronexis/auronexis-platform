@@ -27,7 +27,9 @@ export function TimeOfDayGreeting({
     setGreeting(getTimeGreeting());
   }, []);
 
-  const text = greeting ? `${greeting}, ${firstName}` : firstName;
+  // SSR + first client paint: name only (no trailing) so markup matches across timezones
+  // and we avoid a "Name." → "Good evening, Name." punctuation flash.
+  const text = greeting ? `${greeting}, ${firstName}${trailing}` : firstName;
 
-  return <span className={className}>{`${text}${trailing}`}</span>;
+  return <span className={className}>{text}</span>;
 }
