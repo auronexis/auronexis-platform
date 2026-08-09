@@ -36,6 +36,11 @@ function uniquePublicRoutes(): string[] {
   return routes;
 }
 
+/** Public indexable routes shared by sitemap and IndexNow. */
+export function listPublicIndexableRoutes(): string[] {
+  return uniquePublicRoutes();
+}
+
 /** Build the public sitemap — authenticated routes are excluded by design. */
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const baseUrl = getSeoBaseUrl();

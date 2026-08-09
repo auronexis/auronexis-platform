@@ -11,7 +11,7 @@ import { MarketingPace } from "@/components/marketing/marketing-pace";
 import { MarketingFaq, MarketingSection } from "@/components/marketing/marketing-sections";
 import { MarketingStats } from "@/components/marketing/marketing-stats";
 import { MARKETING_ROUTES } from "@/lib/company";
-import { JsonLdScript, breadcrumbJsonLd, enterpriseOfferJsonLd, faqJsonLd, organizationJsonLd } from "@/lib/marketing/seo";
+import { JsonLdScript, breadcrumbJsonLd, enterpriseOfferJsonLd, faqJsonLd, merchantReturnPolicyJsonLd, organizationJsonLd } from "@/lib/marketing/seo";
 import { ENTERPRISE_CONTENT } from "@/lib/marketing/enterprise-content";
 
 export const metadata: Metadata = createPageMetadataForPath("/enterprise");
@@ -24,6 +24,7 @@ export default function EnterprisePage() {
         data={[
           organizationJsonLd(),
           enterpriseOfferJsonLd(),
+          merchantReturnPolicyJsonLd(),
           breadcrumbJsonLd([
             { name: "Home", path: "/" },
             { name: "Enterprise", path: MARKETING_ROUTES.enterprise },

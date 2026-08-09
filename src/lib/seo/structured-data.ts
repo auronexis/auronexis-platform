@@ -1,9 +1,11 @@
 export {
   enterpriseOfferJsonLd,
   faqJsonLd,
+  merchantReturnPolicyJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,
   pricingPageJsonLd,
+  pricingPlanProductsJsonLd,
   softwareApplicationJsonLd,
   websiteJsonLd,
 } from "@/lib/company/company-schema";
@@ -11,6 +13,7 @@ export {
 import { COMPANY_INFORMATION } from "@/lib/company/company-information";
 import { getCanonicalUrl, resolveCanonicalBaseUrl } from "@/lib/company/company-seo";
 import { COMPANY_SEO } from "@/lib/company";
+import { GRAPH_ENTITY_IDS } from "@/lib/seo/entity-graph";
 
 type BreadcrumbItem = {
   name: string;
@@ -19,10 +22,17 @@ type BreadcrumbItem = {
 
 /** Safe BreadcrumbList JSON-LD for pages with visible breadcrumb navigation. */
 export function breadcrumbJsonLd(items: readonly BreadcrumbItem[]) {
+  const seen = new Set<string>();
+  const unique = items.filter((item) => {
+    if (seen.has(item.path)) return false;
+    seen.add(item.path);
+    return true;
+  });
+
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => ({
+    itemListElement: unique.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
@@ -47,17 +57,27 @@ export function articleJsonLd(input: {
     dateModified: input.dateModified,
     publisher: {
       "@type": "Organization",
+      "@id": GRAPH_ENTITY_IDS.organization,
       name: COMPANY_SEO.companyName,
     },
   };
 }
+
+type WebPageSchemaType =
+  | "WebPage"
+  | "AboutPage"
+  | "ContactPage"
+  | "FAQPage"
+  | "CollectionPage"
+  | "PrivacyPolicy"
+  | "TermsOfService";
 
 /** Generic WebPage schema for public marketing surfaces. */
 export function webPageJsonLd(input: {
   title: string;
   description: string;
   path: string;
-  pageType?: "WebPage" | "AboutPage" | "ContactPage";
+  pageType?: WebPageSchemaType;
 }) {
   return {
     "@context": "https://schema.org",
@@ -67,9 +87,13 @@ export function webPageJsonLd(input: {
     url: getCanonicalUrl(input.path).toString(),
     inLanguage: "en",
     isPartOf: {
-      "@type": "WebSite",
-      name: COMPANY_INFORMATION.productName,
-      url: resolveCanonicalBaseUrl(),
+      "@id": GRAPH_ENTITY_IDS.website,
+    },
+    about: {
+      "@id": GRAPH_ENTITY_IDS.organization,
+    },
+    publisher: {
+      "@id": GRAPH_ENTITY_IDS.organization,
     },
   };
 }
@@ -92,6 +116,24 @@ export function contactPageJsonLd(input: { title: string; description: string })
   });
 }
 
+/** PrivacyPolicy WebPage schema. */
+export function privacyPolicyJsonLd(input: { title: string; description: string }) {
+  return webPageJsonLd({
+    ...input,
+    path: "/privacy",
+    pageType: "PrivacyPolicy",
+  });
+}
+
+/** TermsOfService WebPage schema. */
+export function termsOfServiceJsonLd(input: { title: string; description: string }) {
+  return webPageJsonLd({
+    ...input,
+    path: "/terms",
+    pageType: "TermsOfService",
+  });
+}
+
 /** TechArticle schema for product documentation pages. */
 export function techArticleJsonLd(input: {
   title: string;
@@ -108,7 +150,12 @@ export function techArticleJsonLd(input: {
     dateModified: input.dateModified,
     publisher: {
       "@type": "Organization",
+      "@id": GRAPH_ENTITY_IDS.organization,
       name: COMPANY_SEO.companyName,
+    },
+    about: {
+      "@type": "Thing",
+      name: COMPANY_INFORMATION.productName,
     },
   };
 }

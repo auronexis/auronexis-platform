@@ -27,16 +27,20 @@ export {
   contactPageJsonLd,
   enterpriseOfferJsonLd,
   faqJsonLd,
+  merchantReturnPolicyJsonLd,
   organizationJsonLd,
   pilotProgramJsonLd,
   pricingPageJsonLd,
+  pricingPlanProductsJsonLd,
+  privacyPolicyJsonLd,
   softwareApplicationJsonLd,
   techArticleJsonLd,
+  termsOfServiceJsonLd,
   webPageJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/structured-data";
 
-export { buildSitemapEntries, validateSitemapEntries } from "@/lib/seo/sitemap";
+export { buildSitemapEntries, listPublicIndexableRoutes, validateSitemapEntries } from "@/lib/seo/sitemap";
 export { buildRobotsConfig } from "@/lib/seo/robots";
 export {
   classifyRoute,
