@@ -1,7 +1,7 @@
 import "server-only";
 
-import { PUBLIC_SITEMAP_ROUTES } from "@/lib/company/company-links";
 import { resolveCanonicalBaseUrl } from "@/lib/company/company-seo";
+import { listPublicIndexableRoutes } from "@/lib/seo/sitemap";
 
 const INDEXNOW_ENDPOINT = "https://api.indexnow.org/indexnow";
 
@@ -11,10 +11,10 @@ export function getIndexNowKey(): string | null {
   return value && value.length > 0 ? value : null;
 }
 
-/** Absolute public URLs from the sitemap registry (canonical www host). */
+/** Absolute public URLs aligned with sitemap indexability filters (canonical www host). */
 export function listIndexNowUrls(): string[] {
   const base = resolveCanonicalBaseUrl().replace(/\/$/, "");
-  return PUBLIC_SITEMAP_ROUTES.map((path) => {
+  return listPublicIndexableRoutes().map((path) => {
     if (path === "/") {
       return `${base}/`;
     }

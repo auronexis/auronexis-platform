@@ -210,12 +210,16 @@ export function homePageGraphJsonLd(
   organization: Record<string, unknown>,
   website: Record<string, unknown>,
   softwareApplication: Record<string, unknown>,
+  returnPolicy?: Record<string, unknown>,
 ) {
   const graph: Record<string, unknown>[] = [
     stripContext(organization),
     stripContext(website),
     stripContext(softwareApplication),
   ];
+  if (returnPolicy) {
+    graph.push(stripContext(returnPolicy));
+  }
   const faqNode = faqPage(faq);
   if (faqNode) graph.push(faqNode);
 
@@ -225,20 +229,36 @@ export function homePageGraphJsonLd(
   };
 }
 
-export function pricingGraphJsonLd(product: Record<string, unknown>) {
+export function pricingGraphJsonLd(
+  product: Record<string, unknown>,
+  planProducts: readonly Record<string, unknown>[] = [],
+  returnPolicy?: Record<string, unknown>,
+) {
+  const graph: Record<string, unknown>[] = [
+    stripContext(product),
+    ...planProducts.map((item) => stripContext(item)),
+  ];
+
+  if (returnPolicy) {
+    graph.push(stripContext(returnPolicy));
+  }
+
+  graph.push({
+    "@type": ["WebPage", "CollectionPage"],
+    "@id": pageEntityId("/pricing"),
+    name: "Pricing",
+    description: "Professional, Business, and Enterprise subscription plans for Auroranexis.",
+    url: getCanonicalUrl("/pricing").toString(),
+    isPartOf: { "@id": GRAPH_ENTITY_IDS.website },
+    about: { "@id": GRAPH_ENTITY_IDS.product },
+    mainEntity: planProducts.map((item) => ({
+      "@id": typeof item["@id"] === "string" ? item["@id"] : GRAPH_ENTITY_IDS.product,
+    })),
+  });
+
   return {
     "@context": "https://schema.org",
-    "@graph": [
-      stripContext(product),
-      {
-        "@type": "WebPage",
-        "@id": pageEntityId("/pricing"),
-        name: "Pricing",
-        url: getCanonicalUrl("/pricing").toString(),
-        isPartOf: { "@id": GRAPH_ENTITY_IDS.website },
-        about: { "@id": GRAPH_ENTITY_IDS.product },
-      },
-    ],
+    "@graph": graph,
   };
 }
 

@@ -159,6 +159,17 @@ test("pricing structured data matches canonical billing plan prices", () => {
 
   assert.doesNotMatch(schema, /aggregateRating/);
   assert.doesNotMatch(schema, /reviewCount/);
+  assert.match(schema, /MerchantReturnNotPermitted/);
+  assert.match(schema, /hasMerchantReturnPolicy/);
+  assert.match(schema, /OfferShippingDetails/);
+  assert.match(schema, /shippingRate/);
+  assert.match(schema, /merchantReturnPolicyJsonLd/);
+  assert.match(schema, /pricingPlanProductsJsonLd/);
+  assert.match(schema, /contactPoint/);
+  assert.match(schema, /softwareVersion/);
+  // No fabricated public site-search markup without a real search endpoint.
+  assert.doesNotMatch(schema, /"@type":\s*"SearchAction"/);
+  assert.doesNotMatch(schema, /potentialAction/);
 });
 
 test("documentation pages emit TechArticle structured data", () => {
@@ -230,6 +241,7 @@ test("IndexNow submission and key file are wired for Bing discoverability", () =
   assert.match(indexnow, /api\.indexnow\.org\/indexnow/);
   assert.match(indexnow, /INDEXNOW_KEY/);
   assert.match(indexnow, /\.well-known\/\$\{key\}\.txt/);
+  assert.match(indexnow, /listPublicIndexableRoutes/);
   assert.match(route, /submitIndexNowUrls/);
   assert.match(route, /verifyCronAuthorization/);
   assert.match(keyRoute, /getIndexNowKey/);

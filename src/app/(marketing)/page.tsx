@@ -32,7 +32,13 @@ import { MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company";
 import { COMPANY_SEO } from "@/lib/company/company-seo";
 import { createPageMetadataForPath } from "@/lib/seo";
 import { homePageGraphJsonLd } from "@/lib/seo/geo-schema";
-import { JsonLdScript, organizationJsonLd, softwareApplicationJsonLd, websiteJsonLd } from "@/lib/marketing/seo";
+import {
+  JsonLdScript,
+  merchantReturnPolicyJsonLd,
+  organizationJsonLd,
+  softwareApplicationJsonLd,
+  websiteJsonLd,
+} from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
@@ -54,6 +60,7 @@ export default async function MarketingHomePage() {
           organizationJsonLd(),
           websiteJsonLd(),
           softwareApplicationJsonLd(),
+          merchantReturnPolicyJsonLd(),
         )}
       />
 
