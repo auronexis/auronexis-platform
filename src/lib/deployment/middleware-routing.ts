@@ -20,7 +20,8 @@ export function isStaticPublicAssetPath(pathname: string): boolean {
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
     pathname === "/favicon.ico" ||
-    pathname === "/favicon.svg"
+    pathname === "/favicon.svg" ||
+    pathname.startsWith("/.well-known/")
   );
 }
 

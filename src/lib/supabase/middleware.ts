@@ -18,6 +18,7 @@ function isPublicPath(pathname: string): boolean {
     pathname === "/manifest.webmanifest" ||
     pathname === "/favicon.ico" ||
     pathname === "/favicon.svg" ||
+    pathname.startsWith("/.well-known/") ||
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||
     pathname.startsWith("/invite/")
