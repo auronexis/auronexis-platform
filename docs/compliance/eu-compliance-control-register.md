@@ -31,18 +31,35 @@ Status values: `OPEN` | `IN_PROGRESS` | `IMPLEMENTED` | `PARTIAL` | `DOCUMENTED_
 | Field | Content |
 |-------|---------|
 | Legal framework | CRA |
-| Article / Annex | Art. 14 (applies from **11 Sep 2026**) |
+| Article / Annex | Art. 14 (applies from **11 Sep 2026**); Art. 16 SRP |
 | Requirement summary | Ability to notify actively exploited vulnerabilities and severe incidents via ENISA single reporting platform / CSIRT coordinators |
 | Applicability | IF CRA in scope — treat as HIGH prep regardless until scope closed |
-| Current implementation | PARTIAL — security@ contact + internal `security_incidents` registry; no ENISA/CSIRT reporting runbook |
-| Evidence | EVD-SEC-001, EVD-SEC-002, EVD-COMP-001 |
-| Gap | No CRA reporting procedure, severity mapping, or 24h/72h-style operational timers mapped to Art. 14 stages |
-| Required action | Draft CRA reporting runbook; designate on-call owner; monitor ENISA platform readiness |
+| Current implementation | DOCUMENTED — CRA reporting runbook, classification matrix, role matrix, evidence checklist, tabletop; CVD intake from Part 2; internal `security_incidents` registry. SRP operator onboarding **PENDING**. No automatic filings. |
+| Evidence | EVD-SEC-001, EVD-SEC-002, EVD-COMP-001, EVD-CRA-001 |
+| Gap | CRA scope still LEGAL REVIEW REQUIRED; SRP account not onboarded; live tabletop not yet executed/recorded; no automated timers (by design in Part 3) |
+| Required action | Legal scope opinion; SRP onboarding before 2026-09-11; execute and record tabletop |
 | Owner category | Security / Engineering / Legal |
 | Priority | CRITICAL |
 | Deadline | 2026-08-01 (readiness before 2026-09-11) |
 | Verification method | Tabletop exercise + documented notification path |
-| Status | OPEN |
+| Status | PARTIAL |
+
+### CRA-REP-001 — CRA reporting operational readiness package
+| Field | Content |
+|-------|---------|
+| Legal framework | CRA |
+| Article / Annex | Art. 14; Art. 16 |
+| Requirement summary | Documented 24h / 72h / final-report workflows, awareness timestamp control, and evidence preservation |
+| Applicability | Prep for IF CRA in scope |
+| Current implementation | DOCUMENTED — see `docs/compliance/cra-reporting-*.md` and `security-incident-evidence-checklist.md` |
+| Evidence | EVD-CRA-001 |
+| Gap | Not tested in a recorded operator drill; not CRA certified |
+| Required action | Complete tabletop drill record; keep SRP checklist current |
+| Owner category | Security / Legal |
+| Priority | CRITICAL |
+| Deadline | 2026-09-01 |
+| Verification method | Completed `cra-reporting-tabletop.md` drill record |
+| Status | DOCUMENTED |
 
 ### CRA-VULN-002 — Coordinated vulnerability disclosure / security contact
 | Field | Content |

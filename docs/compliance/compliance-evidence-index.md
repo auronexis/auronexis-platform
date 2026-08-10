@@ -19,6 +19,7 @@ Last verified: 2026-08-10 (repository path inspection)
 | EVD-LEGAL-005 | COOKIE-001 | `src/lib/company/legal-content.ts` (cookies/privacy), `/cookies`, `/privacy` | Cookie/privacy disclosures | 2026-08-10 | VERIFIED_PATH |
 | EVD-SEC-001 | CRA-VULN-001, CRA-VULN-002 | `src/lib/company/company-contact.ts` (`security@auroranexis.com`) | Security contact | 2026-08-10 | VERIFIED_PATH |
 | EVD-CVD-001 | CRA-VULN-002 | `src/app/.well-known/security.txt/route.ts`, `src/lib/security/vulnerability-disclosure.ts`, `src/app/(marketing)/security/vulnerability-disclosure/page.tsx`, `docs/compliance/vulnerability-disclosure-runbook.md` | security.txt + public CVD policy + internal runbook | 2026-08-10 | VERIFIED_PATH |
+| EVD-CRA-001 | CRA-VULN-001, CRA-REP-001, GDPR-BREACH-001 | `docs/compliance/cra-reporting-runbook.md`, `cra-incident-classification-matrix.md`, `cra-reporting-role-matrix.md`, `security-incident-evidence-checklist.md`, `cra-reporting-tabletop.md`, `scripts/cra-reporting-readiness.test.mjs` | CRA Art. 14 readiness package (docs + contract tests) | 2026-08-10 | VERIFIED_PATH |
 | EVD-SEC-002 | CRA-VULN-001, GDPR-BREACH-001 | `docs/security-operations.md`, `src/lib/compliance/incidents.ts`, `security_incidents` table (migration) | Internal incident registry | 2026-08-10 | VERIFIED_PATH |
 | EVD-SEC-003 | CRA-SEC-001, GDPR-SEC-001 | `src/lib/security/*` (CSP, CSRF, headers, rate-limit, login-throttle) | Security controls code | 2026-08-10 | VERIFIED_PATH |
 | EVD-SEC-004 | CRA-SEC-001, GDPR-SEC-001 | `docs/security.md`, `docs/security-hardening.md`, `docs/production-security.md` | Security documentation | 2026-08-10 | DOCUMENTED_ONLY |
@@ -51,7 +52,8 @@ Last verified: 2026-08-10 (repository path inspection)
 | `/.well-known/security.txt` | CRA-VULN-002 | Not present in repository search |
 | Machine-readable SBOM artifacts | CRA-SBOM-001 | Lockfile ≠ SBOM |
 | CRA technical documentation pack | CRA-DOC-001 | Not started |
-| ENISA/CSIRT reporting runbook | CRA-VULN-001 | Not started |
+| ENISA/CSIRT reporting runbook | CRA-VULN-001 | Documented in Part 3 (`cra-reporting-runbook.md`); SRP onboarding still PENDING |
+| Recorded CRA tabletop completion | CRA-REP-001 | Drill worksheet exists; execution record empty until operators run it |
 | Published support-period / EOL policy | CRA-SUP-001 | Not started |
 | Independent pen-test report | GDPR-SEC-001 | Not evidenced in repo |
 | Signed AI Act risk classification | AI-GOV-001 | Baseline inventory only |

@@ -31,6 +31,11 @@
 | [accessibility-baseline.md](./accessibility-baseline.md) | EAA / WCAG evidence baseline |
 | [compliance-risk-register.md](./compliance-risk-register.md) | Prioritized compliance risks |
 | [vulnerability-disclosure-runbook.md](./vulnerability-disclosure-runbook.md) | Internal CVD intake/triage runbook (Part 2) |
+| [cra-reporting-runbook.md](./cra-reporting-runbook.md) | Internal CRA Art. 14 reporting readiness (Part 3) |
+| [cra-incident-classification-matrix.md](./cra-incident-classification-matrix.md) | Internal severity vs legal reportability matrix |
+| [cra-reporting-role-matrix.md](./cra-reporting-role-matrix.md) | Role / escalation matrix for CRA reporting |
+| [security-incident-evidence-checklist.md](./security-incident-evidence-checklist.md) | Evidence preservation checklist |
+| [cra-reporting-tabletop.md](./cra-reporting-tabletop.md) | Three-scenario CRA reporting tabletop |
 
 ## Authoritative sources used in Part 1
 
