@@ -51,15 +51,15 @@ Status values: `OPEN` | `IN_PROGRESS` | `IMPLEMENTED` | `PARTIAL` | `DOCUMENTED_
 | Article / Annex | Vulnerability handling / CVD — ARTICLE TO VERIFY (Annex I Part II / Art. related) |
 | Requirement summary | Public security contact and CVD process |
 | Applicability | LIKELY good practice; CRA if in scope |
-| Current implementation | PARTIAL — `security@auroranexis.com`; security-policy page; no `/.well-known/security.txt` |
-| Evidence | EVD-SEC-001, EVD-LEGAL-002 |
-| Gap | Missing security.txt; SLA/metrics for CVD not operationalized |
-| Required action | Add security.txt; formalize CVD policy ops |
+| Current implementation | PARTIAL — `security@auroranexis.com`; `/.well-known/security.txt`; public `/security/vulnerability-disclosure`; internal runbook `docs/compliance/vulnerability-disclosure-runbook.md` |
+| Evidence | EVD-SEC-001, EVD-LEGAL-002, EVD-CVD-001 |
+| Gap | Operational drills / metrics not yet evidenced; CRA Art. 14 filing path still open (`CRA-VULN-001`) |
+| Required action | Tabletop intake drill; keep Expires strategy reviewed annually |
 | Owner category | Security |
 | Priority | HIGH |
 | Deadline | 2026-06-30 |
 | Verification method | Public fetch of security.txt + policy review |
-| Status | OPEN |
+| Status | PARTIAL |
 
 ### CRA-DOC-001 — Technical documentation & conformity assessment readiness
 | Field | Content |

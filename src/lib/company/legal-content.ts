@@ -335,7 +335,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       },
       {
         heading: "Vulnerability reporting",
-        body: `Report security vulnerabilities to ${COMPANY_CONTACT.securityEmail}. Provide sufficient detail to reproduce the issue. Do not perform destructive testing, social engineering, or physical attacks without prior written authorization. We aim to acknowledge reports within five business days.`,
+        body: `Report security vulnerabilities to ${COMPANY_CONTACT.securityEmail}. Follow the Vulnerability Disclosure Policy at /security/vulnerability-disclosure. Provide sufficient detail to reproduce the issue. Do not perform destructive testing, social engineering, or physical attacks without prior written authorization. Operational acknowledgment target: within two business days (not a contractual guarantee).`,
       },
       {
         heading: "Certifications and attestations",

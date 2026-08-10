@@ -108,6 +108,11 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description:
       "Security practices, encryption, access controls, and responsible disclosure for the Auroranexis B2B SaaS platform.",
   },
+  [MARKETING_ROUTES.vulnerabilityDisclosure]: {
+    title: "Vulnerability Disclosure Policy",
+    description:
+      "How to report security vulnerabilities to Auroranexis in good faith, including scope, prohibited testing, and response targets.",
+  },
   [MARKETING_ROUTES.compliance]: {
     title: "Compliance",
     description:

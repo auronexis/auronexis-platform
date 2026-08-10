@@ -40,6 +40,13 @@ export default function SecurityPage() {
           <a href={`mailto:${SECURITY_EMAIL}`} className="font-medium text-primary hover:underline">
             {SECURITY_EMAIL}
           </a>
+          . Read our{" "}
+          <Link
+            href={MARKETING_ROUTES.vulnerabilityDisclosure}
+            className="font-medium text-primary hover:underline"
+          >
+            Vulnerability Disclosure Policy
+          </Link>
           . Review our{" "}
           <Link href={MARKETING_ROUTES.compliance} className="font-medium text-primary hover:underline">
             compliance readiness

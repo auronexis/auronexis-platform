@@ -30,6 +30,7 @@
 | [nis2-dora-supplier-readiness.md](./nis2-dora-supplier-readiness.md) | Supplier readiness for regulated customers |
 | [accessibility-baseline.md](./accessibility-baseline.md) | EAA / WCAG evidence baseline |
 | [compliance-risk-register.md](./compliance-risk-register.md) | Prioritized compliance risks |
+| [vulnerability-disclosure-runbook.md](./vulnerability-disclosure-runbook.md) | Internal CVD intake/triage runbook (Part 2) |
 
 ## Authoritative sources used in Part 1
 
