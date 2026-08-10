@@ -58,7 +58,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "How do I report a security issue?",
-        answer: `Email ${SECURITY_EMAIL} with reproduction steps and impact assessment. Do not include live credentials in your initial report.`,
+        answer: `Email ${SECURITY_EMAIL} with reproduction steps and impact assessment, or read ${MARKETING_ROUTES.vulnerabilityDisclosure}. Do not include live credentials in your initial report.`,
       },
       {
         question: "Do you claim SOC 2 or ISO certifications?",

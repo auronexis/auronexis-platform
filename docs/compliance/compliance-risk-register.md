@@ -88,14 +88,14 @@ Status: `OPEN` | `MITIGATING` | `ACCEPTED` | `CLOSED`
 |-------|---------|
 | Framework | CRA / security good practice |
 | Risk | Vulnerability reports delayed or misrouted |
-| Likelihood | MEDIUM |
+| Likelihood | LOW (after Part 2) |
 | Impact | MEDIUM-HIGH |
 | Legal deadline | Prep by 2026-06-30; CRA Art. 14 2026-09-11 |
-| Current control | security@ + security-policy page |
-| Residual risk | MEDIUM |
-| Required remediation | Publish `/.well-known/security.txt` (later part) |
+| Current control | security@ + `/.well-known/security.txt` + `/security/vulnerability-disclosure` + internal runbook |
+| Residual risk | LOW-MEDIUM |
+| Required remediation | Intake tabletop; monitor mailbox delivery |
 | Owner | Security / Engineering |
-| Status | OPEN |
+| Status | MITIGATING |
 
 ---
 

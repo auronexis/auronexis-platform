@@ -18,6 +18,7 @@ Last verified: 2026-08-10 (repository path inspection)
 | EVD-LEGAL-004 | GDPR-SUB-001 | `src/lib/company/legal-content.ts` (DPA), `/data-processing-agreement` | DPA content | 2026-08-10 | VERIFIED_PATH |
 | EVD-LEGAL-005 | COOKIE-001 | `src/lib/company/legal-content.ts` (cookies/privacy), `/cookies`, `/privacy` | Cookie/privacy disclosures | 2026-08-10 | VERIFIED_PATH |
 | EVD-SEC-001 | CRA-VULN-001, CRA-VULN-002 | `src/lib/company/company-contact.ts` (`security@auroranexis.com`) | Security contact | 2026-08-10 | VERIFIED_PATH |
+| EVD-CVD-001 | CRA-VULN-002 | `src/app/.well-known/security.txt/route.ts`, `src/lib/security/vulnerability-disclosure.ts`, `src/app/(marketing)/security/vulnerability-disclosure/page.tsx`, `docs/compliance/vulnerability-disclosure-runbook.md` | security.txt + public CVD policy + internal runbook | 2026-08-10 | VERIFIED_PATH |
 | EVD-SEC-002 | CRA-VULN-001, GDPR-BREACH-001 | `docs/security-operations.md`, `src/lib/compliance/incidents.ts`, `security_incidents` table (migration) | Internal incident registry | 2026-08-10 | VERIFIED_PATH |
 | EVD-SEC-003 | CRA-SEC-001, GDPR-SEC-001 | `src/lib/security/*` (CSP, CSRF, headers, rate-limit, login-throttle) | Security controls code | 2026-08-10 | VERIFIED_PATH |
 | EVD-SEC-004 | CRA-SEC-001, GDPR-SEC-001 | `docs/security.md`, `docs/security-hardening.md`, `docs/production-security.md` | Security documentation | 2026-08-10 | DOCUMENTED_ONLY |
