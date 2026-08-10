@@ -25,6 +25,7 @@
     "test:openai-integration": "node --test scripts/openai-integration.test.mjs",
     "test:technical-seo": "node --test scripts/technical-seo.test.mjs",
     "test:vulnerability-disclosure": "node --test scripts/vulnerability-disclosure.test.mjs",
+    "test:cra-reporting-readiness": "node --test scripts/cra-reporting-readiness.test.mjs",
     "test:analytics-conversion": "node --test scripts/analytics-conversion.test.mjs",
     "test:communication-contact": "node --test scripts/communication-contact.test.mjs",
     "test:phase-31": "node --test scripts/phase-31-landing-pages.test.mjs",

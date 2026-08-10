@@ -17,11 +17,11 @@ Status: `OPEN` | `MITIGATING` | `ACCEPTED` | `CLOSED`
 | Likelihood | MEDIUM (scope uncertain; date certain) |
 | Impact | HIGH (regulatory enforcement if in scope) |
 | Legal deadline | 2026-09-11 |
-| Current control | security@; internal incident registry |
-| Residual risk | HIGH |
-| Required remediation | Scope opinion + reporting runbook + tabletop by 2026-08-01 |
+| Current control | Part 3 CRA reporting runbook + matrix + roles + evidence checklist + tabletop; Part 2 CVD; internal incident registry; SRP onboarding PENDING |
+| Residual risk | MEDIUM |
+| Required remediation | Legal scope opinion; SRP onboarding; execute recorded tabletop |
 | Owner | Legal + Security |
-| Status | OPEN |
+| Status | MITIGATING |
 
 ### RISK-002 — GDPR personal-data breach notification path incomplete
 | Field | Content |
