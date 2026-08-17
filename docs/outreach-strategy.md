@@ -4,7 +4,7 @@
 
 | Channel | Inbox | Form |
 |---------|-------|------|
-| Website contact | info@ | `/contact` |
+| Website contact | sales@ | `/contact` |
 | Pilot program | sales@ | `/pilot-program#apply` |
 | Demo requests | sales@ | `/contact` (Book demo) |
 | Newsletter | info@ | `/pricing` |

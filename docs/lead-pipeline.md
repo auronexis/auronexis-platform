@@ -28,7 +28,7 @@ Activity types: `note`, `email`, `call`, `meeting`, `status_change`, `outreach`
 
 | Form | Source | Default stage | Inbox |
 |------|--------|---------------|-------|
-| Contact | contact | pilot_lead | info |
+| Contact | contact | pilot_lead | sales |
 | Pilot application | pilot | pilot_application | sales |
 | Book demo | demo | discovery_call | sales |
 | Newsletter | newsletter | pilot_lead | info |

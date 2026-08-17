@@ -130,6 +130,7 @@ async function persistInboundLead(input: CaptureInput): Promise<PersistResult> {
     companyName: input.companyName,
     message: input.message,
     persistFailed: !persisted,
+    correlationId,
   });
 
   if (persisted) {

@@ -99,4 +99,8 @@ export const ENTERPRISE_REGRESSION_SUITE = [
   "scripts/workspace-currency.test.mjs",
   "scripts/openai-integration.test.mjs",
   "scripts/ai-copilot-safety.test.mjs",
+  "scripts/contact-sales-pipeline.test.mjs",
+  "scripts/email-routing-inventory.test.mjs",
+  "scripts/customer-communication-routing.test.mjs",
+  "scripts/communication-contact.test.mjs",
 ];

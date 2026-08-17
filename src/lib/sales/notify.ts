@@ -1,5 +1,6 @@
 import "server-only";
 
+import { safeReplyToAddress } from "@/lib/email/addresses";
 import { getDefaultFromEmail } from "@/lib/env/email";
 import { sendEmail } from "@/lib/email/provider";
 import { getInboxEmail } from "@/lib/sales/pipeline-stages";
@@ -15,12 +16,15 @@ type LeadNotificationInput = {
   message?: string | null;
   /** When true, DB persist failed — email is the sole delivery path. */
   persistFailed?: boolean;
+  correlationId?: string;
 };
 
 export async function sendLeadNotificationEmail(input: LeadNotificationInput): Promise<boolean> {
+  const correlationId = input.correlationId ?? "unknown";
   try {
     const to = getInboxEmail(input.inboxKey);
     const from = getDefaultFromEmail();
+    const replyTo = safeReplyToAddress(input.contactEmail);
     const sourceLabel = getLeadSourceLabel(input.source);
     const persistNote = input.persistFailed
       ? "WARNING: Database persist failed — this email is the only copy of the lead."
@@ -29,11 +33,12 @@ export async function sendLeadNotificationEmail(input: LeadNotificationInput): P
     const result = await sendEmail({
       from,
       to,
-      replyTo: input.contactEmail,
+      ...(replyTo ? { replyTo } : {}),
       subject: `${input.persistFailed ? "[UNPERSISTED] " : ""}[${sourceLabel}] ${input.contactName}${input.companyName ? ` — ${input.companyName}` : ""}`,
       text: [
         `New inbound lead (${sourceLabel})`,
         persistNote,
+        `Correlation: ${correlationId}`,
         "",
         `Name: ${input.contactName}`,
         `Email: ${input.contactEmail}`,
@@ -45,13 +50,17 @@ export async function sendLeadNotificationEmail(input: LeadNotificationInput): P
     });
 
     if (!result.success) {
-      console.error("[sales] Lead notification email failed:", result.error);
+      console.error(
+        `[sales] Lead notification email failed (${correlationId}, inbox=${input.inboxKey}, source=${input.source})`,
+      );
       return false;
     }
 
     return true;
-  } catch (error) {
-    console.error("[sales] Lead notification email failed:", error);
+  } catch {
+    console.error(
+      `[sales] Lead notification email threw (${correlationId}, inbox=${input.inboxKey}, source=${input.source})`,
+    );
     return false;
   }
 }

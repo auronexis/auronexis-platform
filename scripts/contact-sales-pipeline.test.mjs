@@ -23,7 +23,7 @@ test("contact lead capture routes to sales@ and never fakes dual-path failure su
   assert.match(capture, /Unable to save your submission/);
   assert.match(capture, /Lead persisted but notification email failed/);
   assert.match(notify, /const to = getInboxEmail\(input\.inboxKey\)/);
-  assert.match(notify, /replyTo: input\.contactEmail/);
+  assert.match(notify, /safeReplyToAddress/);
   assert.doesNotMatch(notify, /to: input\./);
   assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.sales_leads/);
   assert.match(migration, /GRANT ALL ON TABLE public\.sales_leads TO service_role/);

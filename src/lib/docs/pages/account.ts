@@ -1,4 +1,5 @@
 import type { DocPageInput } from "@/lib/docs/types";
+import { SECURITY_EMAIL } from "@/lib/company/company-contact";
 
 export const BILLING_DOC: DocPageInput = {
   slug: "billing",
@@ -292,7 +293,7 @@ export const SECURITY_DOC: DocPageInput = {
       paragraphs: [
         "Agencies manage sensitive client data — reports, incidents, risk assessments, and operational metrics. The security model ensures that internal team members see only what their role permits, client portal users access only their assigned client, and billing data never resides in application databases.",
         "Audit trails and activity history support internal review and compliance workflows where enabled on your plan. Security controls are designed to be understandable and actionable by agency administrators without requiring specialized security tooling.",
-        "For security concerns, vulnerabilities, or suspected unauthorized access, contact security@auroranexis.com. Include reproduction steps and impact assessment without sharing live credentials or unnecessary client data in your initial report.",
+        `For security concerns, vulnerabilities, or suspected unauthorized access, contact ${SECURITY_EMAIL}. Include reproduction steps and impact assessment without sharing live credentials or unnecessary client data in your initial report.`,
       ],
     },
     {
@@ -402,7 +403,7 @@ export const SECURITY_DOC: DocPageInput = {
         {
           title: "Report a security issue",
           ordered: [
-            "Email security@auroranexis.com with a description of the concern.",
+            `Email ${SECURITY_EMAIL} with a description of the concern.`,
             "Include steps to reproduce, affected modules, and potential impact.",
             "Avoid sharing live credentials or client data in the initial report.",
             "Allow reasonable time for triage and response before public disclosure.",
@@ -493,7 +494,7 @@ export const SECURITY_DOC: DocPageInput = {
           [
             "Suspected unauthorized access",
             "Compromised credentials or misconfigured integration",
-            "Revoke affected API keys, review activity history, reset passwords, and email security@auroranexis.com.",
+            `Revoke affected API keys, review activity history, reset passwords, and email ${SECURITY_EMAIL}.`,
           ],
           [
             "Client asks about SOC 2 or ISO certification",
@@ -523,7 +524,7 @@ export const SECURITY_DOC: DocPageInput = {
     {
       question: "How do I report a security vulnerability?",
       answer:
-        "Email security@auroranexis.com with reproduction steps and impact assessment. Do not include live credentials or unnecessary client data in your report.",
+        `Email ${SECURITY_EMAIL} with reproduction steps and impact assessment. Do not include live credentials or unnecessary client data in your report.`,
     },
     {
       question: "Are API keys retrievable after creation?",

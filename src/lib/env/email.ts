@@ -38,11 +38,13 @@ export function isEmailConfigured(): boolean {
           process.env.AWS_SES_REGION?.trim(),
       );
     case "smtp":
+      // sendViaSmtp currently requires an HTTPS relay; host credentials alone are insufficient.
       return Boolean(
         process.env.SMTP_HOST?.trim() &&
           process.env.SMTP_PORT?.trim() &&
           process.env.SMTP_USER?.trim() &&
-          process.env.SMTP_PASSWORD?.trim(),
+          process.env.SMTP_PASSWORD?.trim() &&
+          process.env.SMTP_RELAY_URL?.trim(),
       );
     default:
       return false;

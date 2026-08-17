@@ -22,7 +22,7 @@ test("lead notification recipient is fixed inbox mapping — never client-contro
 
   assert.match(notify, /const to = getInboxEmail\(input\.inboxKey\)/);
   assert.match(notify, /to,/);
-  assert.match(notify, /replyTo: input\.contactEmail/);
+  assert.match(notify, /safeReplyToAddress/);
   assert.doesNotMatch(notify, /to: input\./);
   assert.match(stages, /key: "info"[\s\S]*email: INFO_EMAIL/);
   assert.match(stages, /key: "sales"[\s\S]*email: SALES_EMAIL/);
@@ -51,10 +51,11 @@ test("enterprise request persists then notifies sales@ — recipient not client-
   assert.match(actions, /from\("enterprise_requests"\)/);
   assert.match(actions, /sendEnterpriseRequestNotificationEmail/);
   assert.match(notify, /to:\s*SALES_EMAIL/);
-  assert.match(notify, /replyTo:\s*input\.contactEmail/);
+  assert.match(notify, /safeReplyToAddress/);
   assert.doesNotMatch(notify, /to:\s*input\./);
   assert.match(company, /salesEmail: "sales@auroranexis\.com"/);
-  // Durable success is DB insert; email is best-effort after persistence.
+  assert.match(actions, /delivery: "persisted"/);
+  assert.match(actions, /delivery: "email_only"/);
   assert.match(actions, /recordEnterpriseActivitySafe/);
 });
 

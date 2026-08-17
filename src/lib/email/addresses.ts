@@ -25,3 +25,16 @@ export function getPlatformNoReplySender(displayName = PLATFORM_NAME): string {
 export function getPlatformSupportSender(displayName = PLATFORM_NAME): string {
   return formatEmailSender(displayName, PLATFORM_EMAIL_ADDRESSES.support);
 }
+
+const SAFE_REPLY_TO_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Reply-To for inbound notifications — submitter address only when safe.
+ * Never use as SMTP From; omit when missing or malformed.
+ */
+export function safeReplyToAddress(email: string | null | undefined): string | undefined {
+  const trimmed = email?.trim();
+  if (!trimmed || trimmed.length > 254) return undefined;
+  if (!SAFE_REPLY_TO_PATTERN.test(trimmed)) return undefined;
+  return trimmed;
+}

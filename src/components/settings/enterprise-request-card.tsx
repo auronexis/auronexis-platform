@@ -81,9 +81,15 @@ export function EnterpriseRequestCard({ status, canManage, autoOpen = false }: E
         return;
       }
 
-      setRequest(result.data);
+      if (result.data) {
+        setRequest(result.data);
+      }
       setShowForm(false);
-      setSuccess("Enterprise request submitted. Our team will contact you to finalize onboarding.");
+      setSuccess(
+        result.delivery === "email_only"
+          ? "Enterprise request received. Our team will contact you to finalize onboarding."
+          : "Enterprise request submitted. Our team will contact you to finalize onboarding.",
+      );
     });
   };
 
