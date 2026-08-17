@@ -39,68 +39,122 @@ type CaptureInput = {
   scheduleDiscovery?: boolean;
 };
 
-async function persistInboundLead(input: CaptureInput): Promise<{ ok: true; leadId: string } | { ok: false; error: string }> {
-  const organizationId = await resolvePlatformSalesOrganizationId();
-  if (!organizationId) {
-    return { ok: false, error: `Lead capture is temporarily unavailable. Please email ${SALES_EMAIL}.` };
-  }
+type PersistResult =
+  | { ok: true; leadId: string | null; persisted: boolean; emailed: boolean }
+  | { ok: false; error: string };
 
+/**
+ * Persist inbound lead then notify Sales.
+ * Failure policy:
+ * - DB ok → success (email best-effort; keep durable lead if email fails)
+ * - DB fail + email ok → success with operator log (Sales still reached)
+ * - DB fail + email fail → error (never fake success)
+ */
+async function persistInboundLead(input: CaptureInput): Promise<PersistResult> {
+  const correlationId = crypto.randomUUID();
+  const organizationId = await resolvePlatformSalesOrganizationId();
   const inboxKey = input.inboxKey ?? defaultInboxForSource(input.source);
   const pipelineStage = defaultStageForSource(input.source);
-  const bookingLink = input.scheduleDiscovery ? buildCalendlyLink(input.contactEmail, input.companyName ?? undefined) : null;
-  const googleMeetUrl = input.scheduleDiscovery ? buildDiscoveryMeetLink(input.contactEmail) : null;
+  const bookingLink = input.scheduleDiscovery
+    ? buildCalendlyLink(input.contactEmail, input.companyName ?? undefined)
+    : null;
+  const googleMeetUrl = input.scheduleDiscovery
+    ? buildDiscoveryMeetLink(input.contactEmail)
+    : null;
 
-  const payload: Database["public"]["Tables"]["sales_leads"]["Insert"] = {
-    organization_id: organizationId,
-    pipeline_stage: pipelineStage,
-    lead_source: input.source,
-    inbox_key: inboxKey,
-    contact_name: input.contactName,
-    contact_email: input.contactEmail,
-    company_name: input.companyName ?? null,
-    company_size: input.companySize ?? null,
-    website: input.website ?? null,
-    industry: input.industry ?? null,
-    employee_count: input.employeeCount ?? null,
-    pain_points: input.painPoints ?? null,
-    message: input.message ?? null,
-    mrr_estimate: input.mrrEstimate ?? null,
-    referral_code: input.referralCode ?? null,
-    utm_source: input.utmSource ?? null,
-    utm_medium: input.utmMedium ?? null,
-    utm_campaign: input.utmCampaign ?? null,
-    booking_link: bookingLink,
-    calendly_event_url: bookingLink,
-    google_meet_url: googleMeetUrl,
-    last_contact_at: new Date().toISOString(),
-  };
+  let leadId: string | null = null;
+  let persisted = false;
 
-  const admin = createAdminClient();
-  const { data, error } = await admin.from("sales_leads").insert(payload as never).select("id").single();
+  if (!organizationId) {
+    console.error(
+      `[sales] Lead persist skipped: platform organization unresolved (${correlationId}, source=${input.source})`,
+    );
+  } else {
+    const payload: Database["public"]["Tables"]["sales_leads"]["Insert"] = {
+      organization_id: organizationId,
+      pipeline_stage: pipelineStage,
+      lead_source: input.source,
+      inbox_key: inboxKey,
+      contact_name: input.contactName,
+      contact_email: input.contactEmail,
+      company_name: input.companyName ?? null,
+      company_size: input.companySize ?? null,
+      website: input.website ?? null,
+      industry: input.industry ?? null,
+      employee_count: input.employeeCount ?? null,
+      pain_points: input.painPoints ?? null,
+      message: input.message ?? null,
+      mrr_estimate: input.mrrEstimate ?? null,
+      referral_code: input.referralCode ?? null,
+      utm_source: input.utmSource ?? null,
+      utm_medium: input.utmMedium ?? null,
+      utm_campaign: input.utmCampaign ?? null,
+      booking_link: bookingLink,
+      calendly_event_url: bookingLink,
+      google_meet_url: googleMeetUrl,
+      last_contact_at: new Date().toISOString(),
+    };
 
-  if (error || !data) {
-    console.error("[sales] Lead insert failed:", error?.message);
-    return { ok: false, error: `Unable to save your submission. Please try again or email ${SALES_EMAIL}.` };
+    const admin = createAdminClient();
+    const { data, error } = await admin.from("sales_leads").insert(payload as never).select("id").single();
+
+    if (error || !data) {
+      console.error(
+        `[sales] Lead insert failed (${correlationId}, source=${input.source}):`,
+        error?.message ?? "unknown insert error",
+      );
+    } else {
+      persisted = true;
+      leadId = data.id;
+      const { error: activityError } = await admin.from("sales_lead_activities").insert({
+        organization_id: organizationId,
+        lead_id: data.id,
+        activity_type: "outreach",
+        subject: `Inbound ${input.source} submission`,
+        body: input.message ?? input.painPoints ?? "Lead captured from public form.",
+      } as never);
+      if (activityError) {
+        console.error(
+          `[sales] Lead activity insert failed (${correlationId}):`,
+          activityError.message,
+        );
+      }
+    }
   }
 
-  await admin.from("sales_lead_activities").insert({
-    organization_id: organizationId,
-    lead_id: data.id,
-    activity_type: "outreach",
-    subject: `Inbound ${input.source} submission`,
-    body: input.message ?? input.painPoints ?? "Lead captured from public form.",
-  } as never);
-
-  await sendLeadNotificationEmail({
+  const emailed = await sendLeadNotificationEmail({
     inboxKey,
     source: input.source,
     contactName: input.contactName,
     contactEmail: input.contactEmail,
     companyName: input.companyName,
     message: input.message,
+    persistFailed: !persisted,
   });
 
-  return { ok: true, leadId: data.id };
+  if (persisted) {
+    if (!emailed) {
+      console.error(
+        `[sales] Lead persisted but notification email failed; durable lead retained (${correlationId}, leadId=${leadId})`,
+      );
+    }
+    return { ok: true, leadId, persisted: true, emailed };
+  }
+
+  if (emailed) {
+    console.error(
+      `[sales] Lead delivered by email only; database persist failed (${correlationId}, source=${input.source})`,
+    );
+    return { ok: true, leadId: null, persisted: false, emailed: true };
+  }
+
+  console.error(
+    `[sales] Lead capture failed on both persist and email (${correlationId}, source=${input.source})`,
+  );
+  return {
+    ok: false,
+    error: `Unable to save your submission. Please try again or email ${SALES_EMAIL}.`,
+  };
 }
 
 async function validatePublicSubmission(email: string): Promise<CaptureActionState | null> {
@@ -162,7 +216,7 @@ export async function submitContactLead(_prev: CaptureActionState, formData: For
 
   const result = await persistInboundLead({
     source: "contact",
-    inboxKey: "info",
+    inboxKey: "sales",
     contactName: parsed.data.name,
     contactEmail: parsed.data.email,
     companyName: parsed.data.company ?? null,

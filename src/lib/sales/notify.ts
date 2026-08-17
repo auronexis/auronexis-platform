@@ -13,6 +13,8 @@ type LeadNotificationInput = {
   contactEmail: string;
   companyName?: string | null;
   message?: string | null;
+  /** When true, DB persist failed — email is the sole delivery path. */
+  persistFailed?: boolean;
 };
 
 export async function sendLeadNotificationEmail(input: LeadNotificationInput): Promise<boolean> {
@@ -20,14 +22,18 @@ export async function sendLeadNotificationEmail(input: LeadNotificationInput): P
     const to = getInboxEmail(input.inboxKey);
     const from = getDefaultFromEmail();
     const sourceLabel = getLeadSourceLabel(input.source);
+    const persistNote = input.persistFailed
+      ? "WARNING: Database persist failed — this email is the only copy of the lead."
+      : null;
 
     const result = await sendEmail({
       from,
       to,
       replyTo: input.contactEmail,
-      subject: `[${sourceLabel}] ${input.contactName}${input.companyName ? ` — ${input.companyName}` : ""}`,
+      subject: `${input.persistFailed ? "[UNPERSISTED] " : ""}[${sourceLabel}] ${input.contactName}${input.companyName ? ` — ${input.companyName}` : ""}`,
       text: [
         `New inbound lead (${sourceLabel})`,
+        persistNote,
         "",
         `Name: ${input.contactName}`,
         `Email: ${input.contactEmail}`,

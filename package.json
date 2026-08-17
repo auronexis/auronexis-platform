@@ -28,6 +28,7 @@
     "test:cra-reporting-readiness": "node --test scripts/cra-reporting-readiness.test.mjs",
     "test:analytics-conversion": "node --test scripts/analytics-conversion.test.mjs",
     "test:communication-contact": "node --test scripts/communication-contact.test.mjs",
+    "test:contact-sales-pipeline": "node --test scripts/contact-sales-pipeline.test.mjs scripts/email-routing-inventory.test.mjs",
     "test:phase-31": "node --test scripts/phase-31-landing-pages.test.mjs",
     "test:phase-32": "node --test scripts/phase-32-ai-search-geo.test.mjs",
     "test:phase-33": "node --test scripts/phase-33-enterprise-trust.test.mjs",

@@ -29,13 +29,18 @@ test("lead notification recipient is fixed inbox mapping — never client-contro
   assert.match(stages, /key: "support"[\s\S]*email: SUPPORT_EMAIL/);
   assert.match(stages, /key: "security"[\s\S]*email: SECURITY_EMAIL/);
 
-  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "info"/);
+  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "sales"/);
   assert.match(capture, /source: "pilot"[\s\S]*inboxKey: "sales"/);
   assert.match(capture, /source: "demo"[\s\S]*inboxKey: "sales"/);
   assert.match(capture, /source: "newsletter"[\s\S]*inboxKey: "info"/);
   assert.match(capture, /source: "referral"[\s\S]*inboxKey: "sales"/);
   assert.match(capture, /checkPublicFormThrottle/);
   assert.match(capture, /success: true/);
+  assert.match(capture, /persistFailed:\s*!persisted/);
+  assert.match(capture, /Lead delivered by email only/);
+  assert.match(capture, /Unable to save your submission/);
+  assert.match(notify, /persistFailed/);
+  assert.match(notify, /\[UNPERSISTED\]/);
 });
 
 test("enterprise request persists then notifies sales@ — recipient not client-controlled", () => {
