@@ -50,7 +50,7 @@ test("public capture surfaces map to intended inboxes and use sendEmail facade",
   assert.match(newsletterForm, /submitNewsletterSignup/);
   assert.match(pilotForm, /submitPilotApplication/);
 
-  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "sales"/);
+  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "info"/);
   assert.match(capture, /source: "referral"[\s\S]*inboxKey: "sales"/);
   assert.match(capture, /source: "demo"[\s\S]*inboxKey: "sales"/);
   assert.match(capture, /source: "pilot"[\s\S]*inboxKey: "sales"/);
@@ -93,6 +93,8 @@ test("enterprise request fail matrix matches persistence policy without exposing
   assert.match(company, /salesEmail: "sales@auroranexis\.com"/);
   assert.match(actions, /from\("enterprise_requests"\)/);
   assert.match(actions, /sendEnterpriseRequestNotificationEmail/);
+  assert.doesNotMatch(actions, /OPEN_REQUEST_STATUSES/);
+  assert.doesNotMatch(actions, /getLatestEnterpriseRequest[\s\S]*return \{ ok: true/);
   assert.match(actions, /correlationId/);
   assert.match(actions, /delivery: "persisted"/);
   assert.match(actions, /delivery: "email_only"/);
@@ -109,6 +111,16 @@ test("enterprise request fail matrix matches persistence policy without exposing
   assert.doesNotMatch(notify, /Resend/);
   assert.match(card, /result\.delivery === "email_only"/);
   assert.match(card, /result\.data/);
+});
+
+test("authenticated minimal footer renders full canonical FOOTER_LINKS", () => {
+  const footer = readSource("src/components/layout/site-footer.tsx");
+  const links = readSource("src/lib/company/company-links.ts");
+
+  assert.match(links, /FOOTER_SECTIONS\.legal/);
+  assert.match(links, /FOOTER_SECTIONS\.company/);
+  assert.match(footer, /FOOTER_LINKS\.map/);
+  assert.doesNotMatch(footer, /FOOTER_LINKS\.slice\(0,\s*4\)/);
 });
 
 test("billing support remains mailto to support@ — not converted to ticketing", () => {

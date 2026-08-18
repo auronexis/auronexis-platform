@@ -178,8 +178,10 @@ export const FOOTER_SECTIONS = {
   ],
 } as const;
 
+/** Compact authenticated/public-inline footer — legal + company parity with marketing sections. */
 export const FOOTER_LINKS = [
-  ...FOOTER_SECTIONS.legal.slice(0, 4),
+  ...FOOTER_SECTIONS.legal,
+  ...FOOTER_SECTIONS.company,
   { label: "Support", href: MARKETING_ROUTES.support },
   { label: "Status", href: MARKETING_ROUTES.status },
   { label: "Documentation", href: MARKETING_ROUTES.documentation },

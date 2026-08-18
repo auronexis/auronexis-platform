@@ -125,7 +125,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
           <div className="flex flex-wrap gap-x-4 gap-y-1">
 
-            {FOOTER_LINKS.slice(0, 4).map((link) => (
+            {FOOTER_LINKS.map((link) => (
 
               <Link key={link.href} href={link.href} className={cn("rounded hover:text-foreground hover:underline", focusRing)}>
 

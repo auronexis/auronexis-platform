@@ -217,7 +217,7 @@ export async function submitContactLead(_prev: CaptureActionState, formData: For
 
   const result = await persistInboundLead({
     source: "contact",
-    inboxKey: "sales",
+    inboxKey: "info",
     contactName: parsed.data.name,
     contactEmail: parsed.data.email,
     companyName: parsed.data.company ?? null,

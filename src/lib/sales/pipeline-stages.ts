@@ -131,8 +131,8 @@ export function defaultStageForSource(source: SalesLeadSource): SalesPipelineSta
 export function defaultInboxForSource(source: SalesLeadSource): SalesInboxKey {
   switch (source) {
     case "newsletter":
-      return "info";
     case "contact":
+      return "info";
     case "referral":
     case "pilot":
     case "demo":

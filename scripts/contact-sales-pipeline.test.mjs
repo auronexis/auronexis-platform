@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readSource } from "./_test-helpers/read-source.mjs";
 
-test("contact lead capture routes to sales@ and never fakes dual-path failure success", () => {
+test("contact lead capture routes to info@ and never fakes dual-path failure success", () => {
   const capture = readSource("src/lib/sales/capture-actions.ts");
   const notify = readSource("src/lib/sales/notify.ts");
   const stages = readSource("src/lib/sales/pipeline-stages.ts");
@@ -10,11 +10,11 @@ test("contact lead capture routes to sales@ and never fakes dual-path failure su
   const contactAction = readSource("src/lib/marketing/contact-action.ts");
   const migration = readSource("supabase/migrations/20250625000000_revenue_pipeline.sql");
 
-  assert.match(company, /salesEmail: "sales@auroranexis\.com"/);
-  assert.match(stages, /key: "sales"[\s\S]*email: SALES_EMAIL/);
-  assert.match(stages, /case "contact":[\s\S]*return "sales"/);
+  assert.match(company, /infoEmail: "info@auroranexis\.com"/);
+  assert.match(stages, /key: "info"[\s\S]*email: INFO_EMAIL/);
+  assert.match(stages, /case "contact":[\s\S]*return "info"/);
   assert.match(contactAction, /submitContactLead/);
-  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "sales"/);
+  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "info"/);
   assert.match(capture, /checkPublicFormThrottle/);
   assert.match(capture, /from\("sales_leads"\)\.insert/);
   assert.match(capture, /sendLeadNotificationEmail/);
