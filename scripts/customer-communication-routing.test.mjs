@@ -50,11 +50,12 @@ test("public capture surfaces map to intended inboxes and use sendEmail facade",
   assert.match(newsletterForm, /submitNewsletterSignup/);
   assert.match(pilotForm, /submitPilotApplication/);
 
-  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "info"/);
-  assert.match(capture, /source: "referral"[\s\S]*inboxKey: "sales"/);
-  assert.match(capture, /source: "demo"[\s\S]*inboxKey: "sales"/);
-  assert.match(capture, /source: "pilot"[\s\S]*inboxKey: "sales"/);
-  assert.match(capture, /source: "newsletter"[\s\S]*inboxKey: "info"/);
+  assert.match(capture, /source: "contact",\s*inboxKey: "info"/);
+  assert.doesNotMatch(capture, /source: "contact",\s*inboxKey: "sales"/);
+  assert.match(capture, /source: "referral",\s*inboxKey: "sales"/);
+  assert.match(capture, /source: "demo",\s*inboxKey: "sales"/);
+  assert.match(capture, /source: "pilot",\s*inboxKey: "sales"/);
+  assert.match(capture, /source: "newsletter",\s*inboxKey: "info"/);
 
   assert.match(notify, /sendEmail\(/);
   assert.match(notify, /getInboxEmail\(input\.inboxKey\)/);
@@ -107,19 +108,57 @@ test("enterprise request fail matrix matches persistence policy without exposing
   assert.match(notify, /to:\s*SALES_EMAIL/);
   assert.match(notify, /safeReplyToAddress/);
   assert.match(notify, /sendEmail\(/);
+  assert.match(notify, /text,/);
+  assert.match(notify, /html,/);
+  assert.match(notify, /ENTERPRISE REQUEST/);
+  assert.match(notify, /labeledPlainText\("Company"/);
+  assert.match(notify, /labeledPlainText\("Contact Email"/);
+  assert.match(notify, /labeledPlainText\("Requested Seats"/);
+  assert.match(notify, /labeledPlainText\("Requested Clients"/);
+  assert.match(notify, /labeledPlainText\("Organization ID"/);
+  assert.match(notify, /labeledPlainText\("Request ID"/);
+  assert.match(notify, /labeledPlainText\("Notes"/);
+  assert.match(notify, /labeledPlainText\("Correlation ID"/);
+  assert.match(notify, /monospace = false/);
+  assert.match(notify, /Organization ID.*true/);
+  assert.match(notify, /Request ID.*true/);
+  assert.doesNotMatch(notify, /Requested seats:/);
+  assert.doesNotMatch(notify, /Organization id:/);
+  assert.doesNotMatch(notify, /from:\s*input\./);
   assert.doesNotMatch(notify, /nodemailer/i);
   assert.doesNotMatch(notify, /Resend/);
   assert.match(card, /result\.delivery === "email_only"/);
   assert.match(card, /result\.data/);
 });
 
-test("authenticated minimal footer renders full canonical FOOTER_LINKS", () => {
+test("authenticated minimal footer uses canonical PRODUCT / LEGAL / COMPANY columns", () => {
   const footer = readSource("src/components/layout/site-footer.tsx");
   const links = readSource("src/lib/company/company-links.ts");
+  const shell = readSource("src/components/layout/dashboard-shell.tsx");
 
+  assert.match(shell, /SiteFooter variant="minimal"/);
+  assert.match(links, /product:\s*\[/);
+  assert.match(links, /legal:\s*\[/);
+  assert.match(links, /company:\s*\[/);
+  assert.match(links, /label: "Features"/);
+  assert.match(links, /label: "Privacy"/);
+  assert.match(links, /label: "About"/);
   assert.match(links, /FOOTER_SECTIONS\.legal/);
   assert.match(links, /FOOTER_SECTIONS\.company/);
-  assert.match(footer, /FOOTER_LINKS\.map/);
+  assert.match(links, /export const FOOTER_LINKS/);
+
+  const minimal = footer.match(/if \(variant === "minimal"\) \{[\s\S]*?(?=if \(variant === "marketing"\))/)?.[0] ?? "";
+  assert.ok(minimal.length > 0, "minimal footer variant must exist");
+  assert.match(minimal, /FooterLinkColumn title="Product" links=\{FOOTER_SECTIONS\.product\}/);
+  assert.match(minimal, /FooterLinkColumn title="Legal" links=\{FOOTER_SECTIONS\.legal\}/);
+  assert.match(minimal, /FooterLinkColumn title="Company" links=\{FOOTER_SECTIONS\.company\}/);
+  assert.doesNotMatch(minimal, /FOOTER_LINKS\.map/);
+  assert.doesNotMatch(minimal, /flex-wrap gap-x-/);
+
+  assert.match(
+    footer,
+    /if \(variant === "marketing"\) \{[\s\S]*FooterLinkColumn dark title="Product" links=\{FOOTER_SECTIONS\.product\}[\s\S]*FooterLinkColumn dark title="Legal" links=\{FOOTER_SECTIONS\.legal\}[\s\S]*FooterLinkColumn dark title="Company" links=\{FOOTER_SECTIONS\.company\}/,
+  );
   assert.doesNotMatch(footer, /FOOTER_LINKS\.slice\(0,\s*4\)/);
 });
 

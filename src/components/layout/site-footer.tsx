@@ -115,25 +115,62 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
       <footer className={cn("border-t border-border/70 bg-surface/40 px-6 py-6", className)}>
 
-        <div className="mx-auto flex max-w-3xl flex-col gap-3 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto w-full">
 
-          <p>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
 
-            © {year} {COMPANY_NAME} · Version {APP_VERSION}
+            <div>
 
-          </p>
+              <AdaptiveBrandLogo
+                branding={platformBranding}
+                layout="horizontal"
+                className="h-7 w-auto max-w-[200px] object-contain"
+              />
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <a
+                href={`mailto:${SUPPORT_EMAIL}`}
+                className={cn(
+                  "mt-3 inline-block rounded text-xs text-muted hover:text-foreground hover:underline",
+                  focusRing,
+                )}
+              >
 
-            {FOOTER_LINKS.map((link) => (
+                {SUPPORT_EMAIL}
 
-              <Link key={link.href} href={link.href} className={cn("rounded hover:text-foreground hover:underline", focusRing)}>
+              </a>
 
-                {link.label}
+              <p className="mt-2 text-xs text-muted">
 
-              </Link>
+                Sales:{" "}
 
-            ))}
+                <a
+                  href={`mailto:${SALES_EMAIL}`}
+                  className={cn("rounded hover:text-foreground hover:underline", focusRing)}
+                >
+
+                  {SALES_EMAIL}
+
+                </a>
+
+              </p>
+
+            </div>
+
+            <FooterLinkColumn title="Product" links={FOOTER_SECTIONS.product} />
+
+            <FooterLinkColumn title="Legal" links={FOOTER_SECTIONS.legal} />
+
+            <FooterLinkColumn title="Company" links={FOOTER_SECTIONS.company} />
+
+          </div>
+
+          <div className="mt-6 flex flex-col gap-1 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+
+            <p>
+
+              © {year} {COMPANY_NAME} · Version {APP_VERSION}
+
+            </p>
 
           </div>
 

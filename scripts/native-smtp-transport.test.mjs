@@ -89,8 +89,9 @@ test("canonical recipients stay inbox-mapped — SMTP_USER is sender not recipie
   assert.match(stages, /key: "support"[\s\S]*email: SUPPORT_EMAIL/);
   assert.match(stages, /key: "info"[\s\S]*email: INFO_EMAIL/);
   assert.match(stages, /key: "security"[\s\S]*email: SECURITY_EMAIL/);
-  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "sales"/);
-  assert.match(capture, /source: "newsletter"[\s\S]*inboxKey: "info"/);
+  assert.match(capture, /source: "contact",\s*inboxKey: "info"/);
+  assert.doesNotMatch(capture, /source: "contact",\s*inboxKey: "sales"/);
+  assert.match(capture, /source: "newsletter",\s*inboxKey: "info"/);
   assert.match(smtp, /to: message\.to/);
   assert.doesNotMatch(smtp, /to:\s*config\.user/);
   assert.doesNotMatch(smtp, /to:\s*process\.env\.SMTP_USER/);

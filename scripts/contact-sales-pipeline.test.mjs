@@ -14,7 +14,8 @@ test("contact lead capture routes to info@ and never fakes dual-path failure suc
   assert.match(stages, /key: "info"[\s\S]*email: INFO_EMAIL/);
   assert.match(stages, /case "contact":[\s\S]*return "info"/);
   assert.match(contactAction, /submitContactLead/);
-  assert.match(capture, /source: "contact"[\s\S]*inboxKey: "info"/);
+  assert.match(capture, /source: "contact",\s*inboxKey: "info"/);
+  assert.doesNotMatch(capture, /source: "contact",\s*inboxKey: "sales"/);
   assert.match(capture, /checkPublicFormThrottle/);
   assert.match(capture, /from\("sales_leads"\)\.insert/);
   assert.match(capture, /sendLeadNotificationEmail/);
