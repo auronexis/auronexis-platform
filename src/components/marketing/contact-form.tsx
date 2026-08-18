@@ -18,8 +18,7 @@ export function ContactForm({ className }: ContactFormProps) {
   if (state.success) {
     return (
       <FormAlert variant="success" className={className}>
-        Thank you. Your message has been received. A team member will follow up via email during
-        the pilot program.
+        Thank you. Your message has been received. Our team will follow up by email.
       </FormAlert>
     );
   }

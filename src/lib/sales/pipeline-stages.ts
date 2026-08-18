@@ -114,7 +114,11 @@ export function getLeadSourceLabel(source: SalesLeadSource): string {
 }
 
 export function getInboxEmail(key: SalesInboxKey): string {
-  return SALES_INBOXES.find((item) => item.key === key)?.email ?? SALES_EMAIL;
+  const inbox = SALES_INBOXES.find((item) => item.key === key);
+  if (!inbox) {
+    throw new Error(`Unknown sales inbox key: ${key}`);
+  }
+  return inbox.email;
 }
 
 export function defaultStageForSource(source: SalesLeadSource): SalesPipelineStage {

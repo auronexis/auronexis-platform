@@ -13,6 +13,7 @@ import {
   SALES_EMAIL,
   SUPPORT_EMAIL,
 } from "@/lib/company/contact";
+import { FOOTER_BRAND_DESCRIPTION } from "@/lib/company/company-links";
 
 import { AdaptiveBrandLogo, BrandLogo } from "@/components/branding/brand-logo";
 import { CookiePreferencesButton } from "@/components/consent/cookie-preferences-modal";
@@ -127,6 +128,10 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
                 className="h-7 w-auto max-w-[200px] object-contain"
               />
 
+              <p className="mt-3 text-xs leading-relaxed text-muted">
+                {FOOTER_BRAND_DESCRIPTION}
+              </p>
+
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
                 className={cn(
@@ -205,7 +210,7 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
               <p className="mt-3 text-sm leading-relaxed text-primary-foreground/75">
 
-                Operations Command Center for AI automation agencies.
+                {FOOTER_BRAND_DESCRIPTION}
 
               </p>
 

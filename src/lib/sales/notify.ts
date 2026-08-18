@@ -25,6 +25,9 @@ export async function sendLeadNotificationEmail(input: LeadNotificationInput): P
     const to = getInboxEmail(input.inboxKey);
     const from = getDefaultFromEmail();
     const replyTo = safeReplyToAddress(input.contactEmail);
+    console.info(
+      `[email] lead envelope source=${input.source} inbox=${input.inboxKey} to=${to} from=${from} correlation=${correlationId}`,
+    );
     const sourceLabel = getLeadSourceLabel(input.source);
     const persistNote = input.persistFailed
       ? "WARNING: Database persist failed — this email is the only copy of the lead."

@@ -92,9 +92,12 @@ test("canonical recipients stay inbox-mapped — SMTP_USER is sender not recipie
   assert.match(capture, /source: "contact",\s*inboxKey: "info"/);
   assert.doesNotMatch(capture, /source: "contact",\s*inboxKey: "sales"/);
   assert.match(capture, /source: "newsletter",\s*inboxKey: "info"/);
+  assert.match(smtp, /export function buildSmtpMailOptions/);
   assert.match(smtp, /to: message\.to/);
+  assert.match(smtp, /transporter\.sendMail\(mail\)/);
   assert.doesNotMatch(smtp, /to:\s*config\.user/);
   assert.doesNotMatch(smtp, /to:\s*process\.env\.SMTP_USER/);
+  assert.doesNotMatch(smtp, /to:\s*process\.env\.SMTP_FROM/);
 });
 
 test("SMTP password cannot appear in logs or returned errors", () => {
@@ -106,7 +109,9 @@ test("SMTP password cannot appear in logs or returned errors", () => {
   assert.match(smtp, /redactSecret/);
   assert.match(smtp, /\[redacted\]/);
   assert.match(smtp, /error: sanitizeSmtpOperationalError\(error\)/);
-  assert.doesNotMatch(smtp, /console\.(log|debug|info|error|warn)\(/);
+  assert.match(smtp, /console\.info\(`\[email\] smtp sendMail to=\$\{formatEnvelopeAddress\(mail\.to\)\} from=\$\{mail\.from\}`\)/);
+  assert.doesNotMatch(smtp, /console\.(log|debug|error|warn)\(/);
+  assert.doesNotMatch(smtp, /console\.info\([\s\S]*password/);
   assert.doesNotMatch(smtp, /JSON\.stringify\([\s\S]*password/);
   assert.doesNotMatch(notify, /SMTP_PASSWORD/);
   assert.doesNotMatch(enterprise, /SMTP_PASSWORD/);

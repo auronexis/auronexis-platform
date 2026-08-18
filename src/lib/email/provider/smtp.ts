@@ -77,6 +77,27 @@ function sanitizeSmtpOperationalError(error: unknown): string {
   return compact.length > 180 ? fallback : compact;
 }
 
+function formatEnvelopeAddress(value: string | string[]): string {
+  return Array.isArray(value) ? value.join(",") : value;
+}
+
+/** Exact payload passed to Nodemailer sendMail — recipient is message.to, never SMTP_USER/SMTP_FROM. */
+export function buildSmtpMailOptions(message: EmailMessage) {
+  return {
+    from: message.from,
+    to: message.to,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
+    replyTo: message.replyTo,
+    attachments: message.attachments?.map((attachment) => ({
+      filename: attachment.filename,
+      content: attachment.content,
+      contentType: attachment.contentType,
+    })),
+  };
+}
+
 /**
  * Native SMTP transport (STRATO: smtp.strato.de:465, secure TLS).
  * Requires SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM.
@@ -98,19 +119,9 @@ export async function sendViaSmtp(message: EmailMessage): Promise<EmailSendResul
   });
 
   try {
-    const info = await transporter.sendMail({
-      from: message.from,
-      to: message.to,
-      subject: message.subject,
-      html: message.html,
-      text: message.text,
-      replyTo: message.replyTo,
-      attachments: message.attachments?.map((attachment) => ({
-        filename: attachment.filename,
-        content: attachment.content,
-        contentType: attachment.contentType,
-      })),
-    });
+    const mail = buildSmtpMailOptions(message);
+    console.info(`[email] smtp sendMail to=${formatEnvelopeAddress(mail.to)} from=${mail.from}`);
+    const info = await transporter.sendMail(mail);
 
     return { success: true, messageId: info.messageId };
   } catch (error) {

@@ -149,6 +149,8 @@ test("authenticated minimal footer uses canonical PRODUCT / LEGAL / COMPANY colu
 
   const minimal = footer.match(/if \(variant === "minimal"\) \{[\s\S]*?(?=if \(variant === "marketing"\))/)?.[0] ?? "";
   assert.ok(minimal.length > 0, "minimal footer variant must exist");
+  assert.match(links, /FOOTER_BRAND_DESCRIPTION/);
+  assert.match(minimal, /FOOTER_BRAND_DESCRIPTION/);
   assert.match(minimal, /FooterLinkColumn title="Product" links=\{FOOTER_SECTIONS\.product\}/);
   assert.match(minimal, /FooterLinkColumn title="Legal" links=\{FOOTER_SECTIONS\.legal\}/);
   assert.match(minimal, /FooterLinkColumn title="Company" links=\{FOOTER_SECTIONS\.company\}/);

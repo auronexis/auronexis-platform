@@ -140,6 +140,10 @@ export const HELP_LINKS = {
   feedback: `mailto:${COMPANY_CONTACT.supportEmail}?subject=${encodeURIComponent("Product feedback")}`,
 } as const;
 
+/** Canonical public/authenticated footer brand line — do not omit in compact layouts. */
+export const FOOTER_BRAND_DESCRIPTION =
+  "Operations Command Center for AI automation agencies.";
+
 export const FOOTER_SECTIONS = {
   product: [
     { label: "Features", href: MARKETING_ROUTES.features },

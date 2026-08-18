@@ -104,4 +104,5 @@ export const ENTERPRISE_REGRESSION_SUITE = [
   "scripts/customer-communication-routing.test.mjs",
   "scripts/native-smtp-transport.test.mjs",
   "scripts/communication-contact.test.mjs",
+  "scripts/contact-footer-parity.test.mjs",
 ];
