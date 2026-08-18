@@ -102,5 +102,6 @@ export const ENTERPRISE_REGRESSION_SUITE = [
   "scripts/contact-sales-pipeline.test.mjs",
   "scripts/email-routing-inventory.test.mjs",
   "scripts/customer-communication-routing.test.mjs",
+  "scripts/native-smtp-transport.test.mjs",
   "scripts/communication-contact.test.mjs",
 ];

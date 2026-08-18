@@ -38,13 +38,12 @@ export function isEmailConfigured(): boolean {
           process.env.AWS_SES_REGION?.trim(),
       );
     case "smtp":
-      // sendViaSmtp currently requires an HTTPS relay; host credentials alone are insufficient.
       return Boolean(
         process.env.SMTP_HOST?.trim() &&
           process.env.SMTP_PORT?.trim() &&
           process.env.SMTP_USER?.trim() &&
           process.env.SMTP_PASSWORD?.trim() &&
-          process.env.SMTP_RELAY_URL?.trim(),
+          process.env.SMTP_FROM?.trim(),
       );
     default:
       return false;
@@ -53,6 +52,13 @@ export function isEmailConfigured(): boolean {
 
 /** Platform default sender address for transactional email. */
 export function getDefaultFromEmail(): string {
+  if (getEmailProviderId() === "smtp") {
+    const smtpFrom = process.env.SMTP_FROM?.trim();
+    if (smtpFrom) {
+      return smtpFrom;
+    }
+  }
+
   const configured =
     process.env.EMAIL_FROM?.trim() ||
     process.env.RESEND_FROM_EMAIL?.trim() ||

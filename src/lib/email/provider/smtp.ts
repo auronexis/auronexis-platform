@@ -1,72 +1,121 @@
 import "server-only";
 
+import nodemailer from "nodemailer";
 import type { EmailMessage, EmailSendResult } from "@/lib/email/types";
 
-function getSmtpConfig(): {
+type SmtpTransportConfig = {
   host: string;
   port: number;
+  secure: boolean;
   user: string;
   password: string;
-} | null {
+};
+
+function parseSmtpPort(raw: string | undefined): number | null {
+  const port = Number(raw?.trim());
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) return null;
+  return port;
+}
+
+/** Port 465 always uses implicit TLS. SMTP_SECURE=true enables it on other ports. */
+function resolveSmtpSecure(port: number): boolean {
+  if (port === 465) {
+    return true;
+  }
+
+  const raw = process.env.SMTP_SECURE?.trim().toLowerCase();
+  return raw === "true" || raw === "1" || raw === "yes";
+}
+
+function getNativeSmtpConfig(): SmtpTransportConfig | null {
   const host = process.env.SMTP_HOST?.trim();
-  const portRaw = process.env.SMTP_PORT?.trim();
+  const port = parseSmtpPort(process.env.SMTP_PORT);
   const user = process.env.SMTP_USER?.trim();
   const password = process.env.SMTP_PASSWORD?.trim();
-  if (!host || !portRaw || !user || !password) return null;
+  const from = process.env.SMTP_FROM?.trim();
+  if (!host || port === null || !user || !password || !from) {
+    return null;
+  }
 
-  const port = Number(portRaw);
-  if (!Number.isFinite(port)) return null;
+  return {
+    host,
+    port,
+    secure: resolveSmtpSecure(port),
+    user,
+    password,
+  };
+}
 
-  return { host, port, user, password };
+function redactSecret(text: string, secret: string): string {
+  if (!secret) return text;
+  return text.split(secret).join("[redacted]");
+}
+
+function sanitizeSmtpOperationalError(error: unknown): string {
+  const fallback = "Unable to send email via SMTP.";
+  if (!(error instanceof Error) || !error.message.trim()) {
+    return fallback;
+  }
+
+  const secret = process.env.SMTP_PASSWORD?.trim() ?? "";
+  let text = redactSecret(error.message, secret);
+  text = text.replace(/pass(?:word)?\s*[:=]\s*\S+/gi, "password=[redacted]");
+
+  if (secret && text.includes(secret)) {
+    return fallback;
+  }
+
+  if (/SMTP_PASSWORD/i.test(text)) {
+    return fallback;
+  }
+
+  const compact = text.replace(/\s+/g, " ").trim();
+  if (!compact) {
+    return fallback;
+  }
+
+  return compact.length > 180 ? fallback : compact;
 }
 
 /**
- * SMTP relay via provider HTTP bridge or future native transport.
- * Configure Supabase Auth custom SMTP with the same credentials in production.
+ * Native SMTP transport (STRATO: smtp.strato.de:465, secure TLS).
+ * Requires SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM.
  */
 export async function sendViaSmtp(message: EmailMessage): Promise<EmailSendResult> {
-  const config = getSmtpConfig();
+  const config = getNativeSmtpConfig();
   if (!config) {
-    return { success: false, error: "SMTP host, port, user, or password is not configured." };
+    return { success: false, error: "SMTP is not configured for this environment." };
   }
 
-  const relayUrl = process.env.SMTP_RELAY_URL?.trim();
-  if (!relayUrl) {
-    return {
-      success: false,
-      error:
-        "SMTP relay URL is not configured. Use SMTP_RELAY_URL for an HTTPS relay, or switch EMAIL_PROVIDER to resend/postmark/mailgun.",
-    };
-  }
+  const transporter = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: {
+      user: config.user,
+      pass: config.password,
+    },
+  });
 
   try {
-    const response = await fetch(relayUrl, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...(process.env.SMTP_RELAY_TOKEN?.trim()
-          ? { Authorization: `Bearer ${process.env.SMTP_RELAY_TOKEN.trim()}` }
-          : {}),
-      },
-      body: JSON.stringify({
-        host: config.host,
-        port: config.port,
-        user: config.user,
-        password: config.password,
-        message,
-      }),
+    const info = await transporter.sendMail({
+      from: message.from,
+      to: message.to,
+      subject: message.subject,
+      html: message.html,
+      text: message.text,
+      replyTo: message.replyTo,
+      attachments: message.attachments?.map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+        contentType: attachment.contentType,
+      })),
     });
 
-    const payload = (await response.json()) as { messageId?: string; error?: string };
-
-    if (!response.ok) {
-      return { success: false, error: payload.error ?? "SMTP relay rejected the email request." };
-    }
-
-    return { success: true, messageId: payload.messageId };
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    const messageText = error instanceof Error ? error.message : "Unable to send email via SMTP relay.";
-    return { success: false, error: messageText };
+    return { success: false, error: sanitizeSmtpOperationalError(error) };
+  } finally {
+    transporter.close();
   }
 }

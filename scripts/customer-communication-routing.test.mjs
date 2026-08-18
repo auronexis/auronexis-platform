@@ -138,13 +138,15 @@ test("security mailbox stays isolated via COMPANY_CONTACT", () => {
   assert.doesNotMatch(accountDocs, /security@auroranexis\.com/);
 });
 
-test("SMTP readiness requires relay URL so configured!=false-positive", () => {
+test("SMTP readiness uses native SMTP vars and does not require a relay URL", () => {
   const env = readSource("src/lib/env/email.ts");
   const smtp = readSource("src/lib/email/provider/smtp.ts");
   const provider = readSource("src/lib/email/provider/index.ts");
 
-  assert.match(env, /case "smtp":[\s\S]*SMTP_RELAY_URL/);
-  assert.match(smtp, /SMTP_RELAY_URL/);
+  assert.match(env, /case "smtp":[\s\S]*SMTP_FROM/);
+  assert.doesNotMatch(env, /SMTP_RELAY_URL/);
+  assert.doesNotMatch(smtp, /SMTP_RELAY_URL/);
+  assert.match(smtp, /nodemailer\.createTransport/);
   assert.match(provider, /case "smtp":[\s\S]*sendViaSmtp/);
   assert.doesNotMatch(provider, /nodemailer/i);
 });
