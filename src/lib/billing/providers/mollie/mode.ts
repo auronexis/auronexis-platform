@@ -24,3 +24,25 @@ export function assertMollieApiModeForPaymentOps(apiKey: string): MollieApiMode 
   }
   return mode;
 }
+
+/** Resolve credential mode from server env — null when missing or unknown prefix. */
+export function getMollieCredentialMode(): MollieApiMode | null {
+  const raw = process.env.MOLLIE_API_KEY?.trim();
+  if (!raw) {
+    return null;
+  }
+  return resolveMollieApiModeFromKey(raw);
+}
+
+/**
+ * Fail closed unless MOLLIE_API_KEY is present and TEST-prefixed.
+ * All Mollie write operations (customer, payment, subscription) must call this first.
+ */
+export function assertMollieTestModeOnly(): void {
+  const mode = getMollieCredentialMode();
+  if (mode !== "test") {
+    throw new Error(
+      "Mollie payment operations require TEST mode credentials (test_ prefix). Live, unknown, or missing keys are rejected.",
+    );
+  }
+}

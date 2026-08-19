@@ -1,6 +1,5 @@
 /**
- * Mollie Phase 1 foundation — mapping, correlation, and idempotency design.
- * No runtime payment creation in this phase; documents Phase 2+ contracts only.
+ * Mollie foundation — mapping, correlation, and idempotency design.
  */
 
 /** Mollie Customer.metadata — correlate to Auroranexis organization. */
@@ -15,38 +14,37 @@ export const MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID = "auroranexis_checkout_attempt
 /**
  * Canonical business state (Auroranexis) vs provider state (Mollie):
  *
- * | Auroranexis (organization_subscriptions) | Mollie resource        |
- * |------------------------------------------|------------------------|
- * | organization_id                          | Customer.metadata      |
- * | billing_provider = 'mollie' (Phase 2+)   | —                      |
- * | provider_customer_id                     | Customer.id (cst_*)    |
- * | provider_subscription_id                 | Subscription.id (sub_*)|
- * | provider_price_id                        | Subscription amount/description or catalog ref |
- * | provider_status                          | Subscription.status    |
- * | status (normalized)                      | derived from Subscription + Payment webhooks |
- * | current_period_*                         | Subscription interval/next payment |
- * | sync_pending                             | true until webhook fetch confirms |
+ * | Auroranexis (mollie_test_subscriptions) | Mollie resource        |
+ * |-----------------------------------------|------------------------|
+ * | organization_id                         | Customer.metadata      |
+ * | provider_customer_id                    | Customer.id (cst_*)    |
+ * | provider_subscription_id                | Subscription.id (sub_*)|
+ * | provider_price_id / plan_key            | Subscription amount/description or catalog ref |
+ * | provider_status                         | Subscription.status    |
+ * | status (normalized)                     | derived from Subscription + Payment webhooks |
+ * | sync_pending                            | true until webhook fetch confirms |
  *
+ * Parallel test state in mollie_test_subscriptions — never organization_subscriptions or entitlements.
  * Enterprise plans remain manual — no Mollie self-serve checkout (contact sales flow untouched).
  */
 
 /**
- * Phase 2+ idempotency strategy (no payment creation in Phase 1):
+ * Idempotency strategy:
  *
  * 1. Inbound webhooks: dedicated `mollie_webhook_events` ledger (provider + event id unique),
  *    mirroring fastspring_webhook_events. Always fetch authoritative object from Mollie API
- *    before mutating organization_subscriptions.
- * 2. Outbound charge/subscription creation: deterministic idempotency key =
- *    `${organizationId}:${checkoutAttemptId}` stored on Payment.metadata and checked before POST.
+ *    before mutating mollie_test_subscriptions.
+ * 2. Outbound charge/subscription creation: deterministic idempotency key on POST.
  * 3. Payload hash mismatch on redelivery → fail closed (same pattern as FastSpring).
  */
 
-export type MollieFoundationPhase = "phase_1_foundation";
+export type MollieFoundationPhase = "phase_2_test_lifecycle";
 
-export const MOLLIE_FOUNDATION_PHASE: MollieFoundationPhase = "phase_1_foundation";
+export const MOLLIE_FOUNDATION_PHASE: MollieFoundationPhase = "phase_2_test_lifecycle";
 
 /**
- * Phase 2+ webhook contract (not implemented in Phase 1):
- * - POST /api/mollie/webhook — verify signature, enqueue idempotency, fetch resource from API.
+ * Phase 2 webhook contract:
+ * - POST /api/mollie/webhook — extract payment id, idempotency ledger, fetch resource from API.
  * - Never trust webhook body alone for subscription state mutations.
+ * - Parallel test state in mollie_test_subscriptions (never organization_subscriptions / entitlements).
  */

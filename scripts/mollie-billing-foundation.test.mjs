@@ -79,12 +79,12 @@ test("Mollie connectivity API route exists and is authorized", () => {
   assert.match(route, /foundation-only|does not activate billing/i);
 });
 
-test("No Mollie webhook route in Phase 1", () => {
-  assert.equal(pathExists("src/app/api/mollie/webhook/route.ts"), false);
+test("Mollie webhook route exists in Phase 2", () => {
+  assert.equal(pathExists("src/app/api/mollie/webhook/route.ts"), true);
 });
 
-test("No Mollie checkout implementation in Phase 1", () => {
-  assert.equal(pathExists("src/lib/billing/providers/mollie/checkout.ts"), false);
+test("Mollie checkout implementation exists in Phase 2", () => {
+  assert.equal(pathExists("src/lib/billing/providers/mollie/checkout.ts"), true);
   const actions = readSource("src/lib/billing/actions.ts");
   assert.doesNotMatch(actions, /mollie/i);
 });
@@ -126,12 +126,11 @@ test("Canonical plan prices unchanged — SUBSCRIPTION_PLANS source of truth", (
   assert.match(plans, /currency: "USD"/);
 });
 
-test("Database billing_provider CHECK still stripe/paddle/fastspring — no Phase 1 migration", () => {
-  const migration = readSource("supabase/migrations/20250726120000_fastspring_webhook_foundation.sql");
-  assert.match(migration, /'stripe', 'paddle', 'fastspring'/);
-  assert.doesNotMatch(migration, /'mollie'/);
+test("Database billing_provider CHECK includes mollie in Phase 2 migration", () => {
+  const migration = readSource("supabase/migrations/20250820000000_mollie_test_subscription_lifecycle.sql");
+  assert.match(migration, /'mollie'/);
   const dbTypes = readSource("src/types/database.ts");
-  assert.match(dbTypes, /billing_provider: "stripe" \| "paddle" \| "fastspring"/);
+  assert.match(dbTypes, /billing_provider: "stripe" \| "paddle" \| "fastspring" \| "mollie"/);
 });
 
 test("platform-health exposes Mollie foundation diagnostics", () => {
@@ -164,7 +163,7 @@ test("Mollie client factory fails closed on invalid key prefix", () => {
   assert.match(mode, /Invalid MOLLIE_API_KEY prefix/);
 });
 
-test("Runtime source file count within Phase 1 boundary (≤10)", () => {
+test("Runtime source file count within Phase 2 boundary (≤15)", () => {
   const runtimeFiles = [
     "src/lib/billing/providers/mollie/env.ts",
     "src/lib/billing/providers/mollie/mode.ts",
@@ -172,12 +171,18 @@ test("Runtime source file count within Phase 1 boundary (≤10)", () => {
     "src/lib/billing/providers/mollie/connectivity.ts",
     "src/lib/billing/providers/mollie/foundation.ts",
     "src/lib/billing/providers/mollie/index.ts",
+    "src/lib/billing/providers/mollie/customer.ts",
+    "src/lib/billing/providers/mollie/checkout.ts",
+    "src/lib/billing/providers/mollie/webhooks.ts",
+    "src/lib/billing/providers/mollie/sync.ts",
+    "src/lib/billing/providers/mollie/test-checkout-actions.ts",
     "src/lib/billing/provider-types.ts",
     "src/lib/diagnostics/platform-health.ts",
     "src/app/api/mollie/connectivity/route.ts",
+    "src/app/api/mollie/webhook/route.ts",
   ];
   for (const file of runtimeFiles) {
     assert.ok(pathExists(file), `Missing ${file}`);
   }
-  assert.ok(runtimeFiles.length <= 10, `Too many runtime files: ${runtimeFiles.length}`);
+  assert.ok(runtimeFiles.length <= 15, `Too many runtime files: ${runtimeFiles.length}`);
 });
