@@ -33,6 +33,7 @@
     "test:phase-32": "node --test scripts/phase-32-ai-search-geo.test.mjs",
     "test:phase-33": "node --test scripts/phase-33-enterprise-trust.test.mjs",
     "test:fastspring-billing": "node --test scripts/fastspring-billing-migration.test.mjs scripts/fastspring-webhook.test.mjs scripts/fastspring-sole-provider.test.mjs",
+    "test:mollie-billing": "node --test scripts/mollie-billing-foundation.test.mjs",
     "test:fastspring-webhook": "node --test scripts/fastspring-webhook.test.mjs",
     "test:build-bible-ch1": "node --test scripts/build-bible-ch1.test.mjs",
     "test:build-bible-ch2": "node --test scripts/build-bible-ch2.test.mjs",
@@ -69,6 +70,7 @@
     "seed:pilot": "node scripts/seed-pilot-environment.mjs"
   },
   "dependencies": {
+    "@mollie/api-client": "4.6.0",
     "@sentry/nextjs": "^10.62.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",

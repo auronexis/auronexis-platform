@@ -9,12 +9,16 @@
  * portal access, or entitlements.
  *
  * "fastspring" is the sole active checkout provider.
+ *
+ * "mollie" is a parallel foundation provider (Phase 1+) — not active for checkout,
+ * entitlements, or portal until a later cutover phase. Generic provider_* columns
+ * on organization_subscriptions are the intended persistence target.
  */
 
 import type { FastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
 import type { FastSpringProductPath } from "@/lib/billing/catalog";
 
-export type BillingProvider = "stripe" | "paddle" | "fastspring";
+export type BillingProvider = "stripe" | "paddle" | "fastspring" | "mollie";
 
 /** Self-serve / commercial plans sold via checkout (excludes internal starter fallback). */
 export type InternalPlan = "professional" | "business" | "enterprise";

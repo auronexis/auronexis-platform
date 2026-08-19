@@ -8,6 +8,11 @@ import {
   getFastSpringApiCredentialPresence,
   isFastSpringWebhookConfigured,
 } from "@/lib/fastspring/env";
+import {
+  getMollieApiKeyPresence,
+  isMollieApiConfigured,
+  probeMollieApiConnectivity,
+} from "@/lib/billing/providers/mollie";
 import { isFastSpringStorefrontConfigured } from "@/lib/fastspring/storefront";
 
 export type DatabaseHealthLevel = "healthy" | "degraded" | "unavailable";
@@ -226,6 +231,76 @@ export function checkFastSpringStorefrontHealth(): HealthCheckResult {
     level: "healthy",
     message: "FastSpring storefront configured: yes",
   };
+}
+
+/**
+ * Mollie API key presence — foundation only; Mollie is not the active billing provider.
+ * Never returns or logs the key value.
+ */
+export function checkMollieApiConfigHealth(): HealthCheckResult {
+  const presence = getMollieApiKeyPresence();
+  if (!presence.configured) {
+    return {
+      ok: false,
+      level: "degraded",
+      message: "MOLLIE_API_KEY configured: no (foundation — not active billing)",
+    };
+  }
+
+  if (!presence.validKeyPrefix) {
+    return {
+      ok: false,
+      level: "degraded",
+      message: "MOLLIE_API_KEY prefix invalid — expected test_ or live_",
+    };
+  }
+
+  return {
+    ok: true,
+    level: "healthy",
+    message: `MOLLIE_API_KEY configured: yes (${presence.mode ?? "unknown"} mode, foundation only)`,
+  };
+}
+
+/**
+ * Live Mollie API auth probe (read-only methods.list). Sanitized result only — no secrets.
+ */
+export async function checkMollieApiConnectivityHealth(): Promise<HealthCheckResult> {
+  const result = await probeMollieApiConnectivity();
+  if (result.connected) {
+    return {
+      ok: true,
+      level: "healthy",
+      message: `Mollie API connected (${result.mode ?? "unknown"} mode, read-only probe)`,
+    };
+  }
+
+  if (result.errorCategory === "not_configured") {
+    return {
+      ok: false,
+      level: "degraded",
+      message: "MOLLIE_API_KEY configured: no (foundation — not active billing)",
+    };
+  }
+
+  if (result.errorCategory === "invalid_key_prefix") {
+    return {
+      ok: false,
+      level: "degraded",
+      message: "MOLLIE_API_KEY prefix invalid — expected test_ or live_",
+    };
+  }
+
+  return {
+    ok: false,
+    level: "degraded",
+    message: `Mollie API not connected (${result.errorCategory ?? "unknown"})`,
+  };
+}
+
+/** Whether Mollie foundation credentials are present (no key value). */
+export function isMollieFoundationConfigured(): boolean {
+  return isMollieApiConfigured();
 }
 
 /** Active billing provider label for diagnostics (no secrets). */
