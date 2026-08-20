@@ -12,6 +12,7 @@ export {
 } from "@/lib/billing/providers/mollie/connectivity";
 export {
   assertMollieApiModeForPaymentOps,
+  assertMolliePaymentOpsAllowed,
   assertMollieTestModeOnly,
   getMollieCredentialMode,
   resolveMollieApiModeFromKey,
@@ -19,10 +20,18 @@ export {
 } from "@/lib/billing/providers/mollie/mode";
 export {
   MOLLIE_FOUNDATION_PHASE,
+  MOLLIE_METADATA_BILLING_SURFACE,
   MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID,
   MOLLIE_METADATA_ORGANIZATION_ID,
   MOLLIE_METADATA_PLAN_KEY,
 } from "@/lib/billing/providers/mollie/foundation";
+export {
+  isMollieBillingRolloutEnabled,
+  isMollieLiveChargingEnabled,
+  isMollieProductionCheckoutEligible,
+  isOrganizationOnMollieAllowlist,
+  parseMollieBillingOrgAllowlist,
+} from "@/lib/billing/providers/mollie/rollout";
 export { getOrCreateMollieCustomer } from "@/lib/billing/providers/mollie/customer";
 export {
   createMollieFirstPayment,
@@ -37,6 +46,19 @@ export {
   type MollieTestCheckoutPayload,
   type MollieTestDiagnostics,
 } from "@/lib/billing/providers/mollie/checkout";
+export {
+  createMollieProductionFirstPayment,
+  getOrCreateMollieOrganizationCustomer,
+  isMollieProductionCheckoutConfigured,
+} from "@/lib/billing/providers/mollie/production-checkout";
+export {
+  cancelMollieOrganizationSubscription,
+  changeMollieOrganizationPlan,
+} from "@/lib/billing/providers/mollie/lifecycle";
+export {
+  getMollieOrganizationSubscription,
+  upsertMollieOrganizationSubscription,
+} from "@/lib/billing/providers/mollie/organization-sync";
 export {
   getMollieTestSubscriptionForOrg,
   type MollieTestSubscriptionRow,

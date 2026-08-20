@@ -26,8 +26,21 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
-  if (getMollieCredentialMode() !== "test") {
-    console.error("[mollie] webhook rejected — non-TEST credentials");
+  const credentialMode = getMollieCredentialMode();
+  if (credentialMode === "test") {
+    // Phase 2/3 TEST path — always accept.
+  } else if (credentialMode === "live") {
+    const liveEnabled =
+      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "1" ||
+      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "true" ||
+      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "yes" ||
+      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "on";
+    if (!liveEnabled) {
+      console.error("[mollie] webhook rejected — LIVE charging disabled");
+      return NextResponse.json({ error: "Webhook not available" }, { status: 503 });
+    }
+  } else {
+    console.error("[mollie] webhook rejected — invalid or missing credentials");
     return NextResponse.json({ error: "Webhook not available" }, { status: 503 });
   }
 

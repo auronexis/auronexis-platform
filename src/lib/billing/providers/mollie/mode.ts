@@ -36,7 +36,7 @@ export function getMollieCredentialMode(): MollieApiMode | null {
 
 /**
  * Fail closed unless MOLLIE_API_KEY is present and TEST-prefixed.
- * All Mollie write operations (customer, payment, subscription) must call this first.
+ * Phase 2 isolated test lifecycle and any TEST-only surfaces must call this first.
  */
 export function assertMollieTestModeOnly(): void {
   const mode = getMollieCredentialMode();
@@ -45,4 +45,37 @@ export function assertMollieTestModeOnly(): void {
       "Mollie payment operations require TEST mode credentials (test_ prefix). Live, unknown, or missing keys are rejected.",
     );
   }
+}
+
+/**
+ * Phase 3 production payment ops guard.
+ * - TEST keys always allowed when configured.
+ * - LIVE keys require explicit MOLLIE_LIVE_CHARGING_ENABLED — default fail closed.
+ * Never mixes modes; never invents credentials.
+ */
+export function assertMolliePaymentOpsAllowed(): MollieApiMode {
+  const mode = getMollieCredentialMode();
+  if (mode === "test") {
+    return "test";
+  }
+
+  if (mode === "live") {
+    // Lazy import avoided — rollout helper is sync and server-only.
+    const liveEnabled =
+      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "1" ||
+      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "true" ||
+      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "yes" ||
+      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "on";
+
+    if (!liveEnabled) {
+      throw new Error(
+        "Mollie LIVE charging is disabled. Set MOLLIE_LIVE_CHARGING_ENABLED=true only after explicit go-live approval.",
+      );
+    }
+    return "live";
+  }
+
+  throw new Error(
+    "Mollie payment operations require a valid MOLLIE_API_KEY (test_ or live_ prefix).",
+  );
 }

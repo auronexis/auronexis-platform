@@ -78,6 +78,11 @@ export function evaluateCheckoutGuard(input: {
     }
 
     if (target.order <= current.order) {
+      // Mollie has no hosted portal — plan changes (incl. downgrade) go through
+      // the same checkout/plan-change action. FastSpring still uses portal messaging.
+      if (input.activeProvider === "mollie") {
+        return { allowed: true, reason: null };
+      }
       return {
         allowed: false,
         reason: "Use the billing portal to downgrade or manage your current subscription.",

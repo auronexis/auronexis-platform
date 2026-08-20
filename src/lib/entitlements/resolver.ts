@@ -9,10 +9,11 @@ import {
   getOrganizationSubscription,
   ORGANIZATION_SUBSCRIPTION_SELECT,
 } from "@/lib/billing/queries";
-import { getActiveBillingProvider } from "@/lib/billing/provider";
+import { getOrganizationBillingProvider } from "@/lib/billing/provider-selection";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 import {
   isFastSpringBackedSubscription,
+  isMollieBackedSubscription,
   resolveActiveBillingStatusFlags,
 } from "@/lib/billing/active-billing";
 import { getEffectiveLimits } from "@/lib/enterprise/limits";
@@ -27,6 +28,7 @@ import { getDevForcePlanOverride } from "@/lib/plans/dev-override";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
+import type { BillingProvider } from "@/lib/billing/provider-types";
 
 export type EntitlementFallbackPath = "paid_plan" | "minimal_access" | "starter_default";
 
@@ -38,8 +40,6 @@ async function loadOrganizationSubscription(
   organizationId: string,
   session?: SessionContext,
 ): Promise<OrganizationSubscription | null> {
-  const activeProvider = getActiveBillingProvider();
-
   if (session && session.organization.id === organizationId) {
     return getOrganizationSubscription(session);
   }
@@ -55,25 +55,35 @@ async function loadOrganizationSubscription(
     throw new Error(error.message);
   }
 
-  return selectPreferredSubscriptionRow(
-    (data ?? []) as OrganizationSubscription[],
-    activeProvider,
-  );
+  const rows = (data ?? []) as OrganizationSubscription[];
+  const preferredHint = rows[0] ?? null;
+  const activeProvider = getOrganizationBillingProvider({
+    organizationId,
+    subscription: preferredHint,
+  });
+
+  return selectPreferredSubscriptionRow(rows, activeProvider);
 }
 
 function resolveMappedPlanKey(
   subscription: OrganizationSubscription | null,
   planOverride: Awaited<ReturnType<typeof getPlanOverride>>,
-  activeProvider: ReturnType<typeof getActiveBillingProvider>,
+  activeProvider: BillingProvider,
 ): PlanKey | null {
   let planKey: PlanKey | null = null;
 
   if (activeProvider === "fastspring") {
-    // FastSpring is the sole active entitlement provider — Paddle rows are
-    // historical only and never grant entitlements after the cutover.
     planKey = isFastSpringBackedSubscription(subscription)
       ? safeGetPlanKeyFromSubscriptionPrice({
           billingProvider: "fastspring",
+          stripePriceId: null,
+          providerPriceId: subscription?.provider_price_id,
+        })
+      : null;
+  } else if (activeProvider === "mollie") {
+    planKey = isMollieBackedSubscription(subscription)
+      ? safeGetPlanKeyFromSubscriptionPrice({
+          billingProvider: "mollie",
           stripePriceId: null,
           providerPriceId: subscription?.provider_price_id,
         })
@@ -108,25 +118,27 @@ function resolveMappedPlanKey(
   return planKey;
 }
 
-/** Resolve live entitlements from verified active-provider subscription state. */
 /**
  * Authoritative entitlement resolution for a workspace.
  *
- * Single source of truth for plan features/limits used by product gates:
- * FastSpring subscription row (sole active provider) → product/price →
- * PLAN_ENTITLEMENTS (+ enterprise overrides). Legacy Paddle rows are
- * historical only and never grant entitlements.
- * Parallel helpers in `src/lib/plans/queries` should defer to this path for access control.
+ * FastSpring is the global default. Mollie grants entitlements only when the
+ * org resolves to Mollie (allowlist + rollout, or existing Mollie row) and the
+ * verified subscription status is usable. Legacy Paddle rows never grant access.
+ * Return-page callbacks never activate entitlements.
  */
 export async function resolveOrganizationEntitlements(
   organizationId: string,
   options?: ResolveOrganizationEntitlementsOptions,
 ): Promise<ResolvedEntitlements> {
-  const activeProvider = getActiveBillingProvider();
   const [subscription, planOverride] = await Promise.all([
     loadOrganizationSubscription(organizationId, options?.session),
     getPlanOverride(organizationId),
   ]);
+
+  const activeProvider = getOrganizationBillingProvider({
+    organizationId,
+    subscription,
+  });
 
   const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
   const status = flags.rawStatus;

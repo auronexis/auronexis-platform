@@ -317,9 +317,11 @@ export function BillingSettingsPanel({
               <span className="font-medium text-foreground">
                 {overview.subscription.billing_provider === "fastspring"
                   ? "FastSpring"
-                  : overview.subscription.billing_provider === "paddle"
-                    ? "Paddle (legacy)"
-                    : "Stripe"}
+                  : overview.subscription.billing_provider === "mollie"
+                    ? "Mollie"
+                    : overview.subscription.billing_provider === "paddle"
+                      ? "Paddle (legacy)"
+                      : "Stripe"}
               </span>
               {overview.subscription.provider_status
                 ? ` · provider status: ${overview.subscription.provider_status}`

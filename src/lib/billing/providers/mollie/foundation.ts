@@ -12,20 +12,28 @@ export const MOLLIE_METADATA_PLAN_KEY = "auroranexis_plan_key";
 export const MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID = "auroranexis_checkout_attempt_id";
 
 /**
+ * Payment/Customer metadata — routes webhook reconcile to TEST parallel table vs
+ * canonical organization_subscriptions. Values: "test" | "production".
+ */
+export const MOLLIE_METADATA_BILLING_SURFACE = "auroranexis_billing_surface";
+
+/**
  * Canonical business state (Auroranexis) vs provider state (Mollie):
  *
- * | Auroranexis (mollie_test_subscriptions) | Mollie resource        |
- * |-----------------------------------------|------------------------|
- * | organization_id                         | Customer.metadata      |
- * | provider_customer_id                    | Customer.id (cst_*)    |
- * | provider_subscription_id                | Subscription.id (sub_*)|
- * | provider_price_id / plan_key            | Subscription amount/description or catalog ref |
- * | provider_status                         | Subscription.status    |
- * | status (normalized)                     | derived from Subscription + Payment webhooks |
- * | sync_pending                            | true until subscription mapping confirmed |
+ * | Auroranexis (organization_subscriptions when Mollie) | Mollie resource        |
+ * |------------------------------------------------------|------------------------|
+ * | organization_id                                      | Customer.metadata      |
+ * | billing_provider = mollie                            | (local)                |
+ * | provider_customer_id                                 | Customer.id (cst_*)    |
+ * | provider_subscription_id                             | Subscription.id (sub_*)|
+ * | provider_price_id / plan_key                         | plan key (professional/business) |
+ * | provider_status                                      | Subscription.status    |
+ * | status (normalized)                                  | derived from Subscription + Payment |
+ * | sync_pending                                         | true until subscription mapping confirmed |
  *
- * Parallel test state in mollie_test_subscriptions — never organization_subscriptions or entitlements.
- * Enterprise plans remain manual — no Mollie self-serve checkout (contact sales flow untouched).
+ * Phase 2 parallel test state remains in mollie_test_subscriptions — NEVER the
+ * production source of truth and never grants entitlements by itself.
+ * Enterprise plans remain manual — no Mollie self-serve checkout.
  */
 
 /**
@@ -33,18 +41,24 @@ export const MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID = "auroranexis_checkout_attempt
  *
  * 1. Inbound webhooks: dedicated `mollie_webhook_events` ledger (provider + event id unique),
  *    mirroring fastspring_webhook_events. Always fetch authoritative object from Mollie API
- *    before mutating mollie_test_subscriptions.
+ *    before mutating storage.
  * 2. Outbound charge/subscription creation: deterministic idempotency key on POST.
  * 3. Payload hash mismatch on redelivery → fail closed (same pattern as FastSpring).
+ * 4. Provider coexistence: Mollie never overwrites FastSpring organization_subscriptions rows.
  */
 
-export type MollieFoundationPhase = "phase_2_test_lifecycle";
+export type MollieFoundationPhase =
+  | "phase_2_test_lifecycle"
+  | "phase_3_production_integration";
 
-export const MOLLIE_FOUNDATION_PHASE: MollieFoundationPhase = "phase_2_test_lifecycle";
+export const MOLLIE_FOUNDATION_PHASE: MollieFoundationPhase = "phase_3_production_integration";
 
 /**
- * Phase 2 webhook contract:
+ * Phase 3 webhook contract:
  * - POST /api/mollie/webhook — extract payment id, idempotency ledger, fetch resource from API.
  * - Never trust webhook body alone for subscription state mutations.
- * - Parallel test state in mollie_test_subscriptions (never organization_subscriptions / entitlements).
+ * - Route by auroranexis_billing_surface: production → organization_subscriptions;
+ *   test (default) → mollie_test_subscriptions.
+ * - Never mutate FastSpring-backed organization_subscriptions rows.
+ * - Entitlements activate only after verified usable Mollie subscription sync — never return page alone.
  */

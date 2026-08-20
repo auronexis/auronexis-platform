@@ -37,9 +37,9 @@ export function safeGetPlanKeyByStripePriceId(priceId: string | null | undefined
 }
 
 /**
- * Resolve plan key from a subscription row. FastSpring is the sole active
- * provider — legacy Paddle and Stripe price ids never map (fail closed —
- * caller must not invent a plan). Unknown price IDs return null.
+ * Resolve plan key from a subscription row. FastSpring is the global default
+ * active provider. Mollie maps provider_price_id as the canonical plan key
+ * (professional | business). Legacy Paddle and Stripe price ids never map.
  */
 export function safeGetPlanKeyFromSubscriptionPrice(input: {
   billingProvider?: string | null;
@@ -50,6 +50,14 @@ export function safeGetPlanKeyFromSubscriptionPrice(input: {
     const mapped = mapFastSpringProductPath(input.providerPriceId);
     if (isEntitlementDrivingFastSpringPlan(mapped)) {
       return mapped;
+    }
+    return null;
+  }
+
+  if (input.billingProvider === "mollie") {
+    const priceId = input.providerPriceId?.trim().toLowerCase() ?? "";
+    if (priceId === "professional" || priceId === "business") {
+      return priceId;
     }
     return null;
   }

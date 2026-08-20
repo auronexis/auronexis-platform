@@ -20,15 +20,17 @@ test("getMollieCredentialMode and assertMollieTestModeOnly fail closed", () => {
   assert.match(mode, /Live, unknown, or missing keys are rejected/);
 });
 
-test("All Mollie write modules call assertMollieTestModeOnly before API writes", () => {
+test("All Mollie TEST write modules call assertMollieTestModeOnly before API writes", () => {
   for (const file of [
     "src/lib/billing/providers/mollie/customer.ts",
     "src/lib/billing/providers/mollie/checkout.ts",
-    "src/lib/billing/providers/mollie/webhooks.ts",
   ]) {
     const src = readSource(file);
     assert.match(src, /assertMollieTestModeOnly/, `${file} must enforce TEST mode`);
   }
+  const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
+  assert.match(webhooks, /assertMollieTestModeOnly/);
+  assert.match(webhooks, /assertMolliePaymentOpsAllowed/);
 });
 
 test("getOrCreateMollieCustomer is idempotent via provider_customer_id", () => {
@@ -74,7 +76,7 @@ test("Mollie webhook route exists — public, re-fetch, idempotency", () => {
   assert.match(route, /reconcileMolliePaymentWebhook/);
   assert.match(route, /ensureMollieIdempotency/);
   assert.match(route, /extractMollieWebhookPaymentId/);
-  assert.match(route, /getMollieCredentialMode\(\) !== "test"/);
+  assert.match(route, /MOLLIE_LIVE_CHARGING_ENABLED|credentialMode === "live"/);
   assert.doesNotMatch(route, /requireSession/);
   assert.doesNotMatch(route, /verifyCronAuthorization/);
 });
@@ -170,24 +172,21 @@ test("No duplicate subscription create when provider_subscription_id already pre
   assert.ok(earlyGuardIdx > 0 && createIdx > earlyGuardIdx);
 });
 
-test("FastSpring runtime and entitlements untouched by Mollie reconcile", () => {
+test("FastSpring runtime preserved — Mollie does not call FastSpring modules", () => {
   const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
-  assert.doesNotMatch(webhooks, /organization_subscriptions/);
   assert.doesNotMatch(webhooks, /resolveOrganizationEntitlements/);
-  assert.doesNotMatch(webhooks, /fastspring/i);
-  const entitlements = readSource("src/lib/entitlements/resolver.ts");
-  assert.doesNotMatch(entitlements, /mollie/i);
+  assert.doesNotMatch(webhooks, /from ["']@\/lib\/fastspring/);
+  assert.ok(pathExists("src/lib/fastspring/sync.ts"));
 });
 
-test("Parallel test state in mollie_test_subscriptions — not organization_subscriptions", () => {
+test("Parallel test state in mollie_test_subscriptions remains TEST-isolated", () => {
   const sync = readSource("src/lib/billing/providers/mollie/sync.ts");
   assert.match(sync, /mollie_test_subscriptions/);
-  const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
-  assert.doesNotMatch(webhooks, /organization_subscriptions/);
   const customer = readSource("src/lib/billing/providers/mollie/customer.ts");
   assert.doesNotMatch(customer, /organization_subscriptions/);
-  const entitlements = readSource("src/lib/entitlements/resolver.ts");
-  assert.doesNotMatch(entitlements, /mollie/i);
+  assert.match(customer, /mollie_test_subscriptions/);
+  const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
+  assert.match(checkout, /MOLLIE_METADATA_BILLING_SURFACE.*test/);
 });
 
 test("Migration adds mollie to billing_provider CHECK", () => {
@@ -240,9 +239,15 @@ test("FastSpring and Stripe runtime preserved", () => {
   assert.ok(pathExists("src/lib/billing/active-billing.ts"));
 });
 
-test("Billing actions.ts does not route production checkout to Mollie", () => {
+test("Billing actions.ts routes Mollie only via org provider resolution", () => {
   const actions = readSource("src/lib/billing/actions.ts");
-  assert.doesNotMatch(actions, /mollie/i);
+  assert.match(actions, /getOrganizationBillingProvider/);
+  assert.match(actions, /mollieCheckout/);
+  assert.match(actions, /createMollieProductionFirstPayment/);
+  // Global active provider must remain FastSpring — no blind switch.
+  const provider = readSource("src/lib/billing/provider.ts");
+  assert.match(provider, /return "fastspring"/);
+  assert.doesNotMatch(provider, /return "mollie"/);
 });
 
 test("Canonical plan prices unchanged", () => {
@@ -252,7 +257,7 @@ test("Canonical plan prices unchanged", () => {
   assert.match(plans, /currency: "USD"/);
 });
 
-test("Runtime source file count within Phase 2 boundary (≤15)", () => {
+test("Runtime Phase 2 modules remain present (Phase 3 adds alongside)", () => {
   const runtimeFiles = [
     "src/lib/billing/providers/mollie/env.ts",
     "src/lib/billing/providers/mollie/mode.ts",
@@ -271,7 +276,6 @@ test("Runtime source file count within Phase 2 boundary (≤15)", () => {
   for (const file of runtimeFiles) {
     assert.ok(pathExists(file), `Missing ${file}`);
   }
-  assert.ok(runtimeFiles.length <= 15, `Too many runtime files: ${runtimeFiles.length}`);
 });
 
 test("Mollie provider modules remain server-only", () => {
@@ -304,9 +308,9 @@ test("extractMollieWebhookPaymentId supports form body and JSON", () => {
   assert.match(webhooks, /startsWith\("tr_"\)/);
 });
 
-test("Foundation phase updated to phase_2_test_lifecycle", () => {
+test("Foundation phase updated to phase_3_production_integration", () => {
   const foundation = readSource("src/lib/billing/providers/mollie/foundation.ts");
-  assert.match(foundation, /phase_2_test_lifecycle/);
+  assert.match(foundation, /phase_3_production_integration/);
   assert.match(foundation, /mollie_test_subscriptions/);
 });
 

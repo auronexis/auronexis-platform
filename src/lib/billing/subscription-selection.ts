@@ -1,8 +1,10 @@
 import {
   hasVerifiedFastSpringSubscription,
+  hasVerifiedMollieSubscription,
   hasVerifiedPaddleSubscription,
   isActiveBillingSubscriptionRow,
   isFastSpringBackedSubscription,
+  isMollieBackedSubscription,
   isPaddleBackedSubscription,
   isStaleStripeAbandonedCheckout,
 } from "@/lib/billing/active-billing";
@@ -18,9 +20,9 @@ function sortByUpdatedAtDesc(
 }
 
 /**
- * Pick the best subscription row for active billing.
- * FastSpring is the sole active provider — legacy Paddle rows are excluded
- * from selection entirely and never grant checkout, portal, or entitlements.
+ * Pick the best subscription row for the resolved org billing provider.
+ * FastSpring remains the global default. Mollie rows are selected only when
+ * activeProvider === "mollie". Legacy Paddle rows never grant access.
  */
 export function selectPreferredSubscriptionRow(
   rows: OrganizationSubscription[],
@@ -50,6 +52,24 @@ export function selectPreferredSubscriptionRow(
     }
 
     return candidates.find((row) => isFastSpringBackedSubscription(row)) ?? null;
+  }
+
+  if (activeProvider === "mollie") {
+    const usableMollie = candidates.find(
+      (row) =>
+        isMollieBackedSubscription(row) &&
+        isSubscriptionUsable(row.provider_status ?? row.status),
+    );
+    if (usableMollie) {
+      return usableMollie;
+    }
+
+    const withMollieSub = candidates.find((row) => hasVerifiedMollieSubscription(row));
+    if (withMollieSub) {
+      return withMollieSub;
+    }
+
+    return candidates.find((row) => isMollieBackedSubscription(row)) ?? null;
   }
 
   if (activeProvider === "paddle") {
@@ -106,6 +126,20 @@ export function selectPreferredSubscriptionSummaryRow<
     if (withFsSub) return withFsSub;
 
     return fastspringRows[0] ?? null;
+  }
+
+  if (activeProvider === "mollie") {
+    const mollieRows = rows.filter((row) => row.billing_provider === "mollie");
+
+    const usable = mollieRows.find((row) => isSubscriptionUsable(row.status));
+    if (usable) return usable;
+
+    const withSub = mollieRows.find((row) =>
+      Boolean(row.provider_subscription_id?.startsWith("sub_")),
+    );
+    if (withSub) return withSub;
+
+    return mollieRows[0] ?? null;
   }
 
   if (activeProvider === "paddle") {

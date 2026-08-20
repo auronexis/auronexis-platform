@@ -5,8 +5,11 @@ import {
   type BillingContactCardContent,
 } from "@/lib/billing/billing-contact";
 import { getCheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
-import { getBillingDashboardData } from "@/lib/billing/queries";
-import { getActiveBillingProvider } from "@/lib/billing/provider";
+import {
+  getBillingDashboardData,
+  getOrganizationSubscription,
+} from "@/lib/billing/queries";
+import { getOrganizationBillingProvider } from "@/lib/billing/provider-selection";
 import { getBillingUiStatusWithPortalFeatures } from "@/lib/billing/ui-status";
 import { resolveLocaleFromOrganization } from "@/lib/i18n";
 import { getOrganizationPlanUsageSummary } from "@/lib/plans/queries";
@@ -77,8 +80,15 @@ export async function loadBillingSettingsPageModel(
   params: BillingSettingsSearchParams,
 ) {
   const canManage = canManageOrganizationSettings(session);
-  const activeProvider = getActiveBillingProvider();
-  const stripeStatus = await getBillingUiStatusWithPortalFeatures();
+  const subscription = await getOrganizationSubscription(session);
+  const activeProvider = getOrganizationBillingProvider({
+    organizationId: session.organization.id,
+    subscription,
+  });
+  const stripeStatus = await getBillingUiStatusWithPortalFeatures({
+    organizationId: session.organization.id,
+    organizationProvider: activeProvider,
+  });
   const messages = resolveBillingCheckoutMessages({
     canManage,
     checkout: params.checkout,

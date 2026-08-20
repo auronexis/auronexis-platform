@@ -37,6 +37,12 @@ export function isFastSpringBackedSubscription(
   return row?.billing_provider === "fastspring";
 }
 
+export function isMollieBackedSubscription(
+  row: OrganizationSubscription | null | undefined,
+): boolean {
+  return row?.billing_provider === "mollie";
+}
+
 /** True when a verified Paddle customer id is present (historical detection only). */
 export function hasVerifiedPaddleCustomer(
   row: OrganizationSubscription | null | undefined,
@@ -68,6 +74,26 @@ export function hasVerifiedFastSpringSubscription(
   return Boolean(row?.provider_subscription_id?.trim());
 }
 
+export function hasVerifiedMollieCustomer(
+  row: OrganizationSubscription | null | undefined,
+): boolean {
+  if (!isMollieBackedSubscription(row)) {
+    return false;
+  }
+  const customerId = row?.provider_customer_id?.trim() ?? "";
+  return customerId.startsWith("cst_");
+}
+
+export function hasVerifiedMollieSubscription(
+  row: OrganizationSubscription | null | undefined,
+): boolean {
+  if (!isMollieBackedSubscription(row)) {
+    return false;
+  }
+  const subscriptionId = row?.provider_subscription_id?.trim() ?? "";
+  return subscriptionId.startsWith("sub_");
+}
+
 /** Stripe-backed or legacy Stripe row (default provider / Stripe ids without Paddle/FastSpring). */
 export function isStripeBackedSubscription(
   row: OrganizationSubscription | null | undefined,
@@ -75,7 +101,11 @@ export function isStripeBackedSubscription(
   if (!row) {
     return false;
   }
-  if (row.billing_provider === "paddle" || row.billing_provider === "fastspring") {
+  if (
+    row.billing_provider === "paddle" ||
+    row.billing_provider === "fastspring" ||
+    row.billing_provider === "mollie"
+  ) {
     return false;
   }
   return (
@@ -128,9 +158,13 @@ export function isActiveBillingSubscriptionRow(
   }
 
   if (activeProvider === "fastspring") {
-    // FastSpring is the sole active provider — Paddle rows are historical only
+    // FastSpring is the sole global default — Paddle rows are historical only
     // and never drive active billing, checkout, portal, or entitlements.
     return isFastSpringBackedSubscription(row);
+  }
+
+  if (activeProvider === "mollie") {
+    return isMollieBackedSubscription(row);
   }
 
   if (activeProvider === "paddle") {
@@ -140,9 +174,11 @@ export function isActiveBillingSubscriptionRow(
     return isPaddleBackedSubscription(row);
   }
 
-  // Stripe archive mode (should not be active): ignore pure Paddle/FastSpring without Stripe ids.
+  // Stripe archive mode (should not be active): ignore pure Paddle/FastSpring/Mollie without Stripe ids.
   if (
-    (isPaddleBackedSubscription(row) || isFastSpringBackedSubscription(row)) &&
+    (isPaddleBackedSubscription(row) ||
+      isFastSpringBackedSubscription(row) ||
+      isMollieBackedSubscription(row)) &&
     !row.stripe_subscription_id
   ) {
     return false;
@@ -173,25 +209,20 @@ export function resolveActiveBillingStatusFlags(
     };
   }
 
-  if (activeProvider === "fastspring") {
+  if (activeProvider === "fastspring" || activeProvider === "mollie" || activeProvider === "paddle") {
     const status = row.provider_status ?? row.status;
+    const hasSubscription =
+      activeProvider === "fastspring"
+        ? hasVerifiedFastSpringSubscription(row)
+        : activeProvider === "mollie"
+          ? hasVerifiedMollieSubscription(row)
+          : hasVerifiedPaddleSubscription(row);
     return {
       rawStatus: status,
       isUsable: isSubscriptionUsable(status),
       hasPaymentProblem: isPaymentProblem(status),
       isPaymentPending: Boolean(row.sync_pending) || isPaymentPending(status),
-      hasSubscription: hasVerifiedFastSpringSubscription(row),
-    };
-  }
-
-  if (activeProvider === "paddle") {
-    const status = row.provider_status ?? row.status;
-    return {
-      rawStatus: status,
-      isUsable: isSubscriptionUsable(status),
-      hasPaymentProblem: isPaymentProblem(status),
-      isPaymentPending: Boolean(row.sync_pending) || isPaymentPending(status),
-      hasSubscription: hasVerifiedPaddleSubscription(row),
+      hasSubscription,
     };
   }
 
@@ -208,7 +239,9 @@ export function resolveActiveBillingStatusFlags(
 export function providerSubscriptionBlocksCheckout(
   row: OrganizationSubscription | null | undefined,
 ): boolean {
-  if (!isFastSpringBackedSubscription(row)) {
+  const isProviderRow =
+    isFastSpringBackedSubscription(row) || isMollieBackedSubscription(row);
+  if (!isProviderRow) {
     return false;
   }
 
@@ -217,7 +250,9 @@ export function providerSubscriptionBlocksCheckout(
   }
 
   const status = row?.provider_status ?? row?.status;
-  const hasSub = hasVerifiedFastSpringSubscription(row);
+  const hasSub = isFastSpringBackedSubscription(row)
+    ? hasVerifiedFastSpringSubscription(row)
+    : hasVerifiedMollieSubscription(row);
 
   if (isPaymentProblem(status) && hasSub) {
     return true;

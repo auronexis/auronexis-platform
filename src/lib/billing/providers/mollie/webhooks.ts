@@ -13,10 +13,16 @@ import {
   type MollieSelfServePlanKey,
 } from "@/lib/billing/providers/mollie/checkout";
 import {
+  MOLLIE_METADATA_BILLING_SURFACE,
   MOLLIE_METADATA_ORGANIZATION_ID,
   MOLLIE_METADATA_PLAN_KEY,
 } from "@/lib/billing/providers/mollie/foundation";
-import { assertMollieTestModeOnly } from "@/lib/billing/providers/mollie/mode";
+import { assertMolliePaymentOpsAllowed, assertMollieTestModeOnly } from "@/lib/billing/providers/mollie/mode";
+import {
+  getMollieOrganizationSubscription,
+  upsertMollieOrganizationSubscription,
+} from "@/lib/billing/providers/mollie/organization-sync";
+import { createMollieProductionSubscriptionAfterMandate } from "@/lib/billing/providers/mollie/production-checkout";
 import {
   getMollieTestSubscriptionForOrg,
   upsertMollieTestSubscription,
@@ -214,13 +220,21 @@ export type MollieWebhookReconcileResult = {
   ignored: boolean;
   organizationId: string | null;
   reason?: string;
+  surface?: "test" | "production";
 };
 
+function resolveBillingSurface(
+  metadata: Record<string, unknown> | null | undefined,
+): "test" | "production" {
+  const surface = readMetadataString(metadata, MOLLIE_METADATA_BILLING_SURFACE);
+  return surface === "production" ? "production" : "test";
+}
+
 /**
- * Authoritative payment re-fetch + relationship validation.
- * Never trust webhook body alone beyond extracting the payment id.
+ * Phase 2 isolated TEST reconcile — writes mollie_test_subscriptions only.
+ * Never mutates organization_subscriptions.
  */
-export async function reconcileMolliePaymentWebhook(
+async function reconcileMollieTestPaymentWebhook(
   paymentId: string,
 ): Promise<MollieWebhookReconcileResult> {
   assertMollieTestModeOnly();
@@ -238,7 +252,13 @@ export async function reconcileMolliePaymentWebhook(
   );
 
   if (!organizationId) {
-    return { handled: true, ignored: true, organizationId: null, reason: "missing_organization_metadata" };
+    return {
+      handled: true,
+      ignored: true,
+      organizationId: null,
+      reason: "missing_organization_metadata",
+      surface: "test",
+    };
   }
 
   const testRow = await getMollieTestSubscriptionForOrg(organizationId);
@@ -250,27 +270,45 @@ export async function reconcileMolliePaymentWebhook(
         organizationIdPrefix: organizationId.slice(0, 8),
         paymentIdPrefix: paymentId.slice(0, 8),
       });
-      return { handled: true, ignored: true, organizationId, reason: "customer_ownership_mismatch" };
+      return {
+        handled: true,
+        ignored: true,
+        organizationId,
+        reason: "customer_ownership_mismatch",
+        surface: "test",
+      };
     }
   }
 
   if (isMolliePaymentPending(payment.status)) {
     await upsertMollieTestSubscription({
       organization_id: organizationId,
-      plan_key: planKeyRaw && isMollieSelfServePlanKey(planKeyRaw) ? planKeyRaw : (testRow?.plan_key ?? "professional"),
+      plan_key:
+        planKeyRaw && isMollieSelfServePlanKey(planKeyRaw)
+          ? planKeyRaw
+          : (testRow?.plan_key ?? "professional"),
       provider_customer_id: paymentCustomerId ?? testRow?.provider_customer_id ?? null,
       first_payment_id: payment.id,
       provider_status: payment.status,
       status: "incomplete",
       sync_pending: true,
     });
-    return { handled: true, ignored: true, organizationId, reason: "payment_pending" };
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "payment_pending",
+      surface: "test",
+    };
   }
 
   if (isMolliePaymentTerminalFailure(payment.status)) {
     await upsertMollieTestSubscription({
       organization_id: organizationId,
-      plan_key: planKeyRaw && isMollieSelfServePlanKey(planKeyRaw) ? planKeyRaw : (testRow?.plan_key ?? "professional"),
+      plan_key:
+        planKeyRaw && isMollieSelfServePlanKey(planKeyRaw)
+          ? planKeyRaw
+          : (testRow?.plan_key ?? "professional"),
       provider_customer_id: paymentCustomerId ?? testRow?.provider_customer_id ?? null,
       first_payment_id: payment.id,
       provider_status: payment.status,
@@ -278,11 +316,23 @@ export async function reconcileMolliePaymentWebhook(
       sync_pending: false,
       last_reconciled_at: new Date().toISOString(),
     });
-    return { handled: true, ignored: true, organizationId, reason: "payment_failed" };
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "payment_failed",
+      surface: "test",
+    };
   }
 
   if (!isMolliePaymentPaid(payment.status)) {
-    return { handled: true, ignored: true, organizationId, reason: "unhandled_payment_status" };
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "unhandled_payment_status",
+      surface: "test",
+    };
   }
 
   const planKey: MollieSelfServePlanKey =
@@ -294,24 +344,34 @@ export async function reconcileMolliePaymentWebhook(
 
   const customerId = paymentCustomerId ?? testRow?.provider_customer_id;
   if (!customerId?.startsWith("cst_")) {
-    return { handled: true, ignored: true, organizationId, reason: "missing_customer" };
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "missing_customer",
+      surface: "test",
+    };
   }
 
   const existingSubscriptionId =
     (payment.subscriptionId?.startsWith("sub_") ? payment.subscriptionId : null) ??
-    (testRow?.provider_subscription_id?.startsWith("sub_") ? testRow.provider_subscription_id : null);
+    (testRow?.provider_subscription_id?.startsWith("sub_")
+      ? testRow.provider_subscription_id
+      : null);
 
-  // Authoritative subscription already known (recurring payment link OR local mapping after
-  // first-payment mandate). Re-fetch subscription and clear sync_pending — do not re-enter
-  // the first-payment pending path (Refresh / webhook redelivery would otherwise leave
-  // provider_status=paid + sync_pending=true while preserving sub_/mdt_ ids).
   if (existingSubscriptionId) {
     const subscription = await client.customerSubscriptions.get(existingSubscriptionId, {
       customerId,
     });
 
     if (subscription.id !== existingSubscriptionId) {
-      return { handled: true, ignored: true, organizationId, reason: "subscription_verification_failed" };
+      return {
+        handled: true,
+        ignored: true,
+        organizationId,
+        reason: "subscription_verification_failed",
+        surface: "test",
+      };
     }
 
     await upsertMollieTestSubscription({
@@ -328,11 +388,10 @@ export async function reconcileMolliePaymentWebhook(
       last_reconciled_at: new Date().toISOString(),
     });
 
-    return { handled: true, ignored: false, organizationId };
+    return { handled: true, ignored: false, organizationId, surface: "test" };
   }
 
   if (payment.sequenceType === "first" || testRow?.first_payment_id === payment.id) {
-    // Transient: mandate confirmed from paid first payment; subscription create still required.
     await upsertMollieTestSubscription({
       organization_id: organizationId,
       plan_key: planKey,
@@ -352,10 +411,222 @@ export async function reconcileMolliePaymentWebhook(
       paymentId: payment.id,
     });
 
-    return { handled: true, ignored: false, organizationId };
+    return { handled: true, ignored: false, organizationId, surface: "test" };
   }
 
-  return { handled: true, ignored: true, organizationId, reason: "unmapped_payment" };
+  return {
+    handled: true,
+    ignored: true,
+    organizationId,
+    reason: "unmapped_payment",
+    surface: "test",
+  };
+}
+
+/**
+ * Phase 3 production reconcile — writes organization_subscriptions only.
+ * Never mutates FastSpring rows (organization-sync guards) and never writes
+ * mollie_test_subscriptions.
+ */
+async function reconcileMollieProductionPaymentWebhook(
+  paymentId: string,
+): Promise<MollieWebhookReconcileResult> {
+  assertMolliePaymentOpsAllowed();
+
+  const client = createMollieBillingClient();
+  const payment = await client.payments.get(paymentId);
+
+  const organizationId = readMetadataString(
+    payment.metadata as Record<string, unknown> | null,
+    MOLLIE_METADATA_ORGANIZATION_ID,
+  );
+  const planKeyRaw = readMetadataString(
+    payment.metadata as Record<string, unknown> | null,
+    MOLLIE_METADATA_PLAN_KEY,
+  );
+
+  if (!organizationId) {
+    return {
+      handled: true,
+      ignored: true,
+      organizationId: null,
+      reason: "missing_organization_metadata",
+      surface: "production",
+    };
+  }
+
+  const orgRow = await getMollieOrganizationSubscription(organizationId);
+  const paymentCustomerId = payment.customerId ?? null;
+
+  if (orgRow?.provider_customer_id && paymentCustomerId) {
+    if (orgRow.provider_customer_id !== paymentCustomerId) {
+      console.error("[mollie] production payment customer mismatch — rejecting", {
+        organizationIdPrefix: organizationId.slice(0, 8),
+        paymentIdPrefix: paymentId.slice(0, 8),
+      });
+      return {
+        handled: true,
+        ignored: true,
+        organizationId,
+        reason: "customer_ownership_mismatch",
+        surface: "production",
+      };
+    }
+  }
+
+  const planKey: MollieSelfServePlanKey =
+    planKeyRaw && isMollieSelfServePlanKey(planKeyRaw)
+      ? planKeyRaw
+      : orgRow?.provider_price_id && isMollieSelfServePlanKey(orgRow.provider_price_id)
+        ? orgRow.provider_price_id
+        : "professional";
+
+  if (isMolliePaymentPending(payment.status)) {
+    await upsertMollieOrganizationSubscription({
+      organizationId,
+      providerCustomerId: paymentCustomerId ?? orgRow?.provider_customer_id ?? null,
+      providerSubscriptionId: orgRow?.provider_subscription_id ?? null,
+      planKey,
+      providerStatus: payment.status,
+      normalizedStatus: "incomplete",
+      syncPending: true,
+    });
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "payment_pending",
+      surface: "production",
+    };
+  }
+
+  if (isMolliePaymentTerminalFailure(payment.status)) {
+    await upsertMollieOrganizationSubscription({
+      organizationId,
+      providerCustomerId: paymentCustomerId ?? orgRow?.provider_customer_id ?? null,
+      providerSubscriptionId: orgRow?.provider_subscription_id ?? null,
+      planKey,
+      providerStatus: payment.status,
+      normalizedStatus: payment.subscriptionId ? "past_due" : "inactive",
+      syncPending: false,
+    });
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "payment_failed",
+      surface: "production",
+    };
+  }
+
+  if (!isMolliePaymentPaid(payment.status)) {
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "unhandled_payment_status",
+      surface: "production",
+    };
+  }
+
+  const customerId = paymentCustomerId ?? orgRow?.provider_customer_id;
+  if (!customerId?.startsWith("cst_")) {
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "missing_customer",
+      surface: "production",
+    };
+  }
+
+  const existingSubscriptionId =
+    (payment.subscriptionId?.startsWith("sub_") ? payment.subscriptionId : null) ??
+    (orgRow?.provider_subscription_id?.startsWith("sub_")
+      ? orgRow.provider_subscription_id
+      : null);
+
+  if (existingSubscriptionId) {
+    const subscription = await client.customerSubscriptions.get(existingSubscriptionId, {
+      customerId,
+    });
+
+    if (subscription.id !== existingSubscriptionId) {
+      return {
+        handled: true,
+        ignored: true,
+        organizationId,
+        reason: "subscription_verification_failed",
+        surface: "production",
+      };
+    }
+
+    const nextPaymentDate =
+      typeof subscription.nextPaymentDate === "string" ? subscription.nextPaymentDate : null;
+
+    await upsertMollieOrganizationSubscription({
+      organizationId,
+      providerCustomerId: customerId,
+      providerSubscriptionId: subscription.id,
+      planKey,
+      providerStatus: subscription.status,
+      normalizedStatus: mapMollieSubscriptionStatus(subscription.status),
+      syncPending: false,
+      currentPeriodEnd: nextPaymentDate,
+    });
+
+    return { handled: true, ignored: false, organizationId, surface: "production" };
+  }
+
+  if (payment.sequenceType === "first") {
+    await upsertMollieOrganizationSubscription({
+      organizationId,
+      providerCustomerId: customerId,
+      providerSubscriptionId: null,
+      planKey,
+      providerStatus: payment.status,
+      normalizedStatus: "incomplete",
+      syncPending: true,
+    });
+
+    await createMollieProductionSubscriptionAfterMandate({
+      organizationId,
+      customerId,
+      planKey,
+      paymentId: payment.id,
+    });
+
+    return { handled: true, ignored: false, organizationId, surface: "production" };
+  }
+
+  return {
+    handled: true,
+    ignored: true,
+    organizationId,
+    reason: "unmapped_payment",
+    surface: "production",
+  };
+}
+
+/**
+ * Authoritative payment re-fetch + relationship validation.
+ * Never trust webhook body alone beyond extracting the payment id.
+ * Routes by auroranexis_billing_surface metadata (production vs test).
+ */
+export async function reconcileMolliePaymentWebhook(
+  paymentId: string,
+): Promise<MollieWebhookReconcileResult> {
+  assertMolliePaymentOpsAllowed();
+
+  const client = createMollieBillingClient();
+  const payment = await client.payments.get(paymentId);
+  const surface = resolveBillingSurface(payment.metadata as Record<string, unknown> | null);
+
+  if (surface === "production") {
+    return reconcileMollieProductionPaymentWebhook(paymentId);
+  }
+
+  return reconcileMollieTestPaymentWebhook(paymentId);
 }
 
 export function extractMollieWebhookPaymentId(rawBody: string): string | null {

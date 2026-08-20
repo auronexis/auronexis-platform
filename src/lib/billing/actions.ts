@@ -25,6 +25,17 @@ import {
   isFastSpringCheckoutConfigured,
 } from "@/lib/fastspring/checkout";
 import type { FastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
+import { getOrganizationBillingProvider } from "@/lib/billing/provider-selection";
+import { getOrganizationSubscription } from "@/lib/billing/queries";
+import {
+  createMollieProductionFirstPayment,
+  isMollieProductionCheckoutConfigured,
+} from "@/lib/billing/providers/mollie/production-checkout";
+import { isMollieSelfServePlanKey } from "@/lib/billing/providers/mollie/checkout";
+import {
+  cancelMollieOrganizationSubscription,
+  changeMollieOrganizationPlan,
+} from "@/lib/billing/providers/mollie/lifecycle";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export type BillingActionState = {
@@ -39,6 +50,11 @@ export type CheckoutActionResult = BillingActionState & {
     productPath: FastSpringProductPath;
     tags: FastSpringCheckoutTags;
     checkoutMode: "test" | "live";
+    pendingSyncMessage: string;
+  };
+  mollieCheckout?: {
+    checkoutUrl: string;
+    checkoutAttemptId: string;
     pendingSyncMessage: string;
   };
 };
@@ -71,6 +87,62 @@ export async function createCheckoutSessionAction(
 
   try {
     await assertCheckoutAllowed(session, parsed.data);
+
+    const subscription = await getOrganizationSubscription(session);
+    const orgProvider = getOrganizationBillingProvider({
+      organizationId: session.organization.id,
+      subscription,
+    });
+
+    if (orgProvider === "mollie") {
+      if (parsed.data === "enterprise") {
+        return {
+          error: "Enterprise is manual-only. Contact sales to arrange an enterprise plan.",
+        };
+      }
+
+      if (!isMollieSelfServePlanKey(parsed.data)) {
+        return { error: "Invalid subscription plan selected." };
+      }
+
+      if (!isMollieProductionCheckoutConfigured()) {
+        return {
+          error:
+            "Mollie checkout is not configured for this workspace. Contact support if you expected Mollie billing.",
+        };
+      }
+
+      // Existing usable Mollie subscription → plan change (no new first payment).
+      if (
+        subscription?.billing_provider === "mollie" &&
+        subscription.provider_subscription_id?.startsWith("sub_") &&
+        (subscription.status === "active" || subscription.provider_status === "active")
+      ) {
+        await changeMollieOrganizationPlan({
+          organizationId: session.organization.id,
+          targetPlanKey: parsed.data,
+        });
+        return {
+          success: "Plan updated. Access refreshes after Mollie confirms the subscription change.",
+        };
+      }
+
+      const checkout = await createMollieProductionFirstPayment({
+        organizationId: session.organization.id,
+        organizationName: session.organization.name,
+        ownerEmail: session.email,
+        planKey: parsed.data,
+      });
+
+      return {
+        success: checkout.pendingSyncMessage,
+        mollieCheckout: {
+          checkoutUrl: checkout.checkoutUrl,
+          checkoutAttemptId: checkout.checkoutAttemptId,
+          pendingSyncMessage: checkout.pendingSyncMessage,
+        },
+      };
+    }
 
     if (!isFastSpringCheckoutConfigured()) {
       return {
@@ -106,6 +178,42 @@ export async function createCheckoutSessionAction(
     console.error("[billing][checkout] failed", error);
     return {
       error: sanitizeBillingCustomerError(error, "Unable to start checkout."),
+    };
+  }
+}
+
+/** Cancel Mollie subscription for Mollie-backed orgs — Owner/Admin only. */
+export async function cancelMollieSubscriptionAction(): Promise<BillingActionState> {
+  const session = await requireSession();
+
+  if (!canManageOrganizationSettings(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
+  }
+
+  try {
+    const subscription = await getOrganizationSubscription(session);
+    const orgProvider = getOrganizationBillingProvider({
+      organizationId: session.organization.id,
+      subscription,
+    });
+
+    if (orgProvider !== "mollie") {
+      return {
+        error: "Cancellation via this action is only available for Mollie-billed workspaces.",
+      };
+    }
+
+    await cancelMollieOrganizationSubscription({
+      organizationId: session.organization.id,
+    });
+
+    return {
+      success: "Subscription canceled. Access ends after Mollie confirms cancellation.",
+    };
+  } catch (error) {
+    console.error("[billing][mollie-cancel] failed", error);
+    return {
+      error: sanitizeBillingCustomerError(error, "Unable to cancel subscription."),
     };
   }
 }

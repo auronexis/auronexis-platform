@@ -8,6 +8,7 @@ import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import { createMollieBillingClient } from "@/lib/billing/providers/mollie/client";
 import { getOrCreateMollieCustomer } from "@/lib/billing/providers/mollie/customer";
 import {
+  MOLLIE_METADATA_BILLING_SURFACE,
   MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID,
   MOLLIE_METADATA_ORGANIZATION_ID,
   MOLLIE_METADATA_PLAN_KEY,
@@ -72,8 +73,9 @@ export function mapMollieSubscriptionStatus(
     case "cancelled":
       return "canceled";
     case "suspended":
-    case "completed":
       return "past_due";
+    case "completed":
+      return "inactive";
     default:
       return "inactive";
   }
@@ -152,6 +154,7 @@ export async function createMollieFirstPayment(input: {
       [MOLLIE_METADATA_ORGANIZATION_ID]: input.organizationId,
       [MOLLIE_METADATA_PLAN_KEY]: input.planKey,
       [MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID]: checkoutAttemptId,
+      [MOLLIE_METADATA_BILLING_SURFACE]: "test",
       auroranexis_billing_purpose: "first_payment",
     },
   });
@@ -246,6 +249,7 @@ export async function createMollieSubscriptionAfterMandate(input: {
     metadata: {
       [MOLLIE_METADATA_ORGANIZATION_ID]: input.organizationId,
       [MOLLIE_METADATA_PLAN_KEY]: input.planKey,
+      [MOLLIE_METADATA_BILLING_SURFACE]: "test",
       auroranexis_first_payment_id: input.paymentId,
     },
   });

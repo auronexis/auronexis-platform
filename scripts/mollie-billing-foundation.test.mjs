@@ -9,8 +9,8 @@ import { readSource, pathExists } from "./_test-helpers/read-source.mjs";
 test("BillingProvider union includes mollie alongside legacy providers", () => {
   const types = readSource("src/lib/billing/provider-types.ts");
   assert.match(types, /export type BillingProvider = .*\bmollie\b/);
-  assert.match(types, /"fastspring" is the sole active checkout provider/);
-  assert.match(types, /foundation provider/);
+  assert.match(types, /global default active checkout provider/i);
+  assert.match(types, /per-org allowlist/i);
 });
 
 test("getActiveBillingProvider remains fastspring — Mollie not activated", () => {
@@ -22,7 +22,7 @@ test("getActiveBillingProvider remains fastspring — Mollie not activated", () 
 test("MOLLIE_API_KEY placeholder in .env.example — no real secret", () => {
   const envExample = readSource(".env.example");
   assert.match(envExample, /MOLLIE_API_KEY/);
-  assert.match(envExample, /NOT active billing|foundation only/i);
+  assert.match(envExample, /MOLLIE_BILLING_ROLLOUT|per-org rollout/i);
   assert.doesNotMatch(envExample, /MOLLIE_API_KEY=test_[A-Za-z0-9]{10,}/);
   assert.doesNotMatch(envExample, /NEXT_PUBLIC_MOLLIE/);
 });
@@ -83,10 +83,12 @@ test("Mollie webhook route exists in Phase 2", () => {
   assert.equal(pathExists("src/app/api/mollie/webhook/route.ts"), true);
 });
 
-test("Mollie checkout implementation exists in Phase 2", () => {
+test("Mollie checkout implementation exists in Phase 2 (TEST harness)", () => {
   assert.equal(pathExists("src/lib/billing/providers/mollie/checkout.ts"), true);
-  const actions = readSource("src/lib/billing/actions.ts");
-  assert.doesNotMatch(actions, /mollie/i);
+  assert.equal(pathExists("src/lib/billing/providers/mollie/test-checkout-actions.ts"), true);
+  // Global provider stays FastSpring; Mollie production is per-org only (Phase 3).
+  const provider = readSource("src/lib/billing/provider.ts");
+  assert.doesNotMatch(provider, /return "mollie"/);
 });
 
 test("Foundation metadata correlation keys defined", () => {
@@ -163,7 +165,7 @@ test("Mollie client factory fails closed on invalid key prefix", () => {
   assert.match(mode, /Invalid MOLLIE_API_KEY prefix/);
 });
 
-test("Runtime source file count within Phase 2 boundary (≤15)", () => {
+test("Runtime Phase 1 core modules remain present", () => {
   const runtimeFiles = [
     "src/lib/billing/providers/mollie/env.ts",
     "src/lib/billing/providers/mollie/mode.ts",
@@ -171,18 +173,11 @@ test("Runtime source file count within Phase 2 boundary (≤15)", () => {
     "src/lib/billing/providers/mollie/connectivity.ts",
     "src/lib/billing/providers/mollie/foundation.ts",
     "src/lib/billing/providers/mollie/index.ts",
-    "src/lib/billing/providers/mollie/customer.ts",
-    "src/lib/billing/providers/mollie/checkout.ts",
-    "src/lib/billing/providers/mollie/webhooks.ts",
-    "src/lib/billing/providers/mollie/sync.ts",
-    "src/lib/billing/providers/mollie/test-checkout-actions.ts",
     "src/lib/billing/provider-types.ts",
     "src/lib/diagnostics/platform-health.ts",
     "src/app/api/mollie/connectivity/route.ts",
-    "src/app/api/mollie/webhook/route.ts",
   ];
   for (const file of runtimeFiles) {
     assert.ok(pathExists(file), `Missing ${file}`);
   }
-  assert.ok(runtimeFiles.length <= 15, `Too many runtime files: ${runtimeFiles.length}`);
 });

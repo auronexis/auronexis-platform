@@ -61,6 +61,14 @@ export async function upsertFastSpringOrganizationSubscription(
     provider_price_id: string | null;
   } | null;
 
+  // Coexistence guard — never overwrite Mollie-owned canonical rows.
+  if (existingRow?.billing_provider === "mollie") {
+    return {
+      wrote: false,
+      reason: "mollie_subscription_present_refusing_fastspring_overwrite",
+    };
+  }
+
   const mappedPlan = mapFastSpringProductPath(input.providerPriceId);
   if (input.providerPriceId && !mappedPlan) {
     throw new Error(

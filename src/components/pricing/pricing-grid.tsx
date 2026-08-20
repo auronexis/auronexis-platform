@@ -87,6 +87,12 @@ export function PricingGrid({
         return;
       }
 
+      if (result?.mollieCheckout?.checkoutUrl) {
+        setPendingSyncMessage(result.mollieCheckout.pendingSyncMessage);
+        window.location.assign(result.mollieCheckout.checkoutUrl);
+        return;
+      }
+
       if (result?.fastspringCheckout) {
         try {
           await openFastSpringCheckout(result.fastspringCheckout);
@@ -98,6 +104,12 @@ export function PricingGrid({
         } finally {
           setPendingPlanKey(null);
         }
+        return;
+      }
+
+      if (result?.success) {
+        setPendingSyncMessage(result.success);
+        setPendingPlanKey(null);
         return;
       }
 

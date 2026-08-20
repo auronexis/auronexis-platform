@@ -8,11 +8,12 @@
  * returned by getActiveBillingProvider() and neither drives new checkout,
  * portal access, or entitlements.
  *
- * "fastspring" is the sole active checkout provider.
+ * "fastspring" is the global default active checkout provider.
  *
- * "mollie" is a parallel foundation provider (Phase 1+) — not active for checkout,
- * entitlements, or portal until a later cutover phase. Generic provider_* columns
- * on organization_subscriptions are the intended persistence target.
+ * "mollie" is Phase 3 production-capable via per-org allowlist/rollout only —
+ * never returned by getActiveBillingProvider(). Org resolution uses
+ * resolveOrganizationBillingProvider / getOrganizationBillingProvider.
+ * Generic provider_* columns on organization_subscriptions are the persistence target.
  */
 
 import type { FastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
@@ -47,6 +48,13 @@ export type CheckoutResult =
       productPath: FastSpringProductPath;
       tags: FastSpringCheckoutTags;
       checkoutMode: "test" | "live";
+      pendingSyncMessage: string;
+    }
+  | {
+      provider: "mollie";
+      mode: "redirect";
+      checkoutUrl: string;
+      checkoutAttemptId: string;
       pendingSyncMessage: string;
     };
 
