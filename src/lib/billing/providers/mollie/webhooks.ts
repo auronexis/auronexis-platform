@@ -297,12 +297,20 @@ export async function reconcileMolliePaymentWebhook(
     return { handled: true, ignored: true, organizationId, reason: "missing_customer" };
   }
 
-  if (payment.subscriptionId) {
-    const subscription = await client.customerSubscriptions.get(payment.subscriptionId, {
+  const existingSubscriptionId =
+    (payment.subscriptionId?.startsWith("sub_") ? payment.subscriptionId : null) ??
+    (testRow?.provider_subscription_id?.startsWith("sub_") ? testRow.provider_subscription_id : null);
+
+  // Authoritative subscription already known (recurring payment link OR local mapping after
+  // first-payment mandate). Re-fetch subscription and clear sync_pending — do not re-enter
+  // the first-payment pending path (Refresh / webhook redelivery would otherwise leave
+  // provider_status=paid + sync_pending=true while preserving sub_/mdt_ ids).
+  if (existingSubscriptionId) {
+    const subscription = await client.customerSubscriptions.get(existingSubscriptionId, {
       customerId,
     });
 
-    if (subscription.id !== payment.subscriptionId) {
+    if (subscription.id !== existingSubscriptionId) {
       return { handled: true, ignored: true, organizationId, reason: "subscription_verification_failed" };
     }
 
@@ -312,6 +320,7 @@ export async function reconcileMolliePaymentWebhook(
       provider_customer_id: customerId,
       provider_subscription_id: subscription.id,
       first_payment_id: testRow?.first_payment_id ?? payment.id,
+      ...(testRow?.mandate_id ? { mandate_id: testRow.mandate_id } : {}),
       provider_price_id: planKey,
       provider_status: subscription.status,
       status: mapMollieSubscriptionStatus(subscription.status),
@@ -323,6 +332,7 @@ export async function reconcileMolliePaymentWebhook(
   }
 
   if (payment.sequenceType === "first" || testRow?.first_payment_id === payment.id) {
+    // Transient: mandate confirmed from paid first payment; subscription create still required.
     await upsertMollieTestSubscription({
       organization_id: organizationId,
       plan_key: planKey,
@@ -335,14 +345,12 @@ export async function reconcileMolliePaymentWebhook(
       last_reconciled_at: new Date().toISOString(),
     });
 
-    if (!testRow?.provider_subscription_id) {
-      await createMollieSubscriptionAfterMandate({
-        organizationId,
-        customerId,
-        planKey,
-        paymentId: payment.id,
-      });
-    }
+    await createMollieSubscriptionAfterMandate({
+      organizationId,
+      customerId,
+      planKey,
+      paymentId: payment.id,
+    });
 
     return { handled: true, ignored: false, organizationId };
   }

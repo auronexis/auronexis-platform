@@ -213,9 +213,26 @@ export async function createMollieSubscriptionAfterMandate(input: {
 
   const existing = await getMollieTestSubscriptionForOrg(input.organizationId);
   if (existing?.provider_subscription_id?.startsWith("sub_")) {
+    // Idempotent re-entry (webhook race): keep existing sub mapping, clear sync_pending.
+    const mandateId = existing.mandate_id ?? usableMandate.id;
+    await upsertMollieTestSubscription({
+      organization_id: input.organizationId,
+      plan_key: input.planKey,
+      provider_customer_id: input.customerId,
+      provider_subscription_id: existing.provider_subscription_id,
+      mandate_id: mandateId,
+      first_payment_id: input.paymentId,
+      provider_price_id: input.planKey,
+      provider_status: existing.provider_status,
+      status: existing.status,
+      amount_value: amountValue,
+      amount_currency: plan.currency,
+      sync_pending: false,
+      last_reconciled_at: new Date().toISOString(),
+    });
     return {
       subscriptionId: existing.provider_subscription_id,
-      mandateId: existing.mandate_id ?? usableMandate.id,
+      mandateId,
     };
   }
 

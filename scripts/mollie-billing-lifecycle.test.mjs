@@ -112,6 +112,73 @@ test("Recurring payment reconciliation via payment.subscriptionId", () => {
   assert.match(webhooks, /customerSubscriptions\.get/);
 });
 
+test("sync_pending cleared when subscription already mapped on reconcile", () => {
+  const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
+  // Authoritative success path must clear pending (subscription id from payment OR local row).
+  assert.match(webhooks, /existingSubscriptionId/);
+  assert.match(webhooks, /sync_pending:\s*false/);
+  // Paid first payment without subscription remains transient pending until create.
+  assert.match(webhooks, /sync_pending:\s*true/);
+  assert.match(webhooks, /createMollieSubscriptionAfterMandate/);
+  // Must not leave paid+active+sync_pending after skipping create when sub already exists.
+  assert.doesNotMatch(
+    webhooks,
+    /if\s*\(\s*!testRow\?\.provider_subscription_id\s*\)\s*\{[\s\S]*createMollieSubscriptionAfterMandate/,
+  );
+});
+
+test("Idempotent subscription create clears sync_pending on existing sub_", () => {
+  const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
+  assert.match(checkout, /provider_subscription_id\?\.startsWith\("sub_"\)/);
+  assert.match(checkout, /Idempotent re-entry/);
+  assert.match(checkout, /sync_pending:\s*false/);
+  assert.match(checkout, /customerSubscriptions\.create/);
+});
+
+test("Terminal payment failure clears sync_pending and is not active", () => {
+  const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
+  assert.match(webhooks, /payment_failed/);
+  assert.match(webhooks, /status:\s*"inactive"/);
+  assert.match(webhooks, /isMolliePaymentTerminalFailure/);
+});
+
+test("Pending payment keeps sync_pending and incomplete status", () => {
+  const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
+  assert.match(webhooks, /payment_pending/);
+  assert.match(webhooks, /status:\s*"incomplete"/);
+});
+
+test("Subscription create after mandate clears sync_pending", () => {
+  const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
+  assert.match(checkout, /customerSubscriptions\.create/);
+  assert.match(checkout, /sync_pending:\s*false/);
+  assert.match(checkout, /last_reconciled_at/);
+});
+
+test("Refresh test state uses same authoritative reconcile path as webhook", () => {
+  const actions = readSource("src/lib/billing/providers/mollie/test-checkout-actions.ts");
+  assert.match(actions, /refreshMollieTestStateAction/);
+  assert.match(actions, /reconcileMolliePaymentWebhook/);
+  assert.match(actions, /first_payment_id/);
+});
+
+test("No duplicate subscription create when provider_subscription_id already present", () => {
+  const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
+  // Early return before create when sub_ already mapped.
+  const earlyGuardIdx = checkout.indexOf('provider_subscription_id?.startsWith("sub_")');
+  const createIdx = checkout.indexOf("customerSubscriptions.create");
+  assert.ok(earlyGuardIdx > 0 && createIdx > earlyGuardIdx);
+});
+
+test("FastSpring runtime and entitlements untouched by Mollie reconcile", () => {
+  const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
+  assert.doesNotMatch(webhooks, /organization_subscriptions/);
+  assert.doesNotMatch(webhooks, /resolveOrganizationEntitlements/);
+  assert.doesNotMatch(webhooks, /fastspring/i);
+  const entitlements = readSource("src/lib/entitlements/resolver.ts");
+  assert.doesNotMatch(entitlements, /mollie/i);
+});
+
 test("Parallel test state in mollie_test_subscriptions — not organization_subscriptions", () => {
   const sync = readSource("src/lib/billing/providers/mollie/sync.ts");
   assert.match(sync, /mollie_test_subscriptions/);

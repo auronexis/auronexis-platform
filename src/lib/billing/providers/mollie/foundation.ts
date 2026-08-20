@@ -22,7 +22,7 @@ export const MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID = "auroranexis_checkout_attempt
  * | provider_price_id / plan_key            | Subscription amount/description or catalog ref |
  * | provider_status                         | Subscription.status    |
  * | status (normalized)                     | derived from Subscription + Payment webhooks |
- * | sync_pending                            | true until webhook fetch confirms |
+ * | sync_pending                            | true until subscription mapping confirmed |
  *
  * Parallel test state in mollie_test_subscriptions — never organization_subscriptions or entitlements.
  * Enterprise plans remain manual — no Mollie self-serve checkout (contact sales flow untouched).
