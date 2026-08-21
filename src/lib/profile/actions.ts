@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
-import { getAppUrl } from "@/lib/env";
+import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";
 import { createClient } from "@/lib/supabase/server";
 
 const updateAccountSchema = z.object({
@@ -139,7 +139,7 @@ export async function sendAccountPasswordResetAction(
   const session = await requireSession();
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(session.email, {
-    redirectTo: `${getAppUrl()}/reset-password`,
+    redirectTo: getPasswordResetRedirectUrl(),
   });
 
   if (error) {

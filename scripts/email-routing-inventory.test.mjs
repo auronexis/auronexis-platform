@@ -66,6 +66,8 @@ test("enterprise request persists then notifies sales@ — recipient not client-
 test("production signup confirmation sends action link via configured provider", () => {
   const auth = readSource("src/lib/auth/actions.ts");
   assert.match(auth, /generateLink\(/);
+  assert.match(auth, /redirectTo:\s*emailRedirectTo/);
+  assert.match(auth, /getAuthCallbackUrl/);
   assert.match(auth, /action_link/);
   assert.match(auth, /sendEmail\(/);
   assert.match(auth, /Confirm your Auroranexis account/);

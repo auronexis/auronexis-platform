@@ -8,6 +8,8 @@ import { getDefaultFromEmail, isEmailConfigured } from "@/lib/env/email";
 import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { AUTH_MESSAGES } from "@/lib/auth/messages";
+import { getAuthCallbackUrl } from "@/lib/auth/redirects";
 import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { slugifyOrganizationName } from "@/lib/tenancy/context";
 const loginSchema = z.object({
@@ -22,6 +24,7 @@ const signupSchema = loginSchema.extend({
 
 export type AuthActionState = {
   error?: string;
+  success?: string;
 };
 
 /** Sign in with email and password — docs/04 login flow. */
@@ -141,10 +144,14 @@ export async function signUp(
   }
 
   if (isProduction) {
+    const emailRedirectTo = getAuthCallbackUrl("/login");
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
       type: "signup",
       email: parsed.data.email,
       password: parsed.data.password,
+      options: {
+        redirectTo: emailRedirectTo,
+      },
     });
 
     const actionLink = linkData?.properties?.action_link?.trim() ?? null;
@@ -174,7 +181,7 @@ export async function signUp(
       }
     }
 
-    return { error: "Account created. Confirm your email, then sign in." };
+    return { success: AUTH_MESSAGES.SIGNUP_CHECK_EMAIL };
   }
 
   const supabase = await createClient();

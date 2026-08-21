@@ -5,7 +5,8 @@ import { z } from "zod";
 import { AUTH_MESSAGES, isBenignPasswordResetError, sanitizeAuthError } from "@/lib/auth/messages";
 import { validatePasswordPolicy } from "@/lib/auth/password-policy";
 import { checkPasswordResetThrottle } from "@/lib/security/login-throttle";
-import { getAppUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
+import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
 const emailSchema = z.object({
@@ -89,7 +90,7 @@ export async function requestPasswordResetAction(
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-      redirectTo: `${getAppUrl()}/reset-password`,
+      redirectTo: getPasswordResetRedirectUrl(),
     });
 
     if (error && !isBenignPasswordResetError(error)) {

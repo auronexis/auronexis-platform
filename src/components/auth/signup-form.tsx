@@ -92,6 +92,14 @@ export function SignUpForm() {
         />
       </div>
 
+      {state.success ? (
+        <FormAlert variant="success" className="[color-scheme:light]">
+          <span role="status" aria-live="polite">
+            {state.success}
+          </span>
+        </FormAlert>
+      ) : null}
+
       {state.error ? (
         <FormAlert variant="error" className="[color-scheme:light]">
           <span aria-live="assertive">{state.error}</span>
