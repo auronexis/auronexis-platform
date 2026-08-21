@@ -66,7 +66,9 @@ export {
   changeMollieOrganizationPlan,
 } from "@/lib/billing/providers/mollie/lifecycle";
 export {
+  applyMolliePendingPlanChangeIfReady,
   getMollieOrganizationSubscription,
+  scheduleMolliePendingPlanChange,
   upsertMollieOrganizationSubscription,
 } from "@/lib/billing/providers/mollie/organization-sync";
 export {

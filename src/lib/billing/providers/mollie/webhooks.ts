@@ -19,6 +19,7 @@ import {
 } from "@/lib/billing/providers/mollie/foundation";
 import { assertMolliePaymentOpsAllowed, assertMollieTestModeOnly } from "@/lib/billing/providers/mollie/mode";
 import {
+  applyMolliePendingPlanChangeIfReady,
   getMollieOrganizationSubscription,
   upsertMollieOrganizationSubscription,
 } from "@/lib/billing/providers/mollie/organization-sync";
@@ -501,11 +502,15 @@ async function reconcileMollieProductionPaymentWebhook(
   }
 
   if (isMolliePaymentTerminalFailure(payment.status)) {
+    const failedPlanKey: MollieSelfServePlanKey =
+      orgRow?.provider_price_id && isMollieSelfServePlanKey(orgRow.provider_price_id)
+        ? orgRow.provider_price_id
+        : planKey;
     await upsertMollieOrganizationSubscription({
       organizationId,
       providerCustomerId: paymentCustomerId ?? orgRow?.provider_customer_id ?? null,
       providerSubscriptionId: orgRow?.provider_subscription_id ?? null,
-      planKey,
+      planKey: failedPlanKey,
       providerStatus: payment.status,
       normalizedStatus: payment.subscriptionId ? "past_due" : "inactive",
       syncPending: false,
@@ -564,16 +569,35 @@ async function reconcileMollieProductionPaymentWebhook(
     const nextPaymentDate =
       typeof subscription.nextPaymentDate === "string" ? subscription.nextPaymentDate : null;
 
-    await upsertMollieOrganizationSubscription({
+    // Recurring/paid confirmation: apply scheduled pending_plan if present.
+    // Authoritative provider_price_id stays on the previous plan until this path runs.
+    const pendingApply = await applyMolliePendingPlanChangeIfReady({
       organizationId,
       providerCustomerId: customerId,
       providerSubscriptionId: subscription.id,
-      planKey,
       providerStatus: subscription.status,
       normalizedStatus: mapMollieSubscriptionStatus(subscription.status),
-      syncPending: false,
       currentPeriodEnd: nextPaymentDate,
     });
+
+    if (!pendingApply.applied) {
+      const authoritativePlanKey =
+        pendingApply.planKey ??
+        (orgRow?.provider_price_id && isMollieSelfServePlanKey(orgRow.provider_price_id)
+          ? orgRow.provider_price_id
+          : planKey);
+
+      await upsertMollieOrganizationSubscription({
+        organizationId,
+        providerCustomerId: customerId,
+        providerSubscriptionId: subscription.id,
+        planKey: authoritativePlanKey,
+        providerStatus: subscription.status,
+        normalizedStatus: mapMollieSubscriptionStatus(subscription.status),
+        syncPending: false,
+        currentPeriodEnd: nextPaymentDate,
+      });
+    }
 
     return { handled: true, ignored: false, organizationId, surface: "production" };
   }

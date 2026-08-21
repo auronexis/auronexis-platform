@@ -131,7 +131,8 @@ export async function createCheckoutSessionAction(
           targetPlanKey: parsed.data,
         });
         return {
-          success: "Plan updated. Access refreshes after Mollie confirms the subscription change.",
+          success:
+            "Plan change scheduled with Mollie. Your current plan stays active until Mollie confirms the next billing cycle — then entitlements update.",
         };
       }
 

@@ -20,6 +20,12 @@ export type PricingSelectionContext = {
   usedClients: number;
   overview: BillingOverview;
   invoices: CustomerInvoiceView[];
+  /** Active org billing provider — used to avoid FastSpring portal assumptions for Mollie. */
+  billingProvider?: string | null;
+  /** Scheduled plan change (Mollie); not yet authoritative for entitlements. */
+  pendingPlanKey?: string | null;
+  pendingPlanEffectiveAt?: string | null;
+  pendingPlanChangeType?: string | null;
 };
 
 export function createFallbackPricingSelection(
@@ -43,6 +49,10 @@ export function createFallbackPricingSelection(
     usedClients: 0,
     overview,
     invoices,
+    billingProvider: null,
+    pendingPlanKey: null,
+    pendingPlanEffectiveAt: null,
+    pendingPlanChangeType: null,
   };
 }
 
@@ -57,6 +67,10 @@ export function buildPricingSelectionContext(input: {
   currentPlan?: SubscriptionPlanDefinition | null;
   currentPlanName?: string | null;
   ignoredStripeInvoiceIds?: ReadonlySet<string>;
+  billingProvider?: string | null;
+  pendingPlanKey?: string | null;
+  pendingPlanEffectiveAt?: string | null;
+  pendingPlanChangeType?: string | null;
 }): PricingSelectionContext {
   try {
     const invoices = Array.isArray(input.invoices) ? input.invoices : [];
@@ -87,6 +101,10 @@ export function buildPricingSelectionContext(input: {
       usedClients: input.usedClients ?? 0,
       overview: input.overview,
       invoices,
+      billingProvider: input.billingProvider ?? null,
+      pendingPlanKey: input.pendingPlanKey ?? null,
+      pendingPlanEffectiveAt: input.pendingPlanEffectiveAt ?? null,
+      pendingPlanChangeType: input.pendingPlanChangeType ?? null,
     };
   } catch (error) {
     console.warn("[plans] buildPricingSelectionContext failed — using fallback", {

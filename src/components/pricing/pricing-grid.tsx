@@ -178,6 +178,7 @@ export function PricingGrid({
             isDowngrade,
             seatBlockMessage: seatBlock.blocked ? seatBlock.message : null,
             stripeStatus: safeStripeStatus,
+            billingProvider: safeSelection.billingProvider ?? null,
           });
 
           return (

@@ -22,7 +22,7 @@ export { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selec
 
 /** Canonical PostgREST select for organization_subscriptions rows. */
 export const ORGANIZATION_SUBSCRIPTION_SELECT =
-  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, trial_ends_at, created_at, updated_at";
+  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, pending_plan, pending_plan_effective_at, pending_plan_change_type, provider_change_reference, trial_ends_at, created_at, updated_at";
 
 /** Load the current organization's subscription record for the org billing provider. */
 export async function getOrganizationSubscription(

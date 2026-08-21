@@ -189,3 +189,72 @@ test("O: Phase 2 test harness and Phase 4 report exist; foundation phase updated
   assert.match(foundation, /mollie_test_subscriptions/);
   assert.match(foundation, /NEVER the/);
 });
+
+// ---------------------------------------------------------------------------
+// Phase 4 recovery — pending plan change lifecycle (runtime-truth contracts)
+// ---------------------------------------------------------------------------
+
+test("P: upgrade/downgrade schedules pending_plan and keeps authoritative provider_price_id", () => {
+  const lifecycle = readSource("src/lib/billing/providers/mollie/lifecycle.ts");
+  const sync = readSource("src/lib/billing/providers/mollie/organization-sync.ts");
+  assert.match(lifecycle, /scheduleMolliePendingPlanChange/);
+  assert.match(lifecycle, /currentPlanKey:\s*previousPlanKey/);
+  assert.match(lifecycle, /pendingPlanKey:\s*input\.targetPlanKey/);
+  assert.match(lifecycle, /never cancel\+create|Never cancel\+create/i);
+  assert.match(sync, /pending_plan/);
+  assert.match(sync, /provider_price_id:\s*input\.planKey/);
+  assert.match(sync, /export async function applyMolliePendingPlanChangeIfReady/);
+});
+
+test("Q: paid webhook applies pending plan only after Mollie confirmation", () => {
+  const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
+  assert.match(webhooks, /applyMolliePendingPlanChangeIfReady/);
+  assert.match(webhooks, /authoritativePlanKey|pendingApply\.planKey|pendingApply\.applied/);
+  assert.match(webhooks, /failedPlanKey/);
+});
+
+test("R: Mollie downgrade UI is not blocked by FastSpring portal unavailability", () => {
+  const reasons = readSource("src/lib/diagnostics/pricing-reasons.ts");
+  assert.match(reasons, /billingProvider\?/);
+  assert.match(reasons, /billingProvider !== "mollie"/);
+  const grid = readSource("src/components/pricing/pricing-grid.tsx");
+  assert.match(grid, /billingProvider:\s*safeSelection\.billingProvider/);
+});
+
+test("S: Mollie billing panel exposes cancel + plans link without portal theatre", () => {
+  const panel = readSource("src/components/settings/billing-settings-panel.tsx");
+  assert.match(panel, /cancelMollieSubscriptionAction/);
+  assert.match(panel, /Mollie does not provide a hosted billing portal/);
+  assert.match(panel, /Cancel subscription/);
+});
+
+test("T: pending plan columns migration is additive and RLS-safe", () => {
+  const migration = readSource(
+    "supabase/migrations/20250822010000_mollie_pending_plan_change.sql",
+  );
+  assert.match(migration, /ADD COLUMN IF NOT EXISTS pending_plan/);
+  assert.match(migration, /pending_plan_effective_at/);
+  assert.match(migration, /pending_plan_change_type/);
+  assert.match(migration, /provider_change_reference/);
+  assert.doesNotMatch(migration, /DROP TABLE/i);
+  assert.doesNotMatch(migration, /DISABLE ROW LEVEL SECURITY/i);
+});
+
+test("U: plan-change action success copy does not claim immediate entitlements", () => {
+  const actions = readSource("src/lib/billing/actions.ts");
+  assert.match(actions, /Plan change scheduled with Mollie/);
+  assert.match(actions, /current plan stays active/i);
+});
+
+test("V: LIVE charging remains disabled in example env", () => {
+  const envExample = readSource(".env.example");
+  assert.match(envExample, /MOLLIE_LIVE_CHARGING_ENABLED=false/);
+});
+
+test("W: recovery audit report documents runtime truth verdict", () => {
+  assert.ok(pathExists("docs/mollie-phase-4-recovery-audit.md"));
+  const report = readSource("docs/mollie-phase-4-recovery-audit.md");
+  assert.match(report, /FINAL VERDICT/);
+  assert.match(report, /pending_plan/);
+  assert.match(report, /NO PLAN CHANGE AUTHORITATIVE UNTIL PROVIDER CONFIRMS/i);
+});

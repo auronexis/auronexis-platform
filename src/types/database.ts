@@ -1187,6 +1187,10 @@ export type Database = {
           current_period_start: string | null;
           current_period_end: string | null;
           cancel_at_period_end: boolean;
+          pending_plan: string | null;
+          pending_plan_effective_at: string | null;
+          pending_plan_change_type: string | null;
+          provider_change_reference: string | null;
           trial_ends_at: string | null;
           created_at: string;
           updated_at: string;
@@ -1207,6 +1211,10 @@ export type Database = {
           current_period_start?: string | null;
           current_period_end?: string | null;
           cancel_at_period_end?: boolean;
+          pending_plan?: string | null;
+          pending_plan_effective_at?: string | null;
+          pending_plan_change_type?: string | null;
+          provider_change_reference?: string | null;
           trial_ends_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -1227,14 +1235,17 @@ export type Database = {
           current_period_start?: string | null;
           current_period_end?: string | null;
           cancel_at_period_end?: boolean;
+          pending_plan?: string | null;
+          pending_plan_effective_at?: string | null;
+          pending_plan_change_type?: string | null;
+          provider_change_reference?: string | null;
           trial_ends_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "organization_subscriptions_organization_id_fkey";
-            columns: ["organization_id"];
+            foreignKeyName: "organization_subscriptions_organization_id_fkey";            columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];

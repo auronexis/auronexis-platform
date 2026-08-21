@@ -41,6 +41,8 @@ export function getPricingButtonDisabledReasons(input: {
   isDowngrade: boolean;
   seatBlockMessage: string | null;
   stripeStatus: StripeBillingUiStatus;
+  /** When mollie, downgrades use native plan-change — no portal required. */
+  billingProvider?: string | null;
 }): string[] {
   const reasons: string[] = [];
 
@@ -77,11 +79,25 @@ export function getPricingButtonDisabledReasons(input: {
     reasons.push(block?.bannerMessage ?? block?.message ?? PENDING_PAYMENT_CHECKOUT_MESSAGE);
   }
 
-  if (input.isUsable && input.isDowngrade && !input.isCurrent && !input.stripeStatus.portalAvailable) {
+  // FastSpring historically expected a hosted portal for downgrades. Mollie has no portal —
+  // plan changes (upgrade and downgrade) go through createCheckoutSessionAction / lifecycle.
+  if (
+    input.isUsable &&
+    input.isDowngrade &&
+    !input.isCurrent &&
+    !input.stripeStatus.portalAvailable &&
+    input.billingProvider !== "mollie"
+  ) {
     reasons.push("Use the billing portal to downgrade — portal is currently unavailable.");
   }
 
-  if (input.isUsable && input.currentPlanKey && !input.isCurrent && !input.isDowngrade) {
+  if (
+    input.isUsable &&
+    input.currentPlanKey &&
+    !input.isCurrent &&
+    !input.isDowngrade &&
+    input.billingProvider !== "mollie"
+  ) {
     const comparison = comparePlanOrder(input.planKey, input.currentPlanKey);
     if (comparison === "same" || comparison === "downgrade") {
       reasons.push("Use the billing portal to manage your current subscription.");
