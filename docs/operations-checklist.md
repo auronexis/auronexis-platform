@@ -98,7 +98,7 @@ Full runbook: [operations-runbook.md](./operations-runbook.md)
 | Support | support@auroranexis.com |
 | Sales | sales@auroranexis.com |
 | Security | security@auroranexis.com |
-| System mail | no-reply@auroranexis.com |
+| System mail | noreply@auroranexis.com |
 
 ---
 

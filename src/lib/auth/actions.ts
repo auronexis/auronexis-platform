@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
+import { sendWelcomeEmailAfterSignup } from "@/lib/email/welcome";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
@@ -125,19 +126,36 @@ export async function signUp(
     await admin.auth.admin.deleteUser(authData.user.id);
     return { error: "Unable to create organization." };
   }
-  const { error: profileError } = await admin.from("users").insert({
-    auth_user_id: authData.user.id,
-    organization_id: organization.id,
-    full_name: parsed.data.fullName,
-    email: parsed.data.email,
-    role: "owner",
-    is_disabled: false,
-  });
+  const { data: profile, error: profileError } = await admin
+    .from("users")
+    .insert({
+      auth_user_id: authData.user.id,
+      organization_id: organization.id,
+      full_name: parsed.data.fullName,
+      email: parsed.data.email,
+      role: "owner",
+      is_disabled: false,
+    })
+    .select("id")
+    .single();
 
-  if (profileError) {
+  if (profileError || !profile) {
     await admin.from("organizations").delete().eq("id", organization.id);
     await admin.auth.admin.deleteUser(authData.user.id);
     return { error: "Unable to create user profile." };
+  }
+
+  // Welcome mail is best-effort — never roll back a successful provisioning.
+  try {
+    await sendWelcomeEmailAfterSignup({
+      userId: profile.id,
+      organizationId: organization.id,
+      recipientEmail: parsed.data.email,
+      fullName: parsed.data.fullName,
+      organizationName: parsed.data.organizationName,
+    });
+  } catch {
+    console.error("[email] welcome after signup failed (account retained)");
   }
 
   revalidatePath("/", "layout");

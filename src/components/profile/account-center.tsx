@@ -93,7 +93,10 @@ function shallowEqualNotifications(
     a.riskAlerts === b.riskAlerts &&
     a.incidentAlerts === b.incidentAlerts &&
     a.reportCompleted === b.reportCompleted &&
-    a.teamInvitations === b.teamInvitations
+    a.teamInvitations === b.teamInvitations &&
+    a.productUpdates === b.productUpdates &&
+    a.newsletter === b.newsletter &&
+    a.promotions === b.promotions
   );
 }
 
@@ -531,6 +534,34 @@ export function AccountCenter({ session, permissions, security }: AccountCenterP
             checked={preferencesReady ? notificationsDraft.teamInvitations : true}
             onCheckedChange={(checked) =>
               setNotificationsDraft((current) => ({ ...current, teamInvitations: checked }))
+            }
+          />
+          <p className="px-1 pb-2 pt-3 text-xs text-muted">
+            Security and account emails (password reset, welcome, billing notices from Auroranexis)
+            always send and cannot be turned off. Marketing mail is opt-in only.
+          </p>
+          <Switch
+            label="Product updates"
+            description="Occasional product news. Off by default — never auto-subscribed at signup."
+            checked={preferencesReady ? notificationsDraft.productUpdates : false}
+            onCheckedChange={(checked) =>
+              setNotificationsDraft((current) => ({ ...current, productUpdates: checked }))
+            }
+          />
+          <Switch
+            label="Newsletter"
+            description="Optional newsletter. Off by default."
+            checked={preferencesReady ? notificationsDraft.newsletter : false}
+            onCheckedChange={(checked) =>
+              setNotificationsDraft((current) => ({ ...current, newsletter: checked }))
+            }
+          />
+          <Switch
+            label="Promotions"
+            description="Optional promotions. Off by default."
+            checked={preferencesReady ? notificationsDraft.promotions : false}
+            onCheckedChange={(checked) =>
+              setNotificationsDraft((current) => ({ ...current, promotions: checked }))
             }
           />
         </div>

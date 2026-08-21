@@ -10,7 +10,7 @@
 | support@auroranexis.com | Product support |
 | sales@auroranexis.com | Sales and pilots |
 | security@auroranexis.com | Security reports |
-| no-reply@auroranexis.com | Transactional email |
+| noreply@auroranexis.com | Transactional email |
 
 Configured in `src/lib/company/contact.ts`.
 

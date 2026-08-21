@@ -326,6 +326,108 @@ export type Database = {
           },
         ];
       };
+      transactional_email_deliveries: {
+        Row: {
+          id: string;
+          organization_id: string;
+          user_id: string;
+          category: "auth" | "account" | "billing_system";
+          template_key: string;
+          status: "claimed" | "sent" | "failed" | "skipped";
+          provider_message_id: string | null;
+          error_code: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          user_id: string;
+          category: "auth" | "account" | "billing_system";
+          template_key: string;
+          status: "claimed" | "sent" | "failed" | "skipped";
+          provider_message_id?: string | null;
+          error_code?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          user_id?: string;
+          category?: "auth" | "account" | "billing_system";
+          template_key?: string;
+          status?: "claimed" | "sent" | "failed" | "skipped";
+          provider_message_id?: string | null;
+          error_code?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "transactional_email_deliveries_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transactional_email_deliveries_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_email_preferences: {
+        Row: {
+          user_id: string;
+          organization_id: string;
+          product_updates: boolean;
+          newsletter: boolean;
+          promotions: boolean;
+          marketing_unsubscribed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          organization_id: string;
+          product_updates?: boolean;
+          newsletter?: boolean;
+          promotions?: boolean;
+          marketing_unsubscribed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          organization_id?: string;
+          product_updates?: boolean;
+          newsletter?: boolean;
+          promotions?: boolean;
+          marketing_unsubscribed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_email_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_email_preferences_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       clients: {
         Row: {
           id: string;

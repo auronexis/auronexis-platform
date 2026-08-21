@@ -30,6 +30,10 @@ export type NotificationPreferences = {
   incidentAlerts: boolean;
   reportCompleted: boolean;
   teamInvitations: boolean;
+  /** Marketing opt-in — defaults false; never auto-subscribed at signup. */
+  productUpdates: boolean;
+  newsletter: boolean;
+  promotions: boolean;
 };
 
 export type UserPreferences = {
@@ -77,6 +81,9 @@ export function createDefaultPreferences(): UserPreferences {
       incidentAlerts: true,
       reportCompleted: true,
       teamInvitations: true,
+      productUpdates: false,
+      newsletter: false,
+      promotions: false,
     },
   };
 }
@@ -109,6 +116,9 @@ export function createStableDefaultPreferences(): UserPreferences {
       incidentAlerts: true,
       reportCompleted: true,
       teamInvitations: true,
+      productUpdates: false,
+      newsletter: false,
+      promotions: false,
     },
   };
 }

@@ -14,7 +14,7 @@
 | `support@auroranexis.com` | Customer support | Yes (`SUPPORT_EMAIL`) |
 | `sales@auroranexis.com` | Sales & pilot outreach | Yes (`SALES_EMAIL`) |
 | `security@auroranexis.com` | Security disclosures, DMARC reports | Yes (`SECURITY_EMAIL`) |
-| `no-reply@auroranexis.com` | Transactional / system mail | Yes (`NO_REPLY_EMAIL`) |
+| `noreply@auroranexis.com` | Transactional / system mail | Yes (`NO_REPLY_EMAIL`) |
 
 Source: `src/lib/company/contact.ts`
 
@@ -77,10 +77,12 @@ Start with `p=none` during pilot if needed, move to `quarantine` before go-live.
 
 | Flow | From address | Notes |
 |------|--------------|-------|
-| Report email delivery | no-reply@ | Requires SMTP/API env vars |
-| Contact form | routes to support@ / sales@ | Server action or API |
-| Pilot invitations | sales@ | Manual or CRM |
+| Report email delivery | noreply@ | Requires SMTP/API env vars |
+| Welcome after signup | noreply@ | App `sendEmail()` — not verification |
+| Contact form | From noreply@ → To support@ / sales@ / info@ | Server action |
+| Pilot invitations | sales@ (recipient) | Manual or CRM |
 | Security reports | security@ | Published on /security-policy |
+| Password reset | noreply@ via Supabase Auth SMTP | Operator Dashboard |
 
 ---
 
@@ -90,7 +92,7 @@ Start with `p=none` during pilot if needed, move to `quarantine` before go-live.
 - [ ] SPF includes all sending services
 - [ ] DKIM enabled for workspace + transactional
 - [ ] DMARC published with security@ RUA
-- [ ] Test send from support@ and no-reply@
+- [ ] Test send from support@ and noreply@
 - [ ] Inbound routing for info@ and sales@ monitored
 
 ---

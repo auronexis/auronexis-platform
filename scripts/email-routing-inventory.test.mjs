@@ -63,13 +63,16 @@ test("enterprise request persists then notifies sales@ — recipient not client-
   assert.match(actions, /recordEnterpriseActivitySafe/);
 });
 
-test("production signup does not send confirmation mail — redirects to login", () => {
+test("production signup confirms at create then sends welcome via facade — not confirmation mail", () => {
   const auth = readSource("src/lib/auth/actions.ts");
   assert.doesNotMatch(auth, /generateLink\(/);
   assert.doesNotMatch(auth, /Confirm your Auroranexis account/);
   assert.doesNotMatch(auth, /action_link/);
   assert.match(auth, /email_confirm:\s*true/);
   assert.match(auth, /redirect\("\/login\?signup=success"\)/);
+  assert.match(auth, /sendWelcomeEmailAfterSignup/);
+  assert.doesNotMatch(auth, /nodemailer/i);
+  assert.doesNotMatch(auth, /sendEmail\(/);
 });
 
 test("company contact registry is the hard-coded destination source of truth", () => {
@@ -83,8 +86,9 @@ test("company contact registry is the hard-coded destination source of truth", (
     "privacy@auroranexis.com",
     "partners@auroranexis.com",
     "press@auroranexis.com",
-    "no-reply@auroranexis.com",
+    "noreply@auroranexis.com",
   ]) {
     assert.match(company, new RegExp(address.replace(".", "\\.")));
   }
+  assert.doesNotMatch(company, /no-reply@auroranexis\.com/);
 });

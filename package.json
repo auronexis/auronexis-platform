@@ -29,6 +29,7 @@
     "test:analytics-conversion": "node --test scripts/analytics-conversion.test.mjs",
     "test:communication-contact": "node --test scripts/communication-contact.test.mjs",
     "test:contact-sales-pipeline": "node --test scripts/contact-sales-pipeline.test.mjs scripts/email-routing-inventory.test.mjs scripts/customer-communication-routing.test.mjs scripts/native-smtp-transport.test.mjs scripts/contact-footer-parity.test.mjs",
+    "test:transactional-email": "node --test scripts/transactional-email-system.test.mjs scripts/signup-email-confirm-redirect.test.mjs scripts/email-routing-inventory.test.mjs scripts/native-smtp-transport.test.mjs",
     "test:phase-31": "node --test scripts/phase-31-landing-pages.test.mjs",
     "test:phase-32": "node --test scripts/phase-32-ai-search-geo.test.mjs",
     "test:phase-33": "node --test scripts/phase-33-enterprise-trust.test.mjs",

@@ -71,6 +71,12 @@ export function getDefaultFromEmail(): string {
   return `${PLATFORM_NAME} <${COMPANY_CONTACT.noReplyEmail}>`;
 }
 
+/**
+ * Operator guidance: set SMTP_FROM / EMAIL_FROM to
+ * `Auroranexis <noreply@auroranexis.com>` in production.
+ * Never use sales@ as the platform From for auth/account/system mail.
+ */
+
 /** Optional Resend API key — returns null when unset instead of throwing. */
 export function getOptionalResendApiKey(): string | null {
   const value = process.env.RESEND_API_KEY?.trim();

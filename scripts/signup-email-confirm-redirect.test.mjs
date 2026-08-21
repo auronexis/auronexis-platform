@@ -37,8 +37,11 @@ describe("production signup without email confirmation UX", () => {
     assert.doesNotMatch(source, /SIGNUP_CHECK_EMAIL/);
     assert.doesNotMatch(source, /Check your email/);
     assert.doesNotMatch(source, /Confirm your Auroranexis account/);
-    assert.doesNotMatch(source, /sendEmail\(/);
     assert.doesNotMatch(source, /action_link/);
+    // Welcome is account mail via facade — not confirmation / not Nodemailer in the action.
+    assert.match(source, /sendWelcomeEmailAfterSignup/);
+    assert.doesNotMatch(source, /nodemailer/i);
+    assert.doesNotMatch(source, /sendEmail\(/);
   });
 
   it("successful signup redirects to login without auto sign-in", () => {

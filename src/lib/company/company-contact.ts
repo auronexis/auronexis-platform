@@ -12,7 +12,8 @@ export const COMPANY_CONTACT = {
   privacyEmail: "privacy@auroranexis.com",
   partnersEmail: "partners@auroranexis.com",
   pressEmail: "press@auroranexis.com",
-  noReplyEmail: "no-reply@auroranexis.com",
+  /** Canonical transactional / system sender mailbox (never sales@). */
+  noReplyEmail: "noreply@auroranexis.com",
 } as const;
 
 export type CompanyContact = typeof COMPANY_CONTACT;
