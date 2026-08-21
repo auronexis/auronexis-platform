@@ -3,13 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { sendEmail } from "@/lib/email/provider";
-import { getDefaultFromEmail, isEmailConfigured } from "@/lib/env/email";
 import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { AUTH_MESSAGES } from "@/lib/auth/messages";
-import { getAuthCallbackUrl } from "@/lib/auth/redirects";
 import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { slugifyOrganizationName } from "@/lib/tenancy/context";
 const loginSchema = z.object({
@@ -72,6 +68,8 @@ export async function signIn(
 /**
  * Register a new agency account.
  * Creates auth user, organization, and owner profile via service role.
+ * Email confirmation is intentionally disabled: users can sign in after signup.
+ * Does not auto-login — redirects to /login with a neutral success message.
  */
 export async function signUp(
   _prevState: AuthActionState,
@@ -99,12 +97,11 @@ export async function signUp(
   const admin = createAdminClient();
   const baseSlug = slugifyOrganizationName(parsed.data.organizationName);
   const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
-  const isProduction = process.env.NODE_ENV === "production";
 
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email: parsed.data.email,
     password: parsed.data.password,
-    email_confirm: !isProduction,
+    email_confirm: true,
     user_metadata: {
       full_name: parsed.data.fullName,
     },
@@ -143,59 +140,8 @@ export async function signUp(
     return { error: "Unable to create user profile." };
   }
 
-  if (isProduction) {
-    const emailRedirectTo = getAuthCallbackUrl("/login");
-    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-      type: "signup",
-      email: parsed.data.email,
-      password: parsed.data.password,
-      options: {
-        redirectTo: emailRedirectTo,
-      },
-    });
-
-    const actionLink = linkData?.properties?.action_link?.trim() ?? null;
-
-    if (!actionLink) {
-      console.error("[auth] Signup confirmation link missing:", linkError?.message ?? "unknown");
-    } else if (!isEmailConfigured()) {
-      console.error("[auth] Signup confirmation email skipped — email provider not configured.");
-    } else {
-      const sent = await sendEmail({
-        from: getDefaultFromEmail(),
-        to: parsed.data.email,
-        subject: "Confirm your Auroranexis account",
-        text: [
-          `Hi ${parsed.data.fullName.trim()},`,
-          "",
-          "Confirm your email to finish creating your Auroranexis account:",
-          "",
-          actionLink,
-          "",
-          "If you did not create this account, you can ignore this email.",
-        ].join("\n"),
-      });
-
-      if (!sent.success) {
-        console.error("[auth] Signup confirmation email failed:", sent.error);
-      }
-    }
-
-    return { success: AUTH_MESSAGES.SIGNUP_CHECK_EMAIL };
-  }
-
-  const supabase = await createClient();
-  const { error: signInError } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-  });
-
-  if (signInError) {
-    return { error: "Account created. Please sign in." };
-  }
-
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect("/login?signup=success");
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) {
       throw error;

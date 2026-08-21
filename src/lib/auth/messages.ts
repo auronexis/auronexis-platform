@@ -14,8 +14,7 @@ export const AUTH_MESSAGES = {
   RESET_SESSION_EXPIRED: "Your reset session has expired. Request a new reset link.",
   CONFIGURATION_ERROR: "Password reset is temporarily unavailable. Please try again later.",
   GENERIC_ERROR: "Something went wrong. Please try again.",
-  SIGNUP_CHECK_EMAIL:
-    "Check your email. We've sent you a confirmation link to activate your account.",
+  SIGNUP_SUCCESS: "Account created successfully. You can now sign in.",
 } as const;
 
 export type AuthMessageKey = keyof typeof AUTH_MESSAGES;

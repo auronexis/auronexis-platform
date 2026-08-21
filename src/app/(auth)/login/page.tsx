@@ -13,7 +13,7 @@ import { headers } from "next/headers";
 export const metadata: Metadata = createPageMetadataForPath("/login");
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; redirect?: string; reset?: string }>;
+  searchParams: Promise<{ error?: string; redirect?: string; reset?: string; signup?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -30,8 +30,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     params.error === "auth_callback_failed"
       ? "Sign-in could not be completed. Please try again."
       : undefined;
-  const resetSuccess =
-    params.reset === "success" ? AUTH_MESSAGES.PASSWORD_UPDATED : undefined;
+  const initialSuccess =
+    params.signup === "success"
+      ? AUTH_MESSAGES.SIGNUP_SUCCESS
+      : params.reset === "success"
+        ? AUTH_MESSAGES.PASSWORD_UPDATED
+        : undefined;
 
   return (
     <>
@@ -44,7 +48,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <LoginForm
             redirectTo={params.redirect}
             initialError={callbackError}
-            initialSuccess={resetSuccess}
+            initialSuccess={initialSuccess}
           />
         </LoginBrandingShell>
       </div>

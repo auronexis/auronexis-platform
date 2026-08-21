@@ -26,33 +26,40 @@ Also ensure **Site URL** matches the app origin (`NEXT_PUBLIC_APP_URL`).
 
 ## Production sender branding
 
-Auth emails (password reset, signup confirmation) are sent by **Supabase Auth**, not the application Resend integration.
+Auth emails (password reset, magic link, email change, invite) are sent by **Supabase Auth** SMTP, not the application Resend integration. Product signup does **not** send a confirmation email — accounts are usable immediately after `/signup` redirects to `/login?signup=success`.
 
 ### Target production sender
 
 | Field | Value |
 |-------|-------|
-| From | `Auroranexis <no-reply@auroranexis.com>` |
+| From | `Auroranexis <noreply@auroranexis.com>` |
 | Reply-to | `support@auroranexis.com` |
+| Do not use | `sales@auroranexis.com` (sales/pilot only) |
 
 ### Supabase configuration
 
 1. **Project Settings → Auth → SMTP Settings**
    - Enable custom SMTP (Resend SMTP, Postmark, or AWS SES SMTP endpoint)
-   - Sender email: `no-reply@auroranexis.com`
+   - Sender email: `noreply@auroranexis.com`
    - Sender name: `Auroranexis`
+   - Never use `sales@auroranexis.com` as the Auth SMTP sender
 
 2. **Authentication → Email Templates**
    - Reset Password: subject `Reset your Auroranexis password`
    - Remove default Supabase footer/branding
-   - CTA: `Reset Password` using `{{ .ConfirmationURL }}`
+   - CTA: `Reset Password` using `{{ .ConfirmationURL }}` (button text — never paste the raw URL as visible link text)
+   - Confirm signup template may remain unused while "Confirm email" is OFF
 
-3. **DNS (required before switching)**
+3. **Authentication → Providers → Email**
+   - **Confirm email: OFF** (required for this product signup flow)
+
+4. **DNS (required before switching)**
    - SPF record including your SMTP provider
    - DKIM records from Resend/Postmark/SES
    - DMARC policy for `auroranexis.com`
+   - Mailbox/alias for `noreply@auroranexis.com` (or forward-only)
 
-Application transactional email (report delivery, lead notifications) uses the provider abstraction in `src/lib/email/provider/`. Set `EMAIL_FROM=Auroranexis <no-reply@auroranexis.com>` in Vercel production.
+Application transactional email (report delivery, lead notifications) uses the provider abstraction in `src/lib/email/provider/`. Set `EMAIL_FROM=Auroranexis <noreply@auroranexis.com>` in Vercel production (never `sales@`).
 
 ## Email template (Supabase)
 

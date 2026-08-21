@@ -61,10 +61,10 @@ describe("auth without captcha / turnstile", () => {
     assert.doesNotMatch(e2eBypass(), /TURNSTILE_DISABLE/);
   });
 
-  it("signup does not auto-confirm production users", () => {
+  it("signup confirms users so they can sign in without a confirmation email", () => {
     const actions = authActions();
-    assert.match(actions, /email_confirm:\s*!isProduction/);
-    assert.match(actions, /NODE_ENV\s*===\s*"production"/);
+    assert.match(actions, /email_confirm:\s*true/);
+    assert.doesNotMatch(actions, /email_confirm:\s*!isProduction/);
   });
 
   it("password reset remains protected by existing validation and throttling", () => {
@@ -85,7 +85,8 @@ describe("auth without captcha / turnstile", () => {
   });
 
   it("other Security Fix Sprint protections remain active", () => {
-    assert.match(authActions(), /email_confirm:\s*!isProduction/);
+    assert.match(authActions(), /email_confirm:\s*true/);
+    assert.match(authActions(), /checkSignupThrottle/);
     assert.match(e2eBypass(), /Production must never activate E2E/);
     const csp = readSource("src/lib/security/csp.ts");
     assert.doesNotMatch(csp, /unsafe-eval/);

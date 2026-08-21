@@ -1,6 +1,6 @@
 /**
- * Production signup / email-confirmation redirect contracts.
- * Ensures confirmation links never intentionally target development hosts in production.
+ * Production signup redirect contracts (email confirmation intentionally disabled).
+ * Ensures signup never targets development hosts and never shows false confirm-email UX.
  */
 
 import assert from "node:assert/strict";
@@ -10,12 +10,14 @@ import { readSource } from "./_test-helpers/read-source.mjs";
 const authActions = () => readSource("src/lib/auth/actions.ts");
 const redirects = () => readSource("src/lib/auth/redirects.ts");
 const signupForm = () => readSource("src/components/auth/signup-form.tsx");
+const loginPage = () => readSource("src/app/(auth)/login/page.tsx");
 const safeRedirect = () => readSource("src/lib/auth/safe-redirect.ts");
 const resetActions = () => readSource("src/lib/auth/reset-actions.ts");
+const callback = () => readSource("src/app/auth/callback/route.ts");
 const env = () => readSource("src/lib/env.ts");
 const messages = () => readSource("src/lib/auth/messages.ts");
 
-describe("production signup email confirmation redirect", () => {
+describe("production signup without email confirmation UX", () => {
   it("centralizes auth email redirect URLs on getAppUrl", () => {
     const source = redirects();
     assert.match(source, /getAppUrl/);
@@ -28,21 +30,48 @@ describe("production signup email confirmation redirect", () => {
     assert.doesNotMatch(source, /auroranexis\.com/);
   });
 
-  it("production signup generateLink passes redirectTo from authoritative helper", () => {
+  it("signup confirms the auth user and does not send confirmation links", () => {
     const source = authActions();
-    assert.match(source, /getAuthCallbackUrl/);
-    assert.match(source, /getAuthCallbackUrl\("\/login"\)/);
-    assert.match(source, /options:\s*\{[\s\S]*redirectTo:\s*emailRedirectTo/);
-    assert.match(source, /type:\s*"signup"/);
-    assert.ok(
-      source.includes("redirectTo: emailRedirectTo"),
-      "generateLink must pass explicit redirectTo so Site URL is not the sole source",
-    );
+    assert.match(source, /email_confirm:\s*true/);
+    assert.doesNotMatch(source, /generateLink\(/);
+    assert.doesNotMatch(source, /SIGNUP_CHECK_EMAIL/);
+    assert.doesNotMatch(source, /Check your email/);
+    assert.doesNotMatch(source, /Confirm your Auroranexis account/);
+    assert.doesNotMatch(source, /sendEmail\(/);
+    assert.doesNotMatch(source, /action_link/);
+  });
+
+  it("successful signup redirects to login without auto sign-in", () => {
+    const source = authActions();
+    assert.match(source, /redirect\("\/login\?signup=success"\)/);
+    assert.doesNotMatch(source, /redirect\("\/dashboard"\)/);
+    // signInWithPassword remains for login; signup must not call it after createUser.
+    const signupFn = source.slice(source.indexOf("export async function signUp"));
+    assert.doesNotMatch(signupFn, /signInWithPassword/);
+  });
+
+  it("login page shows neutral signup success copy", () => {
+    const copy = messages();
+    const page = loginPage();
+    assert.match(copy, /SIGNUP_SUCCESS/);
+    assert.match(copy, /Account created successfully\. You can now sign in\./);
+    assert.doesNotMatch(copy, /SIGNUP_CHECK_EMAIL/);
+    assert.doesNotMatch(copy, /Check your email/);
+    assert.match(page, /signup === "success"/);
+    assert.match(page, /AUTH_MESSAGES\.SIGNUP_SUCCESS/);
   });
 
   it("password reset uses the same redirect helper family", () => {
     assert.match(resetActions(), /getPasswordResetRedirectUrl\(\)/);
     assert.doesNotMatch(resetActions(), /redirectTo:\s*`\$\{getAppUrl\(\)\}/);
+  });
+
+  it("auth callback exchanges code and redirects via getAppUrl", () => {
+    const source = callback();
+    assert.match(source, /exchangeCodeForSession/);
+    assert.match(source, /getAppUrl/);
+    assert.match(source, /resolveSafeRedirectPath/);
+    assert.doesNotMatch(source, /localhost/);
   });
 
   it("getAppUrl preserves localhost only as a non-production fallback", () => {
@@ -63,18 +92,10 @@ describe("production signup email confirmation redirect", () => {
     assert.match(source, /fallback/);
   });
 
-  it("signup success requiring confirmation is not rendered as an error", () => {
-    const actions = authActions();
+  it("signup form still surfaces action errors without confirm-email success copy", () => {
     const form = signupForm();
-    const copy = messages();
-
-    assert.match(copy, /SIGNUP_CHECK_EMAIL/);
-    assert.match(copy, /Check your email/);
-    assert.match(actions, /success:\s*AUTH_MESSAGES\.SIGNUP_CHECK_EMAIL/);
-    assert.doesNotMatch(actions, /error:\s*"Account created\. Confirm your email/);
-    assert.match(form, /state\.success/);
-    assert.match(form, /FormAlert variant="success"/);
     assert.match(form, /state\.error/);
     assert.match(form, /FormAlert variant="error"/);
+    assert.doesNotMatch(form, /Check your email/);
   });
 });

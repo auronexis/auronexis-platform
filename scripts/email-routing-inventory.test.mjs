@@ -63,16 +63,13 @@ test("enterprise request persists then notifies sales@ — recipient not client-
   assert.match(actions, /recordEnterpriseActivitySafe/);
 });
 
-test("production signup confirmation sends action link via configured provider", () => {
+test("production signup does not send confirmation mail — redirects to login", () => {
   const auth = readSource("src/lib/auth/actions.ts");
-  assert.match(auth, /generateLink\(/);
-  assert.match(auth, /redirectTo:\s*emailRedirectTo/);
-  assert.match(auth, /getAuthCallbackUrl/);
-  assert.match(auth, /action_link/);
-  assert.match(auth, /sendEmail\(/);
-  assert.match(auth, /Confirm your Auroranexis account/);
-  assert.match(auth, /isEmailConfigured\(/);
-  assert.doesNotMatch(auth, /\.catch\(\(\) => undefined\)/);
+  assert.doesNotMatch(auth, /generateLink\(/);
+  assert.doesNotMatch(auth, /Confirm your Auroranexis account/);
+  assert.doesNotMatch(auth, /action_link/);
+  assert.match(auth, /email_confirm:\s*true/);
+  assert.match(auth, /redirect\("\/login\?signup=success"\)/);
 });
 
 test("company contact registry is the hard-coded destination source of truth", () => {
