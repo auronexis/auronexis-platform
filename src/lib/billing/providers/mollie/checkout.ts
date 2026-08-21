@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { PaymentStatus, SequenceType } from "@mollie/api-client";
+import { SequenceType } from "@mollie/api-client";
 
 import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import { createMollieBillingClient } from "@/lib/billing/providers/mollie/client";
@@ -13,6 +13,10 @@ import {
   MOLLIE_METADATA_ORGANIZATION_ID,
   MOLLIE_METADATA_PLAN_KEY,
 } from "@/lib/billing/providers/mollie/foundation";
+import {
+  isMolliePaymentPending,
+  mapMollieSubscriptionStatus,
+} from "@/lib/billing/providers/mollie/lifecycle-status";
 import { assertMollieTestModeOnly, getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
 import {
   getMollieTestSubscriptionForOrg,
@@ -20,6 +24,13 @@ import {
 } from "@/lib/billing/providers/mollie/sync";
 import { getAppUrl } from "@/lib/env";
 import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
+
+export {
+  isMolliePaymentPaid,
+  isMolliePaymentPending,
+  isMolliePaymentTerminalFailure,
+  mapMollieSubscriptionStatus,
+} from "@/lib/billing/providers/mollie/lifecycle-status";
 
 /** Self-serve plans eligible for Mollie TEST checkout — enterprise is manual-only. */
 export const MOLLIE_SELF_SERVE_PLAN_KEYS = ["professional", "business"] as const satisfies readonly PlanKey[];
@@ -32,53 +43,6 @@ export function isMollieSelfServePlanKey(value: string): value is MollieSelfServ
 
 export function formatMollieAmount(value: number): string {
   return value.toFixed(2);
-}
-
-/** Only paid status proceeds to mandate/subscription creation. */
-export function isMolliePaymentPaid(status: string | PaymentStatus | null | undefined): boolean {
-  return status === PaymentStatus.paid || status === "paid";
-}
-
-export function isMolliePaymentTerminalFailure(
-  status: string | PaymentStatus | null | undefined,
-): boolean {
-  return (
-    status === PaymentStatus.failed ||
-    status === PaymentStatus.canceled ||
-    status === PaymentStatus.expired ||
-    status === "failed" ||
-    status === "canceled" ||
-    status === "expired"
-  );
-}
-
-export function isMolliePaymentPending(
-  status: string | PaymentStatus | null | undefined,
-): boolean {
-  return (
-    status === PaymentStatus.open ||
-    status === PaymentStatus.pending ||
-    status === "open" ||
-    status === "pending"
-  );
-}
-
-export function mapMollieSubscriptionStatus(
-  status: string | null | undefined,
-): "active" | "canceled" | "inactive" | "past_due" {
-  switch ((status ?? "").toLowerCase()) {
-    case "active":
-      return "active";
-    case "canceled":
-    case "cancelled":
-      return "canceled";
-    case "suspended":
-      return "past_due";
-    case "completed":
-      return "inactive";
-    default:
-      return "inactive";
-  }
 }
 
 function buildMollieWebhookUrl(): string {

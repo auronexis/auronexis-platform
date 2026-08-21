@@ -60,11 +60,14 @@ test("Enterprise excluded from Mollie self-serve checkout", () => {
 });
 
 test("Payment status mapping — only paid proceeds; pending/failed rejected", () => {
+  const statusMap = readSource("src/lib/billing/providers/mollie/lifecycle-status.ts");
+  assert.match(statusMap, /isMolliePaymentPaid/);
+  assert.match(statusMap, /PaymentStatus\.paid/);
+  assert.match(statusMap, /isMolliePaymentPending/);
+  assert.match(statusMap, /isMolliePaymentTerminalFailure/);
   const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
   assert.match(checkout, /isMolliePaymentPaid/);
-  assert.match(checkout, /PaymentStatus\.paid/);
-  assert.match(checkout, /isMolliePaymentPending/);
-  assert.match(checkout, /isMolliePaymentTerminalFailure/);
+  assert.match(checkout, /lifecycle-status/);
   const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
   assert.match(webhooks, /isMolliePaymentPaid/);
   assert.match(webhooks, /payment_pending/);

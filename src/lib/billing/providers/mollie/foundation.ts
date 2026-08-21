@@ -49,16 +49,21 @@ export const MOLLIE_METADATA_BILLING_SURFACE = "auroranexis_billing_surface";
 
 export type MollieFoundationPhase =
   | "phase_2_test_lifecycle"
-  | "phase_3_production_integration";
+  | "phase_3_production_integration"
+  | "phase_4_production_cutover";
 
-export const MOLLIE_FOUNDATION_PHASE: MollieFoundationPhase = "phase_3_production_integration";
+export const MOLLIE_FOUNDATION_PHASE: MollieFoundationPhase = "phase_4_production_cutover";
 
 /**
- * Phase 3 webhook contract:
- * - POST /api/mollie/webhook — extract payment id, idempotency ledger, fetch resource from API.
- * - Never trust webhook body alone for subscription state mutations.
+ * Phase 4 webhook / lifecycle contract:
+ * - POST /api/mollie/webhook — classic payment notification only; extract payment id,
+ *   idempotency ledger, fetch authoritative Payment (+ Subscription) from Mollie API.
+ * - Never trust webhook body alone; never Next-Gen Dashboard / X-Mollie-Signature envelopes.
  * - Route by auroranexis_billing_surface: production → organization_subscriptions;
  *   test (default) → mollie_test_subscriptions.
  * - Never mutate FastSpring-backed organization_subscriptions rows.
+ * - Ownership ≠ rollout: existing Mollie rows stay Mollie after NEW-checkout rollback.
  * - Entitlements activate only after verified usable Mollie subscription sync — never return page alone.
+ * - Cancel is immediate via Mollie API (no fake cancel_at_period_end).
+ * - Plan changes update subscription amount from canonical catalog (no cancel+create double bill).
  */

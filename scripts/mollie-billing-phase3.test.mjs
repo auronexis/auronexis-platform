@@ -36,13 +36,16 @@ test("A: rollout flags — allowlist + master switch + live charging gate", () =
 
 // B — Canonical contract / status normalization
 test("B: Mollie status mapping — active/canceled/past_due/inactive; suspended→past_due", () => {
+  const statusMap = readSource("src/lib/billing/providers/mollie/lifecycle-status.ts");
+  assert.match(statusMap, /mapMollieSubscriptionStatus/);
+  assert.match(statusMap, /case "active"/);
+  assert.match(statusMap, /case "suspended"/);
+  assert.match(statusMap, /return "past_due"/);
+  assert.match(statusMap, /case "completed"/);
+  assert.match(statusMap, /return "inactive"/);
   const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
   assert.match(checkout, /mapMollieSubscriptionStatus/);
-  assert.match(checkout, /case "active"/);
-  assert.match(checkout, /case "suspended"/);
-  assert.match(checkout, /return "past_due"/);
-  assert.match(checkout, /case "completed"/);
-  assert.match(checkout, /return "inactive"/);
+  assert.match(checkout, /lifecycle-status/);
 });
 
 test("B: organization_subscriptions is Mollie production persistence target", () => {
@@ -232,12 +235,13 @@ test("O: billing panel shows Mollie provider label without redesign", () => {
   assert.match(panel, /"Mollie"/);
 });
 
-// P — UI status Mollie-capable for eligible orgs only
-test("P: billing UI status Mollie only when org provider is mollie + eligible", () => {
+// P — UI status Mollie-capable when org provider resolves to mollie (ownership survives rollout rollback)
+test("P: billing UI status Mollie when org provider is mollie", () => {
   const ui = readSource("src/lib/billing/ui-status.ts");
-  assert.match(ui, /isMollieProductionCheckoutEligible/);
   assert.match(ui, /orgProvider === "mollie"/);
+  assert.match(ui, /isMollieProductionCheckoutConfigured/);
   assert.match(ui, /enterprise: false/);
+  assert.match(ui, /ownership or new-checkout eligibility|Mollie-owned/i);
 });
 
 // Q — Diagnostics sanitized

@@ -17,7 +17,7 @@ import {
 /**
  * Professional ↔ Business plan change for Mollie-backed orgs.
  * Updates Mollie subscription amount from canonical catalog — no invented proration.
- * Fails closed for enterprise or missing mandate/subscription.
+ * Never cancel+create (would double-bill). Fails closed for enterprise or missing mandate/subscription.
  */
 export async function changeMollieOrganizationPlan(input: {
   organizationId: string;
@@ -45,6 +45,7 @@ export async function changeMollieOrganizationPlan(input: {
   const plan = getPlanByKey(input.targetPlanKey);
   const client = createMollieBillingClient();
 
+  // In-place amount update only — never cancel+create (double-bill safeguard).
   const updated = await client.customerSubscriptions.update(existing.provider_subscription_id, {
     customerId: existing.provider_customer_id,
     amount: { currency: plan.currency, value: formatMollieAmount(plan.priceMonthly) },
@@ -72,8 +73,13 @@ export async function changeMollieOrganizationPlan(input: {
 
 /**
  * Cancel Mollie subscription immediately via Mollie API.
- * The installed Mollie SDK cancel endpoint does not support defer-to-period-end;
- * we refuse to invent local period-end cancel theatre without provider support.
+ * The installed Mollie SDK cancel endpoint does not support defer-to-period-end
+ * (MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = false); we refuse to invent local
+ * period-end cancel theatre without provider support.
+ *
+ * Reactivation is not supported by Mollie for canceled subscriptions
+ * (MOLLIE_SUPPORTS_SUBSCRIPTION_REACTIVATION = false) — recovery requires a
+ * new first-payment checkout with duplicate-subscription safeguards.
  */
 export async function cancelMollieOrganizationSubscription(input: {
   organizationId: string;

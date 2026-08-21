@@ -52,6 +52,7 @@ export function assertMollieTestModeOnly(): void {
  * - TEST keys always allowed when configured.
  * - LIVE keys require explicit MOLLIE_LIVE_CHARGING_ENABLED — default fail closed.
  * Never mixes modes; never invents credentials.
+ * LIVE kill switch is independent from MOLLIE_BILLING_ROLLOUT.
  */
 export function assertMolliePaymentOpsAllowed(): MollieApiMode {
   const mode = getMollieCredentialMode();
@@ -60,7 +61,7 @@ export function assertMolliePaymentOpsAllowed(): MollieApiMode {
   }
 
   if (mode === "live") {
-    // Lazy import avoided — rollout helper is sync and server-only.
+    // Inline env read keeps mode.ts free of rollout import cycles at module init.
     const liveEnabled =
       process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "1" ||
       process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "true" ||

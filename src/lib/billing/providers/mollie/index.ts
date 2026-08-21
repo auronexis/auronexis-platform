@@ -27,6 +27,7 @@ export {
 } from "@/lib/billing/providers/mollie/foundation";
 export {
   isMollieBillingRolloutEnabled,
+  isMollieDefaultForNewSubscriptions,
   isMollieLiveChargingEnabled,
   isMollieProductionCheckoutEligible,
   isOrganizationOnMollieAllowlist,
@@ -46,6 +47,15 @@ export {
   type MollieTestCheckoutPayload,
   type MollieTestDiagnostics,
 } from "@/lib/billing/providers/mollie/checkout";
+export {
+  isMolliePaymentPending,
+  isMolliePaymentTerminalFailure,
+  isMollieSubscriptionEntitlementGranting,
+  mapMollieSubscriptionStatus,
+  MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END,
+  MOLLIE_SUPPORTS_SUBSCRIPTION_REACTIVATION,
+  type MollieNormalizedSubscriptionStatus,
+} from "@/lib/billing/providers/mollie/lifecycle-status";
 export {
   createMollieProductionFirstPayment,
   getOrCreateMollieOrganizationCustomer,

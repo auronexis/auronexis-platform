@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 import { getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
+import { isMollieLiveChargingEnabled } from "@/lib/billing/providers/mollie/rollout";
 import {
   ensureMollieIdempotency,
   extractMollieWebhookPaymentId,
@@ -15,9 +16,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Mollie inbound webhook — public, no auth.
+ * Mollie inbound webhook — classic payment notification only.
  * Extracts payment id from body, re-fetches authoritative Payment from Mollie API,
  * validates org/customer ownership, idempotent reconcile.
+ * Do NOT replace with dashboard event envelopes or signed Next Gen webhook payloads.
  * https://docs.mollie.com/overview/webhooks
  */
 export async function POST(request: Request): Promise<Response> {
@@ -28,14 +30,10 @@ export async function POST(request: Request): Promise<Response> {
 
   const credentialMode = getMollieCredentialMode();
   if (credentialMode === "test") {
-    // Phase 2/3 TEST path — always accept.
+    // Phase 2/3/4 TEST path — always accept.
   } else if (credentialMode === "live") {
-    const liveEnabled =
-      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "1" ||
-      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "true" ||
-      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "yes" ||
-      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "on";
-    if (!liveEnabled) {
+    // LIVE kill switch independent from MOLLIE_BILLING_ROLLOUT.
+    if (!isMollieLiveChargingEnabled()) {
       console.error("[mollie] webhook rejected — LIVE charging disabled");
       return NextResponse.json({ error: "Webhook not available" }, { status: 503 });
     }

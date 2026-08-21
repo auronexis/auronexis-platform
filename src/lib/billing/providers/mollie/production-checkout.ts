@@ -4,6 +4,12 @@ import { randomUUID } from "node:crypto";
 
 import { SequenceType } from "@mollie/api-client";
 
+import {
+  hasVerifiedFastSpringSubscription,
+  hasVerifiedMollieSubscription,
+  isFastSpringBackedSubscription,
+  isMollieBackedSubscription,
+} from "@/lib/billing/active-billing";
 import { getPlanByKey } from "@/lib/billing/plans";
 import { createMollieBillingClient } from "@/lib/billing/providers/mollie/client";
 import {
@@ -25,8 +31,14 @@ import {
   getMollieOrganizationSubscription,
   upsertMollieOrganizationSubscription,
 } from "@/lib/billing/providers/mollie/organization-sync";
-import { isMollieProductionCheckoutEligible } from "@/lib/billing/providers/mollie/rollout";
+import {
+  isMollieLiveChargingEnabled,
+  isMollieProductionCheckoutEligible,
+} from "@/lib/billing/providers/mollie/rollout";
+import { isSubscriptionUsable } from "@/lib/billing/status";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getAppUrl } from "@/lib/env";
+import type { OrganizationSubscription } from "@/types/database";
 
 function buildMollieWebhookUrl(): string {
   return `${getAppUrl()}/api/mollie/webhook`;
@@ -40,6 +52,107 @@ function buildIdempotencyKey(organizationId: string, operation: string, attemptI
   return `mollie:prod:${organizationId}:${operation}:${attemptId}`.slice(0, 255);
 }
 
+async function readOrganizationSubscriptionRow(
+  organizationId: string,
+): Promise<OrganizationSubscription | null> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("organization_subscriptions")
+    .select(
+      "id, organization_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, cancel_at_period_end, current_period_start, current_period_end, stripe_customer_id, stripe_subscription_id, stripe_price_id, trial_ends_at, created_at, updated_at",
+    )
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to read organization subscription: ${error.message}`);
+  }
+
+  return (data as OrganizationSubscription | null) ?? null;
+}
+
+/**
+ * Server-side coexistence: refuse Mollie first payment when FastSpring owns the org.
+ */
+function assertNoFastSpringConflict(row: OrganizationSubscription | null): void {
+  if (!row || !isFastSpringBackedSubscription(row)) {
+    return;
+  }
+  if (hasVerifiedFastSpringSubscription(row) || isSubscriptionUsable(row.provider_status ?? row.status)) {
+    throw new Error(
+      "Refusing Mollie checkout — organization already has a FastSpring subscription (provider_conflict).",
+    );
+  }
+  throw new Error(
+    "Refusing Mollie checkout — organization_subscriptions row is FastSpring-backed (existing_subscription).",
+  );
+}
+
+/**
+ * Duplicate purchase protection: refuse a second first payment when an active
+ * or suspended Mollie subscription already exists (use plan change / support instead).
+ */
+function assertNoDuplicateMollieSubscription(row: OrganizationSubscription | null): void {
+  if (!row || !isMollieBackedSubscription(row)) {
+    return;
+  }
+  if (!hasVerifiedMollieSubscription(row)) {
+    return;
+  }
+  const status = (row.provider_status ?? row.status ?? "").toLowerCase();
+  if (status === "active" || isSubscriptionUsable(status)) {
+    throw new Error(
+      "A Mollie subscription already exists for this workspace. Use plan change instead of a new checkout (duplicate_mollie).",
+    );
+  }
+  if (status === "suspended" || status === "past_due") {
+    throw new Error(
+      "A Mollie subscription already exists for this workspace. Resolve payment issues instead of starting a second subscription (existing_subscription).",
+    );
+  }
+}
+
+/**
+ * Reuse an open first-payment checkout URL for the customer (double-click / tab retry).
+ * Avoids creating a second Mollie payment when sync is still pending.
+ */
+async function findReusableOpenFirstPayment(input: {
+  customerId: string;
+  organizationId: string;
+}): Promise<{ paymentId: string; checkoutUrl: string; checkoutAttemptId: string } | null> {
+  const client = createMollieBillingClient();
+  const payments = await client.customerPayments.page({ customerId: input.customerId });
+
+  for (const payment of payments) {
+    if (payment.sequenceType !== SequenceType.first) {
+      continue;
+    }
+    if (!isMolliePaymentPending(payment.status)) {
+      continue;
+    }
+    const checkoutUrl = payment._links?.checkout?.href;
+    if (!checkoutUrl) {
+      continue;
+    }
+    const metadata = payment.metadata as Record<string, unknown> | null;
+    const orgMeta = metadata?.[MOLLIE_METADATA_ORGANIZATION_ID];
+    if (typeof orgMeta === "string" && orgMeta !== input.organizationId) {
+      continue;
+    }
+    const attemptMeta = metadata?.[MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID];
+    const checkoutAttemptId =
+      typeof attemptMeta === "string" && attemptMeta.length > 0 ? attemptMeta : randomUUID();
+
+    return {
+      paymentId: payment.id,
+      checkoutUrl,
+      checkoutAttemptId,
+    };
+  }
+
+  return null;
+}
+
 /**
  * Idempotent Mollie customer for production canonical billing.
  * Reuses organization_subscriptions.provider_customer_id when present.
@@ -51,14 +164,15 @@ export async function getOrCreateMollieOrganizationCustomer(input: {
 }): Promise<{ customerId: string; created: boolean }> {
   assertMolliePaymentOpsAllowed();
 
-  if (!isMollieProductionCheckoutEligible(input.organizationId)) {
-    throw new Error("Organization is not enabled for Mollie production billing.");
-  }
-
   const existing = await getMollieOrganizationSubscription(input.organizationId);
   const existingCustomerId = existing?.provider_customer_id?.trim();
   if (existingCustomerId?.startsWith("cst_")) {
     return { customerId: existingCustomerId, created: false };
+  }
+
+  // New customer: allowlist/default-for-new OR existing Mollie ownership (rollback-safe recovery).
+  if (!existing && !isMollieProductionCheckoutEligible(input.organizationId)) {
+    throw new Error("Organization is not enabled for Mollie production billing.");
   }
 
   const client = createMollieBillingClient();
@@ -100,12 +214,15 @@ export type MollieProductionCheckoutResult = {
   checkoutAttemptId: string;
   planKey: MollieSelfServePlanKey;
   pendingSyncMessage: string;
+  reusedOpenPayment?: boolean;
 };
 
 /**
  * Create first payment (sequenceType=first) for Mollie-eligible orgs.
  * Writes pending state to organization_subscriptions — never mollie_test_subscriptions.
  * Amounts come from canonical SUBSCRIPTION_PLANS only.
+ *
+ * Duplicate protection: reuses open first payments; refuses when active/suspended sub_ exists.
  */
 export async function createMollieProductionFirstPayment(input: {
   organizationId: string;
@@ -115,7 +232,12 @@ export async function createMollieProductionFirstPayment(input: {
 }): Promise<MollieProductionCheckoutResult> {
   const credentialMode = assertMolliePaymentOpsAllowed();
 
-  if (!isMollieProductionCheckoutEligible(input.organizationId)) {
+  const orgRow = await readOrganizationSubscriptionRow(input.organizationId);
+  assertNoFastSpringConflict(orgRow);
+  assertNoDuplicateMollieSubscription(orgRow);
+
+  const isOwnedMollie = isMollieBackedSubscription(orgRow);
+  if (!isOwnedMollie && !isMollieProductionCheckoutEligible(input.organizationId)) {
     throw new Error("Organization is not enabled for Mollie production billing.");
   }
 
@@ -132,13 +254,33 @@ export async function createMollieProductionFirstPayment(input: {
     ownerEmail: input.ownerEmail,
   });
 
-  const existing = await getMollieOrganizationSubscription(input.organizationId);
-  // Reuse open first payment when sync still pending (idempotent double-click).
-  if (existing?.sync_pending && existing.provider_subscription_id == null) {
-    const pendingPaymentHint = existing.provider_status;
-    if (pendingPaymentHint === "open" || pendingPaymentHint === "pending") {
-      // Cannot recover checkout URL without payment id — create fresh when unknown.
-    }
+  // Idempotent double-click / multi-tab: reuse open first payment checkout URL.
+  const reusable = await findReusableOpenFirstPayment({
+    customerId,
+    organizationId: input.organizationId,
+  });
+  if (reusable) {
+    await upsertMollieOrganizationSubscription({
+      organizationId: input.organizationId,
+      providerCustomerId: customerId,
+      providerSubscriptionId: null,
+      planKey: input.planKey,
+      providerStatus: "open",
+      normalizedStatus: "incomplete",
+      syncPending: true,
+    });
+
+    return {
+      provider: "mollie",
+      mode: "redirect",
+      checkoutUrl: reusable.checkoutUrl,
+      paymentId: reusable.paymentId,
+      checkoutAttemptId: reusable.checkoutAttemptId,
+      planKey: input.planKey,
+      pendingSyncMessage:
+        "Checkout opened. Access updates after Mollie confirms payment via webhook — this may take a moment.",
+      reusedOpenPayment: true,
+    };
   }
 
   const amountValue = formatMollieAmount(plan.priceMonthly);
@@ -271,12 +413,7 @@ export function isMollieProductionCheckoutConfigured(): boolean {
     return true;
   }
   if (mode === "live") {
-    const liveEnabled =
-      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "1" ||
-      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "true" ||
-      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "yes" ||
-      process.env.MOLLIE_LIVE_CHARGING_ENABLED?.trim().toLowerCase() === "on";
-    return liveEnabled;
+    return isMollieLiveChargingEnabled();
   }
   return false;
 }

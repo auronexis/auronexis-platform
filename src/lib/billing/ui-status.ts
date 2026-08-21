@@ -4,21 +4,21 @@ import type { StripeBillingUiStatus } from "@/lib/billing/types";
 import { isFastSpringApiConfigured, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
 import { isFastSpringCheckoutConfigured } from "@/lib/fastspring/checkout";
 import { isMollieProductionCheckoutConfigured } from "@/lib/billing/providers/mollie/production-checkout";
-import { isMollieProductionCheckoutEligible } from "@/lib/billing/providers/mollie/rollout";
 import type { BillingProvider } from "@/lib/billing/provider-types";
 
 /**
  * Resolve customer-safe billing capability flags for pricing and billing UI.
- * FastSpring is the global default. Mollie flags apply only for Mollie-resolved orgs.
+ * FastSpring is the global default. Mollie flags apply when the org already
+ * resolves to Mollie (ownership or new-checkout eligibility) — not gated again
+ * on allowlist so rollout rollback keeps Mollie UI for Mollie-owned orgs.
  */
 export function getBillingUiStatus(input?: {
   organizationId?: string;
   organizationProvider?: BillingProvider;
 }): StripeBillingUiStatus {
   const orgProvider = input?.organizationProvider ?? "fastspring";
-  const orgId = input?.organizationId;
 
-  if (orgProvider === "mollie" && orgId && isMollieProductionCheckoutEligible(orgId)) {
+  if (orgProvider === "mollie") {
     const mollieReady = isMollieProductionCheckoutConfigured();
     return {
       checkoutAvailable: mollieReady,

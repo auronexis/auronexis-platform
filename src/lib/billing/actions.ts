@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { assertCheckoutAllowed } from "@/lib/billing/checkout-guards.server";
+import { resolveCheckoutEligibility } from "@/lib/billing/checkout-eligibility";
 import { trackBillingLifecycleEvent } from "@/lib/analytics/billing-lifecycle";
 import { openCustomerPortal } from "@/lib/billing/customer-portal";
 import {
@@ -94,7 +95,18 @@ export async function createCheckoutSessionAction(
       subscription,
     });
 
-    if (orgProvider === "mollie") {
+    const eligibility = resolveCheckoutEligibility({
+      organizationId: session.organization.id,
+      subscription,
+      targetPlanKey: parsed.data,
+      resolvedProvider: orgProvider,
+    });
+
+    if (!eligibility.allowed) {
+      return { error: eligibility.reason };
+    }
+
+    if (eligibility.provider === "mollie") {
       if (parsed.data === "enterprise") {
         return {
           error: "Enterprise is manual-only. Contact sales to arrange an enterprise plan.",
@@ -113,11 +125,7 @@ export async function createCheckoutSessionAction(
       }
 
       // Existing usable Mollie subscription → plan change (no new first payment).
-      if (
-        subscription?.billing_provider === "mollie" &&
-        subscription.provider_subscription_id?.startsWith("sub_") &&
-        (subscription.status === "active" || subscription.provider_status === "active")
-      ) {
+      if (eligibility.code === "allowed_mollie_plan_change") {
         await changeMollieOrganizationPlan({
           organizationId: session.organization.id,
           targetPlanKey: parsed.data,
@@ -141,6 +149,14 @@ export async function createCheckoutSessionAction(
           checkoutAttemptId: checkout.checkoutAttemptId,
           pendingSyncMessage: checkout.pendingSyncMessage,
         },
+      };
+    }
+
+    // Mollie-owned orgs must never fall through to FastSpring (provider_conflict).
+    if (orgProvider === "mollie") {
+      return {
+        error:
+          "This workspace is billed via Mollie. FastSpring checkout is blocked to prevent double billing.",
       };
     }
 
@@ -208,7 +224,8 @@ export async function cancelMollieSubscriptionAction(): Promise<BillingActionSta
     });
 
     return {
-      success: "Subscription canceled. Access ends after Mollie confirms cancellation.",
+      success:
+        "Subscription canceled immediately with Mollie. Access ends after Mollie confirms cancellation.",
     };
   } catch (error) {
     console.error("[billing][mollie-cancel] failed", error);
