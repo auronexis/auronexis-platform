@@ -22,6 +22,7 @@ import {
   PLAN_CHANGE_CANCEL_ALREADY_MESSAGE,
   SUBSCRIPTION_CANCEL_ALREADY_MESSAGE,
 } from "@/lib/billing/subscription-management";
+import { clearMollieUpgradePaymentAttempt } from "@/lib/billing/providers/mollie/upgrade-payment";
 import {
   getMollieOrganizationSubscription,
   scheduleMolliePendingPlanChange,
@@ -40,20 +41,15 @@ export type MolliePlanChangeResult = {
 };
 
 /**
- * Professional ↔ Business plan change for Mollie-backed orgs.
+ * Schedule a Mollie downgrade for the next billing cycle (Business → Professional).
  *
- * Mollie semantics: customerSubscriptions.update changes the amount for the
- * next billing cycle — it does not invent mid-cycle proration charges
- * (no invented proration).
+ * Upgrades require immediate prorated payment via createMollieUpgradePaymentCheckout.
+ * Mollie customerSubscriptions.update changes amount for the next cycle only.
+ * Downgrade path: no invented proration — amount applies on next Mollie cycle.
  *
- * Local invariant: provider_price_id (authoritative current plan) is NOT
- * switched to the target on click. We schedule pending_plan and apply only
- * after a successful provider-confirmed renewal/payment webhook.
- *
- * Never cancel+create (would double-bill). Fails closed for enterprise,
- * missing mandate/subscription, or an existing conflicting pending change.
+ * Local invariant: provider_price_id stays on current plan until provider-confirmed apply.
  */
-export async function changeMollieOrganizationPlan(input: {
+export async function scheduleMollieOrganizationDowngrade(input: {
   organizationId: string;
   targetPlanKey: MollieSelfServePlanKey;
 }): Promise<MolliePlanChangeResult> {
@@ -96,8 +92,10 @@ export async function changeMollieOrganizationPlan(input: {
 
   const currentPlan = getPlanByKey(previousPlanKey);
   const targetPlan = getPlanByKey(input.targetPlanKey);
-  const changeType: "upgrade" | "downgrade" =
-    targetPlan.order > currentPlan.order ? "upgrade" : "downgrade";
+  if (targetPlan.order >= currentPlan.order) {
+    throw new Error("Upgrades require immediate prorated payment — use upgrade checkout.");
+  }
+  const changeType = "downgrade" as const;
 
   const client = createMollieBillingClient();
 
@@ -150,6 +148,124 @@ export async function changeMollieOrganizationPlan(input: {
     pendingPlanKey: input.targetPlanKey,
     pendingPlanEffectiveAt: pendingEffectiveAt,
     providerChangeReference: updated.id,
+  };
+}
+
+/** @deprecated Use scheduleMollieOrganizationDowngrade for downgrades; upgrades use upgrade-payment checkout. */
+export async function changeMollieOrganizationPlan(input: {
+  organizationId: string;
+  targetPlanKey: MollieSelfServePlanKey;
+}): Promise<MolliePlanChangeResult> {
+  const current = await getMollieOrganizationSubscription(input.organizationId);
+  const previousPlanKey = current?.provider_price_id ?? "";
+  if (!isMollieSelfServePlanKey(previousPlanKey)) {
+    throw new Error("Current Mollie plan mapping is invalid.");
+  }
+  const currentPlan = getPlanByKey(previousPlanKey);
+  const targetPlan = getPlanByKey(input.targetPlanKey);
+  if (targetPlan.order > currentPlan.order) {
+    throw new Error("Upgrades require immediate prorated payment — use upgrade checkout.");
+  }
+  return scheduleMollieOrganizationDowngrade(input);
+}
+
+export type MollieUpgradeApplyResult = {
+  applied: boolean;
+  previousPlanKey: MollieSelfServePlanKey | null;
+  appliedPlanKey: MollieSelfServePlanKey | null;
+  providerChangeReference: string | null;
+  providerUpdateFailed: boolean;
+};
+
+/**
+ * After prorated upgrade payment is paid: update Mollie recurring amount and flip
+ * authoritative provider_price_id. Recoverable when provider update fails after payment.
+ */
+export async function applyMollieUpgradeAfterPayment(input: {
+  organizationId: string;
+  paymentId: string;
+  targetPlanKey: MollieSelfServePlanKey;
+  providerSubscriptionId: string;
+}): Promise<MollieUpgradeApplyResult> {
+  const existing = await getMollieOrganizationSubscription(input.organizationId);
+  if (!existing?.provider_customer_id?.startsWith("cst_")) {
+    throw new Error("Mollie customer mapping missing — refusing upgrade apply.");
+  }
+
+  const previousPlanKey = existing.provider_price_id ?? "";
+  if (!isMollieSelfServePlanKey(previousPlanKey)) {
+    throw new Error("Current plan mapping invalid — refusing upgrade apply.");
+  }
+  if (previousPlanKey === input.targetPlanKey) {
+    await clearMollieUpgradePaymentAttempt(input.organizationId);
+    return {
+      applied: true,
+      previousPlanKey,
+      appliedPlanKey: input.targetPlanKey,
+      providerChangeReference: input.paymentId,
+      providerUpdateFailed: false,
+    };
+  }
+
+  const targetPlan = getPlanByKey(input.targetPlanKey);
+  const client = createMollieBillingClient();
+  let providerUpdateFailed = false;
+
+  try {
+    await client.customerSubscriptions.update(input.providerSubscriptionId, {
+      customerId: existing.provider_customer_id,
+      amount: {
+        currency: targetPlan.currency,
+        value: formatMollieAmount(targetPlan.priceMonthly),
+      },
+      description: `Auroranexis ${targetPlan.name} subscription`,
+      metadata: {
+        [MOLLIE_METADATA_PLAN_KEY]: input.targetPlanKey,
+        [MOLLIE_METADATA_ORGANIZATION_ID]: input.organizationId,
+        [MOLLIE_METADATA_BILLING_SURFACE]: "production",
+        auroranexis_upgrade_payment_id: input.paymentId,
+        auroranexis_previous_plan_key: previousPlanKey,
+      },
+    });
+  } catch (providerError) {
+    providerUpdateFailed = true;
+    console.error("[billing][upgrade] provider subscription update failed after payment", {
+      organizationId: input.organizationId,
+      paymentId: input.paymentId,
+      message: providerError instanceof Error ? providerError.message : String(providerError),
+    });
+  }
+
+  const remote = await client.customerSubscriptions.get(input.providerSubscriptionId, {
+    customerId: existing.provider_customer_id,
+  });
+  const nextPaymentDate =
+    typeof remote.nextPaymentDate === "string" ? remote.nextPaymentDate : existing.current_period_end;
+
+  await upsertMollieOrganizationSubscription({
+    organizationId: input.organizationId,
+    providerCustomerId: existing.provider_customer_id,
+    providerSubscriptionId: remote.id,
+    planKey: input.targetPlanKey,
+    providerStatus: remote.status,
+    normalizedStatus: resolveMollieStoredSubscriptionStatus({
+      providerStatus: remote.status,
+      cancelAtPeriodEnd: existing.cancel_at_period_end,
+      currentPeriodEnd: nextPaymentDate,
+    }),
+    syncPending: providerUpdateFailed,
+    currentPeriodEnd: nextPaymentDate,
+    clearPendingPlanChange: true,
+    clearUpgradePaymentAttempt: true,
+    providerChangeReference: input.paymentId,
+  });
+
+  return {
+    applied: true,
+    previousPlanKey,
+    appliedPlanKey: input.targetPlanKey,
+    providerChangeReference: input.paymentId,
+    providerUpdateFailed,
   };
 }
 
@@ -217,9 +333,6 @@ export async function cancelMollieScheduledPlanChange(input: {
         : "downgrade";
 
   const client = createMollieBillingClient();
-  const remote = await client.customerSubscriptions.get(existing.provider_subscription_id, {
-    customerId: existing.provider_customer_id,
-  });
 
   const currentPlan = getPlanByKey(currentPlanKey);
   const updated = await client.customerSubscriptions.update(existing.provider_subscription_id, {
@@ -310,7 +423,16 @@ export async function cancelMollieOrganizationSubscription(input: {
     ? (existing.provider_price_id as MollieSelfServePlanKey)
     : "professional";
 
-  const accessUntil = existing.current_period_end ?? null;
+  const remote = await client.customerSubscriptions.get(existing.provider_subscription_id, {
+    customerId: existing.provider_customer_id,
+  });
+  const remoteNextPayment =
+    typeof remote.nextPaymentDate === "string" && remote.nextPaymentDate.length > 0
+      ? remote.nextPaymentDate.includes("T")
+        ? remote.nextPaymentDate
+        : `${remote.nextPaymentDate}T00:00:00.000Z`
+      : null;
+  const accessUntil = existing.current_period_end ?? remoteNextPayment;
   const normalizedStatus: MollieNormalizedSubscriptionStatus = resolveMollieStoredSubscriptionStatus({
     providerStatus: canceled.status,
     cancelAtPeriodEnd: true,

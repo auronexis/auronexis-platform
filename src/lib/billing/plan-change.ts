@@ -72,6 +72,13 @@ export function formatPlanChangeScheduledSuccessMessage(input: {
   return `${input.targetPlanName} ${direction} scheduled. ${input.currentPlanName} remains your current plan until then.${dateSuffix}`;
 }
 
+export function formatUpgradePaymentCheckoutMessage(input: {
+  targetPlanName: string;
+  formattedNetDue: string;
+}): string {
+  return `Continue to payment to upgrade to ${input.targetPlanName}. Prorated amount due now: ${input.formattedNetDue}.`;
+}
+
 export function formatScheduledPlanChangeSummary(scheduled: ScheduledPlanChange): string {
   const direction = scheduled.changeType === "upgrade" ? "Upgrade" : "Downgrade";
   const datePart = scheduled.effectiveAtLabel
@@ -132,6 +139,13 @@ export function buildPlanChangeAppliedTemplateKey(
   appliedPlanKey: string,
 ): string {
   return `plan_change_applied:${providerChangeReference}:${appliedPlanKey}`;
+}
+
+export function buildUpgradeActivatedTemplateKey(
+  providerChangeReference: string,
+  appliedPlanKey: string,
+): string {
+  return `upgrade_activated:${providerChangeReference}:${appliedPlanKey}`;
 }
 
 export function resolvePlanChangeEmailPlans(input: {

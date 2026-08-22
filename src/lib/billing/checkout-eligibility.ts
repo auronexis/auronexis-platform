@@ -16,6 +16,7 @@ import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 import { getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
 import { isMollieSelfServePlanKey } from "@/lib/billing/providers/mollie/checkout";
 import { isSubscriptionUsable } from "@/lib/billing/status";
+import { resolveSubscriptionUsability } from "@/lib/billing/subscription-management";
 import { isFastSpringCheckoutConfigured } from "@/lib/fastspring/checkout";
 import type { OrganizationSubscription } from "@/types/database";
 
@@ -83,7 +84,7 @@ function hasActiveMollieSubscription(row: OrganizationSubscription | null | unde
     return false;
   }
   const status = row?.provider_status ?? row?.status;
-  return isSubscriptionUsable(status) || status === "active";
+  return resolveSubscriptionUsability(row, status);
 }
 
 /**

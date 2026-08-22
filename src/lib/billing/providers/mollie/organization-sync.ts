@@ -5,6 +5,7 @@ import {
   isFastSpringBackedSubscription,
   isMollieBackedSubscription,
 } from "@/lib/billing/active-billing";
+import { isSubscriptionPaidThroughPeriodEnd } from "@/lib/billing/subscription-management";
 import { isSubscriptionUsable } from "@/lib/billing/status";
 import {
   isMollieSelfServePlanKey,
@@ -14,7 +15,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { OrganizationSubscription } from "@/types/database";
 
 const ORGANIZATION_SUBSCRIPTION_MOLLIE_SELECT =
-  "id, organization_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, cancel_at_period_end, current_period_start, current_period_end, pending_plan, pending_plan_effective_at, pending_plan_change_type, provider_change_reference, stripe_customer_id, stripe_subscription_id, stripe_price_id, trial_ends_at, created_at, updated_at";
+  "id, organization_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, cancel_at_period_end, current_period_start, current_period_end, pending_plan, pending_plan_effective_at, pending_plan_change_type, provider_change_reference, upgrade_payment_id, upgrade_target_plan, stripe_customer_id, stripe_subscription_id, stripe_price_id, trial_ends_at, created_at, updated_at";
 
 export type MollieOrganizationSubscriptionSyncInput = {
   organizationId: string;
@@ -30,6 +31,10 @@ export type MollieOrganizationSubscriptionSyncInput = {
   currentPeriodEnd?: string | null;
   /** When true, clears any scheduled pending plan change. */
   clearPendingPlanChange?: boolean;
+  /** When true, clears in-flight upgrade payment attempt fields. */
+  clearUpgradePaymentAttempt?: boolean;
+  upgradePaymentId?: string | null;
+  upgradeTargetPlan?: MollieSelfServePlanKey | null;
   pendingPlan?: MollieSelfServePlanKey | null;
   pendingPlanEffectiveAt?: string | null;
   pendingPlanChangeType?: "upgrade" | "downgrade" | null;
@@ -90,6 +95,49 @@ export function assertCanWriteMollieOrganizationSubscription(
       "Refusing Mollie write — organization_subscriptions row belongs to a legacy provider.",
     );
   }
+}
+
+function resolveUpgradeFields(
+  input: MollieOrganizationSubscriptionSyncInput,
+  existing: OrganizationSubscription | null,
+): { upgrade_payment_id: string | null; upgrade_target_plan: string | null } {
+  if (input.clearUpgradePaymentAttempt) {
+    return { upgrade_payment_id: null, upgrade_target_plan: null };
+  }
+
+  if (input.upgradePaymentId !== undefined || input.upgradeTargetPlan !== undefined) {
+    return {
+      upgrade_payment_id: input.upgradePaymentId ?? null,
+      upgrade_target_plan: input.upgradeTargetPlan ?? null,
+    };
+  }
+
+  return {
+    upgrade_payment_id: existing?.upgrade_payment_id ?? null,
+    upgrade_target_plan: existing?.upgrade_target_plan ?? null,
+  };
+}
+
+function resolveOrganizationPlanFlag(
+  input: MollieOrganizationSubscriptionSyncInput,
+  existing: OrganizationSubscription | null,
+): "paid" | "free" {
+  if (input.normalizedStatus === "active" || input.normalizedStatus === "trialing") {
+    return "paid";
+  }
+
+  const cancelAtPeriodEnd = input.cancelAtPeriodEnd ?? existing?.cancel_at_period_end ?? false;
+  const currentPeriodEnd = input.currentPeriodEnd ?? existing?.current_period_end ?? null;
+  if (
+    isSubscriptionPaidThroughPeriodEnd({
+      cancelAtPeriodEnd,
+      currentPeriodEnd,
+    })
+  ) {
+    return "paid";
+  }
+
+  return "free";
 }
 
 function resolvePendingFields(
@@ -158,6 +206,7 @@ export async function upsertMollieOrganizationSubscription(
       : input.providerSubscriptionId;
 
   const pending = resolvePendingFields(input, existing);
+  const upgrade = resolveUpgradeFields(input, existing);
 
   const row = {
     organization_id: input.organizationId,
@@ -175,6 +224,8 @@ export async function upsertMollieOrganizationSubscription(
     pending_plan_effective_at: pending.pending_plan_effective_at,
     pending_plan_change_type: pending.pending_plan_change_type,
     provider_change_reference: pending.provider_change_reference,
+    upgrade_payment_id: upgrade.upgrade_payment_id,
+    upgrade_target_plan: upgrade.upgrade_target_plan,
     updated_at: now,
   };
 
@@ -186,8 +237,7 @@ export async function upsertMollieOrganizationSubscription(
     throw new Error(`Failed to upsert Mollie organization subscription: ${error.message}`);
   }
 
-  const planFlag =
-    input.normalizedStatus === "active" || input.normalizedStatus === "trialing" ? "paid" : "free";
+  const planFlag = resolveOrganizationPlanFlag(input, existing);
 
   const { error: planError } = await admin
     .from("organizations")

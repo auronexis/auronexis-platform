@@ -49,7 +49,15 @@ export function BillingMollieManagementPanel({
   const cancelChangeDialogRef = useRef<HTMLDialogElement>(null);
   const cancelSubDialogRef = useRef<HTMLDialogElement>(null);
 
-  if (!canManage || !overview.isUsable) {
+  if (!canManage) {
+    return null;
+  }
+
+  const showManagementPanel =
+    overview.isUsable ||
+    (management.cancelAtPeriodEnd && management.isPaidThrough);
+
+  if (!showManagementPanel) {
     return null;
   }
 

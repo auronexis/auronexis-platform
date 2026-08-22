@@ -12,7 +12,7 @@ import {
   mapMollieSubscriptionStatus,
   type MollieSelfServePlanKey,
 } from "@/lib/billing/providers/mollie/checkout";
-import { finalizeMollieSubscriptionIfExpired } from "@/lib/billing/providers/mollie/lifecycle";
+import { finalizeMollieSubscriptionIfExpired, applyMollieUpgradeAfterPayment } from "@/lib/billing/providers/mollie/lifecycle";
 import { resolveMollieStoredSubscriptionStatus } from "@/lib/billing/providers/mollie/lifecycle-status";
 import {
   MOLLIE_METADATA_BILLING_SURFACE,
@@ -25,7 +25,12 @@ import {
   getMollieOrganizationSubscription,
   upsertMollieOrganizationSubscription,
 } from "@/lib/billing/providers/mollie/organization-sync";
-import { createMollieProductionSubscriptionAfterMandate } from "@/lib/billing/providers/mollie/production-checkout";
+import { upsertMollieBillingTransaction } from "@/lib/billing/providers/mollie/transactions";
+import {
+  MOLLIE_BILLING_PURPOSE_UPGRADE_ADJUSTMENT,
+  clearMollieUpgradePaymentAttempt,
+} from "@/lib/billing/providers/mollie/upgrade-payment";
+import { getPlanByKey } from "@/lib/billing/plans";
 import {
   getMollieTestSubscriptionForOrg,
   upsertMollieTestSubscription,
@@ -34,8 +39,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   getOrganizationNameForBillingEmail,
   sendPlanChangeAppliedEmail,
+  sendUpgradeActivatedEmail,
 } from "@/lib/email/plan-change";
+import { sendPurchaseActivatedEmail } from "@/lib/email/purchase";
 import { sendSubscriptionEndedEmail } from "@/lib/email/subscription-management";
+import { createMollieProductionSubscriptionAfterMandate } from "@/lib/billing/providers/mollie/production-checkout";
 
 export type MollieIdempotencyStatus = "proceed" | "duplicate" | "retry" | "unavailable";
 
@@ -236,6 +244,159 @@ function resolveBillingSurface(
 ): "test" | "production" {
   const surface = readMetadataString(metadata, MOLLIE_METADATA_BILLING_SURFACE);
   return surface === "production" ? "production" : "test";
+}
+
+function readBillingPurpose(metadata: Record<string, unknown> | null | undefined): string | null {
+  const value = metadata?.auroranexis_billing_purpose;
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function parsePaymentAmountCents(amountValue: string | undefined): number | null {
+  if (!amountValue) {
+    return null;
+  }
+  const parsed = Number.parseFloat(amountValue);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+  return Math.round(parsed * 100);
+}
+
+async function recordMolliePaidTransaction(input: {
+  organizationId: string;
+  paymentId: string;
+  customerId: string | null;
+  subscriptionId: string | null;
+  planKey: string | null;
+  amountValue: string | undefined;
+  currency: string | undefined;
+  paidAt: string;
+  productName: string;
+  billingPeriodStart?: string | null;
+  billingPeriodEnd?: string | null;
+  invoiceUrl?: string | null;
+}): Promise<void> {
+  await upsertMollieBillingTransaction({
+    organizationId: input.organizationId,
+    providerTransactionId: input.paymentId,
+    providerCustomerId: input.customerId,
+    providerSubscriptionId: input.subscriptionId,
+    providerPriceId: input.planKey,
+    status: "paid",
+    amountTotal: parsePaymentAmountCents(input.amountValue),
+    currency: input.currency ?? "eur",
+    occurredAt: input.paidAt,
+    paidAt: input.paidAt,
+    invoiceUrl: input.invoiceUrl ?? null,
+    productName: input.productName,
+    billingPeriodStart: input.billingPeriodStart ?? null,
+    billingPeriodEnd: input.billingPeriodEnd ?? null,
+  });
+}
+
+async function reconcileMollieUpgradePayment(
+  paymentId: string,
+  organizationId: string,
+  payment: {
+    status: string;
+    customerId?: string | null;
+    subscriptionId?: string | null;
+    amount?: { value?: string; currency?: string } | null;
+    metadata?: unknown;
+    _links?: { checkout?: { href?: string } };
+  },
+): Promise<MollieWebhookReconcileResult> {
+  const metadata =
+    payment.metadata && typeof payment.metadata === "object"
+      ? (payment.metadata as Record<string, unknown>)
+      : null;
+  const targetPlanRaw = readMetadataString(metadata, MOLLIE_METADATA_PLAN_KEY);
+  const subscriptionIdRaw = metadata?.auroranexis_provider_subscription_id;
+  const subscriptionId =
+    typeof subscriptionIdRaw === "string" && subscriptionIdRaw.startsWith("sub_")
+      ? subscriptionIdRaw
+      : payment.subscriptionId?.startsWith("sub_")
+        ? payment.subscriptionId
+        : null;
+
+  if (!targetPlanRaw || !isMollieSelfServePlanKey(targetPlanRaw) || !subscriptionId) {
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "invalid_upgrade_metadata",
+      surface: "production",
+    };
+  }
+
+  if (isMolliePaymentTerminalFailure(payment.status)) {
+    await clearMollieUpgradePaymentAttempt(organizationId);
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "upgrade_payment_failed",
+      surface: "production",
+    };
+  }
+
+  if (!isMolliePaymentPaid(payment.status)) {
+    return {
+      handled: true,
+      ignored: true,
+      organizationId,
+      reason: "upgrade_payment_pending",
+      surface: "production",
+    };
+  }
+
+  const paidAt = new Date().toISOString();
+  const upgradeResult = await applyMollieUpgradeAfterPayment({
+    organizationId,
+    paymentId,
+    targetPlanKey: targetPlanRaw,
+    providerSubscriptionId: subscriptionId,
+  });
+
+  const targetPlan = getPlanByKey(targetPlanRaw);
+  await recordMolliePaidTransaction({
+    organizationId,
+    paymentId,
+    customerId: payment.customerId ?? null,
+    subscriptionId,
+    planKey: targetPlanRaw,
+    amountValue: payment.amount?.value,
+    currency: payment.amount?.currency,
+    paidAt,
+    productName: `Upgrade adjustment — ${targetPlan.name}`,
+  });
+
+  if (
+    upgradeResult.applied &&
+    upgradeResult.previousPlanKey &&
+    upgradeResult.appliedPlanKey &&
+    upgradeResult.providerChangeReference
+  ) {
+    void getOrganizationNameForBillingEmail(organizationId)
+      .then((organizationName) =>
+        sendUpgradeActivatedEmail({
+          organizationId,
+          organizationName,
+          previousPlanKey: upgradeResult.previousPlanKey!,
+          appliedPlanKey: upgradeResult.appliedPlanKey!,
+          providerChangeReference: upgradeResult.providerChangeReference!,
+          receiptUrl: payment._links?.checkout?.href ?? null,
+        }),
+      )
+      .catch((emailError) => {
+        console.error("[billing][upgrade] activated email failed", {
+          organizationId,
+          message: emailError instanceof Error ? emailError.message : String(emailError),
+        });
+      });
+  }
+
+  return { handled: true, ignored: false, organizationId, surface: "production" };
 }
 
 /**
@@ -463,6 +624,11 @@ async function reconcileMollieProductionPaymentWebhook(
     };
   }
 
+  const billingPurpose = readBillingPurpose(payment.metadata as Record<string, unknown> | null);
+  if (billingPurpose === MOLLIE_BILLING_PURPOSE_UPGRADE_ADJUSTMENT) {
+    return reconcileMollieUpgradePayment(paymentId, organizationId, payment);
+  }
+
   const orgRow = await getMollieOrganizationSubscription(organizationId);
   const paymentCustomerId = payment.customerId ?? null;
 
@@ -636,6 +802,7 @@ async function reconcileMollieProductionPaymentWebhook(
           currentPeriodEnd: nextPaymentDate,
         }),
         syncPending: false,
+        currentPeriodStart: orgRow?.current_period_end ?? orgRow?.current_period_start ?? new Date().toISOString(),
         currentPeriodEnd: nextPaymentDate,
       });
     }
@@ -659,6 +826,28 @@ async function reconcileMollieProductionPaymentWebhook(
       });
     }
 
+    const paidAt = new Date().toISOString();
+    const renewalPlanKey =
+      pendingApply.planKey ??
+      (orgRow?.provider_price_id && isMollieSelfServePlanKey(orgRow.provider_price_id)
+        ? orgRow.provider_price_id
+        : planKey);
+    const renewalPlan = getPlanByKey(renewalPlanKey);
+    await recordMolliePaidTransaction({
+      organizationId,
+      paymentId: payment.id,
+      customerId,
+      subscriptionId: subscription.id,
+      planKey: renewalPlanKey,
+      amountValue: payment.amount?.value,
+      currency: payment.amount?.currency,
+      paidAt,
+      productName: `${renewalPlan.name} renewal`,
+      billingPeriodStart: orgRow?.current_period_start ?? null,
+      billingPeriodEnd: nextPaymentDate,
+      invoiceUrl: payment._links?.checkout?.href ?? null,
+    });
+
     return { handled: true, ignored: false, organizationId, surface: "production" };
   }
 
@@ -673,12 +862,45 @@ async function reconcileMollieProductionPaymentWebhook(
       syncPending: true,
     });
 
-    await createMollieProductionSubscriptionAfterMandate({
+    const subscriptionResult = await createMollieProductionSubscriptionAfterMandate({
       organizationId,
       customerId,
       planKey,
       paymentId: payment.id,
     });
+
+    const paidAt = new Date().toISOString();
+    const purchasePlan = getPlanByKey(planKey);
+    await recordMolliePaidTransaction({
+      organizationId,
+      paymentId: payment.id,
+      customerId,
+      subscriptionId: subscriptionResult.subscriptionId,
+      planKey,
+      amountValue: payment.amount?.value,
+      currency: payment.amount?.currency,
+      paidAt,
+      productName: `${purchasePlan.name} subscription`,
+      invoiceUrl: payment._links?.checkout?.href ?? null,
+    });
+
+    void getOrganizationNameForBillingEmail(organizationId)
+      .then((organizationName) =>
+        sendPurchaseActivatedEmail({
+          organizationId,
+          organizationName,
+          planKey,
+          providerSubscriptionId: subscriptionResult.subscriptionId,
+          providerPaymentId: payment.id,
+          receiptUrl: payment._links?.checkout?.href ?? null,
+        }),
+      )
+      .catch((emailError) => {
+        console.error("[billing][purchase] activation email failed", {
+          organizationId,
+          message: emailError instanceof Error ? emailError.message : String(emailError),
+        });
+      });
 
     return { handled: true, ignored: false, organizationId, surface: "production" };
   }

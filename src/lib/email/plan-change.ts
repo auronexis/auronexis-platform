@@ -3,6 +3,7 @@ import "server-only";
 import {
   buildPlanChangeAppliedTemplateKey,
   buildPlanChangeScheduledTemplateKey,
+  buildUpgradeActivatedTemplateKey,
   resolvePlanChangeEmailPlans,
 } from "@/lib/billing/plan-change";
 import { formatBillingDate } from "@/lib/billing/types";
@@ -15,6 +16,9 @@ import {
   buildPlanChangeScheduledHtml,
   buildPlanChangeScheduledPlainText,
   buildPlanChangeScheduledSubject,
+  buildUpgradeActivatedHtml,
+  buildUpgradeActivatedPlainText,
+  buildUpgradeActivatedSubject,
 } from "@/lib/email/templates/plan-change";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -196,6 +200,72 @@ export async function sendPlanChangeAppliedEmail(input: {
 
   if (!result.success) {
     console.error("[email][plan-change] applied email failed", {
+      templateKey,
+      organizationId: input.organizationId,
+    });
+  }
+}
+
+/**
+ * Send one upgrade-activated email after prorated payment is confirmed.
+ * Failure must never roll back billing state.
+ */
+export async function sendUpgradeActivatedEmail(input: {
+  organizationId: string;
+  organizationName: string;
+  previousPlanKey: string;
+  appliedPlanKey: string;
+  providerChangeReference: string;
+  receiptUrl: string | null;
+}): Promise<void> {
+  const recipient = await resolvePrimaryBillingRecipient(input.organizationId);
+  if (!recipient) {
+    console.error("[email][upgrade] no billing recipient for activated email", {
+      organizationId: input.organizationId,
+    });
+    return;
+  }
+
+  const plans = resolvePlanChangeEmailPlans({
+    previousPlanKey: input.previousPlanKey,
+    targetPlanKey: input.appliedPlanKey,
+  });
+  const templateKey = buildUpgradeActivatedTemplateKey(
+    input.providerChangeReference,
+    input.appliedPlanKey,
+  );
+
+  const result = await sendTransactionalEmail({
+    category: EMAIL_CATEGORIES.BILLING_SYSTEM,
+    templateKey,
+    organizationId: input.organizationId,
+    userId: recipient.userId,
+    to: recipient.email,
+    subject: buildUpgradeActivatedSubject({ newPlanName: plans.targetPlanName }),
+    html: buildUpgradeActivatedHtml({
+      organizationName: input.organizationName,
+      previousPlanName: plans.previousPlanName,
+      newPlanName: plans.targetPlanName,
+      receiptUrl: input.receiptUrl,
+    }),
+    text: buildUpgradeActivatedPlainText({
+      organizationName: input.organizationName,
+      previousPlanName: plans.previousPlanName,
+      newPlanName: plans.targetPlanName,
+      receiptUrl: input.receiptUrl,
+    }),
+  });
+
+  if (result.skipped) {
+    console.info("[email][upgrade] activated email skipped (idempotent)", {
+      templateKey,
+      organizationId: input.organizationId,
+    });
+    return;
+  }
+
+  if (!result.success) {
+    console.error("[email][upgrade] activated email failed", {
       templateKey,
       organizationId: input.organizationId,
     });

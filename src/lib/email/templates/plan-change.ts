@@ -141,6 +141,52 @@ export function buildPlanChangeScheduledHtml(input: PlanChangeScheduledEmailInpu
 </html>`;
 }
 
+export type UpgradeActivatedEmailInput = {
+  organizationName: string;
+  previousPlanName: string;
+  newPlanName: string;
+  receiptUrl: string | null;
+};
+
+export function buildUpgradeActivatedSubject(input: { newPlanName: string }): string {
+  return `Your ${input.newPlanName} upgrade is active — ${PLATFORM_NAME}`;
+}
+
+export function buildUpgradeActivatedPlainText(input: UpgradeActivatedEmailInput): string {
+  const receiptLine = input.receiptUrl
+    ? `Payment details: ${input.receiptUrl}`
+    : "Your prorated upgrade payment is recorded in billing history.";
+  return [
+    `${PLATFORM_NAME} upgrade activated`,
+    "",
+    `Workspace: ${input.organizationName}`,
+    "",
+    `Your plan upgraded from ${input.previousPlanName} to ${input.newPlanName}.`,
+    `${input.newPlanName} is now your active plan.`,
+    receiptLine,
+    "",
+    "View billing:",
+    resolveBillingSettingsUrl(),
+    "",
+    `Need help? Contact ${COMPANY_CONTACT.supportEmail}.`,
+    "",
+    `— ${PLATFORM_NAME} Notifications`,
+  ].join("\n");
+}
+
+export function buildUpgradeActivatedHtml(input: UpgradeActivatedEmailInput): string {
+  const receiptBlock = input.receiptUrl
+    ? `<p><a href="${escapeHtml(input.receiptUrl)}">View payment details</a></p>`
+    : "<p>Your prorated upgrade payment is recorded in billing history.</p>";
+
+  return `
+    <p>Your workspace <strong>${escapeHtml(input.organizationName)}</strong> upgraded from <strong>${escapeHtml(input.previousPlanName)}</strong> to <strong>${escapeHtml(input.newPlanName)}</strong>.</p>
+    <p><strong>${escapeHtml(input.newPlanName)}</strong> is now your active plan.</p>
+    ${receiptBlock}
+    ${buildEmailCtaButton("View billing", resolveBillingSettingsUrl())}
+  `;
+}
+
 export function buildPlanChangeAppliedHtml(input: PlanChangeAppliedEmailInput): string {
   const org = escapeHtml(input.organizationName);
   const previous = escapeHtml(input.previousPlanName);

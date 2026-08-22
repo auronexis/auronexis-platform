@@ -1,7 +1,8 @@
 import "server-only";
 
 import { getOrganizationSubscription } from "@/lib/billing/queries";
-import { getBillingStatusLabel, getPaymentSummaryLabel } from "@/lib/billing/status";
+import { getPaymentSummaryLabel } from "@/lib/billing/status";
+import { resolveSubscriptionManagementState } from "@/lib/billing/subscription-management";
 import { safeGetPlanByKey } from "@/lib/billing/plans";
 import { safeGetPlanKeyFromSubscriptionPrice } from "@/lib/billing/plans.server";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -52,10 +53,13 @@ export async function getBillingProviderDetails(
   });
   const plan = planKey ? safeGetPlanByKey(planKey) : null;
   const rawStatus = subscription?.provider_status ?? subscription?.status ?? null;
+  const management = resolveSubscriptionManagementState(subscription, rawStatus);
 
   return {
-    planLabel: plan?.name ?? "No active subscription",
-    status: getBillingStatusLabel(rawStatus),
+    planLabel: management.statusLabel === "No active subscription"
+      ? "No active subscription"
+      : (plan?.name ?? "Subscription"),
+    status: management.statusLabel,
     paymentStatus: getPaymentSummaryLabel(rawStatus),
     periodStart: subscription?.current_period_start ?? null,
     periodEnd: subscription?.current_period_end ?? null,

@@ -299,7 +299,7 @@ export async function createMollieProductionFirstPayment(input: {
       [MOLLIE_METADATA_PLAN_KEY]: input.planKey,
       [MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID]: checkoutAttemptId,
       [MOLLIE_METADATA_BILLING_SURFACE]: "production",
-      auroranexis_billing_purpose: "first_payment",
+      auroranexis_billing_purpose: "initial_purchase",
       auroranexis_credential_mode: credentialMode,
     },
   });
@@ -386,6 +386,7 @@ export async function createMollieProductionSubscriptionAfterMandate(input: {
 
   const nextPaymentDate =
     typeof subscription.nextPaymentDate === "string" ? subscription.nextPaymentDate : null;
+  const periodStart = new Date().toISOString();
 
   await upsertMollieOrganizationSubscription({
     organizationId: input.organizationId,
@@ -395,6 +396,7 @@ export async function createMollieProductionSubscriptionAfterMandate(input: {
     providerStatus: subscription.status,
     normalizedStatus: mapMollieSubscriptionStatus(subscription.status),
     syncPending: false,
+    currentPeriodStart: periodStart,
     currentPeriodEnd: nextPaymentDate,
   });
 

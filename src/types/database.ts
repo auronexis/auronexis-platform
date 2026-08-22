@@ -1191,6 +1191,8 @@ export type Database = {
           pending_plan_effective_at: string | null;
           pending_plan_change_type: string | null;
           provider_change_reference: string | null;
+          upgrade_payment_id: string | null;
+          upgrade_target_plan: string | null;
           trial_ends_at: string | null;
           created_at: string;
           updated_at: string;
@@ -1215,6 +1217,8 @@ export type Database = {
           pending_plan_effective_at?: string | null;
           pending_plan_change_type?: string | null;
           provider_change_reference?: string | null;
+          upgrade_payment_id?: string | null;
+          upgrade_target_plan?: string | null;
           trial_ends_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -1239,6 +1243,8 @@ export type Database = {
           pending_plan_effective_at?: string | null;
           pending_plan_change_type?: string | null;
           provider_change_reference?: string | null;
+          upgrade_payment_id?: string | null;
+          upgrade_target_plan?: string | null;
           trial_ends_at?: string | null;
           created_at?: string;
           updated_at?: string;

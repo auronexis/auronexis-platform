@@ -37,9 +37,10 @@ import { isMollieSelfServePlanKey } from "@/lib/billing/providers/mollie/checkou
 import {
   cancelMollieOrganizationSubscription,
   cancelMollieScheduledPlanChange,
-  changeMollieOrganizationPlan,
+  scheduleMollieOrganizationDowngrade,
 } from "@/lib/billing/providers/mollie/lifecycle";
-import { formatPlanChangeScheduledSuccessMessage } from "@/lib/billing/plan-change";
+import { createMollieUpgradePaymentCheckout } from "@/lib/billing/providers/mollie/upgrade-payment";
+import { formatPlanChangeScheduledSuccessMessage, formatUpgradePaymentCheckoutMessage } from "@/lib/billing/plan-change";
 import {
   formatPlanChangeCanceledSuccessMessage,
   formatSubscriptionCancellationScheduledSuccessMessage,
@@ -51,6 +52,7 @@ import {
   sendPlanChangeCanceledEmail,
   sendSubscriptionCancellationScheduledEmail,
 } from "@/lib/email/subscription-management";
+import { resolvePrimaryBillingRecipientForEmail } from "@/lib/email/billing-recipient";
 import { getPlanByKey } from "@/lib/billing/plans";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
@@ -139,15 +141,39 @@ export async function createCheckoutSessionAction(
         };
       }
 
-      // Existing usable Mollie subscription → plan change (no new first payment).
+      // Existing usable Mollie subscription → plan change (upgrade payment or downgrade schedule).
       if (eligibility.code === "allowed_mollie_plan_change") {
-        const changeResult = await changeMollieOrganizationPlan({
+        const currentPlanKey = subscription?.provider_price_id;
+        const currentPlan = getPlanByKey(
+          (currentPlanKey && isMollieSelfServePlanKey(currentPlanKey)
+            ? currentPlanKey
+            : "professional") as PlanKey,
+        );
+        const targetPlan = getPlanByKey(parsed.data);
+
+        if (targetPlan.order > currentPlan.order) {
+          const upgradeCheckout = await createMollieUpgradePaymentCheckout({
+            organizationId: session.organization.id,
+            targetPlanKey: parsed.data,
+          });
+
+          return {
+            success: formatUpgradePaymentCheckoutMessage({
+              targetPlanName: targetPlan.name,
+              formattedNetDue: upgradeCheckout.proration.formattedNetDue,
+            }),
+            mollieCheckout: {
+              checkoutUrl: upgradeCheckout.checkoutUrl,
+              checkoutAttemptId: upgradeCheckout.checkoutAttemptId,
+              pendingSyncMessage: upgradeCheckout.pendingSyncMessage,
+            },
+          };
+        }
+
+        const changeResult = await scheduleMollieOrganizationDowngrade({
           organizationId: session.organization.id,
           targetPlanKey: parsed.data,
         });
-
-        const targetPlan = getPlanByKey(parsed.data);
-        const currentPlan = getPlanByKey(changeResult.authoritativePlanKey as PlanKey);
 
         void sendPlanChangeScheduledEmail({
           organizationId: session.organization.id,
@@ -333,20 +359,27 @@ export async function cancelMollieSubscriptionAction(): Promise<BillingActionSta
 
     const planName = resolveSubscriptionEmailPlanName(result.planKey);
     const accessUntilLabel = formatBillingDate(result.accessUntil);
+    const billingRecipient = await resolvePrimaryBillingRecipientForEmail(session.organization.id);
 
-    void sendSubscriptionCancellationScheduledEmail({
-      organizationId: session.organization.id,
-      organizationName: session.organization.name,
-      userId: session.user.id,
-      recipientEmail: session.email,
-      planKey: result.planKey,
-      accessUntil: result.accessUntil,
-      providerSubscriptionId: result.providerSubscriptionId,
-    }).catch((emailError) => {
-      console.error("[billing][subscription-cancel] email failed", {
-        message: emailError instanceof Error ? emailError.message : String(emailError),
+    if (billingRecipient) {
+      void sendSubscriptionCancellationScheduledEmail({
+        organizationId: session.organization.id,
+        organizationName: session.organization.name,
+        userId: billingRecipient.userId,
+        recipientEmail: billingRecipient.email,
+        planKey: result.planKey,
+        accessUntil: result.accessUntil,
+        providerSubscriptionId: result.providerSubscriptionId,
+      }).catch((emailError) => {
+        console.error("[billing][subscription-cancel] email failed", {
+          message: emailError instanceof Error ? emailError.message : String(emailError),
+        });
       });
-    });
+    } else {
+      console.error("[billing][subscription-cancel] no billing recipient for cancellation email", {
+        organizationId: session.organization.id,
+      });
+    }
 
     return {
       success: formatSubscriptionCancellationScheduledSuccessMessage({
