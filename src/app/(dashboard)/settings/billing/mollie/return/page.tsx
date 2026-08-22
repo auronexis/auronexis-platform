@@ -6,7 +6,7 @@ import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { PageHeader } from "@/components/layout/page-header";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
-import { getOrganizationSubscription } from "@/lib/billing/queries";
+import { resolveMollieProductionReturnPageState } from "@/lib/billing/providers/mollie/return-state";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 type MollieReturnPageProps = {
-  searchParams: Promise<{ attempt?: string }>;
+  searchParams: Promise<{ attempt?: string; purpose?: string }>;
 };
 
 /**
@@ -31,7 +31,47 @@ export default async function MollieProductionReturnPage({ searchParams }: Molli
 
   const params = await searchParams;
   const attemptPresent = Boolean(params.attempt?.trim());
-  const subscription = await getOrganizationSubscription(session).catch(() => null);
+  const returnState = await resolveMollieProductionReturnPageState({
+    organizationId: session.organization.id,
+  });
+
+  const title =
+    returnState.kind === "success"
+      ? "Subscription active"
+      : returnState.kind === "activation_failed"
+        ? "Activation needs attention"
+        : returnState.kind === "processing"
+          ? "Activating subscription"
+          : "Verifying payment";
+
+  const description =
+    returnState.kind === "success"
+      ? "Your workspace billing state is active. Entitlements were confirmed from authoritative provider sync — not this redirect."
+      : returnState.kind === "activation_failed"
+        ? "Payment was confirmed but subscription activation did not complete. Contact support or run operator recovery — do not pay again."
+        : returnState.kind === "processing"
+          ? "Payment confirmed. Subscription activation is still in progress via webhook reconcile."
+          : "Return from hosted checkout. Payment confirmation happens via webhook and authoritative API re-fetch — not this page.";
+
+  const alertVariant =
+    returnState.kind === "success"
+      ? "success"
+      : returnState.kind === "activation_failed"
+        ? "error"
+        : "warning";
+
+  const alertMessage =
+    returnState.kind === "success"
+      ? "Your subscription is active."
+      : returnState.kind === "activation_failed"
+        ? `Paid payment detected (${returnState.paymentId ?? "unknown"}) but activation failed. Support can recover without a new payment.`
+        : returnState.kind === "processing"
+          ? attemptPresent
+            ? "Checkout attempt recorded. Final activation is processing."
+            : "Checkout returned. Final activation is processing."
+          : attemptPresent
+            ? "Checkout attempt recorded. Awaiting authoritative payment confirmation."
+            : "Returned from checkout. Awaiting authoritative payment status — redirect query params are not trusted.";
 
   return (
     <>
@@ -44,29 +84,25 @@ export default async function MollieProductionReturnPage({ searchParams }: Molli
       <PageHeader
         module="settings"
         eyebrow="Billing"
-        title="Verifying payment"
-        description="Return from hosted checkout. Payment confirmation happens via webhook and authoritative API re-fetch — not this page."
+        title={title}
+        description={description}
       />
 
       <PageSurface>
         <PageSurfaceHeading
-          title="Verification in progress"
-          description="If you completed checkout, your plan updates after the billing provider confirms payment. This page does not activate access."
+          title={returnState.statusLabel}
+          description="This page reflects reconciled billing state only."
         />
 
-        <FormAlert variant="warning" className="mb-4">
-          {attemptPresent
-            ? "Checkout attempt recorded. Awaiting authoritative payment confirmation."
-            : "Returned from checkout. Awaiting authoritative payment status — redirect query params are not trusted."}
+        <FormAlert variant={alertVariant} className="mb-4">
+          {alertMessage}
         </FormAlert>
 
-        {subscription?.billing_provider === "mollie" ? (
-          <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm text-muted">
-            <p className="mb-2 font-medium text-foreground">Current billing sync</p>
-            <p>Sync pending: {subscription.sync_pending ? "yes" : "no"}</p>
-            <p>Status: {subscription.status}</p>
-          </div>
-        ) : null}
+        <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm text-muted">
+          <p className="mb-2 font-medium text-foreground">Current billing sync</p>
+          <p>Sync pending: {returnState.syncPending ? "yes" : "no"}</p>
+          <p>State: {returnState.kind}</p>
+        </div>
 
         <p className="mt-4 text-sm">
           <Link href="/settings/billing" className="font-medium text-primary hover:underline">

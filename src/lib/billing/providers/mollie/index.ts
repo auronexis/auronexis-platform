@@ -80,3 +80,13 @@ export {
   extractMollieWebhookPaymentId,
   reconcileMolliePaymentWebhook,
 } from "@/lib/billing/providers/mollie/webhooks";
+export {
+  analyzeMollieDuplicatePaidFirstPayments,
+  recoverMolliePaidFreshPurchase,
+} from "@/lib/billing/providers/mollie/paid-purchase-recovery";
+export {
+  classifyMollieProductionPayment,
+  isStaleMollieOrganizationSubscription,
+  resolveMolliePaidTransactionProductName,
+} from "@/lib/billing/providers/mollie/payment-classification";
+export { resolveMollieProductionReturnPageState } from "@/lib/billing/providers/mollie/return-state";

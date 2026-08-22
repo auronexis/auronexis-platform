@@ -74,6 +74,21 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json({ received: true, status: "ignored", reason: result.reason }, { status: 200 });
     }
 
+    if (result.postconditionFailed) {
+      await markMollieEventFailed(
+        paymentId,
+        result.postconditionError ?? "fresh_purchase_postcondition_failed",
+      );
+      return NextResponse.json(
+        {
+          received: true,
+          status: "failed",
+          reason: result.postconditionError ?? "fresh_purchase_postcondition_failed",
+        },
+        { status: 200 },
+      );
+    }
+
     await markMollieEventProcessed(paymentId, result.organizationId);
     return NextResponse.json({ received: true, status: "processed" }, { status: 200 });
   } catch (error) {

@@ -33,6 +33,8 @@ export type MollieOrganizationSubscriptionSyncInput = {
   clearPendingPlanChange?: boolean;
   /** When true, clears in-flight upgrade payment attempt fields. */
   clearUpgradePaymentAttempt?: boolean;
+  /** When true, clears stale cancel/period/pending state for a fresh purchase checkout. */
+  resetStaleSubscriptionState?: boolean;
   upgradePaymentId?: string | null;
   upgradeTargetPlan?: MollieSelfServePlanKey | null;
   pendingPlan?: MollieSelfServePlanKey | null;
@@ -199,14 +201,28 @@ export async function upsertMollieOrganizationSubscription(
       ? existing.provider_customer_id
       : input.providerCustomerId;
 
-  const providerSubscriptionId = input.providerSubscriptionId?.startsWith("sub_")
-    ? input.providerSubscriptionId
-    : existing && isMollieBackedSubscription(existing)
-      ? existing.provider_subscription_id
-      : input.providerSubscriptionId;
+  const providerSubscriptionId =
+    input.providerSubscriptionId !== undefined
+      ? input.providerSubscriptionId?.startsWith("sub_")
+        ? input.providerSubscriptionId
+        : null
+      : existing && isMollieBackedSubscription(existing)
+        ? existing.provider_subscription_id
+        : null;
 
-  const pending = resolvePendingFields(input, existing);
-  const upgrade = resolveUpgradeFields(input, existing);
+  const resetStale = input.resetStaleSubscriptionState === true;
+
+  const pending = resetStale
+    ? {
+        pending_plan: null,
+        pending_plan_effective_at: null,
+        pending_plan_change_type: null,
+        provider_change_reference: null,
+      }
+    : resolvePendingFields(input, existing);
+  const upgrade = resetStale
+    ? { upgrade_payment_id: null, upgrade_target_plan: null }
+    : resolveUpgradeFields(input, existing);
 
   const row = {
     organization_id: input.organizationId,
@@ -217,9 +233,15 @@ export async function upsertMollieOrganizationSubscription(
     provider_status: input.providerStatus,
     status: input.normalizedStatus,
     sync_pending: input.syncPending,
-    cancel_at_period_end: input.cancelAtPeriodEnd ?? existing?.cancel_at_period_end ?? false,
-    current_period_start: input.currentPeriodStart ?? existing?.current_period_start ?? null,
-    current_period_end: input.currentPeriodEnd ?? existing?.current_period_end ?? null,
+    cancel_at_period_end: resetStale
+      ? false
+      : (input.cancelAtPeriodEnd ?? existing?.cancel_at_period_end ?? false),
+    current_period_start: resetStale
+      ? null
+      : (input.currentPeriodStart ?? existing?.current_period_start ?? null),
+    current_period_end: resetStale
+      ? null
+      : (input.currentPeriodEnd ?? existing?.current_period_end ?? null),
     pending_plan: pending.pending_plan,
     pending_plan_effective_at: pending.pending_plan_effective_at,
     pending_plan_change_type: pending.pending_plan_change_type,

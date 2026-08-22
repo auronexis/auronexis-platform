@@ -19,6 +19,7 @@ import {
   mapMollieSubscriptionStatus,
   type MollieSelfServePlanKey,
 } from "@/lib/billing/providers/mollie/checkout";
+import { isMollieSubscriptionEntitlementGranting } from "@/lib/billing/providers/mollie/lifecycle-status";
 import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 import {
   MOLLIE_METADATA_CHECKOUT_ATTEMPT_ID,
@@ -268,6 +269,7 @@ export async function createMollieProductionFirstPayment(input: {
       providerStatus: "open",
       normalizedStatus: "incomplete",
       syncPending: true,
+      resetStaleSubscriptionState: true,
     });
 
     return {
@@ -317,6 +319,7 @@ export async function createMollieProductionFirstPayment(input: {
     providerStatus: payment.status,
     normalizedStatus: "incomplete",
     syncPending: true,
+    resetStaleSubscriptionState: true,
   });
 
   return {
@@ -354,19 +357,26 @@ export async function createMollieProductionSubscriptionAfterMandate(input: {
 
   const existing = await getMollieOrganizationSubscription(input.organizationId);
   if (existing?.provider_subscription_id?.startsWith("sub_")) {
-    await upsertMollieOrganizationSubscription({
-      organizationId: input.organizationId,
-      providerCustomerId: input.customerId,
-      providerSubscriptionId: existing.provider_subscription_id,
-      planKey: input.planKey,
-      providerStatus: existing.provider_status,
-      normalizedStatus: existing.status,
-      syncPending: false,
-    });
-    return {
-      subscriptionId: existing.provider_subscription_id,
-      mandateId: usableMandate.id,
-    };
+    const existingSubscription = await client.customerSubscriptions.get(
+      existing.provider_subscription_id,
+      { customerId: input.customerId },
+    );
+
+    if (isMollieSubscriptionEntitlementGranting(existingSubscription.status)) {
+      await upsertMollieOrganizationSubscription({
+        organizationId: input.organizationId,
+        providerCustomerId: input.customerId,
+        providerSubscriptionId: existing.provider_subscription_id,
+        planKey: input.planKey,
+        providerStatus: existingSubscription.status,
+        normalizedStatus: mapMollieSubscriptionStatus(existingSubscription.status),
+        syncPending: false,
+      });
+      return {
+        subscriptionId: existing.provider_subscription_id,
+        mandateId: usableMandate.id,
+      };
+    }
   }
 
   const subscription = await client.customerSubscriptions.create({

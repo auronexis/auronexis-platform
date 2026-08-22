@@ -5,15 +5,17 @@ import { createHash } from "node:crypto";
 import { createMollieBillingClient } from "@/lib/billing/providers/mollie/client";
 import {
   createMollieSubscriptionAfterMandate,
-  isMolliePaymentPaid,
-  isMolliePaymentPending,
-  isMolliePaymentTerminalFailure,
   isMollieSelfServePlanKey,
-  mapMollieSubscriptionStatus,
   type MollieSelfServePlanKey,
 } from "@/lib/billing/providers/mollie/checkout";
 import { finalizeMollieSubscriptionIfExpired, applyMollieUpgradeAfterPayment } from "@/lib/billing/providers/mollie/lifecycle";
-import { resolveMollieStoredSubscriptionStatus } from "@/lib/billing/providers/mollie/lifecycle-status";
+import {
+  isMolliePaymentPaid,
+  isMolliePaymentPending,
+  isMolliePaymentTerminalFailure,
+  mapMollieSubscriptionStatus,
+  resolveMollieStoredSubscriptionStatus,
+} from "@/lib/billing/providers/mollie/lifecycle-status";
 import {
   MOLLIE_METADATA_BILLING_SURFACE,
   MOLLIE_METADATA_ORGANIZATION_ID,
@@ -44,6 +46,13 @@ import {
 import { sendPurchaseActivatedEmail } from "@/lib/email/purchase";
 import { sendSubscriptionEndedEmail } from "@/lib/email/subscription-management";
 import { createMollieProductionSubscriptionAfterMandate } from "@/lib/billing/providers/mollie/production-checkout";
+import {
+  classifyMollieProductionPayment,
+  isStaleMollieOrganizationSubscription,
+  resolveMolliePaidTransactionProductName,
+  shouldRouteMolliePaymentAsInitialPurchase,
+} from "@/lib/billing/providers/mollie/payment-classification";
+import { resolveSubscriptionUsability } from "@/lib/billing/subscription-management";
 
 export type MollieIdempotencyStatus = "proceed" | "duplicate" | "retry" | "unavailable";
 
@@ -237,7 +246,118 @@ export type MollieWebhookReconcileResult = {
   organizationId: string | null;
   reason?: string;
   surface?: "test" | "production";
+  postconditionFailed?: boolean;
+  postconditionError?: string;
 };
+
+async function validateFreshPurchasePostcondition(
+  organizationId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const row = await getMollieOrganizationSubscription(organizationId);
+  if (!row) {
+    return { ok: false, error: "fresh_purchase_missing_organization_subscription" };
+  }
+
+  const rawStatus = row.provider_status ?? row.status;
+  if (!resolveSubscriptionUsability(row, rawStatus)) {
+    return { ok: false, error: "fresh_purchase_left_subscription_inactive" };
+  }
+
+  if (row.sync_pending) {
+    return { ok: false, error: "fresh_purchase_sync_still_pending" };
+  }
+
+  if (!row.provider_subscription_id?.startsWith("sub_")) {
+    return { ok: false, error: "fresh_purchase_missing_provider_subscription_id" };
+  }
+
+  if (mapMollieSubscriptionStatus(rawStatus) === "canceled" && !row.cancel_at_period_end) {
+    return { ok: false, error: "fresh_purchase_left_subscription_canceled" };
+  }
+
+  return { ok: true };
+}
+
+async function reconcileMollieFreshPurchaseWebhook(input: {
+  organizationId: string;
+  payment: {
+    id: string;
+    status: string;
+    customerId?: string | null;
+    amount?: { value?: string; currency?: string } | null;
+    _links?: { checkout?: { href?: string } };
+  };
+  customerId: string;
+  planKey: MollieSelfServePlanKey;
+}): Promise<MollieWebhookReconcileResult> {
+  await upsertMollieOrganizationSubscription({
+    organizationId: input.organizationId,
+    providerCustomerId: input.customerId,
+    providerSubscriptionId: null,
+    planKey: input.planKey,
+    providerStatus: input.payment.status,
+    normalizedStatus: "incomplete",
+    syncPending: true,
+    resetStaleSubscriptionState: true,
+  });
+
+  const subscriptionResult = await createMollieProductionSubscriptionAfterMandate({
+    organizationId: input.organizationId,
+    customerId: input.customerId,
+    planKey: input.planKey,
+    paymentId: input.payment.id,
+  });
+
+  const paidAt = new Date().toISOString();
+  const purchasePlan = getPlanByKey(input.planKey);
+  await recordMolliePaidTransaction({
+    organizationId: input.organizationId,
+    paymentId: input.payment.id,
+    customerId: input.customerId,
+    subscriptionId: subscriptionResult.subscriptionId,
+    planKey: input.planKey,
+    amountValue: input.payment.amount?.value,
+    currency: input.payment.amount?.currency,
+    paidAt,
+    productName: resolveMolliePaidTransactionProductName({
+      paymentKind: "initial_purchase",
+      planName: purchasePlan.name,
+    }),
+    invoiceUrl: input.payment._links?.checkout?.href ?? null,
+  });
+
+  const postcondition = await validateFreshPurchasePostcondition(input.organizationId);
+  if (!postcondition.ok) {
+    return {
+      handled: true,
+      ignored: false,
+      organizationId: input.organizationId,
+      surface: "production",
+      postconditionFailed: true,
+      postconditionError: postcondition.error,
+    };
+  }
+
+  void getOrganizationNameForBillingEmail(input.organizationId)
+    .then((organizationName) =>
+      sendPurchaseActivatedEmail({
+        organizationId: input.organizationId,
+        organizationName,
+        planKey: input.planKey,
+        providerSubscriptionId: subscriptionResult.subscriptionId,
+        providerPaymentId: input.payment.id,
+        receiptUrl: input.payment._links?.checkout?.href ?? null,
+      }),
+    )
+    .catch((emailError) => {
+      console.error("[billing][purchase] activation email failed", {
+        organizationId: input.organizationId,
+        message: emailError instanceof Error ? emailError.message : String(emailError),
+      });
+    });
+
+  return { handled: true, ignored: false, organizationId: input.organizationId, surface: "production" };
+}
 
 function resolveBillingSurface(
   metadata: Record<string, unknown> | null | undefined,
@@ -718,9 +838,25 @@ async function reconcileMollieProductionPaymentWebhook(
     };
   }
 
+  const routeAsInitialPurchase = shouldRouteMolliePaymentAsInitialPurchase({
+    sequenceType: payment.sequenceType,
+    billingPurpose,
+    orgRow,
+  });
+
+  if (routeAsInitialPurchase) {
+    return reconcileMollieFreshPurchaseWebhook({
+      organizationId,
+      payment,
+      customerId,
+      planKey,
+    });
+  }
+
   const existingSubscriptionId =
     (payment.subscriptionId?.startsWith("sub_") ? payment.subscriptionId : null) ??
-    (orgRow?.provider_subscription_id?.startsWith("sub_")
+    (!isStaleMollieOrganizationSubscription(orgRow) &&
+    orgRow?.provider_subscription_id?.startsWith("sub_")
       ? orgRow.provider_subscription_id
       : null);
 
@@ -833,6 +969,10 @@ async function reconcileMollieProductionPaymentWebhook(
         ? orgRow.provider_price_id
         : planKey);
     const renewalPlan = getPlanByKey(renewalPlanKey);
+    const paymentKind = classifyMollieProductionPayment({
+      sequenceType: payment.sequenceType,
+      billingPurpose,
+    });
     await recordMolliePaidTransaction({
       organizationId,
       paymentId: payment.id,
@@ -842,7 +982,10 @@ async function reconcileMollieProductionPaymentWebhook(
       amountValue: payment.amount?.value,
       currency: payment.amount?.currency,
       paidAt,
-      productName: `${renewalPlan.name} renewal`,
+      productName: resolveMolliePaidTransactionProductName({
+        paymentKind,
+        planName: renewalPlan.name,
+      }),
       billingPeriodStart: orgRow?.current_period_start ?? null,
       billingPeriodEnd: nextPaymentDate,
       invoiceUrl: payment._links?.checkout?.href ?? null,
@@ -852,57 +995,12 @@ async function reconcileMollieProductionPaymentWebhook(
   }
 
   if (payment.sequenceType === "first") {
-    await upsertMollieOrganizationSubscription({
+    return reconcileMollieFreshPurchaseWebhook({
       organizationId,
-      providerCustomerId: customerId,
-      providerSubscriptionId: null,
-      planKey,
-      providerStatus: payment.status,
-      normalizedStatus: "incomplete",
-      syncPending: true,
-    });
-
-    const subscriptionResult = await createMollieProductionSubscriptionAfterMandate({
-      organizationId,
+      payment,
       customerId,
       planKey,
-      paymentId: payment.id,
     });
-
-    const paidAt = new Date().toISOString();
-    const purchasePlan = getPlanByKey(planKey);
-    await recordMolliePaidTransaction({
-      organizationId,
-      paymentId: payment.id,
-      customerId,
-      subscriptionId: subscriptionResult.subscriptionId,
-      planKey,
-      amountValue: payment.amount?.value,
-      currency: payment.amount?.currency,
-      paidAt,
-      productName: `${purchasePlan.name} subscription`,
-      invoiceUrl: payment._links?.checkout?.href ?? null,
-    });
-
-    void getOrganizationNameForBillingEmail(organizationId)
-      .then((organizationName) =>
-        sendPurchaseActivatedEmail({
-          organizationId,
-          organizationName,
-          planKey,
-          providerSubscriptionId: subscriptionResult.subscriptionId,
-          providerPaymentId: payment.id,
-          receiptUrl: payment._links?.checkout?.href ?? null,
-        }),
-      )
-      .catch((emailError) => {
-        console.error("[billing][purchase] activation email failed", {
-          organizationId,
-          message: emailError instanceof Error ? emailError.message : String(emailError),
-        });
-      });
-
-    return { handled: true, ignored: false, organizationId, surface: "production" };
   }
 
   return {
