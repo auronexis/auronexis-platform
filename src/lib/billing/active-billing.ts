@@ -15,6 +15,7 @@ import {
   isSubscriptionUsable,
   normalizeSubscriptionStatus,
 } from "@/lib/billing/status";
+import { resolveSubscriptionUsability } from "@/lib/billing/subscription-management";
 import type { OrganizationSubscription } from "@/types/database";
 
 const ABANDONED_CHECKOUT_STATUSES = new Set([
@@ -217,9 +218,13 @@ export function resolveActiveBillingStatusFlags(
         : activeProvider === "mollie"
           ? hasVerifiedMollieSubscription(row)
           : hasVerifiedPaddleSubscription(row);
+    const isUsable =
+      activeProvider === "mollie"
+        ? resolveSubscriptionUsability(row, status)
+        : isSubscriptionUsable(status);
     return {
       rawStatus: status,
-      isUsable: isSubscriptionUsable(status),
+      isUsable,
       hasPaymentProblem: isPaymentProblem(status),
       isPaymentPending: Boolean(row.sync_pending) || isPaymentPending(status),
       hasSubscription,

@@ -84,7 +84,7 @@ test("F: lifecycle-status maps Mollie statuses centrally (pending/active/cancele
   assert.match(status, /return "past_due"/);
   assert.match(status, /case "failed"/);
   assert.match(status, /case "expired"/);
-  assert.match(status, /MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = false/);
+  assert.match(status, /MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = true/);
   assert.match(status, /MOLLIE_SUPPORTS_SUBSCRIPTION_REACTIVATION = false/);
   const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
   assert.match(checkout, /lifecycle-status/);
@@ -126,14 +126,14 @@ test("I: payment failure maps to past_due/inactive; entitlements use usable stat
   assert.match(status, /USABLE_STATUSES = new Set\(\["active", "trialing"\]\)/);
 });
 
-// J — Cancellation accurate; no fake cancel_at_period_end
-test("J: Mollie cancel is immediate; cancel_at_period_end unsupported", () => {
+// J — Cancellation with paid-through local tracking (Phase 4.1)
+test("J: Mollie cancel uses API + local cancel_at_period_end paid-through", () => {
   const lifecycle = readSource("src/lib/billing/providers/mollie/lifecycle.ts");
-  assert.match(lifecycle, /canceledAtPeriodEnd: false/);
-  assert.match(lifecycle, /MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = false/);
-  assert.match(lifecycle, /MOLLIE_SUPPORTS_SUBSCRIPTION_REACTIVATION = false/);
+  assert.match(lifecycle, /cancelAtPeriodEnd: true/);
   assert.match(lifecycle, /customerSubscriptions\.cancel/);
-  assert.doesNotMatch(lifecycle, /cancelAtPeriodEnd:\s*true/);
+  const status = readSource("src/lib/billing/providers/mollie/lifecycle-status.ts");
+  assert.match(status, /MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = true/);
+  assert.match(status, /MOLLIE_SUPPORTS_SUBSCRIPTION_REACTIVATION = false/);
 });
 
 // K — Plan change Pro↔Business without cancel+create
@@ -221,11 +221,12 @@ test("R: Mollie downgrade UI is not blocked by FastSpring portal unavailability"
   assert.match(grid, /billingProvider:\s*safeSelection\.billingProvider/);
 });
 
-test("S: Mollie billing panel exposes cancel + plans link without portal theatre", () => {
+test("S: Mollie billing panel exposes management panel without portal theatre", () => {
   const panel = readSource("src/components/settings/billing-settings-panel.tsx");
-  assert.match(panel, /cancelMollieSubscriptionAction/);
-  assert.match(panel, /Mollie does not provide a hosted billing portal/);
-  assert.match(panel, /Cancel subscription/);
+  assert.match(panel, /BillingMollieManagementPanel/);
+  const molliePanel = readSource("src/components/settings/billing-mollie-management-panel.tsx");
+  assert.match(molliePanel, /cancelMollieSubscriptionAction/);
+  assert.match(molliePanel, /Cancel subscription/);
 });
 
 test("T: pending plan columns migration is additive and RLS-safe", () => {

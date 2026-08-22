@@ -69,6 +69,10 @@ export function getPricingButtonDisabledReasons(input: {
     reasons.push("A plan change is already scheduled. Wait for it to take effect.");
   }
 
+  if (input.overview?.cancelAtPeriodEnd || input.overview?.subscriptionManagement?.cancelAtPeriodEnd) {
+    reasons.push("Plan changes are unavailable while cancellation is scheduled.");
+  }
+
   const paymentBlocked = input.checkoutBlock
     ? input.checkoutBlock.blocked
     : input.overview && input.invoices

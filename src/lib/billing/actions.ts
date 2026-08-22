@@ -36,11 +36,21 @@ import {
 import { isMollieSelfServePlanKey } from "@/lib/billing/providers/mollie/checkout";
 import {
   cancelMollieOrganizationSubscription,
+  cancelMollieScheduledPlanChange,
   changeMollieOrganizationPlan,
 } from "@/lib/billing/providers/mollie/lifecycle";
 import { formatPlanChangeScheduledSuccessMessage } from "@/lib/billing/plan-change";
+import {
+  formatPlanChangeCanceledSuccessMessage,
+  formatSubscriptionCancellationScheduledSuccessMessage,
+  resolveSubscriptionEmailPlanName,
+} from "@/lib/billing/subscription-management";
 import { formatBillingDate } from "@/lib/billing/types";
 import { sendPlanChangeScheduledEmail } from "@/lib/email/plan-change";
+import {
+  sendPlanChangeCanceledEmail,
+  sendSubscriptionCancellationScheduledEmail,
+} from "@/lib/email/subscription-management";
 import { getPlanByKey } from "@/lib/billing/plans";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
@@ -234,7 +244,69 @@ export async function createCheckoutSessionAction(
   }
 }
 
-/** Cancel Mollie subscription for Mollie-backed orgs — Owner/Admin only. */
+/** Cancel scheduled Mollie plan change — Owner/Admin only. */
+export async function cancelMollieScheduledPlanChangeAction(): Promise<BillingActionState> {
+  const session = await requireSession();
+
+  if (!canManageOrganizationSettings(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
+  }
+
+  try {
+    const subscription = await getOrganizationSubscription(session);
+    const orgProvider = getOrganizationBillingProvider({
+      organizationId: session.organization.id,
+      subscription,
+    });
+
+    if (orgProvider !== "mollie") {
+      return {
+        error: "Scheduled plan change cancellation is only available for Mollie-billed workspaces.",
+      };
+    }
+
+    const result = await cancelMollieScheduledPlanChange({
+      organizationId: session.organization.id,
+    });
+
+    const currentPlanName = resolveSubscriptionEmailPlanName(result.currentPlanKey);
+
+    void sendPlanChangeCanceledEmail({
+      organizationId: session.organization.id,
+      organizationName: session.organization.name,
+      userId: session.user.id,
+      recipientEmail: session.email,
+      currentPlanKey: result.currentPlanKey,
+      canceledPlanKey: result.canceledPendingPlanKey,
+      changeType: result.changeType,
+      providerChangeReference: result.providerChangeReference,
+    }).catch((emailError) => {
+      console.error("[billing][plan-change-cancel] email failed", {
+        message: emailError instanceof Error ? emailError.message : String(emailError),
+      });
+    });
+
+    return {
+      success: formatPlanChangeCanceledSuccessMessage({
+        currentPlanName,
+        changeType: result.changeType,
+      }),
+    };
+  } catch (error) {
+    if (isExpectedPlanChangeError(error)) {
+      console.info("[billing][plan-change-cancel] request rejected", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } else {
+      console.error("[billing][plan-change-cancel] failed", error);
+    }
+    return {
+      error: sanitizeBillingCustomerError(error, "Unable to cancel scheduled plan change."),
+    };
+  }
+}
+
+/** Cancel Mollie subscription at period end — Owner/Admin only. */
 export async function cancelMollieSubscriptionAction(): Promise<BillingActionState> {
   const session = await requireSession();
 
@@ -255,16 +327,35 @@ export async function cancelMollieSubscriptionAction(): Promise<BillingActionSta
       };
     }
 
-    await cancelMollieOrganizationSubscription({
+    const result = await cancelMollieOrganizationSubscription({
       organizationId: session.organization.id,
     });
 
+    const planName = resolveSubscriptionEmailPlanName(result.planKey);
+    const accessUntilLabel = formatBillingDate(result.accessUntil);
+
+    void sendSubscriptionCancellationScheduledEmail({
+      organizationId: session.organization.id,
+      organizationName: session.organization.name,
+      userId: session.user.id,
+      recipientEmail: session.email,
+      planKey: result.planKey,
+      accessUntil: result.accessUntil,
+      providerSubscriptionId: result.providerSubscriptionId,
+    }).catch((emailError) => {
+      console.error("[billing][subscription-cancel] email failed", {
+        message: emailError instanceof Error ? emailError.message : String(emailError),
+      });
+    });
+
     return {
-      success:
-        "Subscription canceled immediately with Mollie. Access ends after Mollie confirms cancellation.",
+      success: formatSubscriptionCancellationScheduledSuccessMessage({
+        planName,
+        accessUntilLabel,
+      }),
     };
   } catch (error) {
-    console.error("[billing][mollie-cancel] failed", error);
+    console.error("[billing][subscription-cancel] failed", error);
     return {
       error: sanitizeBillingCustomerError(error, "Unable to cancel subscription."),
     };

@@ -16,6 +16,10 @@ import {
 import type { BillingHistoryItem } from "@/lib/billing/history-types";
 import type { BillingProviderDetails } from "@/lib/billing/provider-details";
 import { resolveScheduledPlanChange, type ScheduledPlanChange } from "@/lib/billing/plan-change";
+import {
+  resolveSubscriptionManagementState,
+  type SubscriptionManagementState,
+} from "@/lib/billing/subscription-management";
 import { formatAppDateOrNull, formatAppDateTimeOrNull } from "@/lib/i18n";
 
 export type UsageMetricKey =
@@ -203,6 +207,8 @@ export type BillingOverview = {
   scheduledCancellationDate: string | null;
   /** Scheduled Mollie plan change — pending_plan is not authoritative for entitlements. */
   scheduledPlanChange: ScheduledPlanChange | null;
+  /** Mollie cancel-at-period-end presentation — paid-through access semantics. */
+  subscriptionManagement: SubscriptionManagementState;
   isCanceled: boolean;
 };
 
@@ -251,6 +257,21 @@ export function buildBillingOverview(
       ? `${billingPeriodStart} – ${billingPeriodEnd}`
       : null;
 
+  const subscriptionManagement = resolveSubscriptionManagementState(
+    displaySubscription,
+    rawStatus,
+  );
+
+  const statusLabel =
+    subscriptionManagement.statusLabel !== "No active subscription"
+      ? subscriptionManagement.statusLabel
+      : getBillingStatusLabel(rawStatus);
+
+  const renewalDate =
+    subscriptionManagement.cancelAtPeriodEnd && subscriptionManagement.isPaidThrough
+      ? "Canceled"
+      : billingPeriodEnd;
+
   return {
     subscription: displaySubscription,
     hasSubscription: flags.hasSubscription,
@@ -261,16 +282,19 @@ export function buildBillingOverview(
     isInactive,
     planLabel,
     currentPlanKey: isUsable ? currentPlanKey : hasPaymentProblem || paymentPending ? currentPlanKey : null,
-    statusLabel: getBillingStatusLabel(rawStatus),
+    statusLabel,
     paymentStatusLabel: getPaymentSummaryLabel(rawStatus),
-    renewalDate: billingPeriodEnd,
+    renewalDate,
     billingPeriodLabel,
     trialEndsAt: displaySubscription?.trial_ends_at ?? null,
-    cancelAtPeriodEnd: displaySubscription?.cancel_at_period_end ?? false,
+    cancelAtPeriodEnd: subscriptionManagement.cancelAtPeriodEnd,
     scheduledCancellationDate:
-      displaySubscription?.cancel_at_period_end && billingPeriodEnd ? billingPeriodEnd : null,
+      subscriptionManagement.isPaidThrough
+        ? subscriptionManagement.accessUntilLabel
+        : null,
     scheduledPlanChange: resolveScheduledPlanChange(displaySubscription),
-    isCanceled,
+    subscriptionManagement,
+    isCanceled: isCanceled && !subscriptionManagement.isPaidThrough,
   };
 }
 

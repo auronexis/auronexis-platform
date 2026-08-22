@@ -263,6 +263,14 @@ export async function applyMolliePendingPlanChangeIfReady(input: {
     return { applied: false, planKey: null };
   }
 
+  if (existing.cancel_at_period_end) {
+    const current =
+      existing.provider_price_id && isMollieSelfServePlanKey(existing.provider_price_id)
+        ? existing.provider_price_id
+        : null;
+    return { applied: false, planKey: current };
+  }
+
   const pending = existing.pending_plan;
   if (!pending || !isMollieSelfServePlanKey(pending)) {
     const current =

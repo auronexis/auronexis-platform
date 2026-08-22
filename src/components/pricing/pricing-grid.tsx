@@ -246,6 +246,12 @@ export function PricingGrid({
           {formatScheduledPlanChangeSummary(scheduledPlanChange)}
         </FormAlert>
       ) : null}
+      {safeSelection.overview.cancelAtPeriodEnd && safeSelection.overview.scheduledCancellationDate ? (
+        <FormAlert variant="warning">
+          Cancellation scheduled — access until {safeSelection.overview.scheduledCancellationDate}.
+          Plan changes are unavailable until cancellation is resolved.
+        </FormAlert>
+      ) : null}
       {error ? <FormAlert variant="warning">{error}</FormAlert> : null}
     </div>
   );

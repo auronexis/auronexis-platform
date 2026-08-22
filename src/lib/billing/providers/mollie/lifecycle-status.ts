@@ -90,13 +90,35 @@ export function isMollieSubscriptionEntitlementGranting(
 }
 
 /**
- * Mollie customerSubscriptions.cancel is immediate — the installed SDK path
- * does not support defer-to-period-end. Do not fake cancel_at_period_end locally.
+ * Mollie customerSubscriptions.cancel is immediate on the provider — there is no
+ * defer-to-period-end API parameter. Auroranexis tracks cancel_at_period_end locally
+ * and preserves paid-through access until current_period_end (see subscription-management.ts).
  */
-export const MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = false as const;
+export const MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = true as const;
 
 /**
  * Mollie does not expose a "reactivate canceled subscription" API.
  * Recovery after cancel requires a new first-payment → mandate → subscription.
  */
 export const MOLLIE_SUPPORTS_SUBSCRIPTION_REACTIVATION = false as const;
+
+/** Normalize stored status while honoring paid-through cancellation windows. */
+export function resolveMollieStoredSubscriptionStatus(input: {
+  providerStatus: string | null | undefined;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string | null | undefined;
+  now?: Date;
+}): MollieNormalizedSubscriptionStatus {
+  const mapped = mapMollieSubscriptionStatus(input.providerStatus);
+
+  if (input.cancelAtPeriodEnd) {
+    const end = input.currentPeriodEnd ? new Date(input.currentPeriodEnd) : null;
+    const now = input.now ?? new Date();
+    if (!end || Number.isNaN(end.getTime()) || end > now) {
+      return "active";
+    }
+    return "canceled";
+  }
+
+  return mapped;
+}

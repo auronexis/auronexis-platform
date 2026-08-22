@@ -64,6 +64,6 @@ export const MOLLIE_FOUNDATION_PHASE: MollieFoundationPhase = "phase_4_productio
  * - Never mutate FastSpring-backed organization_subscriptions rows.
  * - Ownership ≠ rollout: existing Mollie rows stay Mollie after NEW-checkout rollback.
  * - Entitlements activate only after verified usable Mollie subscription sync — never return page alone.
- * - Cancel is immediate via Mollie API (no fake cancel_at_period_end).
+ * - Cancel schedules paid-through access until current_period_end (local tracking; Mollie API cancel is immediate).
  * - Plan changes update subscription amount from canonical catalog (no cancel+create double bill).
  */

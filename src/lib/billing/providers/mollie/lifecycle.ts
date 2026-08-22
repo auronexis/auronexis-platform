@@ -2,18 +2,26 @@ import "server-only";
 
 import { getPlanByKey } from "@/lib/billing/plans";
 import {
+  mapMollieSubscriptionStatus,
+  resolveMollieStoredSubscriptionStatus,
+  type MollieNormalizedSubscriptionStatus,
+} from "@/lib/billing/providers/mollie/lifecycle-status";
+import {
   formatMollieAmount,
   isMollieSelfServePlanKey,
-  mapMollieSubscriptionStatus,
   type MollieSelfServePlanKey,
 } from "@/lib/billing/providers/mollie/checkout";
-import { createMollieBillingClient } from "@/lib/billing/providers/mollie/client";
 import {
   MOLLIE_METADATA_BILLING_SURFACE,
   MOLLIE_METADATA_ORGANIZATION_ID,
   MOLLIE_METADATA_PLAN_KEY,
 } from "@/lib/billing/providers/mollie/foundation";
 import { assertMolliePaymentOpsAllowed } from "@/lib/billing/providers/mollie/mode";
+import { createMollieBillingClient } from "@/lib/billing/providers/mollie/client";
+import {
+  PLAN_CHANGE_CANCEL_ALREADY_MESSAGE,
+  SUBSCRIPTION_CANCEL_ALREADY_MESSAGE,
+} from "@/lib/billing/subscription-management";
 import {
   getMollieOrganizationSubscription,
   scheduleMolliePendingPlanChange,
@@ -69,6 +77,10 @@ export async function changeMollieOrganizationPlan(input: {
   }
   if (previousPlanKey === input.targetPlanKey) {
     throw new Error("This is your organization's current plan.");
+  }
+
+  if (existing.cancel_at_period_end) {
+    throw new Error("Plan changes are unavailable while cancellation is scheduled.");
   }
 
   if (existing.pending_plan) {
@@ -141,19 +153,136 @@ export async function changeMollieOrganizationPlan(input: {
   };
 }
 
+export type MolliePlanChangeCancelResult = {
+  currentPlanKey: MollieSelfServePlanKey;
+  canceledPendingPlanKey: MollieSelfServePlanKey;
+  changeType: "upgrade" | "downgrade";
+  providerChangeReference: string;
+  alreadyCanceled: boolean;
+};
+
+export type MollieSubscriptionCancelResult = {
+  canceledAtPeriodEnd: true;
+  accessUntil: string | null;
+  planKey: MollieSelfServePlanKey;
+  providerSubscriptionId: string;
+  alreadyScheduled: boolean;
+};
+
+function verifyMollieSubscriptionAmount(
+  amountValue: string | undefined,
+  expectedPlanKey: MollieSelfServePlanKey,
+): boolean {
+  const plan = getPlanByKey(expectedPlanKey);
+  return amountValue === formatMollieAmount(plan.priceMonthly);
+}
+
 /**
- * Cancel Mollie subscription immediately via Mollie API.
- * The installed Mollie SDK cancel endpoint does not support defer-to-period-end
- * (MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = false); we refuse to invent local
- * period-end cancel theatre without provider support.
- *
- * Reactivation is not supported by Mollie for canceled subscriptions
- * (MOLLIE_SUPPORTS_SUBSCRIPTION_REACTIVATION = false) — recovery requires a
- * new first-payment checkout with duplicate-subscription safeguards.
+ * Cancel a scheduled Mollie plan change by restoring the provider subscription amount
+ * to the authoritative current plan. Local pending fields clear only after provider verify.
+ */
+export async function cancelMollieScheduledPlanChange(input: {
+  organizationId: string;
+}): Promise<MolliePlanChangeCancelResult> {
+  assertMolliePaymentOpsAllowed();
+
+  const existing = await getMollieOrganizationSubscription(input.organizationId);
+  if (!existing?.provider_subscription_id?.startsWith("sub_")) {
+    throw new Error("No active Mollie subscription to change.");
+  }
+  if (!existing.provider_customer_id?.startsWith("cst_")) {
+    throw new Error("Mollie customer mapping missing — refusing plan change cancel.");
+  }
+
+  if (!existing.pending_plan) {
+    throw new Error(PLAN_CHANGE_CANCEL_ALREADY_MESSAGE);
+  }
+
+  const pendingPlanKey = existing.pending_plan;
+  if (!isMollieSelfServePlanKey(pendingPlanKey)) {
+    throw new Error("Scheduled plan change mapping is invalid — contact support.");
+  }
+
+  const currentPlanKey = existing.provider_price_id ?? "";
+  if (!isMollieSelfServePlanKey(currentPlanKey)) {
+    throw new Error("Current Mollie plan mapping is invalid — refusing plan change cancel.");
+  }
+
+  const changeType =
+    existing.pending_plan_change_type === "upgrade" ||
+    existing.pending_plan_change_type === "downgrade"
+      ? existing.pending_plan_change_type
+      : getPlanByKey(pendingPlanKey).order > getPlanByKey(currentPlanKey).order
+        ? "upgrade"
+        : "downgrade";
+
+  const client = createMollieBillingClient();
+  const remote = await client.customerSubscriptions.get(existing.provider_subscription_id, {
+    customerId: existing.provider_customer_id,
+  });
+
+  const currentPlan = getPlanByKey(currentPlanKey);
+  const updated = await client.customerSubscriptions.update(existing.provider_subscription_id, {
+    customerId: existing.provider_customer_id,
+    amount: { currency: currentPlan.currency, value: formatMollieAmount(currentPlan.priceMonthly) },
+    description: `Auroranexis ${currentPlan.name} subscription`,
+    metadata: {
+      [MOLLIE_METADATA_PLAN_KEY]: currentPlanKey,
+      [MOLLIE_METADATA_ORGANIZATION_ID]: input.organizationId,
+      [MOLLIE_METADATA_BILLING_SURFACE]: "production",
+    },
+  });
+
+  if (!verifyMollieSubscriptionAmount(updated.amount?.value, currentPlanKey)) {
+    console.error("[billing][plan-change-cancel] provider amount verification failed", {
+      organizationId: input.organizationId,
+      subscriptionId: updated.id,
+    });
+    throw new Error("Mollie did not confirm the restored plan amount — pending change kept.");
+  }
+
+  const normalizedStatus = resolveMollieStoredSubscriptionStatus({
+    providerStatus: updated.status,
+    cancelAtPeriodEnd: existing.cancel_at_period_end,
+    currentPeriodEnd: existing.current_period_end,
+  });
+
+  await upsertMollieOrganizationSubscription({
+    organizationId: input.organizationId,
+    providerCustomerId: existing.provider_customer_id,
+    providerSubscriptionId: updated.id,
+    planKey: currentPlanKey,
+    providerStatus: updated.status,
+    normalizedStatus,
+    syncPending: false,
+    cancelAtPeriodEnd: existing.cancel_at_period_end,
+    clearPendingPlanChange: true,
+    providerChangeReference: updated.id,
+  });
+
+  console.info("[billing][plan-change-cancel] scheduled change canceled", {
+    organizationId: input.organizationId,
+    currentPlanKey,
+    canceledPendingPlanKey: pendingPlanKey,
+  });
+
+  return {
+    currentPlanKey,
+    canceledPendingPlanKey: pendingPlanKey,
+    changeType,
+    providerChangeReference: updated.id,
+    alreadyCanceled: false,
+  };
+}
+
+/**
+ * Cancel Mollie subscription with paid-through semantics.
+ * Mollie API cancel is immediate (no future charges); local cancel_at_period_end preserves access
+ * until current_period_end. Mandates and customers are not revoked.
  */
 export async function cancelMollieOrganizationSubscription(input: {
   organizationId: string;
-}): Promise<{ canceledAtPeriodEnd: false }> {
+}): Promise<MollieSubscriptionCancelResult> {
   assertMolliePaymentOpsAllowed();
 
   const existing = await getMollieOrganizationSubscription(input.organizationId);
@@ -164,7 +293,15 @@ export async function cancelMollieOrganizationSubscription(input: {
     throw new Error("Mollie customer mapping missing — refusing cancel.");
   }
 
+  if (existing.cancel_at_period_end) {
+    throw new Error(SUBSCRIPTION_CANCEL_ALREADY_MESSAGE);
+  }
+
   const client = createMollieBillingClient();
+  await client.customerSubscriptions.get(existing.provider_subscription_id, {
+    customerId: existing.provider_customer_id,
+  });
+
   const canceled = await client.customerSubscriptions.cancel(existing.provider_subscription_id, {
     customerId: existing.provider_customer_id,
   });
@@ -173,17 +310,107 @@ export async function cancelMollieOrganizationSubscription(input: {
     ? (existing.provider_price_id as MollieSelfServePlanKey)
     : "professional";
 
+  const accessUntil = existing.current_period_end ?? null;
+  const normalizedStatus: MollieNormalizedSubscriptionStatus = resolveMollieStoredSubscriptionStatus({
+    providerStatus: canceled.status,
+    cancelAtPeriodEnd: true,
+    currentPeriodEnd: accessUntil,
+  });
+
   await upsertMollieOrganizationSubscription({
     organizationId: input.organizationId,
     providerCustomerId: existing.provider_customer_id,
     providerSubscriptionId: canceled.id,
     planKey,
     providerStatus: canceled.status,
-    normalizedStatus: mapMollieSubscriptionStatus(canceled.status),
+    normalizedStatus,
+    syncPending: false,
+    cancelAtPeriodEnd: true,
+    currentPeriodEnd: accessUntil,
+    clearPendingPlanChange: true,
+  });
+
+  console.info("[billing][subscription-cancel] cancellation scheduled at period end", {
+    organizationId: input.organizationId,
+    accessUntil,
+    subscriptionId: canceled.id,
+  });
+
+  return {
+    canceledAtPeriodEnd: true,
+    accessUntil,
+    planKey,
+    providerSubscriptionId: canceled.id,
+    alreadyScheduled: false,
+  };
+}
+
+/**
+ * Finalize paid-through cancellation after current_period_end passes.
+ * Idempotent when not cancel_at_period_end or still paid-through.
+ */
+export async function finalizeMollieSubscriptionIfExpired(input: {
+  organizationId: string;
+}): Promise<{
+  expired: boolean;
+  providerSubscriptionId: string | null;
+  accessUntil: string | null;
+  planKey: MollieSelfServePlanKey | null;
+}> {
+  const existing = await getMollieOrganizationSubscription(input.organizationId);
+  if (!existing?.cancel_at_period_end) {
+    return {
+      expired: false,
+      providerSubscriptionId: existing?.provider_subscription_id ?? null,
+      accessUntil: null,
+      planKey: null,
+    };
+  }
+
+  const accessUntil = existing.current_period_end ?? null;
+  const stillPaidThrough = resolveMollieStoredSubscriptionStatus({
+    providerStatus: existing.provider_status,
+    cancelAtPeriodEnd: true,
+    currentPeriodEnd: accessUntil,
+  }) === "active";
+
+  if (stillPaidThrough) {
+    return {
+      expired: false,
+      providerSubscriptionId: existing.provider_subscription_id,
+      accessUntil,
+      planKey: isMollieSelfServePlanKey(existing.provider_price_id ?? "")
+        ? (existing.provider_price_id as MollieSelfServePlanKey)
+        : null,
+    };
+  }
+
+  const planKey: MollieSelfServePlanKey = isMollieSelfServePlanKey(existing.provider_price_id ?? "")
+    ? (existing.provider_price_id as MollieSelfServePlanKey)
+    : "professional";
+
+  await upsertMollieOrganizationSubscription({
+    organizationId: input.organizationId,
+    providerCustomerId: existing.provider_customer_id,
+    providerSubscriptionId: existing.provider_subscription_id,
+    planKey,
+    providerStatus: existing.provider_status,
+    normalizedStatus: "canceled",
     syncPending: false,
     cancelAtPeriodEnd: false,
     clearPendingPlanChange: true,
   });
 
-  return { canceledAtPeriodEnd: false };
+  console.info("[billing][subscription-expire] paid-through access ended", {
+    organizationId: input.organizationId,
+    accessUntil,
+    subscriptionId: existing.provider_subscription_id,
+  });
+
+  return {
+    expired: true,
+    providerSubscriptionId: existing.provider_subscription_id,
+    accessUntil,
+    planKey,
+  };
 }

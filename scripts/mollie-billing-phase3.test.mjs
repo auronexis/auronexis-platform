@@ -141,11 +141,11 @@ test("G: Mollie plan change updates amount from canonical catalog — no invente
   assert.match(lifecycle, /Enterprise plan changes are manual-only/);
 });
 
-test("G: Mollie cancel is immediate via API — no fake period-end theatre", () => {
+test("G: Mollie cancel uses API with local paid-through cancel_at_period_end", () => {
   const lifecycle = readSource("src/lib/billing/providers/mollie/lifecycle.ts");
   assert.match(lifecycle, /cancelMollieOrganizationSubscription/);
   assert.match(lifecycle, /customerSubscriptions\.cancel/);
-  assert.match(lifecycle, /canceledAtPeriodEnd: false/);
+  assert.match(lifecycle, /cancelAtPeriodEnd: true/);
   const actions = readSource("src/lib/billing/actions.ts");
   assert.match(actions, /cancelMollieSubscriptionAction/);
 });

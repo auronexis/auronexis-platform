@@ -12,6 +12,8 @@ import {
   mapMollieSubscriptionStatus,
   type MollieSelfServePlanKey,
 } from "@/lib/billing/providers/mollie/checkout";
+import { finalizeMollieSubscriptionIfExpired } from "@/lib/billing/providers/mollie/lifecycle";
+import { resolveMollieStoredSubscriptionStatus } from "@/lib/billing/providers/mollie/lifecycle-status";
 import {
   MOLLIE_METADATA_BILLING_SURFACE,
   MOLLIE_METADATA_ORGANIZATION_ID,
@@ -33,6 +35,7 @@ import {
   getOrganizationNameForBillingEmail,
   sendPlanChangeAppliedEmail,
 } from "@/lib/email/plan-change";
+import { sendSubscriptionEndedEmail } from "@/lib/email/subscription-management";
 
 export type MollieIdempotencyStatus = "proceed" | "duplicate" | "retry" | "unavailable";
 
@@ -580,7 +583,11 @@ async function reconcileMollieProductionPaymentWebhook(
       providerCustomerId: customerId,
       providerSubscriptionId: subscription.id,
       providerStatus: subscription.status,
-      normalizedStatus: mapMollieSubscriptionStatus(subscription.status),
+      normalizedStatus: resolveMollieStoredSubscriptionStatus({
+        providerStatus: subscription.status,
+        cancelAtPeriodEnd: orgRow?.cancel_at_period_end ?? false,
+        currentPeriodEnd: nextPaymentDate,
+      }),
       currentPeriodEnd: nextPaymentDate,
     });
 
@@ -623,9 +630,32 @@ async function reconcileMollieProductionPaymentWebhook(
         providerSubscriptionId: subscription.id,
         planKey: authoritativePlanKey,
         providerStatus: subscription.status,
-        normalizedStatus: mapMollieSubscriptionStatus(subscription.status),
+        normalizedStatus: resolveMollieStoredSubscriptionStatus({
+          providerStatus: subscription.status,
+          cancelAtPeriodEnd: orgRow?.cancel_at_period_end ?? false,
+          currentPeriodEnd: nextPaymentDate,
+        }),
         syncPending: false,
         currentPeriodEnd: nextPaymentDate,
+      });
+    }
+
+    const expired = await finalizeMollieSubscriptionIfExpired({ organizationId });
+    if (
+      expired.expired &&
+      expired.providerSubscriptionId &&
+      expired.planKey
+    ) {
+      void sendSubscriptionEndedEmail({
+        organizationId,
+        planKey: expired.planKey,
+        accessUntil: expired.accessUntil,
+        providerSubscriptionId: expired.providerSubscriptionId,
+      }).catch((emailError) => {
+        console.error("[billing][subscription-expire] ended email failed", {
+          organizationId,
+          message: emailError instanceof Error ? emailError.message : String(emailError),
+        });
       });
     }
 

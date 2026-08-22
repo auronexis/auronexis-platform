@@ -5,6 +5,11 @@ import {
   PLAN_CHANGE_ALREADY_SCHEDULED_MESSAGE,
   PLAN_CHANGE_CONFLICT_MESSAGE,
 } from "@/lib/billing/plan-change";
+import {
+  PLAN_CHANGE_CANCEL_ALREADY_MESSAGE,
+  SUBSCRIPTION_CANCEL_ALREADY_MESSAGE,
+  SUBSCRIPTION_NOT_CANCELABLE_MESSAGE,
+} from "@/lib/billing/subscription-management";
 
 const INTERNAL_BILLING_PATTERNS = [
   /STRIPE_/i,
@@ -110,6 +115,22 @@ export function resolvePlanChangeCustomerError(error: unknown): string | null {
     return "Enterprise plan changes are manual-only. Contact sales.";
   }
 
+  if (error.message === PLAN_CHANGE_CANCEL_ALREADY_MESSAGE) {
+    return PLAN_CHANGE_CANCEL_ALREADY_MESSAGE;
+  }
+
+  if (error.message === SUBSCRIPTION_CANCEL_ALREADY_MESSAGE) {
+    return SUBSCRIPTION_CANCEL_ALREADY_MESSAGE;
+  }
+
+  if (error.message === SUBSCRIPTION_NOT_CANCELABLE_MESSAGE) {
+    return SUBSCRIPTION_NOT_CANCELABLE_MESSAGE;
+  }
+
+  if (error.message.includes("Mollie did not confirm the restored plan amount")) {
+    return "Unable to cancel the scheduled plan change right now. Try again or contact support.";
+  }
+
   return null;
 }
 
@@ -118,7 +139,9 @@ export function isExpectedPlanChangeError(error: unknown): boolean {
   return (
     error instanceof Error &&
     (error.message.includes("already scheduled") ||
-      error.message === "This is your organization's current plan.")
+      error.message === "This is your organization's current plan." ||
+      error.message === PLAN_CHANGE_CANCEL_ALREADY_MESSAGE ||
+      error.message === SUBSCRIPTION_CANCEL_ALREADY_MESSAGE)
   );
 }
 

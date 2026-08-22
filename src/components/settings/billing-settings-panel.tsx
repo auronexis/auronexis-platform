@@ -12,8 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormAlert } from "@/components/ui/form-alert";
 import { FormFooter } from "@/components/ui/form-section";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
-import { cancelMollieSubscriptionAction, createPortalSessionAction } from "@/lib/billing/actions";
-import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
+import { createPortalSessionAction } from "@/lib/billing/actions";
 import { FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
 import type { CheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
 import {
@@ -35,7 +34,9 @@ import { formatScheduledPlanChangeSummary } from "@/lib/billing/plan-change";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
 import type { OrganizationSeatUsage } from "@/lib/seats/types";
 import { EnterpriseRequestCard } from "@/components/settings/enterprise-request-card";
+import { BillingMollieManagementPanel } from "@/components/settings/billing-mollie-management-panel";
 import { BillingConversionTracker } from "@/components/analytics/billing-conversion-tracker";
+import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import type { EnterpriseStatus } from "@/lib/enterprise/types";
 import type { BillingContactCardContent } from "@/lib/billing/billing-contact";
 import { cn } from "@/lib/utils/cn";
@@ -578,7 +579,7 @@ export function BillingSettingsPanel({
         </PageSurface>
       ) : null}
 
-      {canManage && overview.scheduledPlanChange ? (
+      {canManage && overview.scheduledPlanChange && activeProvider !== "mollie" ? (
         <PageSurface>
           <PageSurfaceHeading
             title="Scheduled plan change"
@@ -587,10 +588,6 @@ export function BillingSettingsPanel({
           <FormAlert variant="success">
             {formatScheduledPlanChangeSummary(overview.scheduledPlanChange)}
           </FormAlert>
-          <p className="mt-3 text-sm text-muted">
-            Canceling a scheduled change is not self-serve with Mollie. Contact support if you need
-            to adjust it before the effective date.
-          </p>
           <FormFooter className="border-t-0 pt-4">
             <LinkButton href="/settings/plans" variant="secondary">
               View plans
@@ -599,37 +596,8 @@ export function BillingSettingsPanel({
         </PageSurface>
       ) : null}
 
-      {canManage && overview.isUsable && activeProvider === "mollie" ? (
-        <PageSurface>
-          <PageSurfaceHeading
-            title="Mollie subscription"
-            description="Plan changes happen on the Plans page. Cancellation with Mollie is immediate (no period-end deferral)."
-          />
-          <FormFooter className="border-t-0 pt-0">
-            <LinkButton href="/settings/plans">Change plan</LinkButton>
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={isPortalPending}
-              loading={isPortalPending}
-              loadingText="Canceling…"
-              onClick={() => {
-                setActionError(null);
-                startPortalTransition(async () => {
-                  const result = await cancelMollieSubscriptionAction();
-                  if (result?.error) {
-                    setActionError(result.error);
-                    return;
-                  }
-                  window.location.reload();
-                });
-              }}
-            >
-              Cancel subscription
-            </Button>
-          </FormFooter>
-          {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
-        </PageSurface>
+      {activeProvider === "mollie" ? (
+        <BillingMollieManagementPanel overview={overview} canManage={canManage} />
       ) : null}
 
       {canManage && !showSubscriptionManagement ? (
