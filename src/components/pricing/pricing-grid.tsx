@@ -12,7 +12,11 @@ import { resolveCheckoutBlockState } from "@/lib/billing/checkout-block";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import type { BillingUiStatus } from "@/lib/billing/types";
 import {
-  resolvePlanActionLabel,
+  formatScheduledPlanChangeSummary,
+  getScheduledPlanBadgeLabel,
+  resolvePlanCardAction,
+} from "@/lib/billing/plan-change";
+import {
   type PlanKey,
   type SubscriptionPlanDefinition,
 } from "@/lib/billing/plans";
@@ -63,6 +67,7 @@ export function PricingGrid({
   const safeStripeStatus = normalizeBillingUiStatus(stripeStatus);
   const safeSelection = selection ?? createFallbackPricingSelection();
   const safePlans = Array.isArray(plans) ? plans : [];
+  const scheduledPlanChange = safeSelection.overview.scheduledPlanChange ?? null;
   const unavailableMessage = getPricingUnavailableMessage(safeStripeStatus);
   const resolvedCheckoutBlock =
     checkoutBlock ??
@@ -150,12 +155,14 @@ export function PricingGrid({
 
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {safePlans.map((plan) => {
-          const action = resolvePlanActionLabel(
+          const action = resolvePlanCardAction(
             plan.key,
             safeSelection.currentPlanKey,
             safeSelection.isUsable,
+            scheduledPlanChange,
           );
           const isCurrent = safeSelection.isUsable && action === "current";
+          const isScheduledTarget = action === "scheduled";
           const isDowngrade = action === "downgrade";
           const seatBlock = getPricingPlanBlockReason(
             plan.key,
@@ -179,6 +186,7 @@ export function PricingGrid({
             seatBlockMessage: seatBlock.blocked ? seatBlock.message : null,
             stripeStatus: safeStripeStatus,
             billingProvider: safeSelection.billingProvider ?? null,
+            scheduledPlanChange,
           });
 
           return (
@@ -187,6 +195,14 @@ export function PricingGrid({
               plan={plan}
               action={action}
               isCurrent={isCurrent}
+              isScheduledTarget={isScheduledTarget}
+              scheduledBadge={
+                isScheduledTarget && scheduledPlanChange
+                  ? getScheduledPlanBadgeLabel(scheduledPlanChange.changeType)
+                  : null
+              }
+              scheduledEffectiveDate={scheduledPlanChange?.effectiveAtLabel ?? null}
+              changeType={scheduledPlanChange?.changeType}
               isLoading={
                 (isPending && pendingPlanKey === plan.key) ||
                 (isPortalPending && isDowngrade)
@@ -204,11 +220,15 @@ export function PricingGrid({
               enterpriseContactHref={enterpriseContactHref}
               displayPrice={localizedDisplayPrices?.[plan.key] ?? null}
               onSelect={() => {
+                if (isScheduledTarget) {
+                  return;
+                }
                 if (
                   isDowngrade &&
                   safeSelection.isUsable &&
                   safeStripeStatus.portalAvailable &&
-                  showPortalAction
+                  showPortalAction &&
+                  safeSelection.billingProvider !== "mollie"
                 ) {
                   openPortal();
                   return;
@@ -221,6 +241,11 @@ export function PricingGrid({
       </div>
 
       {pendingSyncMessage ? <FormAlert variant="success">{pendingSyncMessage}</FormAlert> : null}
+      {!pendingSyncMessage && scheduledPlanChange ? (
+        <FormAlert variant="success">
+          {formatScheduledPlanChangeSummary(scheduledPlanChange)}
+        </FormAlert>
+      ) : null}
       {error ? <FormAlert variant="warning">{error}</FormAlert> : null}
     </div>
   );

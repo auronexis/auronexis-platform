@@ -9,6 +9,7 @@ import { resolveCheckoutEligibility } from "@/lib/billing/checkout-eligibility";
 import { trackBillingLifecycleEvent } from "@/lib/analytics/billing-lifecycle";
 import { openCustomerPortal } from "@/lib/billing/customer-portal";
 import {
+  isExpectedPlanChangeError,
   isExpectedPortalUnavailableError,
   sanitizeBillingCustomerError,
 } from "@/lib/billing/errors";
@@ -37,6 +38,10 @@ import {
   cancelMollieOrganizationSubscription,
   changeMollieOrganizationPlan,
 } from "@/lib/billing/providers/mollie/lifecycle";
+import { formatPlanChangeScheduledSuccessMessage } from "@/lib/billing/plan-change";
+import { formatBillingDate } from "@/lib/billing/types";
+import { sendPlanChangeScheduledEmail } from "@/lib/email/plan-change";
+import { getPlanByKey } from "@/lib/billing/plans";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 
 export type BillingActionState = {
@@ -126,13 +131,37 @@ export async function createCheckoutSessionAction(
 
       // Existing usable Mollie subscription → plan change (no new first payment).
       if (eligibility.code === "allowed_mollie_plan_change") {
-        await changeMollieOrganizationPlan({
+        const changeResult = await changeMollieOrganizationPlan({
           organizationId: session.organization.id,
           targetPlanKey: parsed.data,
         });
+
+        const targetPlan = getPlanByKey(parsed.data);
+        const currentPlan = getPlanByKey(changeResult.authoritativePlanKey as PlanKey);
+
+        void sendPlanChangeScheduledEmail({
+          organizationId: session.organization.id,
+          organizationName: session.organization.name,
+          userId: session.user.id,
+          recipientEmail: session.email,
+          previousPlanKey: changeResult.previousPlanKey,
+          targetPlanKey: changeResult.targetPlanKey,
+          changeType: changeResult.changeType,
+          effectiveAt: changeResult.pendingPlanEffectiveAt,
+          providerChangeReference: changeResult.providerChangeReference,
+        }).catch((emailError) => {
+          console.error("[billing][plan-change] scheduled email failed", {
+            message: emailError instanceof Error ? emailError.message : String(emailError),
+          });
+        });
+
         return {
-          success:
-            "Plan change scheduled with Mollie. Your current plan stays active until Mollie confirms the next billing cycle — then entitlements update.",
+          success: formatPlanChangeScheduledSuccessMessage({
+            currentPlanName: currentPlan.name,
+            targetPlanName: targetPlan.name,
+            changeType: changeResult.changeType,
+            effectiveAtLabel: formatBillingDate(changeResult.pendingPlanEffectiveAt),
+          }),
         };
       }
 
@@ -192,7 +221,13 @@ export async function createCheckoutSessionAction(
     if (error && typeof error === "object" && "digest" in error) {
       throw error;
     }
-    console.error("[billing][checkout] failed", error);
+    if (isExpectedPlanChangeError(error)) {
+      console.info("[billing][plan-change] request rejected", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } else {
+      console.error("[billing][checkout] failed", error);
+    }
     return {
       error: sanitizeBillingCustomerError(error, "Unable to start checkout."),
     };

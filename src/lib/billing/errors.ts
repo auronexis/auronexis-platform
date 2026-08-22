@@ -1,6 +1,10 @@
 import {
   FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE,
 } from "@/lib/billing/active-billing";
+import {
+  PLAN_CHANGE_ALREADY_SCHEDULED_MESSAGE,
+  PLAN_CHANGE_CONFLICT_MESSAGE,
+} from "@/lib/billing/plan-change";
 
 const INTERNAL_BILLING_PATTERNS = [
   /STRIPE_/i,
@@ -68,7 +72,54 @@ export function sanitizeBillingCustomerError(error: unknown, fallback: string): 
     return error.message;
   }
 
+  const planChangeMessage = resolvePlanChangeCustomerError(error);
+  if (planChangeMessage) {
+    return planChangeMessage;
+  }
+
   return fallback;
+}
+
+/** Map Mollie plan-change domain errors to customer-safe copy. */
+export function resolvePlanChangeCustomerError(error: unknown): string | null {
+  if (!(error instanceof Error)) {
+    return null;
+  }
+
+  if (error.message.includes("already scheduled") && error.message.includes("this target")) {
+    return PLAN_CHANGE_ALREADY_SCHEDULED_MESSAGE;
+  }
+
+  if (error.message.includes("already scheduled")) {
+    return PLAN_CHANGE_CONFLICT_MESSAGE;
+  }
+
+  if (error.message === "This is your organization's current plan.") {
+    return error.message;
+  }
+
+  if (error.message === "No active Mollie subscription to change.") {
+    return "No active subscription to change. Complete checkout first or contact support.";
+  }
+
+  if (error.message.includes("Mollie customer mapping missing")) {
+    return "Billing profile is incomplete. Contact support to fix your subscription mapping.";
+  }
+
+  if (error.message === "Enterprise plan changes are manual-only.") {
+    return "Enterprise plan changes are manual-only. Contact sales.";
+  }
+
+  return null;
+}
+
+/** Expected duplicate/conflict plan-change guard — not a fatal checkout failure. */
+export function isExpectedPlanChangeError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.message.includes("already scheduled") ||
+      error.message === "This is your organization's current plan.")
+  );
 }
 
 /** Expected pre-purchase portal absence — must not be logged as an error. */

@@ -5,6 +5,8 @@ import {
   PENDING_PAYMENT_CHECKOUT_MESSAGE,
 } from "@/lib/billing/checkout-guards";
 import type { BillingOverview, CustomerInvoiceView, StripeBillingUiStatus } from "@/lib/billing/types";
+import type { ScheduledPlanChange } from "@/lib/billing/plan-change";
+import { PLAN_CHANGE_ALREADY_SCHEDULED_MESSAGE } from "@/lib/billing/plan-change";
 
 function comparePlanOrder(
   targetKey: PlanKey,
@@ -43,6 +45,7 @@ export function getPricingButtonDisabledReasons(input: {
   stripeStatus: StripeBillingUiStatus;
   /** When mollie, downgrades use native plan-change — no portal required. */
   billingProvider?: string | null;
+  scheduledPlanChange?: ScheduledPlanChange | null;
 }): string[] {
   const reasons: string[] = [];
 
@@ -52,6 +55,18 @@ export function getPricingButtonDisabledReasons(input: {
 
   if (input.isCurrent) {
     reasons.push("This is your organization's current plan.");
+  }
+
+  if (input.scheduledPlanChange?.pendingPlanKey === input.planKey) {
+    reasons.push(PLAN_CHANGE_ALREADY_SCHEDULED_MESSAGE);
+  }
+
+  if (
+    input.scheduledPlanChange &&
+    input.scheduledPlanChange.pendingPlanKey !== input.planKey &&
+    !input.isCurrent
+  ) {
+    reasons.push("A plan change is already scheduled. Wait for it to take effect.");
   }
 
   const paymentBlocked = input.checkoutBlock

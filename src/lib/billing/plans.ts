@@ -2,7 +2,7 @@ import { formatWorkspaceMoney } from "@/lib/i18n/format";
 
 export type PlanKey = "starter" | "professional" | "business" | "enterprise";
 
-export type PlanActionLabel = "current" | "choose" | "upgrade" | "downgrade";
+export type PlanActionLabel = "current" | "choose" | "upgrade" | "downgrade" | "scheduled";
 
 export type SubscriptionPlanDefinition = {
   key: PlanKey;
@@ -166,7 +166,10 @@ export function formatPlanPrice(plan: SubscriptionPlanDefinition): string {
   return formatWorkspaceMoney(plan.priceMonthly, plan.currency, "en");
 }
 
-export function getPlanActionButtonLabel(action: PlanActionLabel): string {
+export function getPlanActionButtonLabel(
+  action: PlanActionLabel,
+  options?: { changeType?: "upgrade" | "downgrade" },
+): string {
   switch (action) {
     case "current":
       return "Current plan";
@@ -176,5 +179,7 @@ export function getPlanActionButtonLabel(action: PlanActionLabel): string {
       return "Upgrade";
     case "downgrade":
       return "Downgrade";
+    case "scheduled":
+      return options?.changeType === "upgrade" ? "Upgrade scheduled" : "Downgrade scheduled";
   }
 }

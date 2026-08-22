@@ -14,6 +14,9 @@ export type EmailCategory = (typeof EMAIL_CATEGORIES)[keyof typeof EMAIL_CATEGOR
 /** Template keys used for idempotent delivery claims. */
 export const EMAIL_TEMPLATE_KEYS = {
   WELCOME: "welcome",
+  /** Dynamic keys use plan_change_scheduled:{sub}:{plan} and plan_change_applied:{sub}:{plan}. */
+  PLAN_CHANGE_SCHEDULED_PREFIX: "plan_change_scheduled",
+  PLAN_CHANGE_APPLIED_PREFIX: "plan_change_applied",
 } as const;
 
 export type EmailTemplateKey = (typeof EMAIL_TEMPLATE_KEYS)[keyof typeof EMAIL_TEMPLATE_KEYS];

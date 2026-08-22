@@ -15,6 +15,7 @@ import {
 } from "@/lib/billing/status";
 import type { BillingHistoryItem } from "@/lib/billing/history-types";
 import type { BillingProviderDetails } from "@/lib/billing/provider-details";
+import { resolveScheduledPlanChange, type ScheduledPlanChange } from "@/lib/billing/plan-change";
 import { formatAppDateOrNull, formatAppDateTimeOrNull } from "@/lib/i18n";
 
 export type UsageMetricKey =
@@ -200,8 +201,12 @@ export type BillingOverview = {
   cancelAtPeriodEnd: boolean;
   /** Formatted end date when cancellation is scheduled at period end. */
   scheduledCancellationDate: string | null;
+  /** Scheduled Mollie plan change — pending_plan is not authoritative for entitlements. */
+  scheduledPlanChange: ScheduledPlanChange | null;
   isCanceled: boolean;
 };
+
+export type { ScheduledPlanChange } from "@/lib/billing/plan-change";
 
 export function formatBillingDate(value: string | null | undefined): string | null {
   return formatAppDateOrNull(value);
@@ -264,6 +269,7 @@ export function buildBillingOverview(
     cancelAtPeriodEnd: displaySubscription?.cancel_at_period_end ?? false,
     scheduledCancellationDate:
       displaySubscription?.cancel_at_period_end && billingPeriodEnd ? billingPeriodEnd : null,
+    scheduledPlanChange: resolveScheduledPlanChange(displaySubscription),
     isCanceled,
   };
 }

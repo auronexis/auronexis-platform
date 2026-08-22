@@ -242,8 +242,58 @@ test("T: pending plan columns migration is additive and RLS-safe", () => {
 
 test("U: plan-change action success copy does not claim immediate entitlements", () => {
   const actions = readSource("src/lib/billing/actions.ts");
-  assert.match(actions, /Plan change scheduled with Mollie/);
-  assert.match(actions, /current plan stays active/i);
+  assert.match(actions, /formatPlanChangeScheduledSuccessMessage/);
+  const planChange = readSource("src/lib/billing/plan-change.ts");
+  assert.match(planChange, /remains your current plan until then/i);
+});
+
+test("X: duplicate plan-change errors map to customer-safe messages", () => {
+  const errors = readSource("src/lib/billing/errors.ts");
+  assert.match(errors, /resolvePlanChangeCustomerError/);
+  assert.match(errors, /PLAN_CHANGE_ALREADY_SCHEDULED_MESSAGE/);
+  assert.match(errors, /isExpectedPlanChangeError/);
+  const actions = readSource("src/lib/billing/actions.ts");
+  assert.match(actions, /isExpectedPlanChangeError/);
+  assert.match(actions, /\[billing\]\[plan-change\]/);
+});
+
+test("Y: scheduled plan change surfaces in billing overview and plans UI", () => {
+  const types = readSource("src/lib/billing/types.ts");
+  assert.match(types, /scheduledPlanChange/);
+  assert.match(types, /resolveScheduledPlanChange/);
+  const grid = readSource("src/components/pricing/pricing-grid.tsx");
+  assert.match(grid, /resolvePlanCardAction/);
+  assert.match(grid, /scheduledPlanChange/);
+  assert.match(grid, /variant="success"/);
+  const panel = readSource("src/components/settings/billing-settings-panel.tsx");
+  assert.match(panel, /Scheduled plan change/);
+  assert.match(panel, /formatScheduledPlanChangeSummary/);
+});
+
+test("Z: plan-change transactional emails use billing_system ledger idempotency", () => {
+  const email = readSource("src/lib/email/plan-change.ts");
+  assert.match(email, /sendPlanChangeScheduledEmail/);
+  assert.match(email, /sendPlanChangeAppliedEmail/);
+  assert.match(email, /EMAIL_CATEGORIES\.BILLING_SYSTEM/);
+  assert.match(email, /\[email\]\[plan-change\]/);
+  const planChange = readSource("src/lib/billing/plan-change.ts");
+  assert.match(planChange, /buildPlanChangeScheduledTemplateKey/);
+  assert.match(planChange, /buildPlanChangeAppliedTemplateKey/);
+  const actions = readSource("src/lib/billing/actions.ts");
+  assert.match(actions, /sendPlanChangeScheduledEmail/);
+  const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
+  assert.match(webhooks, /sendPlanChangeAppliedEmail/);
+  const templates = readSource("src/lib/email/templates/plan-change.ts");
+  assert.match(templates, /buildPlanChangeScheduledHtml/);
+  assert.match(templates, /buildPlanChangeAppliedHtml/);
+});
+
+test("AA: final state and notifications doc exists with manual scenarios", () => {
+  assert.ok(pathExists("docs/mollie-phase-4-final-state-and-notifications.md"));
+  const doc = readSource("docs/mollie-phase-4-final-state-and-notifications.md");
+  assert.match(doc, /FINAL VERDICT/);
+  assert.match(doc, /Manual test scenario/i);
+  assert.match(doc, /Cancel scheduled change/i);
 });
 
 test("V: LIVE charging remains disabled in example env", () => {

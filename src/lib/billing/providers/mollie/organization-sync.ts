@@ -251,7 +251,13 @@ export async function applyMolliePendingPlanChangeIfReady(input: {
   providerStatus: string | null;
   normalizedStatus: string;
   currentPeriodEnd?: string | null;
-}): Promise<{ applied: boolean; planKey: MollieSelfServePlanKey | null }> {
+}): Promise<{
+  applied: boolean;
+  planKey: MollieSelfServePlanKey | null;
+  previousPlanKey?: string | null;
+  changeType?: "upgrade" | "downgrade" | null;
+  providerChangeReference?: string | null;
+}> {
   const existing = await readOrganizationSubscriptionRow(input.organizationId);
   if (!existing || !isMollieBackedSubscription(existing)) {
     return { applied: false, planKey: null };
@@ -266,6 +272,14 @@ export async function applyMolliePendingPlanChangeIfReady(input: {
     return { applied: false, planKey: current };
   }
 
+  const previousPlanKey = existing.provider_price_id;
+  const changeType =
+    existing.pending_plan_change_type === "upgrade" ||
+    existing.pending_plan_change_type === "downgrade"
+      ? existing.pending_plan_change_type
+      : null;
+  const providerChangeReference = existing.provider_change_reference;
+
   await upsertMollieOrganizationSubscription({
     organizationId: input.organizationId,
     providerCustomerId: input.providerCustomerId,
@@ -278,7 +292,13 @@ export async function applyMolliePendingPlanChangeIfReady(input: {
     clearPendingPlanChange: true,
   });
 
-  return { applied: true, planKey: pending };
+  return {
+    applied: true,
+    planKey: pending,
+    previousPlanKey,
+    changeType,
+    providerChangeReference,
+  };
 }
 
 export async function getMollieOrganizationSubscription(

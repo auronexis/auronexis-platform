@@ -29,6 +29,10 @@ import {
   upsertMollieTestSubscription,
 } from "@/lib/billing/providers/mollie/sync";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  getOrganizationNameForBillingEmail,
+  sendPlanChangeAppliedEmail,
+} from "@/lib/email/plan-change";
 
 export type MollieIdempotencyStatus = "proceed" | "duplicate" | "retry" | "unavailable";
 
@@ -579,6 +583,32 @@ async function reconcileMollieProductionPaymentWebhook(
       normalizedStatus: mapMollieSubscriptionStatus(subscription.status),
       currentPeriodEnd: nextPaymentDate,
     });
+
+    if (
+      pendingApply.applied &&
+      pendingApply.planKey &&
+      pendingApply.previousPlanKey &&
+      pendingApply.changeType &&
+      pendingApply.providerChangeReference
+    ) {
+      void getOrganizationNameForBillingEmail(organizationId)
+        .then((organizationName) =>
+          sendPlanChangeAppliedEmail({
+            organizationId,
+            organizationName,
+            previousPlanKey: pendingApply.previousPlanKey!,
+            appliedPlanKey: pendingApply.planKey!,
+            changeType: pendingApply.changeType!,
+            providerChangeReference: pendingApply.providerChangeReference!,
+          }),
+        )
+        .catch((emailError) => {
+          console.error("[billing][plan-change] applied email failed", {
+            organizationId,
+            message: emailError instanceof Error ? emailError.message : String(emailError),
+          });
+        });
+    }
 
     if (!pendingApply.applied) {
       const authoritativePlanKey =

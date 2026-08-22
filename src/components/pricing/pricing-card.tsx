@@ -17,6 +17,10 @@ type PricingCardProps = {
   plan: SubscriptionPlanDefinition;
   action: PlanActionLabel;
   isCurrent: boolean;
+  isScheduledTarget?: boolean;
+  scheduledBadge?: string | null;
+  scheduledEffectiveDate?: string | null;
+  changeType?: "upgrade" | "downgrade";
   isLoading: boolean;
   canManage: boolean;
   seatBlockMessage?: string | null;
@@ -34,6 +38,10 @@ export function PricingCard({
   plan,
   action,
   isCurrent,
+  isScheduledTarget = false,
+  scheduledBadge = null,
+  scheduledEffectiveDate = null,
+  changeType,
   isLoading,
   canManage,
   seatBlockMessage,
@@ -63,6 +71,7 @@ export function PricingCard({
         focusRing,
         isRecommended ? "border-primary/30 shadow-md ring-1 ring-primary/15" : "",
         isCurrent && "border-success/50 bg-success/[0.03] ring-2 ring-success/20",
+        isScheduledTarget && "border-success/40 bg-success/[0.02] ring-1 ring-success/15",
       )}
     >
       <div className="mb-6 flex flex-wrap items-center gap-2">
@@ -74,6 +83,11 @@ export function PricingCard({
         {isCurrent ? (
           <span className="rounded-full bg-success/15 px-3 py-1 text-xs font-bold text-success ring-2 ring-success/30">
             Current Plan
+          </span>
+        ) : null}
+        {isScheduledTarget && scheduledBadge ? (
+          <span className="rounded-full bg-success/15 px-3 py-1 text-xs font-bold text-success ring-2 ring-success/30">
+            {scheduledBadge}
           </span>
         ) : null}
       </div>
@@ -114,6 +128,11 @@ export function PricingCard({
 
       {canManage ? (
         <div className="mt-auto space-y-3">
+          {isScheduledTarget && scheduledEffectiveDate ? (
+            <p className="text-sm font-medium text-success">
+              Effective {scheduledEffectiveDate}
+            </p>
+          ) : null}
           {seatBlockMessage ? (
             <p className="text-sm text-warning">{seatBlockMessage}</p>
           ) : null}
@@ -143,7 +162,7 @@ export function PricingCard({
             loadingText="Opening checkout…"
             onClick={onSelect}
           >
-            {getPlanActionButtonLabel(action)}
+            {getPlanActionButtonLabel(action, { changeType })}
           </Button>
           {isEnterprise ? (
             <p className="text-center text-sm text-muted">

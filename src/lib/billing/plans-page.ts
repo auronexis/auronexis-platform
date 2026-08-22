@@ -113,11 +113,9 @@ export async function loadWorkspacePlansPageModel(
     currentPlanName: billingState.currentPlanName,
     ignoredStripeInvoiceIds: billingState.ignoredStripeInvoiceIds,
     billingProvider: orgProvider,
-    pendingPlanKey: billingState.overview.subscription?.pending_plan ?? null,
-    pendingPlanEffectiveAt:
-      billingState.overview.subscription?.pending_plan_effective_at ?? null,
-    pendingPlanChangeType:
-      billingState.overview.subscription?.pending_plan_change_type ?? null,
+    pendingPlanKey: billingState.overview.scheduledPlanChange?.pendingPlanKey ?? null,
+    pendingPlanEffectiveAt: billingState.overview.scheduledPlanChange?.effectiveAt ?? null,
+    pendingPlanChangeType: billingState.overview.scheduledPlanChange?.changeType ?? null,
   });
 
   // Neither FastSpring nor Mollie expose a hosted customer portal in this integration.

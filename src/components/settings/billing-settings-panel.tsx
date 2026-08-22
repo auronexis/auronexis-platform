@@ -31,6 +31,7 @@ import type { BillingDashboardData, BillingUiStatus } from "@/lib/billing/types"
 import type { BillingProvider } from "@/lib/billing/provider-types";
 import type { AppLocale } from "@/lib/i18n";
 import { formatBillingDateTime } from "@/lib/billing/types";
+import { formatScheduledPlanChangeSummary } from "@/lib/billing/plan-change";
 import type { OrganizationPlanUsageSummary } from "@/lib/plans/types";
 import type { OrganizationSeatUsage } from "@/lib/seats/types";
 import { EnterpriseRequestCard } from "@/components/settings/enterprise-request-card";
@@ -366,6 +367,14 @@ export function BillingSettingsPanel({
                   </span>
                 </p>
               ) : null}
+              {overview.scheduledPlanChange ? (
+                <p>
+                  Scheduled plan change:{" "}
+                  <span className="font-medium text-success">
+                    {formatScheduledPlanChangeSummary(overview.scheduledPlanChange)}
+                  </span>
+                </p>
+              ) : null}
             </>
           ) : (
             <>
@@ -566,6 +575,27 @@ export function BillingSettingsPanel({
               </div>
             ))}
           </div>
+        </PageSurface>
+      ) : null}
+
+      {canManage && overview.scheduledPlanChange ? (
+        <PageSurface>
+          <PageSurfaceHeading
+            title="Scheduled plan change"
+            description="Your current plan stays active until Mollie confirms the next billing cycle."
+          />
+          <FormAlert variant="success">
+            {formatScheduledPlanChangeSummary(overview.scheduledPlanChange)}
+          </FormAlert>
+          <p className="mt-3 text-sm text-muted">
+            Canceling a scheduled change is not self-serve with Mollie. Contact support if you need
+            to adjust it before the effective date.
+          </p>
+          <FormFooter className="border-t-0 pt-4">
+            <LinkButton href="/settings/plans" variant="secondary">
+              View plans
+            </LinkButton>
+          </FormFooter>
         </PageSurface>
       ) : null}
 
