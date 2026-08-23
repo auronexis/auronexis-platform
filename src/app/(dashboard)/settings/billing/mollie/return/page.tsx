@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { FormAlert } from "@/components/ui/form-alert";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { PageHeader } from "@/components/layout/page-header";
+import { MollieUpgradeReturnPoller } from "@/components/settings/mollie-upgrade-return-poller";
 import { requireSession } from "@/lib/auth/session";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { resolveMollieProductionReturnPageState } from "@/lib/billing/providers/mollie/return-state";
@@ -34,13 +35,77 @@ export default async function MollieProductionReturnPage({ searchParams }: Molli
   const isUpgradeReturn = params.purpose === "upgrade";
   const returnState = await resolveMollieProductionReturnPageState({
     organizationId: session.organization.id,
+    purpose: params.purpose ?? null,
   });
 
-  const title = isUpgradeReturn
-    ? returnState.kind === "success"
-      ? "Upgrade payment returned"
-      : "Verifying upgrade payment"
-    : returnState.kind === "success"
+  if (isUpgradeReturn) {
+    const upgradeKind =
+      returnState.kind === "upgrade_success" ||
+      returnState.kind === "upgrade_confirming" ||
+      returnState.kind === "upgrade_payment_failed"
+        ? returnState.kind
+        : "upgrade_confirming";
+
+    const title =
+      upgradeKind === "upgrade_success"
+        ? "Upgrade confirmed"
+        : upgradeKind === "upgrade_payment_failed"
+          ? "Upgrade payment not completed"
+          : "Confirming your upgrade";
+
+    const description =
+      upgradeKind === "upgrade_success"
+        ? "Your workspace plan was confirmed from authoritative billing sync — not this redirect."
+        : upgradeKind === "upgrade_payment_failed"
+          ? "The upgrade payment did not complete. Your previous plan remains active."
+          : "Payment received. We're confirming your upgrade via Mollie webhook. This page does not grant Business access.";
+
+    return (
+      <>
+        <div className="mb-4 text-sm text-muted">
+          <Link href="/settings/billing" className="font-medium text-primary hover:underline">
+            Billing
+          </Link>
+        </div>
+
+        <PageHeader
+          module="settings"
+          eyebrow="Billing"
+          title={title}
+          description={description}
+        />
+
+        <PageSurface>
+          <PageSurfaceHeading
+            title={returnState.statusLabel}
+            description="This page reflects reconciled billing state only. Query params never activate plans."
+          />
+
+          <MollieUpgradeReturnPoller
+            initialKind={upgradeKind}
+            initialPlanName={
+              returnState.kind === "upgrade_success" ? returnState.appliedPlanName : null
+            }
+          />
+
+          <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm text-muted">
+            <p className="mb-2 font-medium text-foreground">Current billing sync</p>
+            <p>Sync pending: {"syncPending" in returnState && returnState.syncPending ? "yes" : "no"}</p>
+            <p>State: {returnState.kind}</p>
+          </div>
+
+          <p className="mt-4 text-sm">
+            <Link href="/settings/billing" className="font-medium text-primary hover:underline">
+              View Billing
+            </Link>
+          </p>
+        </PageSurface>
+      </>
+    );
+  }
+
+  const title =
+    returnState.kind === "success"
       ? "Subscription active"
       : returnState.kind === "activation_failed"
         ? "Activation needs attention"
@@ -48,9 +113,8 @@ export default async function MollieProductionReturnPage({ searchParams }: Molli
           ? "Activating subscription"
           : "Verifying payment";
 
-  const description = isUpgradeReturn
-    ? "This return page does not grant Business access. Your current plan stays authoritative until Mollie confirms the upgrade payment via webhook."
-    : returnState.kind === "success"
+  const description =
+    returnState.kind === "success"
       ? "Your workspace billing state is active. Entitlements were confirmed from authoritative provider sync — not this redirect."
       : returnState.kind === "activation_failed"
         ? "Payment was confirmed but subscription activation did not complete. Contact support or run operator recovery — do not pay again."
@@ -59,17 +123,14 @@ export default async function MollieProductionReturnPage({ searchParams }: Molli
           : "Return from hosted checkout. Payment confirmation happens via webhook and authoritative API re-fetch — not this page.";
 
   const alertVariant =
-    returnState.kind === "success" && !isUpgradeReturn
+    returnState.kind === "success"
       ? "success"
       : returnState.kind === "activation_failed"
         ? "error"
         : "warning";
 
-  const alertMessage = isUpgradeReturn
-    ? attemptPresent
-      ? "Upgrade checkout returned. Business activates only after Mollie webhook confirms payment — redirect query params are not trusted."
-      : "Returned from upgrade checkout. Awaiting authoritative upgrade payment confirmation via webhook."
-    : returnState.kind === "success"
+  const alertMessage =
+    returnState.kind === "success"
       ? "Your subscription is active."
       : returnState.kind === "activation_failed"
         ? `Paid payment detected (${returnState.paymentId ?? "unknown"}) but activation failed. Support can recover without a new payment.`

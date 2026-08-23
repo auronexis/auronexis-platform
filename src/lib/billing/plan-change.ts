@@ -150,11 +150,24 @@ export function buildPlanChangeAppliedTemplateKey(
   return `plan_change_applied:${providerChangeReference}:${appliedPlanKey}`;
 }
 
-export function buildUpgradeActivatedTemplateKey(
-  providerChangeReference: string,
-  appliedPlanKey: string,
-): string {
-  return `upgrade_activated:${providerChangeReference}:${appliedPlanKey}`;
+/**
+ * Deterministic ledger key for exactly-one upgrade activation email.
+ * Format: upgrade_activated:org/sub/payment/previous->applied
+ */
+export function buildUpgradeActivatedTemplateKey(input: {
+  organizationId: string;
+  providerSubscriptionId: string;
+  providerPaymentId: string;
+  previousPlanKey: string;
+  appliedPlanKey: string;
+}): string {
+  return [
+    "upgrade_activated",
+    input.organizationId.trim(),
+    input.providerSubscriptionId.trim(),
+    input.providerPaymentId.trim(),
+    `${input.previousPlanKey.trim()}->${input.appliedPlanKey.trim()}`,
+  ].join(":");
 }
 
 export function resolvePlanChangeEmailPlans(input: {

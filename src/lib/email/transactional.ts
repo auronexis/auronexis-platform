@@ -39,6 +39,52 @@ export function getTransactionalFromEmail(): string {
   return getPlatformNoReplySender();
 }
 
+async function reclaimFailedOrStaleDelivery(input: {
+  userId: string;
+  templateKey: string;
+}): Promise<{ claimed: boolean; deliveryId: string | null }> {
+  const admin = createAdminClient();
+  const { data: existing, error: readError } = await admin
+    .from("transactional_email_deliveries")
+    .select("id, status")
+    .eq("user_id", input.userId)
+    .eq("template_key", input.templateKey)
+    .maybeSingle();
+
+  if (readError || !existing?.id) {
+    return { claimed: false, deliveryId: null };
+  }
+
+  const status = (existing as { status?: string }).status;
+  // Already delivered — idempotent skip (webhook replay must not duplicate).
+  if (status === "sent" || status === "skipped") {
+    return { claimed: false, deliveryId: null };
+  }
+
+  // failed or claimed (interrupted serverless send) — allow one retry without mutating billing.
+  if (status === "failed" || status === "claimed") {
+    const { data: updated, error: updateError } = await admin
+      .from("transactional_email_deliveries")
+      .update({
+        status: "claimed",
+        error_code: null,
+        provider_message_id: null,
+        updated_at: new Date().toISOString(),
+      } as never)
+      .eq("id", existing.id)
+      .in("status", ["failed", "claimed"])
+      .select("id")
+      .maybeSingle();
+
+    if (updateError || !updated?.id) {
+      return { claimed: false, deliveryId: null };
+    }
+    return { claimed: true, deliveryId: updated.id as string };
+  }
+
+  return { claimed: false, deliveryId: null };
+}
+
 async function claimDelivery(input: {
   organizationId: string;
   userId: string;
@@ -59,9 +105,12 @@ async function claimDelivery(input: {
     .maybeSingle();
 
   if (error) {
-    // Unique violation → already claimed/sent (idempotent skip).
+    // Unique violation → already claimed/sent; reclaim failed/stale claimed for retry.
     if (error.code === "23505") {
-      return { claimed: false, deliveryId: null };
+      return reclaimFailedOrStaleDelivery({
+        userId: input.userId,
+        templateKey: input.templateKey,
+      });
     }
     console.error("[email] transactional claim failed", {
       template: input.templateKey,

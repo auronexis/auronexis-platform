@@ -5,6 +5,7 @@ import {
   recoverMolliePaidFreshPurchase,
 } from "@/lib/billing/providers/mollie/paid-purchase-recovery";
 import { repairMollieOrganizationBillingPeriod } from "@/lib/billing/providers/mollie/billing-period-repair";
+import { replayMollieUpgradeActivatedEmail } from "@/lib/billing/providers/mollie/upgrade-email-recovery";
 import { isMollieLiveChargingEnabled } from "@/lib/billing/providers/mollie/rollout";
 import { getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
 import { verifyCronAuthorization } from "@/lib/env";
@@ -12,7 +13,11 @@ import { verifyCronAuthorization } from "@/lib/env";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type RecoveryAction = "recover" | "analyze-duplicates" | "repair-billing-period";
+type RecoveryAction =
+  | "recover"
+  | "analyze-duplicates"
+  | "repair-billing-period"
+  | "replay-upgrade-email";
 
 type RecoveryRequestBody = {
   action: RecoveryAction;
@@ -31,7 +36,8 @@ function parseBody(raw: unknown): RecoveryRequestBody | null {
   if (
     action !== "recover" &&
     action !== "analyze-duplicates" &&
-    action !== "repair-billing-period"
+    action !== "repair-billing-period" &&
+    action !== "replay-upgrade-email"
   ) {
     return null;
   }
@@ -47,12 +53,13 @@ function parseBody(raw: unknown): RecoveryRequestBody | null {
 }
 
 /**
- * Operator-only Mollie paid-purchase recovery / billing-period repair.
- * Requires Bearer CRON_SECRET — no session shortcut (mutates billing state).
+ * Operator-only Mollie recovery helpers.
+ * Requires Bearer CRON_SECRET — no session shortcut.
  *
  * POST { "action": "recover", "organizationId": "<uuid>", "paymentId": "tr_..." }
  * POST { "action": "analyze-duplicates", "organizationId": "<uuid>", "customerId": "cst_..." }
  * POST { "action": "repair-billing-period", "organizationId": "<uuid>" }
+ * POST { "action": "replay-upgrade-email", "organizationId": "<uuid>", "paymentId": "tr_..." }
  */
 export async function POST(request: Request): Promise<Response> {
   if (!verifyCronAuthorization(request)) {
@@ -78,7 +85,7 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json(
       {
         error:
-          "Invalid body. Use action recover (organizationId, paymentId), analyze-duplicates (organizationId, customerId), or repair-billing-period (organizationId).",
+          "Invalid body. Use action recover|replay-upgrade-email (organizationId, paymentId), analyze-duplicates (organizationId, customerId), or repair-billing-period (organizationId).",
       },
       { status: 400 },
     );
@@ -117,6 +124,19 @@ export async function POST(request: Request): Promise<Response> {
       });
 
       return NextResponse.json({ ok: true, action: "recover", result });
+    }
+
+    if (body.action === "replay-upgrade-email") {
+      if (!body.paymentId?.startsWith("tr_")) {
+        return NextResponse.json({ error: "paymentId must be a Mollie tr_ id." }, { status: 400 });
+      }
+
+      const result = await replayMollieUpgradeActivatedEmail({
+        organizationId: body.organizationId,
+        paymentId: body.paymentId,
+      });
+
+      return NextResponse.json({ ok: true, action: "replay-upgrade-email", result });
     }
 
     if (!body.customerId?.startsWith("cst_")) {

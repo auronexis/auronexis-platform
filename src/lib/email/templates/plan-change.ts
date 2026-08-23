@@ -146,24 +146,29 @@ export type UpgradeActivatedEmailInput = {
   previousPlanName: string;
   newPlanName: string;
   receiptUrl: string | null;
+  renewalAtLabel: string | null;
 };
 
 export function buildUpgradeActivatedSubject(input: { newPlanName: string }): string {
-  return `Your ${input.newPlanName} upgrade is active — ${PLATFORM_NAME}`;
+  return `Your ${input.newPlanName} plan is now active — ${PLATFORM_NAME}`;
 }
 
 export function buildUpgradeActivatedPlainText(input: UpgradeActivatedEmailInput): string {
   const receiptLine = input.receiptUrl
-    ? `Payment details: ${input.receiptUrl}`
-    : "Your prorated upgrade payment is recorded in billing history.";
+    ? `Payment confirmed. Details: ${input.receiptUrl}`
+    : "Payment confirmed. Your prorated upgrade payment is recorded in billing history.";
+  const renewalLine = input.renewalAtLabel
+    ? `Next renewal: ${input.renewalAtLabel}`
+    : "Your billing period and renewal date are unchanged except for the new plan rate.";
   return [
-    `${PLATFORM_NAME} upgrade activated`,
+    `${PLATFORM_NAME} — ${input.newPlanName} is now active`,
     "",
     `Workspace: ${input.organizationName}`,
     "",
     `Your plan upgraded from ${input.previousPlanName} to ${input.newPlanName}.`,
-    `${input.newPlanName} is now your active plan.`,
+    `${input.newPlanName} is active immediately.`,
     receiptLine,
+    renewalLine,
     "",
     "View billing:",
     resolveBillingSettingsUrl(),
@@ -175,16 +180,65 @@ export function buildUpgradeActivatedPlainText(input: UpgradeActivatedEmailInput
 }
 
 export function buildUpgradeActivatedHtml(input: UpgradeActivatedEmailInput): string {
+  const org = escapeHtml(input.organizationName);
+  const previous = escapeHtml(input.previousPlanName);
+  const next = escapeHtml(input.newPlanName);
+  const platform = escapeHtml(PLATFORM_NAME);
+  const support = escapeHtml(COMPANY_CONTACT.supportEmail);
+  const subject = buildUpgradeActivatedSubject({ newPlanName: input.newPlanName });
+  const cta = buildEmailCtaButton("View Billing", resolveBillingSettingsUrl());
   const receiptBlock = input.receiptUrl
-    ? `<p><a href="${escapeHtml(input.receiptUrl)}">View payment details</a></p>`
-    : "<p>Your prorated upgrade payment is recorded in billing history.</p>";
+    ? `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#334155;">Payment confirmed. <a href="${escapeHtml(input.receiptUrl)}" style="color:#2563EB;text-decoration:none;">View payment details</a>.</p>`
+    : `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#334155;">Payment confirmed. Your prorated upgrade payment is recorded in billing history.</p>`;
+  const renewalBlock = input.renewalAtLabel
+    ? `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#334155;">Next renewal: <strong>${escapeHtml(input.renewalAtLabel)}</strong>.</p>`
+    : `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#334155;">Your billing period continues; only the plan rate changed.</p>`;
 
-  return `
-    <p>Your workspace <strong>${escapeHtml(input.organizationName)}</strong> upgraded from <strong>${escapeHtml(input.previousPlanName)}</strong> to <strong>${escapeHtml(input.newPlanName)}</strong>.</p>
-    <p><strong>${escapeHtml(input.newPlanName)}</strong> is now your active plan.</p>
-    ${receiptBlock}
-    ${buildEmailCtaButton("View billing", resolveBillingSettingsUrl())}
-  `;
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${escapeHtml(subject)}</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f1f5f9;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="background-color:#071A3D;padding:28px 32px;">
+                <p style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.02em;">${platform}</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px;">
+                <h1 style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#0f172a;">Your ${next} plan is now active</h1>
+                <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#334155;">Workspace <strong>${org}</strong></p>
+                <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#334155;">
+                  Your plan upgraded from <strong>${previous}</strong> to <strong>${next}</strong>.
+                  <strong>${next}</strong> is active immediately.
+                </p>
+                ${receiptBlock}
+                ${renewalBlock}
+                <p style="margin:24px 0;" align="center">${cta}</p>
+                <p style="margin:24px 0 0 0;font-size:13px;line-height:1.5;color:#64748b;">
+                  Need help? Contact
+                  <a href="mailto:${support}" style="color:#2563EB;text-decoration:none;">${support}</a>.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 32px 28px 32px;border-top:1px solid #e2e8f0;">
+                <p style="margin:0;font-size:12px;color:#94a3b8;">— ${platform} Notifications</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
 }
 
 export function buildPlanChangeAppliedHtml(input: PlanChangeAppliedEmailInput): string {

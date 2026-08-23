@@ -513,38 +513,39 @@ async function reconcileMollieUpgradePayment(
     productName: `Upgrade adjustment — ${targetPlan.name}`,
   });
 
+  // Await email so serverless freeze cannot drop the send; failure never rolls back Business.
   if (
     upgradeResult.applied &&
     upgradeResult.previousPlanKey &&
     upgradeResult.appliedPlanKey &&
-    upgradeResult.providerChangeReference
+    subscriptionId
   ) {
-    void getOrganizationNameForBillingEmail(organizationId)
-      .then((organizationName) =>
-        sendUpgradeActivatedEmail({
-          organizationId,
-          organizationName,
-          previousPlanKey: upgradeResult.previousPlanKey!,
-          appliedPlanKey: upgradeResult.appliedPlanKey!,
-          providerChangeReference: upgradeResult.providerChangeReference!,
-          receiptUrl: payment._links?.checkout?.href ?? null,
-        }),
-      )
-      .then(() => {
-        console.info("[billing][upgrade] upgrade_email", {
-          organizationId,
-          paymentId,
-          result: "queued_or_sent",
-        });
-      })
-      .catch((emailError) => {
-        console.error("[billing][upgrade] upgrade_email", {
-          organizationId,
-          paymentId,
-          result: "failed",
-          message: emailError instanceof Error ? emailError.message : String(emailError),
-        });
+    try {
+      const organizationName = await getOrganizationNameForBillingEmail(organizationId);
+      const refreshed = await getMollieOrganizationSubscription(organizationId);
+      const emailResult = await sendUpgradeActivatedEmail({
+        organizationId,
+        organizationName,
+        previousPlanKey: upgradeResult.previousPlanKey,
+        appliedPlanKey: upgradeResult.appliedPlanKey,
+        providerSubscriptionId: subscriptionId,
+        providerPaymentId: paymentId,
+        receiptUrl: payment._links?.checkout?.href ?? null,
+        renewalAt: refreshed?.current_period_end ?? null,
       });
+      console.info("[billing][upgrade] upgrade_email", {
+        organizationId,
+        paymentId,
+        result: emailResult.skipped ? "skipped_idempotent" : emailResult.sent ? "sent" : "failed",
+      });
+    } catch (emailError) {
+      console.error("[billing][upgrade] upgrade_email", {
+        organizationId,
+        paymentId,
+        result: "failed",
+        message: emailError instanceof Error ? emailError.message : String(emailError),
+      });
+    }
   }
 
   return { handled: true, ignored: false, organizationId, surface: "production" };

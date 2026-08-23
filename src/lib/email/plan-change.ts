@@ -8,6 +8,7 @@ import {
 } from "@/lib/billing/plan-change";
 import { formatBillingDate } from "@/lib/billing/types";
 import { EMAIL_CATEGORIES } from "@/lib/email/categories";
+import { resolvePrimaryBillingRecipientForEmail } from "@/lib/email/billing-recipient";
 import { sendTransactionalEmail } from "@/lib/email/transactional";
 import {
   buildPlanChangeAppliedHtml,
@@ -21,57 +22,6 @@ import {
   buildUpgradeActivatedSubject,
 } from "@/lib/email/templates/plan-change";
 import { createAdminClient } from "@/lib/supabase/admin";
-
-type BillingRecipient = {
-  userId: string;
-  email: string;
-};
-
-async function resolvePrimaryBillingRecipient(
-  organizationId: string,
-): Promise<BillingRecipient | null> {
-  const admin = createAdminClient();
-
-  const { data: owners, error: ownerError } = await admin
-    .from("users")
-    .select("id, email")
-    .eq("organization_id", organizationId)
-    .eq("role", "owner")
-    .eq("is_disabled", false)
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (ownerError) {
-    console.error("[email][plan-change] owner lookup failed", { code: ownerError.code });
-    return null;
-  }
-
-  const owner = owners?.[0] as { id: string; email: string } | undefined;
-  if (owner?.id && owner.email) {
-    return { userId: owner.id, email: owner.email };
-  }
-
-  const { data: admins, error: adminError } = await admin
-    .from("users")
-    .select("id, email")
-    .eq("organization_id", organizationId)
-    .eq("role", "admin")
-    .eq("is_disabled", false)
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (adminError) {
-    console.error("[email][plan-change] admin lookup failed", { code: adminError.code });
-    return null;
-  }
-
-  const adminUser = admins?.[0] as { id: string; email: string } | undefined;
-  if (!adminUser?.id || !adminUser.email) {
-    return null;
-  }
-
-  return { userId: adminUser.id, email: adminUser.email };
-}
 
 /**
  * Send one scheduled plan-change email after Mollie schedule succeeds.
@@ -152,7 +102,7 @@ export async function sendPlanChangeAppliedEmail(input: {
   changeType: "upgrade" | "downgrade";
   providerChangeReference: string;
 }): Promise<void> {
-  const recipient = await resolvePrimaryBillingRecipient(input.organizationId);
+  const recipient = await resolvePrimaryBillingRecipientForEmail(input.organizationId);
   if (!recipient) {
     console.error("[email][plan-change] no billing recipient for applied email", {
       organizationId: input.organizationId,
@@ -215,25 +165,31 @@ export async function sendUpgradeActivatedEmail(input: {
   organizationName: string;
   previousPlanKey: string;
   appliedPlanKey: string;
-  providerChangeReference: string;
+  providerSubscriptionId: string;
+  providerPaymentId: string;
   receiptUrl: string | null;
-}): Promise<void> {
-  const recipient = await resolvePrimaryBillingRecipient(input.organizationId);
+  renewalAt: string | null;
+}): Promise<{ sent: boolean; skipped: boolean; failed: boolean }> {
+  const recipient = await resolvePrimaryBillingRecipientForEmail(input.organizationId);
   if (!recipient) {
     console.error("[email][upgrade] no billing recipient for activated email", {
       organizationId: input.organizationId,
     });
-    return;
+    return { sent: false, skipped: false, failed: true };
   }
 
   const plans = resolvePlanChangeEmailPlans({
     previousPlanKey: input.previousPlanKey,
     targetPlanKey: input.appliedPlanKey,
   });
-  const templateKey = buildUpgradeActivatedTemplateKey(
-    input.providerChangeReference,
-    input.appliedPlanKey,
-  );
+  const templateKey = buildUpgradeActivatedTemplateKey({
+    organizationId: input.organizationId,
+    providerSubscriptionId: input.providerSubscriptionId,
+    providerPaymentId: input.providerPaymentId,
+    previousPlanKey: input.previousPlanKey,
+    appliedPlanKey: input.appliedPlanKey,
+  });
+  const renewalAtLabel = formatBillingDate(input.renewalAt);
 
   const result = await sendTransactionalEmail({
     category: EMAIL_CATEGORIES.BILLING_SYSTEM,
@@ -247,12 +203,14 @@ export async function sendUpgradeActivatedEmail(input: {
       previousPlanName: plans.previousPlanName,
       newPlanName: plans.targetPlanName,
       receiptUrl: input.receiptUrl,
+      renewalAtLabel,
     }),
     text: buildUpgradeActivatedPlainText({
       organizationName: input.organizationName,
       previousPlanName: plans.previousPlanName,
       newPlanName: plans.targetPlanName,
       receiptUrl: input.receiptUrl,
+      renewalAtLabel,
     }),
   });
 
@@ -261,7 +219,7 @@ export async function sendUpgradeActivatedEmail(input: {
       templateKey,
       organizationId: input.organizationId,
     });
-    return;
+    return { sent: false, skipped: true, failed: false };
   }
 
   if (!result.success) {
@@ -269,7 +227,10 @@ export async function sendUpgradeActivatedEmail(input: {
       templateKey,
       organizationId: input.organizationId,
     });
+    return { sent: false, skipped: false, failed: true };
   }
+
+  return { sent: true, skipped: false, failed: false };
 }
 
 /** Load organization display name for billing emails. */
