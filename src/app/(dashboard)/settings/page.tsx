@@ -61,7 +61,7 @@ const SETTINGS_LINKS = [
   {
     href: "/settings/billing",
     title: "Subscription & Billing",
-    description: "Manage plan, invoices, discounts, limits, and FastSpring checkout.",
+    description: "Manage plan, invoices, discounts, limits, and Mollie checkout.",
     icon: CreditCard,
   },
   {
@@ -100,7 +100,7 @@ const ADMIN_SETTINGS_LINKS = [
   {
     href: "/settings/integrations",
     title: "Integration Center",
-    description: "Operational status for OpenAI, FastSpring, Slack, Resend, webhooks, and REST API.",
+    description: "Operational status for OpenAI, Mollie, Slack, Resend, webhooks, and REST API.",
     icon: Plug,
   },
   {
