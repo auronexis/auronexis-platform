@@ -270,5 +270,8 @@ export function providerSubscriptionBlocksCheckout(
   return false;
 }
 
-export const FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE =
-  "A billing portal is not available. Manage changes via your FastSpring purchase email or contact support.";
+export const BILLING_PORTAL_UNAVAILABLE_MESSAGE =
+  "A hosted billing portal is not available. Manage your subscription in Settings → Billing, or contact support.";
+
+/** @deprecated Use BILLING_PORTAL_UNAVAILABLE_MESSAGE — FastSpring portal is retired. */
+export const FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE = BILLING_PORTAL_UNAVAILABLE_MESSAGE;

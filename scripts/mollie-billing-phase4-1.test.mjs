@@ -146,9 +146,10 @@ test("N: LIVE charging remains disabled in example env", () => {
 });
 
 // O — Global provider remains fastspring
-test("O: getActiveBillingProvider remains fastspring", () => {
+test("O: getActiveBillingProvider returns mollie", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
 });
 
 // P — FastSpring coexistence unchanged

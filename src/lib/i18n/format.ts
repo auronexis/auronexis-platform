@@ -23,7 +23,7 @@ export function formatWorkspaceMoney(
 }
 
 /**
- * Format platform/FastSpring invoice amounts in cents (charge currency from the transaction).
+ * Format platform/Mollie invoice amounts in cents (charge currency from the transaction).
  * Distinct from workspace currency used for org business metrics.
  */
 export function formatMoneyFromCentsLocale(

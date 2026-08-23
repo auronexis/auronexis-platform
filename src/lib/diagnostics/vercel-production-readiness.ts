@@ -9,6 +9,11 @@ export type VercelProductionReadinessSnapshot = {
   productionConfigured: boolean;
   previewConfigured: boolean;
   developmentConfigured: boolean;
+  /** Mollie billing env ready (sole active provider). */
+  mollieEnvReady: boolean;
+  /**
+   * @deprecated Alias of mollieEnvReady for older dashboards.
+   */
   fastspringEnvReady: boolean;
   oauthEnvReady: boolean;
   mailEnvReady: boolean;
@@ -25,12 +30,7 @@ const CORE_ENV_KEYS = [
   "NEXT_PUBLIC_APP_URL",
 ] as const;
 
-const FASTSPRING_ENV_KEYS = [
-  "FASTSPRING_API_USERNAME",
-  "FASTSPRING_API_PASSWORD",
-  "FASTSPRING_WEBHOOK_SECRET",
-  "FASTSPRING_STOREFRONT",
-] as const;
+const MOLLIE_ENV_KEYS = ["MOLLIE_API_KEY"] as const;
 
 const MAIL_ENV_KEYS = [
   "EMAIL_PROVIDER",
@@ -69,7 +69,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
   const isDev = process.env.NODE_ENV !== "production";
   const scope = resolveVercelScope();
   const coreEnvReady = envPresent(CORE_ENV_KEYS) || isDev;
-  const fastspringEnvReady = envPresent(FASTSPRING_ENV_KEYS) || isDev;
+  const mollieEnvReady = envPresent(MOLLIE_ENV_KEYS) || isDev;
   const oauthEnvReady = envPresent(OAUTH_ENV_KEYS) || isDev;
   const mailEnvReady = isEmailConfigured() || isDev;
   const domainsDocumented = PRODUCTION_DOMAIN_LIST.length === 4;
@@ -84,7 +84,7 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
     productionConfigured,
     previewConfigured,
     developmentConfigured,
-    fastspringEnvReady,
+    mollieEnvReady,
     oauthEnvReady,
     mailEnvReady,
     domainsDocumented,
@@ -98,7 +98,8 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
     productionConfigured,
     previewConfigured,
     developmentConfigured,
-    fastspringEnvReady,
+    mollieEnvReady,
+    fastspringEnvReady: mollieEnvReady,
     oauthEnvReady,
     mailEnvReady,
     domainsDocumented,
@@ -110,7 +111,9 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
 
 export const VERCEL_ENV_GROUPS = {
   core: CORE_ENV_KEYS,
-  fastspring: FASTSPRING_ENV_KEYS,
+  mollie: MOLLIE_ENV_KEYS,
+  /** @deprecated FastSpring retired — empty legacy group. */
+  fastspring: [] as const,
   oauth: OAUTH_ENV_KEYS,
   mail: MAIL_ENV_KEYS,
 } as const;

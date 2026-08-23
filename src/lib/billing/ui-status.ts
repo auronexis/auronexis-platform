@@ -1,50 +1,44 @@
 import "server-only";
 
 import type { StripeBillingUiStatus } from "@/lib/billing/types";
-import { isFastSpringApiConfigured, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
-import { isFastSpringCheckoutConfigured } from "@/lib/fastspring/checkout";
 import { isMollieProductionCheckoutConfigured } from "@/lib/billing/providers/mollie/production-checkout";
 import type { BillingProvider } from "@/lib/billing/provider-types";
 
 /**
  * Resolve customer-safe billing capability flags for pricing and billing UI.
- * FastSpring is the global default. Mollie flags apply when the org already
- * resolves to Mollie (ownership or new-checkout eligibility) — not gated again
- * on allowlist so rollout rollback keeps Mollie UI for Mollie-owned orgs.
+ * Mollie is the sole active provider. Historical FastSpring-owned orgs get
+ * checkout disabled (self-serve plan changes via support only).
  */
 export function getBillingUiStatus(input?: {
   organizationId?: string;
   organizationProvider?: BillingProvider;
 }): StripeBillingUiStatus {
-  const orgProvider = input?.organizationProvider ?? "fastspring";
+  const orgProvider = input?.organizationProvider ?? "mollie";
 
-  if (orgProvider === "mollie") {
-    const mollieReady = isMollieProductionCheckoutConfigured();
+  if (orgProvider === "fastspring") {
     return {
-      checkoutAvailable: mollieReady,
+      checkoutAvailable: false,
       portalAvailable: false,
       portalCancellationAvailable: false,
       planCheckoutReady: {
         starter: false,
-        professional: mollieReady,
-        business: mollieReady,
+        professional: false,
+        business: false,
         enterprise: false,
       },
     };
   }
 
-  const fastspringReady =
-    isFastSpringApiConfigured() && isFastSpringWebhookConfigured() && isFastSpringCheckoutConfigured();
-
+  const mollieReady = isMollieProductionCheckoutConfigured();
   return {
-    checkoutAvailable: fastspringReady,
+    checkoutAvailable: mollieReady,
     portalAvailable: false,
     portalCancellationAvailable: false,
     planCheckoutReady: {
       starter: false,
-      professional: fastspringReady,
-      business: fastspringReady,
-      enterprise: fastspringReady,
+      professional: mollieReady,
+      business: mollieReady,
+      enterprise: false,
     },
   };
 }

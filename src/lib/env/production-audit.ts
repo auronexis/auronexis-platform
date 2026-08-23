@@ -2,7 +2,8 @@ import "server-only";
 
 import { ANALYTICS_CONFIG } from "@/lib/analytics/config";
 import { isEmailConfigured, getEmailProviderId } from "@/lib/env/email";
-import { getFastSpringApiCredentialPresence, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
+import { getMollieApiKeyPresence } from "@/lib/billing/providers/mollie/env";
+import { isMollieBillingRolloutEnabled } from "@/lib/billing/providers/mollie/rollout";
 
 export type EnvAuditSeverity = "required" | "recommended" | "optional";
 
@@ -33,29 +34,25 @@ export function auditProductionEnvironment(): ProductionEnvAudit {
     { key: "SUPABASE_SERVICE_ROLE_KEY", label: "Supabase service role", severity: "required", configured: isSet("SUPABASE_SERVICE_ROLE_KEY") },
     { key: "NEXT_PUBLIC_APP_URL", label: "Application URL", severity: "required", configured: isSet("NEXT_PUBLIC_APP_URL") },
     {
-      key: "FASTSPRING_API_USERNAME",
-      label: "FastSpring API username",
+      key: "MOLLIE_API_KEY",
+      label: "Mollie API key",
       severity: "required",
-      configured: getFastSpringApiCredentialPresence().usernameConfigured,
+      configured: getMollieApiKeyPresence().configured,
+      note: "Sole active billing provider — test_ or live_ prefix",
     },
     {
-      key: "FASTSPRING_API_PASSWORD",
-      label: "FastSpring API password",
+      key: "MOLLIE_BILLING_ROLLOUT",
+      label: "Mollie billing rollout",
       severity: "required",
-      configured: getFastSpringApiCredentialPresence().passwordConfigured,
+      configured: isMollieBillingRolloutEnabled(),
+      note: "Must be true for self-serve Mollie checkout eligibility",
     },
     {
-      key: "FASTSPRING_WEBHOOK_SECRET",
-      label: "FastSpring webhook secret",
-      severity: "required",
-      configured: isFastSpringWebhookConfigured(),
-    },
-    {
-      key: "FASTSPRING_STOREFRONT",
-      label: "FastSpring storefront",
-      severity: "required",
-      configured: isSet("FASTSPRING_STOREFRONT"),
-      note: "Live storefront required in production — FASTSPRING_STORE_ID alone only builds a test storefront",
+      key: "MOLLIE_LIVE_CHARGING_ENABLED",
+      label: "Mollie LIVE charging",
+      severity: "optional",
+      configured: true,
+      note: "Keep false until explicit LIVE go-live approval — presence optional",
     },
     {
       key: "CRON_SECRET",

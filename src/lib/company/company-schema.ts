@@ -57,9 +57,9 @@ export function merchantReturnPolicyJsonLd() {
       },
       {
         "@type": "PropertyValue",
-        name: "merchantOfRecord",
+        name: "paymentProcessing",
         value:
-          "FastSpring is Merchant of Record for self-serve purchases; FastSpring buyer support policies also apply.",
+          "New self-serve purchases are processed via Mollie. See /refund-policy for cancellation and refund request handling.",
       },
     ],
   };

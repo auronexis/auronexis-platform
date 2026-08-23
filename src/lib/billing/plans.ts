@@ -7,9 +7,9 @@ export type PlanActionLabel = "current" | "choose" | "upgrade" | "downgrade" | "
 export type SubscriptionPlanDefinition = {
   key: PlanKey;
   name: string;
-  /** Fallback base monthly amount (USD) when FastSpring localized pricing is unavailable. */
+  /** Catalog monthly amount (USD) for display and Mollie charging. */
   priceMonthly: number;
-  /** Fallback currency for priceMonthly — FastSpring localized display overrides this in UI. */
+  /** Catalog currency for priceMonthly. */
   currency: "USD";
   description: string;
   features: string[];

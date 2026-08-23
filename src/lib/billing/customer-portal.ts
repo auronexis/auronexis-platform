@@ -1,11 +1,11 @@
 import "server-only";
 
-import { FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
+import { BILLING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
 
 /**
- * FastSpring does not expose a hosted customer portal in this integration.
- * Subscription changes are handled via FastSpring purchase emails or support.
- * Always fails closed with a customer-safe message — never falls back to Paddle.
+ * Mollie does not expose a hosted customer portal in this integration.
+ * Subscription changes are handled in-app (cancel / keep / plan change) or via support.
+ * Always fails closed with a customer-safe message.
  */
 export async function openCustomerPortal(_input: {
   organizationId: string;
@@ -13,5 +13,5 @@ export async function openCustomerPortal(_input: {
   email: string;
   returnUrl?: string;
 }): Promise<string> {
-  throw new Error(FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE);
+  throw new Error(BILLING_PORTAL_UNAVAILABLE_MESSAGE);
 }

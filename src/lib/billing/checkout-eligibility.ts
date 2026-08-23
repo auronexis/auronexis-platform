@@ -17,7 +17,6 @@ import { getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
 import { isMollieSelfServePlanKey } from "@/lib/billing/providers/mollie/checkout";
 import { isSubscriptionUsable } from "@/lib/billing/status";
 import { resolveSubscriptionUsability } from "@/lib/billing/subscription-management";
-import { isFastSpringCheckoutConfigured } from "@/lib/fastspring/checkout";
 import type { OrganizationSubscription } from "@/types/database";
 
 /** Local config probe — avoids circular import with production-checkout. */
@@ -41,7 +40,6 @@ function isMollieCheckoutConfigured(): boolean {
  */
 export type CheckoutEligibilityCode =
   | "allowed_mollie"
-  | "allowed_fastspring"
   | "allowed_mollie_plan_change"
   | "existing_subscription"
   | "provider_conflict"
@@ -50,22 +48,20 @@ export type CheckoutEligibilityCode =
   | "live_charging_disabled"
   | "provider_not_configured"
   | "enterprise_manual"
-  | "invalid_plan";
+  | "invalid_plan"
+  | "historical_provider_retired";
 
 export type CheckoutEligibilityResult =
   | {
       allowed: true;
-      provider: "mollie" | "fastspring";
-      code: "allowed_mollie" | "allowed_fastspring" | "allowed_mollie_plan_change";
+      provider: "mollie";
+      code: "allowed_mollie" | "allowed_mollie_plan_change";
       reason: string;
     }
   | {
       allowed: false;
       provider: BillingProvider | null;
-      code: Exclude<
-        CheckoutEligibilityCode,
-        "allowed_mollie" | "allowed_fastspring" | "allowed_mollie_plan_change"
-      >;
+      code: Exclude<CheckoutEligibilityCode, "allowed_mollie" | "allowed_mollie_plan_change">;
       reason: string;
     };
 
@@ -91,11 +87,12 @@ function hasActiveMollieSubscription(row: OrganizationSubscription | null | unde
  * Central checkout eligibility for Plans/Billing self-serve.
  *
  * Safety:
- * - Usable/verified FastSpring → block Mollie (existing_subscription / provider_conflict).
- * - Mollie-backed org → block FastSpring checkout.
+ * - Usable/verified FastSpring → block Mollie (historical MoR; no FastSpring checkout).
+ * - Mollie-backed org → Mollie plan change or recovery only.
  * - Active Mollie sub_ → plan change only (no duplicate first payment).
- * - New Mollie only when rollout+allowlist (or default-for-new) and configured.
+ * - New Mollie when rollout/allowlist and configured.
  * - LIVE kill switch is separate from rollout; LIVE writes still fail closed in mode guards.
+ * - FastSpring checkout is retired — never returns allowed for FastSpring.
  */
 export function resolveCheckoutEligibility(input: {
   organizationId: string;
@@ -125,36 +122,18 @@ export function resolveCheckoutEligibility(input: {
     };
   }
 
-  // FastSpring ownership always blocks Mollie new checkout.
+  // Historical FastSpring ownership — no new FastSpring checkout; block Mollie double-bill.
   if (hasUsableOrVerifiedFastSpring(subscription)) {
-    if (input.resolvedProvider === "mollie") {
-      return {
-        allowed: false,
-        provider: "fastspring",
-        code: "provider_conflict",
-        reason:
-          "This workspace already has a FastSpring subscription. Mollie checkout is blocked to prevent double billing.",
-      };
-    }
-    if (!isFastSpringCheckoutConfigured()) {
-      return {
-        allowed: false,
-        provider: "fastspring",
-        code: "provider_not_configured",
-        reason:
-          "FastSpring checkout is not configured yet. Set FASTSPRING_STOREFRONT to the exact data-storefront value from the FastSpring dashboard.",
-      };
-    }
-    // Existing FastSpring orgs still use FastSpring for upgrades via portal/checkout guards.
     return {
-      allowed: true,
+      allowed: false,
       provider: "fastspring",
-      code: "allowed_fastspring",
-      reason: "existing_fastspring_subscription",
+      code: "historical_provider_retired",
+      reason:
+        "This workspace has a historical FastSpring subscription. Self-serve checkout is unavailable — contact support for billing changes.",
     };
   }
 
-  // Mollie ownership — never offer FastSpring checkout.
+  // Mollie ownership — never offer a second provider.
   if (isMollieBackedSubscription(subscription)) {
     if (!isMollieSelfServePlanKey(planKey)) {
       return {
@@ -187,8 +166,6 @@ export function resolveCheckoutEligibility(input: {
       };
     }
 
-    // Incomplete / canceled Mollie row — allow first payment (or recovery checkout),
-    // but refuse if a verified sub_ already exists (duplicate protection).
     if (hasVerifiedMollieSubscription(subscription) && !hasActiveMollieSubscription(subscription)) {
       const status = (subscription?.provider_status ?? subscription?.status ?? "").toLowerCase();
       if (status === "suspended" || status === "past_due") {
@@ -219,8 +196,10 @@ export function resolveCheckoutEligibility(input: {
     };
   }
 
-  // No ownership — new checkout path.
-  if (input.resolvedProvider === "mollie") {
+  // No ownership — new Mollie checkout path (sole active provider).
+  if (input.resolvedProvider === "mollie" || input.resolvedProvider === "fastspring") {
+    // fastspring as resolvedProvider without ownership should not happen after sole-provider
+    // cutover; treat as Mollie new-checkout when eligible.
     if (!isMollieSelfServePlanKey(planKey)) {
       return {
         allowed: false,
@@ -262,21 +241,10 @@ export function resolveCheckoutEligibility(input: {
     };
   }
 
-  // FastSpring global default for new subscriptions.
-  if (!isFastSpringCheckoutConfigured()) {
-    return {
-      allowed: false,
-      provider: "fastspring",
-      code: "provider_not_configured",
-      reason:
-        "FastSpring checkout is not configured yet. Set FASTSPRING_STOREFRONT to the exact data-storefront value from the FastSpring dashboard.",
-    };
-  }
-
   return {
-    allowed: true,
-    provider: "fastspring",
-    code: "allowed_fastspring",
-    reason: "global_default_fastspring",
+    allowed: false,
+    provider: input.resolvedProvider,
+    code: "provider_not_configured",
+    reason: "Billing checkout is not available for this workspace. Contact support.",
   };
 }

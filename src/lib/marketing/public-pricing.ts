@@ -1,10 +1,6 @@
 import "server-only";
 
-import { resolveRequestBillingCountry } from "@/lib/fastspring/country";
-import {
-  getPublicLocalizedPrices,
-  type LocalizedPlanPrice,
-} from "@/lib/fastspring/localized-pricing";
+import { getCatalogDisplayPrices, type CatalogDisplayPlanPrice } from "@/lib/billing/display-pricing";
 import { PUBLIC_PRICING_PLANS } from "@/lib/marketing/content";
 
 export type PublicPricingPlanView = {
@@ -17,21 +13,18 @@ export type PublicPricingPlanView = {
   featured: boolean;
   currency: string;
   country: string;
-  source: LocalizedPlanPrice["source"];
+  source: CatalogDisplayPlanPrice["source"];
 };
 
 /**
- * Server-rendered public pricing cards with FastSpring localized amounts.
- * Falls back to base USD catalog amounts when the Price API is unavailable.
+ * Server-rendered public pricing cards from the canonical USD catalog.
+ * Mollie is the sole active billing provider — no FastSpring Price API.
  */
-export async function loadPublicPricingPlanViews(options?: {
+export async function loadPublicPricingPlanViews(_options?: {
   explicitCountry?: string | null;
 }): Promise<{ country: string; plans: PublicPricingPlanView[] }> {
-  const country = await resolveRequestBillingCountry({
-    explicitCountry: options?.explicitCountry,
-  });
-  const localized = await getPublicLocalizedPrices({ country });
-  const byPath = new Map(localized.map((row) => [row.productPath, row] as const));
+  const catalog = getCatalogDisplayPrices();
+  const byPath = new Map(catalog.map((row) => [row.productPath, row] as const));
 
   const plans: PublicPricingPlanView[] = PUBLIC_PRICING_PLANS.map((plan) => {
     const price = byPath.get(plan.productPath);
@@ -44,10 +37,10 @@ export async function loadPublicPricingPlanViews(options?: {
       highlights: plan.highlights,
       featured: plan.featured,
       currency: price?.currency ?? "USD",
-      country,
-      source: price?.source ?? "base_usd_fallback",
+      country: "US",
+      source: price?.source ?? "catalog_usd",
     };
   });
 
-  return { country, plans };
+  return { country: "US", plans };
 }

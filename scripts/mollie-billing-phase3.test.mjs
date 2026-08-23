@@ -7,10 +7,10 @@ import test from "node:test";
 import { pathExists, readSource } from "./_test-helpers/read-source.mjs";
 
 // A — Architecture / provider selection
-test("A: getActiveBillingProvider remains fastspring — no global Mollie switch", () => {
+test("A: getActiveBillingProvider returns mollie — sole active provider", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
-  assert.doesNotMatch(provider, /return "mollie"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
 });
 
 test("A: per-org provider resolution exists with FastSpring coexistence guards", () => {
@@ -92,14 +92,15 @@ test("D: Enterprise excluded from Mollie self-serve", () => {
   assert.match(actions, /Enterprise is manual-only/);
 });
 
-test("D: normal Plans/Billing checkout branches on org provider", () => {
+test("D: normal Plans/Billing checkout is Mollie-only", () => {
   const actions = readSource("src/lib/billing/actions.ts");
-  assert.match(actions, /orgProvider === "mollie"/);
+  assert.match(actions, /orgProvider === "mollie"|eligibility\.provider === "mollie"/);
   assert.match(actions, /mollieCheckout/);
-  assert.match(actions, /createFastSpringCheckoutPayloadForPlan/);
+  assert.doesNotMatch(actions, /createFastSpringCheckoutPayloadForPlan/);
   const grid = readSource("src/components/pricing/pricing-grid.tsx");
   assert.match(grid, /mollieCheckout/);
   assert.match(grid, /window\.location\.assign/);
+  assert.doesNotMatch(grid, /openFastSpringCheckout/);
 });
 
 // E — Webhooks
@@ -115,7 +116,7 @@ test("E: classic webhook dual-path by billing surface; no Next-Gen webhooks", ()
   assert.match(route, /export async function POST/);
 });
 
-test("E: FastSpring sync refuses Mollie overwrite", () => {
+test("E: FastSpring sync archive still refuses Mollie overwrite", () => {
   const sync = readSource("src/lib/fastspring/sync.ts");
   assert.match(sync, /billing_provider === "mollie"/);
   assert.match(sync, /mollie_subscription_present_refusing_fastspring_overwrite/);
@@ -224,8 +225,10 @@ test("M: no NEXT_PUBLIC Mollie secrets; API keys server-only", () => {
 });
 
 // N — Enterprise / communication untouched
-test("N: enterprise contact / FastSpring webhook routes preserved", () => {
+test("N: enterprise contact preserved; FastSpring webhook retired to 410", () => {
   assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
+  const webhook = readSource("src/app/api/fastspring/webhook/route.ts");
+  assert.match(webhook, /status:\s*410/);
   assert.ok(pathExists("src/lib/billing/enterprise-contact.ts") || pathExists("src/components/settings/enterprise-request-card.tsx"));
 });
 
@@ -239,10 +242,10 @@ test("O: billing panel shows Mollie provider label without redesign", () => {
 // P — UI status Mollie-capable when org provider resolves to mollie (ownership survives rollout rollback)
 test("P: billing UI status Mollie when org provider is mollie", () => {
   const ui = readSource("src/lib/billing/ui-status.ts");
-  assert.match(ui, /orgProvider === "mollie"/);
+  assert.match(ui, /organizationProvider/);
   assert.match(ui, /isMollieProductionCheckoutConfigured/);
   assert.match(ui, /enterprise: false/);
-  assert.match(ui, /ownership or new-checkout eligibility|Mollie-owned/i);
+  assert.match(ui, /sole active provider/i);
 });
 
 // Q — Diagnostics sanitized

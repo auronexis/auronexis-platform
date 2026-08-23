@@ -6,10 +6,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readSource, pathExists } from "./_test-helpers/read-source.mjs";
 
-test("getActiveBillingProvider remains fastspring — Mollie not activated", () => {
+test("getActiveBillingProvider returns mollie — sole active provider", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
-  assert.doesNotMatch(provider, /return "mollie"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
 });
 
 test("getMollieCredentialMode and assertMollieTestModeOnly fail closed", () => {
@@ -247,10 +247,10 @@ test("Billing actions.ts routes Mollie only via org provider resolution", () => 
   assert.match(actions, /getOrganizationBillingProvider/);
   assert.match(actions, /mollieCheckout/);
   assert.match(actions, /createMollieProductionFirstPayment/);
-  // Global active provider must remain FastSpring — no blind switch.
+  // Global active provider is Mollie (sole provider).
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
-  assert.doesNotMatch(provider, /return "mollie"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
 });
 
 test("Canonical plan prices unchanged", () => {

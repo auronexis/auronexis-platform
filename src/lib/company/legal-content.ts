@@ -83,7 +83,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Categories of data processed",
         body:
-          "We process: account and profile data (name, email, role, organization); operational data you enter (clients, reports, risks, incidents, knowledge, automation configurations); usage, audit, and security logs; billing and subscription identifiers processed via FastSpring, our current Merchant of Record (historical subscriptions purchased before our FastSpring transition were processed via Paddle); connector and integration tokens (stored encrypted); support communications; and, where enabled, inputs/outputs for AI-assisted features.",
+          "We process: account and profile data (name, email, role, organization); operational data you enter (clients, reports, risks, incidents, knowledge, automation configurations); usage, audit, and security logs; billing and subscription identifiers processed via Mollie (historical subscriptions may have been processed via FastSpring or Paddle); connector and integration tokens (stored encrypted); support communications; and, where enabled, inputs/outputs for AI-assisted features.",
       },
       {
         heading: "Purposes and legal bases",
@@ -98,7 +98,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Sub-processors and transfers",
         body:
-          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, FastSpring, Resend, and optional AI providers when enabled; Paddle processed historical transactions predating our FastSpring transition). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
+          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, Mollie, Resend, and optional AI providers when enabled; FastSpring and Paddle processed historical transactions). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
       },
       {
         heading: "Your rights",
@@ -178,12 +178,12 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "11. Prices, payment, invoices, and taxes",
         body:
-          "Listed self-serve plans (base USD catalog): Professional $179/month; Business $599/month; Enterprise $1,799/month. Localized prices shown on the website are provided by FastSpring for the visitor's region when available; final amounts and applicable taxes are confirmed at checkout. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
+          "Listed self-serve plans (base USD catalog): Professional $179/month; Business $599/month; Enterprise $1,799/month. Final amounts and applicable taxes are confirmed at checkout. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
         },
         {
-        heading: "11a. Merchant of Record",
+        heading: "11a. Payment processing",
         body:
-          "FastSpring is the current Merchant of Record and authorized reseller for all new and active self-serve purchases and renewals completed through FastSpring Checkout. The buyer purchases through FastSpring while Auroranexis supplies and licenses software access. FastSpring calculates, collects, and remits applicable sales tax and VAT as Merchant of Record, and its Terms of Sale and Buyer Support policies govern payment processing, payment methods, refunds, and mandatory buyer rights for those transactions. For legacy subscriptions originally purchased before our FastSpring transition, Paddle was Merchant of Record for those historical transactions and Paddle's Buyer Terms and Refund Policy applied to those purchases. These Terms continue to govern use of Auroranexis. FastSpring Terms of Sale: https://fastspring.com/legal/terms-sale/ — FastSpring Buyer Support: https://fastspring.com/consumer-support/ — Paddle Buyer Terms (historical purchases only): https://www.paddle.com/legal/checkout-buyer-terms.",
+          "New self-serve purchases and renewals are processed via Mollie. Auroranexis supplies and licenses software access. Payment method handling, settlement, and related payment-provider terms apply to the payment transaction. For legacy subscriptions originally purchased through FastSpring or Paddle, those providers' historical purchase terms applied to those transactions. These Terms continue to govern use of Auroranexis. LEGAL_REVIEW_REQUIRED: confirm whether Auroranexis or Mollie acts as Merchant of Record for tax collection in each selling jurisdiction before relying on MoR-specific wording.",
         },
       {
         heading: "12. Upgrades, downgrades, and renewal",
@@ -193,12 +193,12 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "13. Cancellation and termination",
         body:
-          "You may cancel future renewals via billing settings, through your FastSpring order confirmation email or FastSpring account access, or by contacting support. For questions about a legacy subscription originally purchased through Paddle before our FastSpring transition, contact support with your account email and any available transaction reference. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
+          "You may cancel future renewals via billing settings or by contacting support. For questions about a legacy subscription originally purchased through FastSpring or Paddle, contact support with your account email and any available transaction reference. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
       },
       {
         heading: "14. Refunds and withdrawal rights",
         body:
-          `Refund and cancellation details are published in our Refund and Cancellation Policy at /refund-policy. Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply where services are directed exclusively at entrepreneurs; where a buyer qualifies as a consumer and mandatory law applies, statutory rights remain unaffected. For FastSpring-processed purchases, FastSpring's Terms of Sale and buyer support policies also apply. For legacy purchases processed by Paddle before our FastSpring transition, Paddle's Buyer Terms and Refund Policy applied to those transactions. For billing errors or material service issues, contact ${COMPANY_CONTACT.supportEmail}. Cancellation prevents future renewals and is distinct from a refund.`,
+          `Refund and cancellation details are published in our Refund and Cancellation Policy at /refund-policy. Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply where services are directed exclusively at entrepreneurs; where a buyer qualifies as a consumer and mandatory law applies, statutory rights remain unaffected. For billing errors or material service issues, contact ${COMPANY_CONTACT.supportEmail}. Cancellation prevents future renewals and is distinct from a refund. Historical FastSpring or Paddle purchases may remain subject to those providers' historical buyer terms.`,
       },
       {
         heading: "15. Data protection and DPA",
@@ -218,7 +218,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "18. Third-party services",
         body:
-          "The platform integrates third-party services (e.g., FastSpring, Supabase, Vercel, connectors, optional AI providers; Paddle processed historical transactions predating our FastSpring transition). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
+          "The platform integrates third-party services (e.g., Mollie, Supabase, Vercel, connectors, optional AI providers; FastSpring and Paddle processed historical transactions). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
       },
       {
         heading: "19. Service changes",
@@ -360,12 +360,12 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Current sub-processors",
         body:
-          "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nFastSpring — current Merchant of Record for payment processing and subscription billing.\nResend — transactional email delivery.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
+          "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nMollie — payment processing for subscription billing.\nResend — transactional email delivery.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
       },
       {
         heading: "Historical sub-processors",
         body:
-          "Paddle — Merchant of Record for payment processing and subscription billing for transactions purchased before our transition to FastSpring. Paddle is retained on this list for transparency about historical processing only and is not used for new or active billing.",
+          "FastSpring — payment processing / Merchant of Record for transactions purchased before our transition to Mollie. Retained for transparency about historical processing only; not used for new or active billing.\nPaddle — Merchant of Record for transactions purchased before the FastSpring era. Historical transparency only; not used for new or active billing.",
       },
       {
         heading: "International transfers",
@@ -473,14 +473,14 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
   },
   refundPolicy: {
     title: "Refund and Cancellation Policy",
-    description: `Refund and cancellation rules for ${productName} subscriptions, including purchases processed by FastSpring as our current Merchant of Record.`,
+    description: `Refund and cancellation rules for ${productName} subscriptions. New purchases are processed via Mollie. Cancellation is distinct from a refund.`,
     lastUpdated: LEGAL_LAST_UPDATED,
     showCompanyCard: true,
     companyCardTitle: "Provider",
     sections: [
       {
         heading: "1. Scope",
-        body: `${productName} is primarily offered to businesses, professional users, AI agencies, managed service providers, IT service providers, and enterprise organizations.\n\nThis policy sets out Auroranexis's contractual refund and cancellation terms for ${productName} subscriptions. Payments for subscriptions purchased through FastSpring Checkout are processed by FastSpring, which acts as Merchant of Record and authorized reseller for the transaction, and which calculates, collects, and remits applicable sales tax and VAT as Merchant of Record. FastSpring's Terms of Sale and buyer support policies apply to payment processing, payment methods, and mandatory buyer rights handled by FastSpring, in addition to this policy.\n\nFastSpring Terms of Sale: https://fastspring.com/legal/terms-sale/\nFastSpring Buyer Support (charge questions, refund requests, cancellations): https://fastspring.com/consumer-support/\n\nFor legacy subscriptions purchased before our transition to FastSpring, payments were processed by Paddle, which acted as Merchant of Record for those historical transactions. Paddle's Buyer Terms and Refund Policy applied to those purchases.\n\nPaddle Buyer Terms (historical purchases only): https://www.paddle.com/legal/checkout-buyer-terms\nPaddle Refund Policy (historical purchases only): https://www.paddle.com/legal/refund-policy`,
+        body: `${productName} is primarily offered to businesses, professional users, AI agencies, managed service providers, IT service providers, and enterprise organizations.\n\nThis policy sets out Auroranexis's contractual refund and cancellation terms for ${productName} subscriptions. Payments for new self-serve subscriptions are processed via Mollie. There is no self-service refund button in the product; refund requests are reviewed by Auroranexis support and, if approved, issued by an operator through Mollie.\n\nLEGAL_REVIEW_REQUIRED: confirm Merchant of Record / tax remittance roles for Mollie-processed payments in each selling jurisdiction before publishing MoR-specific claims.\n\nFor legacy subscriptions purchased through FastSpring or Paddle, those providers' historical buyer terms applied to those purchases.`,
       },
       {
         heading: "2. Business customers",
@@ -490,21 +490,21 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "3. Consumers",
         body:
-          "Auroranexis is designed primarily for business use. Where a buyer qualifies as a consumer and mandatory consumer-protection law applies, the buyer retains all statutory withdrawal and refund rights.\n\nConsumer refund or withdrawal requests for purchases processed by FastSpring are handled in accordance with FastSpring's Terms of Sale, FastSpring's buyer support policies, and applicable law. Requests for legacy purchases processed by Paddle are handled in accordance with Paddle's Buyer Terms, Paddle's Refund Policy, and applicable law.",
+          "Auroranexis is designed primarily for business use. Where a buyer qualifies as a consumer and mandatory consumer-protection law applies, the buyer retains all statutory withdrawal and refund rights.\n\nConsumer refund or withdrawal requests are handled in accordance with applicable law and this policy. Historical FastSpring or Paddle purchases may remain subject to those providers' historical buyer terms.",
       },
       {
         heading: "4. Cancellation",
         body:
-          "Customers may cancel an automatically renewing subscription through the available billing portal or by contacting support.\n\nUnless mandatory law or applicable purchase terms require otherwise, cancellation prevents the next renewal and access continues until the end of the paid billing period.\n\nCancellation is different from a refund. Canceling a subscription does not automatically refund charges already paid.",
+          "Customers may cancel an automatically renewing subscription in Settings → Billing or by contacting support.\n\nUnless mandatory law or applicable purchase terms require otherwise, cancellation prevents the next renewal and access continues until the end of the paid billing period.\n\nCancellation is different from a refund. Canceling a subscription does not automatically refund charges already paid.",
       },
       {
         heading: "5. Billing errors and service issues",
         body:
-          "Auroranexis reviews requests involving duplicate charges, incorrect charges, confirmed billing errors, unauthorized transactions, or material technical failure that prevented access to the purchased service.\n\nA review does not guarantee a refund. Where FastSpring processed the payment, any approved refund is issued through FastSpring. Where Paddle processed a legacy payment, any approved refund for that historical transaction is issued through Paddle.",
+          "Auroranexis reviews requests involving duplicate charges, incorrect charges, confirmed billing errors, unauthorized transactions, or material technical failure that prevented access to the purchased service.\n\nA review does not guarantee a refund. Where Mollie processed the payment, any approved refund is issued by an operator through Mollie. Where FastSpring or Paddle processed a legacy payment, any approved refund for that historical transaction is handled according to that historical provider's process.",
       },
       {
         heading: "6. Requesting assistance",
-        body: `Contact support at ${COMPANY_CONTACT.supportEmail} or legal at ${COMPANY_CONTACT.legalEmail}. For purchases processed by FastSpring, buyers may also use FastSpring's buyer support (https://fastspring.com/consumer-support/) to question a charge, request a refund, or cancel a subscription. For legacy purchases processed by Paddle, buyers may also use Paddle buyer support and Paddle's available cancellation/refund options.\n\nPlease provide account email, organization name, transaction reference where available, and a description of the issue. Never send full payment-card details.`,
+        body: `Contact support at ${COMPANY_CONTACT.supportEmail} or legal at ${COMPANY_CONTACT.legalEmail}.\n\nPlease provide account email, organization name, transaction reference where available, and a description of the issue. Never send full payment-card details.`,
       },
       {
         heading: "7. Changes",

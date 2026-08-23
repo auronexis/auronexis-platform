@@ -31,7 +31,6 @@ import { createFallbackPricingSelection } from "@/lib/pricing/selection-context"
 import { normalizeBillingUiStatus } from "@/lib/billing/ui-status-client";
 import { FormAlert } from "@/components/ui/form-alert";
 import { trackConversionEvent } from "@/lib/analytics/events";
-import { openFastSpringCheckout } from "@/lib/fastspring/browser-checkout";
 
 export type { PricingSelectionContext } from "@/lib/pricing/selection-context";
 export { buildPricingSelectionContext, createFallbackPricingSelection } from "@/lib/pricing/selection-context";
@@ -43,9 +42,9 @@ type PricingGridProps = {
   enterpriseContactHref: string;
   checkoutBlock?: CheckoutBlockState;
   canManage?: boolean;
-  /** When false, do not offer portal CTA (no verified FastSpring customer yet). */
+  /** When false, do not offer portal CTA (no verified customer portal yet). */
   showPortalAction?: boolean;
-  /** Optional localized display strings keyed by plan key. */
+  /** Optional catalog display strings keyed by plan key. */
   localizedDisplayPrices?: Partial<Record<PlanKey, string>>;
 };
 
@@ -95,20 +94,6 @@ export function PricingGrid({
       if (result?.mollieCheckout?.checkoutUrl) {
         setPendingSyncMessage(result.mollieCheckout.pendingSyncMessage);
         window.location.assign(result.mollieCheckout.checkoutUrl);
-        return;
-      }
-
-      if (result?.fastspringCheckout) {
-        try {
-          await openFastSpringCheckout(result.fastspringCheckout);
-          setPendingSyncMessage(result.fastspringCheckout.pendingSyncMessage);
-        } catch (checkoutError) {
-          setError(
-            sanitizeBillingCustomerError(checkoutError, "Unable to open FastSpring checkout."),
-          );
-        } finally {
-          setPendingPlanKey(null);
-        }
         return;
       }
 

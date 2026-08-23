@@ -13,10 +13,10 @@ test("BillingProvider union includes mollie alongside legacy providers", () => {
   assert.match(types, /per-org allowlist/i);
 });
 
-test("getActiveBillingProvider remains fastspring — Mollie not activated", () => {
+test("getActiveBillingProvider returns mollie — sole active provider", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
-  assert.doesNotMatch(provider, /return "mollie"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
 });
 
 test("MOLLIE_API_KEY placeholder in .env.example — no real secret", () => {
@@ -83,12 +83,11 @@ test("Mollie webhook route exists in Phase 2", () => {
   assert.equal(pathExists("src/app/api/mollie/webhook/route.ts"), true);
 });
 
-test("Mollie checkout implementation exists in Phase 2 (TEST harness)", () => {
+test("Mollie checkout implementation exists (TEST harness + production)", () => {
   assert.equal(pathExists("src/lib/billing/providers/mollie/checkout.ts"), true);
   assert.equal(pathExists("src/lib/billing/providers/mollie/test-checkout-actions.ts"), true);
-  // Global provider stays FastSpring; Mollie production is per-org only (Phase 3).
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.doesNotMatch(provider, /return "mollie"/);
+  assert.match(provider, /return "mollie"/);
 });
 
 test("Foundation metadata correlation keys defined", () => {
@@ -142,15 +141,16 @@ test("platform-health exposes Mollie foundation diagnostics", () => {
   assert.match(health, /foundation/i);
 });
 
-test("Stripe and FastSpring runtime code preserved", () => {
+test("FastSpring webhook route remains as 410 retirement stub", () => {
   assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
-  assert.ok(pathExists("src/lib/fastspring/connectivity.ts"));
+  const webhook = readSource("src/app/api/fastspring/webhook/route.ts");
+  assert.match(webhook, /status:\s*410/);
   assert.ok(pathExists("src/lib/billing/active-billing.ts"));
 });
 
-test("FastSpring sole-provider test still passes contract", () => {
-  const sole = readSource("scripts/fastspring-sole-provider.test.mjs");
-  assert.match(sole, /getActiveBillingProvider returns fastspring/);
+test("Mollie sole-provider test contract exists", () => {
+  const sole = readSource("scripts/mollie-sole-provider.test.mjs");
+  assert.match(sole, /getActiveBillingProvider returns mollie/);
 });
 
 test("package.json includes test:mollie-billing script", () => {

@@ -13,22 +13,16 @@ import {
   isExpectedPortalUnavailableError,
   sanitizeBillingCustomerError,
 } from "@/lib/billing/errors";
-import { FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
 import { BILLING_PROMO_MESSAGES, formatPromoValidationSuccess } from "@/lib/billing/messages";
 import { validateDiscountCode } from "@/lib/billing/discounts";
 import { calculateProrationPreview } from "@/lib/billing/proration";
 import { getBillingOverview } from "@/lib/billing/queries";
 import { isInternalPlan } from "@/lib/billing/provider-types";
 import type { PlanKey } from "@/lib/billing/plans";
-import type { FastSpringProductPath } from "@/lib/billing/catalog";
 import { getDefaultPlanKey } from "@/lib/plans/features";
-import {
-  createFastSpringCheckoutPayloadForPlan,
-  isFastSpringCheckoutConfigured,
-} from "@/lib/fastspring/checkout";
-import type { FastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
 import { getOrganizationBillingProvider } from "@/lib/billing/provider-selection";
 import { getOrganizationSubscription } from "@/lib/billing/queries";
+import { BILLING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
 import {
   createMollieProductionFirstPayment,
   isMollieProductionCheckoutConfigured,
@@ -65,14 +59,6 @@ export type BillingActionState = {
 };
 
 export type CheckoutActionResult = BillingActionState & {
-  fastspringCheckout?: {
-    storefront: string;
-    sblScriptSrc: string;
-    productPath: FastSpringProductPath;
-    tags: FastSpringCheckoutTags;
-    checkoutMode: "test" | "live";
-    pendingSyncMessage: string;
-  };
   mollieCheckout?: {
     checkoutUrl: string;
     checkoutAttemptId: string;
@@ -221,40 +207,9 @@ export async function createCheckoutSessionAction(
       };
     }
 
-    // Mollie-owned orgs must never fall through to FastSpring (provider_conflict).
-    if (orgProvider === "mollie") {
-      return {
-        error:
-          "This workspace is billed via Mollie. FastSpring checkout is blocked to prevent double billing.",
-      };
-    }
-
-    if (!isFastSpringCheckoutConfigured()) {
-      return {
-        error:
-          "FastSpring checkout is not configured yet. Set FASTSPRING_STOREFRONT to the exact data-storefront value from the FastSpring dashboard.",
-      };
-    }
-
-    const checkout = createFastSpringCheckoutPayloadForPlan({
-      organizationId: session.organization.id,
-      userId: session.user.id,
-      planKey: parsed.data,
-    });
-
-    const pendingSyncMessage =
-      "Checkout opened. Access updates after FastSpring confirms payment — this may take a moment.";
-
     return {
-      success: pendingSyncMessage,
-      fastspringCheckout: {
-        storefront: checkout.storefront,
-        sblScriptSrc: checkout.sblScriptSrc,
-        productPath: checkout.productPath,
-        tags: checkout.tags,
-        checkoutMode: checkout.mode,
-        pendingSyncMessage,
-      },
+      error:
+        "Checkout is only available via Mollie. Contact support if you expected billing to be available for this workspace.",
     };
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) {
@@ -479,9 +434,9 @@ export async function createPortalSessionAction(): Promise<BillingActionState> {
     });
   } catch (error) {
     if (isExpectedPortalUnavailableError(error)) {
-      // Expected — FastSpring does not expose a hosted customer portal.
+      // Expected — Mollie does not expose a hosted customer portal in this integration.
       return {
-        error: sanitizeBillingCustomerError(error, FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE),
+        error: sanitizeBillingCustomerError(error, BILLING_PORTAL_UNAVAILABLE_MESSAGE),
       };
     }
     console.error(

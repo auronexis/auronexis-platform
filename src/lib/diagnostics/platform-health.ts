@@ -3,17 +3,11 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
-import { probeFastSpringApiConnectivity } from "@/lib/fastspring/connectivity";
-import {
-  getFastSpringApiCredentialPresence,
-  isFastSpringWebhookConfigured,
-} from "@/lib/fastspring/env";
 import {
   getMollieApiKeyPresence,
   isMollieApiConfigured,
   probeMollieApiConnectivity,
 } from "@/lib/billing/providers/mollie";
-import { isFastSpringStorefrontConfigured } from "@/lib/fastspring/storefront";
 
 export type DatabaseHealthLevel = "healthy" | "degraded" | "unavailable";
 
@@ -144,97 +138,43 @@ export function checkPaddleHealth(): HealthCheckResult {
   return {
     ok: false,
     level: "degraded",
-    message: "Paddle runtime removed — FastSpring is the sole active billing provider",
+    message: "Paddle runtime removed — Mollie is the sole active billing provider",
   };
 }
 
 /**
- * FastSpring inbound webhook secret presence — never returns or logs the secret.
+ * FastSpring is retired — presence checks only (no network). Historical rows may remain.
  */
 export function checkFastSpringWebhookHealth(): HealthCheckResult {
-  if (!isFastSpringWebhookConfigured()) {
-    return {
-      ok: false,
-      level: "degraded",
-      message: "FASTSPRING_WEBHOOK_SECRET configured: no",
-    };
-  }
-
   return {
     ok: true,
     level: "healthy",
-    message: "FASTSPRING_WEBHOOK_SECRET configured: yes",
+    message: "FastSpring webhooks retired — Mollie is the sole active billing provider",
   };
 }
 
-/**
- * FastSpring REST API credential presence — never returns or logs credential values.
- */
 export function checkFastSpringApiConfigHealth(): HealthCheckResult {
-  const presence = getFastSpringApiCredentialPresence();
-  if (!presence.configured) {
-    return {
-      ok: false,
-      level: "degraded",
-      message: "FASTSPRING_API credentials configured: no",
-    };
-  }
-
   return {
     ok: true,
     level: "healthy",
-    message: "FASTSPRING_API credentials configured: yes",
+    message: "FastSpring API retired — Mollie is the sole active billing provider",
   };
 }
 
-/**
- * Live FastSpring API auth probe (read-only). Sanitized result only — no secrets.
- */
 export async function checkFastSpringApiConnectivityHealth(): Promise<HealthCheckResult> {
-  const result = await probeFastSpringApiConnectivity();
-  if (result.connected) {
-    return {
-      ok: true,
-      level: "healthy",
-      message: `FastSpring API connected (HTTP ${result.httpStatus ?? 200})`,
-    };
-  }
-
-  if (result.errorCategory === "not_configured") {
-    return {
-      ok: false,
-      level: "degraded",
-      message: "FastSpring API credentials configured: no",
-    };
-  }
-
-  return {
-    ok: false,
-    level: "degraded",
-    message: `FastSpring API not connected (${result.errorCategory ?? "unknown"}${
-      result.httpStatus ? `, HTTP ${result.httpStatus}` : ""
-    })`,
-  };
+  return checkFastSpringApiConfigHealth();
 }
 
-/** FastSpring Store Builder storefront presence (exact data-storefront). */
 export function checkFastSpringStorefrontHealth(): HealthCheckResult {
-  if (!isFastSpringStorefrontConfigured()) {
-    return {
-      ok: false,
-      level: "degraded",
-      message: "FastSpring storefront configured: no",
-    };
-  }
   return {
     ok: true,
     level: "healthy",
-    message: "FastSpring storefront configured: yes",
+    message: "FastSpring storefront retired — Mollie is the sole active billing provider",
   };
 }
 
 /**
- * Mollie API key presence — foundation only; Mollie is not the active billing provider.
+ * Mollie API key presence — sole active billing provider.
  * Never returns or logs the key value.
  */
 export function checkMollieApiConfigHealth(): HealthCheckResult {
@@ -243,7 +183,7 @@ export function checkMollieApiConfigHealth(): HealthCheckResult {
     return {
       ok: false,
       level: "degraded",
-      message: "MOLLIE_API_KEY configured: no (foundation — not active billing)",
+      message: "MOLLIE_API_KEY configured: no",
     };
   }
 
@@ -258,7 +198,7 @@ export function checkMollieApiConfigHealth(): HealthCheckResult {
   return {
     ok: true,
     level: "healthy",
-    message: `MOLLIE_API_KEY configured: yes (${presence.mode ?? "unknown"} mode, foundation only)`,
+    message: `MOLLIE_API_KEY configured: yes (${presence.mode ?? "unknown"} mode)`,
   };
 }
 
@@ -279,7 +219,7 @@ export async function checkMollieApiConnectivityHealth(): Promise<HealthCheckRes
     return {
       ok: false,
       level: "degraded",
-      message: "MOLLIE_API_KEY configured: no (foundation — not active billing)",
+      message: "MOLLIE_API_KEY configured: no",
     };
   }
 
@@ -298,7 +238,7 @@ export async function checkMollieApiConnectivityHealth(): Promise<HealthCheckRes
   };
 }
 
-/** Whether Mollie foundation credentials are present (no key value). */
+/** Whether Mollie credentials are present (no key value). */
 export function isMollieFoundationConfigured(): boolean {
   return isMollieApiConfigured();
 }
@@ -306,13 +246,6 @@ export function isMollieFoundationConfigured(): boolean {
 /** Active billing provider label for diagnostics (no secrets). */
 export function checkActiveBillingProviderHealth(): HealthCheckResult {
   const provider = getActiveBillingProvider();
-  if (provider === "fastspring") {
-    return {
-      ok: true,
-      level: "healthy",
-      message: "Active billing provider: fastspring (legacy Paddle entitlements preserved)",
-    };
-  }
   return {
     ok: true,
     level: "healthy",

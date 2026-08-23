@@ -8,7 +8,8 @@ import { getBillingUiStatus } from "@/lib/billing/ui-status";
 import { getConnectorConnectionByConnectorId } from "@/lib/connectors/queries";
 import { checkSlackHealth } from "@/lib/connectors/slack/health";
 import { getEmailProviderId, isEmailConfigured } from "@/lib/env/email";
-import { getFastSpringStorefront, isFastSpringTestStorefront } from "@/lib/fastspring/storefront";
+import { getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
+import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 import type {
   IntegrationCenterSnapshot,
   IntegrationConnectionLabel,
@@ -26,10 +27,13 @@ function connectionLabel(connected: boolean): IntegrationConnectionLabel {
   return connected ? "Connected" : "Not Connected";
 }
 
-function resolveFastSpringMode(): string | null {
+function resolveMollieMode(): string | null {
+  if (!isMollieApiConfigured()) {
+    return null;
+  }
   try {
-    const storefront = getFastSpringStorefront();
-    return isFastSpringTestStorefront(storefront) ? "Test" : "Live";
+    const mode = getMollieCredentialMode();
+    return mode === "test" ? "Test" : mode === "live" ? "Live" : null;
   } catch {
     return null;
   }
@@ -155,8 +159,14 @@ export async function getIntegrationCenterSnapshot(
     countWebhookFailures(session.organization.id),
   ]);
 
-  const billingStatus = getBillingUiStatus();
-  const fastspringConnected = billingStatus.checkoutAvailable;
+  const billingStatus = getBillingUiStatus({ organizationProvider: "mollie" });
+  const mollieConnected = billingStatus.checkoutAvailable;
+  const mollieBilling = {
+    connectionStatus: connectionLabel(mollieConnected),
+    mode: resolveMollieMode(),
+    accountManagement: "Managed in Settings → Billing (cancel / keep / plan change)",
+    invoices: invoiceCount > 0 ? `${invoiceCount} synced` : NO_DATA,
+  };
 
   let slackStatus = NO_DATA;
   if (slackConnection) {
@@ -194,12 +204,8 @@ export async function getIntegrationCenterSnapshot(
       connectedChannels: null,
       status: slackStatus,
     },
-    fastspring: {
-      connectionStatus: connectionLabel(fastspringConnected),
-      mode: resolveFastSpringMode(),
-      accountManagement: "Managed via FastSpring purchase emails / support",
-      invoices: invoiceCount > 0 ? `${invoiceCount} synced` : NO_DATA,
-    },
+    mollie: mollieBilling,
+    fastspring: mollieBilling,
     webhooks: {
       activeWebhooks: apiSnapshot.webhookEndpointCount,
       lastDelivery: lastWebhookDelivery ?? (stripeWebhooks.lastWebhookReceivedAt ?? null),

@@ -194,7 +194,7 @@ export const PUBLIC_PRICING_PLANS = [
 
 /** Copy-only footnote for public pricing pages — invite-only programs are not listed here. */
 export const PUBLIC_PRICING_NOTE =
-  "Prices shown are localized by FastSpring for your region when available. Final tax treatment is calculated at checkout. Contact sales for custom enterprise agreements when needed.";
+  "Prices shown are list prices in USD from our catalog. Final amounts and applicable taxes are confirmed at checkout. Contact sales for custom enterprise agreements when needed.";
 
 export const INVITE_ONLY_PROGRAMS_NOTE = "Pilot and Founding programs are invite-only.";
 
@@ -291,7 +291,7 @@ export const CONTACT_EMAILS = PRIMARY_CONTACT_EMAILS;
 export const STATUS_COMPONENTS_STATIC = [
   { name: "Platform", status: "operational" as const, detail: "Application and web services" },
   { name: "API", status: "operational" as const, detail: "REST API and public endpoints" },
-  { name: "Billing", status: "operational" as const, detail: "FastSpring subscriptions and invoices" },
+  { name: "Billing", status: "operational" as const, detail: "Mollie subscriptions and invoices" },
   { name: "AI", status: "operational" as const, detail: "AI generation and insights" },
   { name: "Connectors", status: "operational" as const, detail: "OAuth and sync infrastructure" },
   { name: "Automation", status: "operational" as const, detail: "Workflow engine and executions" },

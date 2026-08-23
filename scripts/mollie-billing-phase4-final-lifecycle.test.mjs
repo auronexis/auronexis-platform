@@ -165,9 +165,9 @@ test("18: Mollie idempotency keys stay within 100-char limit helper", () => {
   assert.match(withdraw, /buildMollieIdempotencyKey/);
 });
 
-test("19: FastSpring coexistence and global provider remain intact", () => {
+test("19: Mollie sole provider and FastSpring overwrite guards remain intact", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
+  assert.match(provider, /return "mollie"/);
   const sync = readSource("src/lib/billing/providers/mollie/organization-sync.ts");
   assert.match(sync, /assertCanWriteMollieOrganizationSubscription/);
   assert.match(sync, /Refusing Mollie write/);

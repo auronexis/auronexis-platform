@@ -1,4 +1,5 @@
 import {
+  BILLING_PORTAL_UNAVAILABLE_MESSAGE,
   FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE,
 } from "@/lib/billing/active-billing";
 import {
@@ -52,8 +53,11 @@ export function sanitizeBillingCustomerError(error: unknown, fallback: string): 
     return "Manage billing will be available after you complete checkout.";
   }
 
-  if (error.message === FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE) {
-    return FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE;
+  if (
+    error.message === BILLING_PORTAL_UNAVAILABLE_MESSAGE ||
+    error.message === FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE
+  ) {
+    return BILLING_PORTAL_UNAVAILABLE_MESSAGE;
   }
 
   if (error.message === "Unable to load billing profile.") {
@@ -195,5 +199,9 @@ export function isExpectedPlanChangeError(error: unknown): boolean {
 
 /** Expected pre-purchase portal absence — must not be logged as an error. */
 export function isExpectedPortalUnavailableError(error: unknown): boolean {
-  return error instanceof Error && error.message === FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE;
+  return (
+    error instanceof Error &&
+    (error.message === BILLING_PORTAL_UNAVAILABLE_MESSAGE ||
+      error.message === FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE)
+  );
 }

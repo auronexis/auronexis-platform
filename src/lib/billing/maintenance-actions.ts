@@ -55,10 +55,10 @@ async function runMaintenanceAction(
 export async function neutralizeStaleStripeCheckoutAction(): Promise<BillingMaintenanceActionState> {
   return runMaintenanceAction(async () => {
     const session = await requireSession();
-    if (getActiveBillingProvider() !== "fastspring") {
+    if (getActiveBillingProvider() !== "mollie") {
       return {
         success: false,
-        message: "Stale Stripe neutralization requires FastSpring as the active billing provider.",
+        message: "Stale Stripe neutralization requires Mollie as the active billing provider.",
       };
     }
     return neutralizeStaleStripeCheckoutRemnants(session);

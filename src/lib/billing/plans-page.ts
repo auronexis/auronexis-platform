@@ -37,7 +37,7 @@ function resolveOrgProviderSafe(
   try {
     return getOrganizationBillingProvider({ organizationId, subscription });
   } catch {
-    return "fastspring";
+    return "mollie";
   }
 }
 
@@ -74,15 +74,12 @@ export async function loadWorkspacePlansPageModel(
 
   let sandboxCheckoutNotice: string | null = null;
   try {
-    if (orgProvider === "fastspring") {
-      const storefront = process.env.FASTSPRING_STOREFRONT?.trim() ?? "";
-      if (storefront.includes(".test.onfastspring.com/")) {
-        sandboxCheckoutNotice =
-          "FastSpring TEST storefront is configured. Purchases use test mode — not live production charges.";
-      }
-    } else if (orgProvider === "mollie" && getMollieCredentialMode() === "test") {
+    if (orgProvider === "mollie" && getMollieCredentialMode() === "test") {
       sandboxCheckoutNotice =
         "Mollie TEST credentials are configured for this workspace. Purchases use test mode — not live production charges.";
+    } else if (orgProvider === "fastspring") {
+      sandboxCheckoutNotice =
+        "This workspace has a historical FastSpring subscription. Self-serve plan changes are unavailable — contact support.";
     }
   } catch {
     sandboxCheckoutNotice = null;
@@ -118,7 +115,7 @@ export async function loadWorkspacePlansPageModel(
     pendingPlanChangeType: billingState.overview.scheduledPlanChange?.changeType ?? null,
   });
 
-  // Neither FastSpring nor Mollie expose a hosted customer portal in this integration.
+  // Mollie does not expose a hosted customer portal in this integration.
   const showPortalAction = false;
 
   return {

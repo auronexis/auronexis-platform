@@ -60,7 +60,7 @@ const INVOICE_TRANSLATIONS: Record<AppLocale, InvoiceTranslations> = {
     thankYou: "Vielen Dank für Ihre Zahlung.",
     latestInvoices: "Aktuelle Rechnungen",
     latestInvoicesDescription:
-      "FastSpring-Rechnungshistorie. Steuerbeträge werden von FastSpring als Merchant of Record bereitgestellt.",
+      "Mollie-Rechnungshistorie. Steuerbeträge werden angezeigt, soweit vom Zahlungsanbieter bereitgestellt.",
     totalInvoices: "Rechnungen gesamt",
     paid: "Bezahlt",
     openUnpaid: "Offen / unbezahlt",
@@ -77,7 +77,7 @@ const INVOICE_TRANSLATIONS: Record<AppLocale, InvoiceTranslations> = {
     openInvoice: "Rechnung öffnen",
     showingLatest: "Die letzten {limit} Rechnungen werden angezeigt.",
     manageInPortal:
-      "Verwalten Sie Ihr Abonnement über die Bestätigungs-E-Mail von FastSpring oder kontaktieren Sie den Support.",
+      "Verwalten Sie Ihr Abonnement unter Einstellungen → Abrechnung oder kontaktieren Sie den Support.",
     statusDraft: "Entwurf",
     statusOpen: "Offen",
     statusPaid: "Bezahlt",
@@ -105,7 +105,7 @@ const INVOICE_TRANSLATIONS: Record<AppLocale, InvoiceTranslations> = {
     thankYou: "Thank you for your payment.",
     latestInvoices: "Latest invoices",
     latestInvoicesDescription:
-      "FastSpring billing history. Tax amounts are provided by FastSpring as Merchant of Record.",
+      "Mollie billing history. Tax amounts are shown when provided by the payment provider.",
     totalInvoices: "Total invoices",
     paid: "Paid",
     openUnpaid: "Open / unpaid",
@@ -122,7 +122,7 @@ const INVOICE_TRANSLATIONS: Record<AppLocale, InvoiceTranslations> = {
     openInvoice: "Open invoice",
     showingLatest: "Showing the latest {limit} invoices.",
     manageInPortal:
-      "Manage your subscription via your FastSpring purchase confirmation email or by contacting support.",
+      "Manage your subscription in Settings → Billing or by contacting support.",
     statusDraft: "Draft",
     statusOpen: "Open",
     statusPaid: "Paid",

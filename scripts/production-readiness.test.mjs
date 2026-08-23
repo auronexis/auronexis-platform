@@ -9,19 +9,17 @@ import {
   rootDir,
 } from "./_test-helpers/read-source.mjs";
 
-test("tracked env example is FastSpring-first and documents forbidden prod bypasses", () => {
+test("tracked env example is Mollie-first and documents FastSpring as LEGACY", () => {
   assertFileExists(".env.example");
   const example = readSource(".env.example");
-  assert.match(example, /FastSpring-first/i);
-  assert.match(example, /FASTSPRING_WEBHOOK_SECRET=/);
-  assert.match(example, /FASTSPRING_API_USERNAME=/);
-  assert.match(example, /FASTSPRING_API_PASSWORD=/);
-  assert.match(example, /FASTSPRING_STOREFRONT=/);
+  assert.match(example, /Mollie is the sole active billing provider/i);
+  assert.match(example, /LEGACY — FastSpring retired|MANUAL VERCEL REMOVAL/i);
+  assert.match(example, /MOLLIE_API_KEY/);
   assert.match(example, /CRON_SECRET/);
   assert.match(example, /E2E_DISABLE_RATE_LIMIT/);
-  assert.match(example, /never enable in production/i);
+  assert.match(example, /never enable in production|Must remain false until explicit/i);
   assert.doesNotMatch(example, /TURNSTILE/);
-  assert.match(example, /\/api\/fastspring\/webhook/);
+  assert.doesNotMatch(example, /^FASTSPRING_STOREFRONT=/m);
   assert.doesNotMatch(example, /^BILLING_PROVIDER=/m);
   assert.doesNotMatch(example, /^STRIPE_SECRET_KEY=/m);
   assert.doesNotMatch(example, /^NEXT_PUBLIC_STRIPE_/m);
@@ -63,8 +61,8 @@ test("health and ready probes remain production-safe", () => {
   assertFileExists("src/app/api/health/route.ts");
   assertFileExists("src/app/api/ready/route.ts");
   const health = readSource("src/lib/observability/health.ts");
-  assert.match(health, /isFastSpringApiConfigured/);
-  assert.match(health, /isFastSpringWebhookConfigured/);
+  assert.match(health, /isMollieApiConfigured/);
+  assert.match(health, /mollie:/);
   assert.match(health, /fastspring:/);
   // Deprecated aliases retained for older monitors — never the active provider.
   assert.match(health, /paddle:/);
@@ -74,14 +72,13 @@ test("health and ready probes remain production-safe", () => {
   assert.match(ready, /503/);
 });
 
-test("production env audit requires FastSpring and documents cron", () => {
+test("production env audit requires Mollie and documents cron", () => {
   const audit = readSource("src/lib/env/production-audit.ts");
-  assert.match(audit, /FASTSPRING_API_USERNAME/);
-  assert.match(audit, /FASTSPRING_API_PASSWORD/);
-  assert.match(audit, /FASTSPRING_WEBHOOK_SECRET/);
-  assert.match(audit, /FASTSPRING_STOREFRONT/);
+  assert.match(audit, /MOLLIE_API_KEY/);
+  assert.match(audit, /MOLLIE_BILLING_ROLLOUT/);
   assert.match(audit, /CRON_SECRET/);
   assert.doesNotMatch(audit, /TURNSTILE/);
+  assert.doesNotMatch(audit, /FASTSPRING_STOREFRONT/);
   assert.match(audit, /readyForCustomers/);
 });
 
@@ -105,14 +102,15 @@ test("cron authorization fails closed outside development", () => {
   assert.match(cronRoute, /probe/);
 });
 
-test("fastspring secrets stay server-only; webhook route exists; paddle/stripe routes absent", () => {
-  const fastspringEnv = readSource("src/lib/fastspring/env.ts");
-  assert.match(fastspringEnv, /server-only/);
-  assert.match(fastspringEnv, /FASTSPRING_WEBHOOK_SECRET/);
-  assert.match(fastspringEnv, /FASTSPRING_API_USERNAME/);
-  assert.match(fastspringEnv, /FASTSPRING_API_PASSWORD/);
-  assert.doesNotMatch(fastspringEnv, /NEXT_PUBLIC_FASTSPRING/);
+test("mollie secrets stay server-only; FastSpring webhook retired; paddle/stripe routes absent", () => {
+  const mollieEnv = readSource("src/lib/billing/providers/mollie/env.ts");
+  assert.match(mollieEnv, /server-only/);
+  assert.match(mollieEnv, /MOLLIE_API_KEY/);
+  assert.doesNotMatch(mollieEnv, /NEXT_PUBLIC_MOLLIE/);
+  assertFileExists("src/app/api/mollie/webhook/route.ts");
   assertFileExists("src/app/api/fastspring/webhook/route.ts");
+  const retired = readSource("src/app/api/fastspring/webhook/route.ts");
+  assert.match(retired, /status:\s*410/);
   assert.equal(pathExists("src/app/api/stripe/webhook/route.ts"), false);
   assert.equal(pathExists("src/app/api/paddle/webhook/route.ts"), false);
   assert.equal(pathExists("src/lib/paddle"), false);

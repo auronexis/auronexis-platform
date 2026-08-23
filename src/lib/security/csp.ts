@@ -2,10 +2,8 @@
  * Single source of truth for Content-Security-Policy.
  * Used by middleware, next.config headers, and vercel.json (keep in sync).
  *
- * FastSpring Store Builder (popup checkout) — sole active checkout provider:
- * - script-src: https://sbl.onfastspring.com (fastspring-builder.min.js)
- * - style-src: https://sbl.onfastspring.com (fastspring.css)
- * - connect-src / frame-src: storefront hosts under *.onfastspring.com
+ * Mollie hosted checkout uses a full-page redirect (no embedded script/frame).
+ * FastSpring Store Builder hosts were removed with the FastSpring retirement.
  */
 export function buildContentSecurityPolicy(): string {
   return [
@@ -26,12 +24,8 @@ export function buildContentSecurityPolicy(): string {
       "https://*.clarity.ms",
       "https://www.googletagmanager.com",
       "https://challenges.cloudflare.com",
-      "https://sbl.onfastspring.com",
     ].join(" "),
-    [
-      "style-src 'self' 'unsafe-inline'",
-      "https://sbl.onfastspring.com",
-    ].join(" "),
+    "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     [
@@ -48,13 +42,7 @@ export function buildContentSecurityPolicy(): string {
       "https://region1.google-analytics.com",
       "https://www.google-analytics.com",
       "https://challenges.cloudflare.com",
-      "https://*.onfastspring.com",
-      "https://sbl.onfastspring.com",
     ].join(" "),
-    [
-      "frame-src",
-      "https://challenges.cloudflare.com",
-      "https://*.onfastspring.com",
-    ].join(" "),
+    "frame-src https://challenges.cloudflare.com",
   ].join("; ");
 }

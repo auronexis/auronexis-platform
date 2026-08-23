@@ -76,7 +76,7 @@ export function MollieTestCheckoutPanel({
     <PageSurface>
       <PageSurfaceHeading
         title="Mollie Test Checkout"
-        description="TEST MODE only. First payment → mandate → subscription lifecycle isolated in mollie_test_subscriptions. Does not affect FastSpring entitlements."
+        description="TEST MODE only. First payment → mandate → subscription lifecycle isolated in mollie_test_subscriptions. Does not affect production Mollie entitlements."
       />
 
       {!configured ? (

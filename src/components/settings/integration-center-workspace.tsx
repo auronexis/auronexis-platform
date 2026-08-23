@@ -204,17 +204,17 @@ export function IntegrationCenterWorkspace({ snapshot }: IntegrationCenterWorksp
         </IntegrationCard>
 
         <IntegrationCard
-          title="FastSpring"
-          description="Merchant of Record for subscription billing, checkout, and invoice synchronization."
+          title="Mollie"
+          description="Payment processing for subscription billing, checkout, and invoice synchronization."
           configureHref="/settings/billing"
         >
           <IntegrationRow
             label="Connection status"
-            value={<StatusBadge status={snapshot.fastspring.connectionStatus} />}
+            value={<StatusBadge status={snapshot.mollie.connectionStatus} />}
           />
-          <IntegrationRow label="Mode" value={snapshot.fastspring.mode ?? NO_DATA} />
-          <IntegrationRow label="Account management" value={snapshot.fastspring.accountManagement} />
-          <IntegrationRow label="Invoices" value={snapshot.fastspring.invoices} />
+          <IntegrationRow label="Mode" value={snapshot.mollie.mode ?? NO_DATA} />
+          <IntegrationRow label="Account management" value={snapshot.mollie.accountManagement} />
+          <IntegrationRow label="Invoices" value={snapshot.mollie.invoices} />
         </IntegrationCard>
 
         <IntegrationCard

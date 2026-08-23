@@ -63,7 +63,7 @@ export const getOrganizationPlanContext = cache(async function getOrganizationPl
       updated_at?: string;
     }>,
   );
-  const billingProvider = subscription?.billing_provider ?? "fastspring";
+  const billingProvider = subscription?.billing_provider ?? "mollie";
   const subscriptionPriceId =
     billingProvider === "fastspring" || billingProvider === "paddle"
       ? (subscription?.provider_price_id ?? null)

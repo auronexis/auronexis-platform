@@ -43,7 +43,7 @@ export type OrganizationBillingProviderResolution = {
    * Ownership reasons always win over rollout eligibility and global default.
    */
   reason:
-    | "global_default_fastspring"
+    | "global_default_mollie"
     | "existing_mollie_subscription"
     | "existing_fastspring_subscription"
     | "mollie_allowlist_eligible"
@@ -66,6 +66,7 @@ function isUsableFastSpringRow(row: OrganizationSubscription | null | undefined)
 /**
  * Resolve existing provider ownership only — ignores rollout / allowlist / default-for-new.
  * Used so rollback can disable NEW Mollie without rewriting Mollie-owned orgs.
+ * Historical FastSpring rows remain owned so Mollie never silently double-bills them.
  */
 export function resolveBillingProviderOwnership(input: {
   subscription?: OrganizationSubscription | null;
@@ -106,16 +107,14 @@ export function resolveBillingProviderOwnership(input: {
 /**
  * Resolve which billing provider owns / should serve this organization.
  *
- * Decision order (Phase 4):
- * 1. Existing Mollie ownership (verified or incomplete Mollie row)
- * 2. Existing FastSpring ownership (usable or verified) — blocks Mollie
- * 3. New-checkout eligibility (allowlist / default-for-new) → Mollie
- * 4. Global getActiveBillingProvider() → FastSpring
+ * Decision order (Mollie sole-provider):
+ * 1. Existing Mollie ownership
+ * 2. Existing FastSpring ownership (historical) — blocks Mollie new checkout
+ * 3. New-checkout eligibility → Mollie
+ * 4. Global getActiveBillingProvider() → Mollie
  *
- * Safety:
- * - Global getActiveBillingProvider() remains FastSpring (never blindly Mollie).
- * - Rollout ≠ overwrite ownership.
- * - No silent migration of paid FastSpring orgs.
+ * FastSpring checkout is retired — ownership detection is for safety/entitlements only.
+ * No silent migration of paid FastSpring orgs.
  */
 export function resolveOrganizationBillingProvider(input: {
   organizationId: string;
@@ -139,7 +138,6 @@ export function resolveOrganizationBillingProvider(input: {
     };
   }
 
-  // New-checkout eligibility only — does not rewrite ownership of other orgs.
   if (isMollieProductionCheckoutEligible(input.organizationId)) {
     return {
       provider: "mollie",
@@ -153,14 +151,13 @@ export function resolveOrganizationBillingProvider(input: {
   const global = getActiveBillingProvider();
   return {
     provider: global,
-    reason: "global_default_fastspring",
+    reason: "global_default_mollie",
     ownership: "none",
   };
 }
 
 /**
- * Canonical Phase 4 alias — ownership vs new-checkout eligibility vs global default.
- * Prefer this name in new call sites; behavior matches resolveOrganizationBillingProvider.
+ * Canonical alias — ownership vs new-checkout eligibility vs global default.
  */
 export function resolveBillingProviderForOrganization(input: {
   organizationId: string;

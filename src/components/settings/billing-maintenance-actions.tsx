@@ -35,7 +35,7 @@ function ActionResultAlert({ result }: { result: BillingMaintenanceActionState |
 }
 
 export function BillingMaintenanceActions({
-  activeProvider = "fastspring",
+  activeProvider = "mollie",
 }: BillingMaintenanceActionsProps) {
   const [result, setResult] = useState<BillingMaintenanceActionState | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -48,10 +48,10 @@ export function BillingMaintenanceActions({
     });
   };
 
-  if (activeProvider !== "fastspring") {
+  if (activeProvider !== "mollie") {
     return (
       <p className="text-sm text-muted">
-        Stripe sync actions are disabled. FastSpring is the sole active billing provider.
+        Stripe sync actions are disabled. Mollie is the sole active billing provider.
       </p>
     );
   }
@@ -59,8 +59,8 @@ export function BillingMaintenanceActions({
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted">
-        FastSpring is the active billing provider. Use neutralization only for abandoned Stripe checkout
-        remnants that must not block FastSpring.
+        Mollie is the active billing provider. Use neutralization only for abandoned Stripe checkout
+        remnants that must not block Mollie.
       </p>
 
       <ActionResultAlert result={result} />

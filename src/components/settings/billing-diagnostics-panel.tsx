@@ -160,28 +160,28 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
     mappedPlanKey: data.resolvedPlanKey,
   });
   const statusLabel = getSubscriptionHygieneLabel(subscription);
-  const isFastSpringMode = data.activeProvider === "fastspring";
+  const isMollieMode = data.activeProvider === "mollie";
 
   return (
     <div className="space-y-6">
       <FormAlert variant="warning">
         Internal billing maintenance and diagnostics only. No records are deleted automatically.{" "}
-        {isFastSpringMode ? (
+        {isMollieMode ? (
           <>
-            FastSpring is the active billing provider. Historical Stripe and Paddle data is read-only and
-            never blocks checkout. Customer-facing billing remains on{" "}
+            Mollie is the active billing provider. Historical Stripe, Paddle, and FastSpring data is
+            read-only and never drives new checkout. Customer-facing billing remains on{" "}
           </>
         ) : (
           <>
-            Stripe remains the source of truth in Stripe mode. Customer-facing billing remains on{" "}
+            Active provider is {data.activeProvider}. Customer-facing billing remains on{" "}
           </>
         )}
         <Link href="/settings/billing" className="font-medium underline">
           Subscription &amp; Billing
         </Link>
-        . Owner/admin FastSpring TEST checkout (isolated; does not switch production provider):{" "}
-        <Link href="/settings/billing/fastspring-test" className="font-medium underline">
-          FastSpring Test Checkout
+        . Owner/admin Mollie TEST checkout (isolated):{" "}
+        <Link href="/settings/billing/mollie-test" className="font-medium underline">
+          Mollie Test Checkout
         </Link>
         .
       </FormAlert>
@@ -193,7 +193,7 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
         <dl>
           <Row
             label="Active configured provider"
-            value={isFastSpringMode ? "FastSpring" : "Stripe"}
+            value={isMollieMode ? "Mollie" : data.activeProvider}
           />
           <Row label="Status" value={<HealthBadge health={data.productionHealth} />} />
           <Row
@@ -204,14 +204,14 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
             label="Blocking reason"
             value={data.checkoutBlock.message ?? "None"}
           />
-          {isFastSpringMode ? (
+          {isMollieMode ? (
             <>
               <Row
-                label="FastSpring checkout blocked"
+                label="Mollie checkout blocked"
                 value={data.fastspringCheckoutBlocked ? "Yes" : "No"}
               />
               <Row
-                label="FastSpring blocking reason"
+                label="Mollie blocking reason"
                 value={data.fastspringCheckoutBlockReason ?? "None"}
               />
               <Row
@@ -285,10 +285,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
       </DiagnosticsSection>
 
       <DiagnosticsSection
-        title={isFastSpringMode ? "Active FastSpring subscription" : "organization_subscriptions"}
+        title={isMollieMode ? "Active Mollie subscription" : "organization_subscriptions"}
         description={
-          isFastSpringMode
-            ? `Preferred FastSpring-backed subscription for active billing. ${data.allSubscriptions.length} row(s) found for this workspace.`
+          isMollieMode
+            ? `Preferred Mollie-backed subscription for active billing. ${data.allSubscriptions.length} row(s) found for this workspace.`
             : `Preferred subscription row synced from Stripe. ${data.allSubscriptions.length} row(s) found for this workspace.`
         }
       >
@@ -298,10 +298,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
             <Row label="Status label" value={statusLabel} />
             <Row label="Raw status" value={subscription.status} />
             <Row label="Billing provider" value={subscription.billing_provider ?? "—"} />
-            {isFastSpringMode ? (
+            {isMollieMode ? (
               <>
                 <Row
-                  label="FastSpring customer/account ID"
+                  label="Mollie customer ID"
                   value={
                     <code className="font-mono text-xs">
                       {maskStripeId(subscription.provider_customer_id)}
@@ -309,7 +309,7 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
                   }
                 />
                 <Row
-                  label="FastSpring subscription ID"
+                  label="Mollie subscription ID"
                   value={
                     <span className="inline-flex flex-wrap items-center gap-2">
                       <PresenceBadge present={data.hasFastSpringSubscriptionId} />
@@ -381,8 +381,8 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
           </dl>
         ) : (
           <p className="text-sm text-muted">
-            {isFastSpringMode
-              ? "No active FastSpring subscription row selected for this workspace."
+            {isMollieMode
+              ? "No Active Mollie subscription row selected for this workspace."
               : "No organization_subscriptions row found."}
           </p>
         )}
@@ -430,12 +430,12 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
 
       <DiagnosticsSection
         title={
-          isFastSpringMode
+          isMollieMode
             ? "Legacy Stripe history — not used for active billing"
             : "Latest customer_invoices"
         }
         description={
-          isFastSpringMode
+          isMollieMode
             ? "Historical Stripe invoice and webhook rows are preserved for audit and never drive checkout or entitlements."
             : `Latest ${data.invoices.length} invoice rows — stale/demo rows are labeled, never deleted.`
         }

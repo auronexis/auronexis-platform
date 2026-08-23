@@ -1,6 +1,6 @@
 import "server-only";
 
-import { hasVerifiedFastSpringSubscription } from "@/lib/billing/active-billing";
+import { hasVerifiedMollieSubscription } from "@/lib/billing/active-billing";
 import { getBillingOverview } from "@/lib/billing/queries";
 import type { BillingProvider } from "@/lib/billing/provider-types";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
@@ -15,7 +15,7 @@ export type CheckoutSyncStatus = {
   statusLabel: string;
   paymentStatusLabel: string;
   billingPeriodLabel: string | null;
-  /** True when webhook sync finished and a verified active/trialing FastSpring sub exists. */
+  /** True when webhook sync finished and a verified usable Mollie sub exists. */
   synchronized: boolean;
 };
 
@@ -26,9 +26,9 @@ export async function getCheckoutSyncStatus(session: SessionContext): Promise<Ch
   const subscription = overview.subscription;
 
   const syncPending = Boolean(subscription?.sync_pending);
-  const hasSubscription = hasVerifiedFastSpringSubscription(subscription);
+  const hasSubscription = hasVerifiedMollieSubscription(subscription);
   const isUsable = overview.isUsable;
-  const synchronized = provider === "fastspring" && !syncPending && isUsable && hasSubscription;
+  const synchronized = provider === "mollie" && !syncPending && isUsable && hasSubscription;
 
   return {
     provider,

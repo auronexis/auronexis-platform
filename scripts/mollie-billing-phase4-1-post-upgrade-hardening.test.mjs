@@ -131,10 +131,10 @@ test("11: billing period helpers preserve valid bounds", () => {
   assert.match(lifecycle, /mode: "sync"/);
 });
 
-// 12 — FastSpring pass
-test("12: FastSpring remains global default sole provider", () => {
-  assert.match(fastspringProvider(), /return "fastspring"/);
-  assert.doesNotMatch(fastspringProvider(), /return "mollie"/);
+// 12 — Mollie sole provider
+test("12: Mollie is global default sole provider", () => {
+  assert.match(fastspringProvider(), /return "mollie"/);
+  assert.doesNotMatch(fastspringProvider(), /return "fastspring"/);
 });
 
 // 13 — Idempotency key ≤100 still pass

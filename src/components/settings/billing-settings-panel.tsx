@@ -13,7 +13,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { FormFooter } from "@/components/ui/form-section";
 import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import { createPortalSessionAction } from "@/lib/billing/actions";
-import { FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
+import { BILLING_PORTAL_UNAVAILABLE_MESSAGE } from "@/lib/billing/active-billing";
 import type { CheckoutSyncStatus } from "@/lib/billing/checkout-sync-status";
 import {
   billingStatusToneToBadge,
@@ -47,7 +47,7 @@ type BillingSettingsPanelProps = {
   planUsage: OrganizationPlanUsageSummary;
   canManage: boolean;
   stripeStatus: BillingUiStatus;
-  /** Active billing provider — FastSpring is the sole active provider. */
+  /** Active billing provider — Mollie is the sole active provider. */
   activeProvider?: BillingProvider;
   locale: AppLocale;
   success?: boolean;
@@ -140,7 +140,7 @@ export function BillingSettingsPanel({
   planUsage,
   canManage,
   stripeStatus,
-  activeProvider = "fastspring",
+  activeProvider = "mollie",
   locale,
   success,
   successMessage,
@@ -178,7 +178,7 @@ export function BillingSettingsPanel({
 
   const runPortal = () => {
     if (!showPortal) {
-      setActionError(FASTSPRING_PORTAL_UNAVAILABLE_MESSAGE);
+      setActionError(BILLING_PORTAL_UNAVAILABLE_MESSAGE);
       return;
     }
     setActionError(null);
@@ -269,12 +269,12 @@ export function BillingSettingsPanel({
               <Link href="/settings/billing/diagnostics" className="font-medium text-primary hover:underline">
                 Billing diagnostics
               </Link>
-              . FastSpring TEST checkout:{" "}
+              . Mollie TEST checkout:{" "}
               <Link
-                href="/settings/billing/fastspring-test"
+                href="/settings/billing/mollie-test"
                 className="font-medium text-primary hover:underline"
               >
-                FastSpring Test Checkout
+                Mollie Test Checkout
               </Link>
               .
             </p>
@@ -406,9 +406,11 @@ export function BillingSettingsPanel({
           <PageSurfaceHeading
             title="Subscription management"
             description={
-              activeProvider === "fastspring"
-                ? "Manage your subscription, payment methods, and invoices via FastSpring."
-                : "Manage your subscription, payment methods, and invoices in the Stripe Customer Portal."
+              activeProvider === "mollie"
+                ? "Manage cancellation, keep subscription, and plan changes in Settings → Billing."
+                : overview.subscription?.billing_provider === "fastspring"
+                  ? "This workspace has a historical FastSpring subscription. Contact support for billing changes."
+                  : "Manage your subscription in Settings → Billing, or contact support."
             }
           />
           {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}

@@ -4,7 +4,7 @@ import { isAIProviderConfigured } from "@/lib/ai/provider-labels";
 import { resolveAIProvider } from "@/lib/ai/server/resolve-provider";
 import { APP_VERSION } from "@/lib/company/contact";
 import { checkDatabaseHealth } from "@/lib/diagnostics/platform-health";
-import { isFastSpringApiConfigured, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
+import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 
 export type PlatformHealthStatus = "healthy" | "degraded" | "unavailable";
@@ -17,16 +17,21 @@ export type PlatformHealthSnapshot = {
   configuration: {
     database: boolean;
     supabase: boolean;
-    /** FastSpring billing configured (sole active provider). */
+    /** Mollie billing configured (sole active provider). */
+    mollie: boolean;
+    /**
+     * @deprecated Alias of `mollie` for older monitors that read `fastspring`.
+     * Prefer `mollie`.
+     */
     fastspring: boolean;
     /**
-     * @deprecated Alias of `fastspring` for older monitors that read `paddle`.
-     * Prefer `fastspring`.
+     * @deprecated Alias of `mollie` for older monitors that read `paddle`.
+     * Prefer `mollie`.
      */
     paddle: boolean;
     /**
-     * @deprecated Alias of `fastspring` for older monitors — not Stripe.
-     * Prefer `fastspring`.
+     * @deprecated Alias of `mollie` for older monitors — not Stripe.
+     * Prefer `mollie`.
      */
     stripe: boolean;
     ai: boolean;
@@ -47,16 +52,17 @@ export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapsho
     supabaseConfigured = false;
   }
 
-  const fastspringConfigured = isFastSpringApiConfigured() && isFastSpringWebhookConfigured();
+  const mollieConfigured = isMollieApiConfigured();
 
   const aiConfigured = isAIProviderConfigured(provider.id);
 
   const configuration = {
     database: database.level !== "unavailable",
     supabase: supabaseConfigured,
-    fastspring: fastspringConfigured,
-    paddle: fastspringConfigured,
-    stripe: fastspringConfigured,
+    mollie: mollieConfigured,
+    fastspring: mollieConfigured,
+    paddle: mollieConfigured,
+    stripe: mollieConfigured,
     ai: aiConfigured,
   };
 
@@ -64,7 +70,7 @@ export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapsho
     database.level === "unavailable"
       ? "unavailable"
       : configuration.supabase && configuration.database
-        ? configuration.fastspring && configuration.ai
+        ? configuration.mollie && configuration.ai
           ? "healthy"
           : "degraded"
         : "degraded";

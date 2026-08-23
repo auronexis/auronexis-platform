@@ -58,10 +58,10 @@ export async function loadBillingMaintenanceContext(session: SessionContext): Pr
 export async function neutralizeStaleStripeCheckoutRemnants(
   session: SessionContext,
 ): Promise<BillingMaintenanceActionResult> {
-  if (getActiveBillingProvider() !== "fastspring") {
+  if (getActiveBillingProvider() !== "mollie") {
     return {
       success: false,
-      message: "Stale Stripe neutralization is only available when FastSpring is the active billing provider.",
+      message: "Stale Stripe neutralization is only available when Mollie is the active billing provider.",
     };
   }
 

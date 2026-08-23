@@ -15,7 +15,8 @@ import { getPilotAcquisitionSnapshot } from "@/lib/diagnostics/pilot-acquisition
 import { getPilotExecutionReadinessSnapshot } from "@/lib/diagnostics/pilot-execution-readiness";
 import { getSecurityReadinessSnapshot } from "@/lib/diagnostics/security-readiness";
 import { getAppUrl } from "@/lib/env";
-import { getFastSpringApiCredentialPresence, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
+import { getMollieApiKeyPresence } from "@/lib/billing/providers/mollie/env";
+import { isMollieBillingRolloutEnabled } from "@/lib/billing/providers/mollie/rollout";
 import { GO_LIVE_SECURITY_HEADERS } from "@/lib/security/headers";
 
 export { GO_LIVE_SECURITY_HEADERS } from "@/lib/security/headers";
@@ -83,9 +84,8 @@ export function getGoLiveReadinessSnapshot(): GoLiveReadinessSnapshot {
 
   const sentryConfigured = Boolean(process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN);
   const posthogConfigured = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
-  const fastSpringCredentialPresence = getFastSpringApiCredentialPresence();
-  const fastSpringWebhookConfigured = isFastSpringWebhookConfigured();
-  const fastSpringLiveStorefrontConfigured = Boolean(process.env.FASTSPRING_STOREFRONT?.trim());
+  const mollieCredentialPresence = getMollieApiKeyPresence();
+  const mollieRolloutEnabled = isMollieBillingRolloutEnabled();
   const oauthConnectorsRegistered = ALL_CONNECTOR_CONFIGS.filter((c) => c.oauth === "oauth2").length;
 
   const deploymentChecks = [
@@ -114,10 +114,10 @@ export function getGoLiveReadinessSnapshot(): GoLiveReadinessSnapshot {
   const securityReady = securityReadiness.complete && securityScore >= 95;
 
   const billingChecks = [
-    fastSpringCredentialPresence.usernameConfigured || isDev,
-    fastSpringCredentialPresence.passwordConfigured || isDev,
-    fastSpringWebhookConfigured || isDev,
-    fastSpringLiveStorefrontConfigured || isDev,
+    mollieCredentialPresence.configured || isDev,
+    mollieCredentialPresence.validKeyPrefix || isDev,
+    mollieRolloutEnabled || isDev,
+    true, // FastSpring retired — no storefront requirement
   ];
   const billingScore = scoreChecks(billingChecks);
   const billingReady = billingScore >= 95;

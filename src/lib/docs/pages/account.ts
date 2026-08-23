@@ -5,9 +5,9 @@ export const BILLING_DOC: DocPageInput = {
   slug: "billing",
   title: "Billing",
   description:
-    "Plans, FastSpring checkout, invoices, payment methods, and subscription management.",
+    "Plans, Mollie checkout, invoices, payment methods, and subscription management.",
   intro:
-    "Billing is managed in Settings → Billing. Workspace owners and admins with billing permissions can compare plans, start FastSpring checkout, download invoices, and manage subscriptions via the account management link in their FastSpring purchase confirmation email or by contacting support.",
+    "Billing is managed in Settings → Billing. Workspace owners and admins with billing permissions can compare plans, start Mollie checkout, download invoices, and manage subscriptions via the account management link in their FastSpring purchase confirmation email or by contacting support.",
   callouts: [
     {
       variant: "info",
@@ -24,7 +24,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       title: "Overview",
       paragraphs: [
-        "Auroranexis subscriptions are billed through FastSpring, our Merchant of Record, which also calculates, collects, and remits applicable sales tax and VAT. Your workspace plan determines feature access, usage limits, seat counts, and support tier. All billing activity — plan selection, checkout, invoices, and subscription changes — is accessible from Settings → Billing within the application.",
+        "Auroranexis subscriptions are billed through Mollie. Your workspace plan determines feature access, usage limits, seat counts, and support tier. All billing activity — plan selection, checkout, invoices, and subscription changes — is accessible from Settings → Billing within the application.",
         "Billing is tied to your organization, not individual user accounts. When you upgrade or downgrade, the change applies to the entire workspace. Usage meters and effective limits are reflected in Settings → Usage and update after plan changes are processed.",
         "Three public self-serve plans are available: Professional for growing teams that need automation and client portal delivery, Business for agencies requiring advanced compliance features and white-label branding, and Enterprise for organizations that need custom limits and negotiated arrangements. Pilot Partner and Founding Customer are invite-only early access cohorts — not public plan tiers. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
       ],
@@ -32,8 +32,8 @@ export const BILLING_DOC: DocPageInput = {
     {
       title: "Purpose",
       paragraphs: [
-        "The billing module gives agency operators a self-serve way to subscribe, pay, and manage their Auroranexis workspace without manual invoicing or back-and-forth with sales for standard plans. FastSpring handles payment collection, card storage, tax, and invoice generation; Auroranexis surfaces plan status, usage against limits, and invoice history.",
-        "For agencies on Professional or Business tiers, billing is fully automated. You choose a plan, complete checkout, and manage renewals via FastSpring account access. Enterprise customers may have custom arrangements negotiated separately, but day-to-day invoice access and payment method management still flow through the same billing interface where applicable.",
+        "The billing module gives agency operators a self-serve way to subscribe, pay, and manage their Auroranexis workspace without manual invoicing or back-and-forth with sales for standard plans. Mollie handles payment collection and settlement; Auroranexis surfaces plan status, usage against limits, and invoice history.",
+        "For agencies on Professional or Business tiers, billing is fully automated. You choose a plan, complete checkout, and manage renewals in Settings ? Billing. Enterprise customers may have custom arrangements negotiated separately, but day-to-day invoice access and payment method management still flow through the same billing interface where applicable.",
         "The billing page also serves as the starting point for understanding what your plan includes. Before upgrading, compare tier summaries against your current consumption in Settings → Usage so you select a plan that covers client count, seats, API volume, and feature requirements without unnecessary overspend.",
       ],
     },
@@ -43,22 +43,22 @@ export const BILLING_DOC: DocPageInput = {
         "Workspace plan — the subscription tier (Professional, Business, or Enterprise) that governs features and limits.",
         "Billing cycle — monthly or annual period during which your subscription is active and renewed.",
         "Proration — a partial charge or credit applied when you change plans mid-cycle.",
-        "Account management — FastSpring's self-service page for payment methods, invoices, and subscription management, reachable from your purchase confirmation email.",
+        "Account management — in-app subscription management in Settings ? Billing.",
         "Usage limits — caps on clients, seats, API calls, monitoring targets, and other resources defined by your plan.",
         "Past due — a subscription status indicating a failed or overdue payment that requires attention.",
-        "Invoice — a billing document generated by FastSpring for each charge, available as PDF from Settings → Billing or FastSpring account access.",
+        "Invoice — a billing document issued for each Mollie charge for each charge, available as PDF from Settings → Billing or support.",
       ],
       paragraphs: [
-        "Plan changes and payment events are reflected in Settings → Billing after FastSpring confirms the transaction. There may be a short delay between completing checkout and seeing the updated plan in the dashboard. Payment card details never appear in Auroranexis — they are entered and stored entirely within FastSpring's secure checkout and account management flows.",
+        "Plan changes and payment events are reflected in Settings → Billing after Mollie confirms the transaction. There may be a short delay between completing checkout and seeing the updated plan in the dashboard. Payment card details never appear in Auroranexis — they are entered and stored entirely within Mollie's secure checkout.",
       ],
     },
     {
       title: "Features",
       bullets: [
         "Plan comparison — view Professional, Business, and Enterprise tiers with feature and limit summaries.",
-        "FastSpring checkout — secure, hosted payment flow for new subscriptions and upgrades.",
+        "Mollie checkout — secure, hosted payment flow for new subscriptions and upgrades.",
         "Invoice history — access recent invoices with payment status and PDF downloads where available.",
-        "Account management — update payment methods, view billing history, and manage subscription details via FastSpring.",
+        "Account management — update payment methods, view billing history, and manage subscription details via Mollie.",
         "Discount codes — apply promotional codes during checkout when eligible.",
         "Usage visibility — cross-reference your plan limits with current consumption in Settings → Usage.",
         "Enterprise requests — submit custom plan inquiries from Settings → Billing or Settings → Enterprise.",
@@ -75,7 +75,7 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "Payment methods and invoices",
           paragraphs: [
-            "Payment methods are managed through FastSpring, accessible from the account management link in your FastSpring purchase confirmation email. You can add credit or debit cards, set a default method, and remove expired cards without exposing card numbers in the Auroranexis dashboard. Invoices for each billing period appear in Settings → Billing with payment status, and full history including PDF downloads is available through FastSpring account access.",
+            "Payment methods are managed through Mollie / Settings ? Billing. You can add credit or debit cards, set a default method, and remove expired cards without exposing card numbers in the Auroranexis dashboard. Invoices for each billing period appear in Settings → Billing with payment status, and full history including PDF downloads is available in Settings ? Billing.",
           ],
         },
       ],
@@ -84,12 +84,12 @@ export const BILLING_DOC: DocPageInput = {
       title: "Step-by-step usage",
       subsections: [
         {
-          title: "Subscribe or upgrade via FastSpring checkout",
+          title: "Subscribe or upgrade via Mollie checkout",
           ordered: [
             "Sign in as an owner or admin and open Settings → Billing.",
             "Review the plan comparison table and select the tier that matches your agency's needs.",
-            "Click the upgrade or subscribe action to start FastSpring checkout.",
-            "Enter payment details on the secure FastSpring checkout page.",
+            "Click the upgrade or subscribe action to start Mollie checkout.",
+            "Enter payment details on the secure Mollie checkout page.",
             "Apply a discount code during checkout if you have one.",
             "Complete payment and return to Auroranexis.",
             "Verify your new plan and limits appear in Settings → Billing and Settings → Usage.",
@@ -102,14 +102,14 @@ export const BILLING_DOC: DocPageInput = {
             "Scroll to the invoice history section.",
             "Locate the invoice by date or amount.",
             "Download the PDF or view payment status as shown.",
-            "For older invoices, use the account management link from your FastSpring purchase confirmation email for the full billing history.",
+            "For older invoices, use the account management link from Settings ? Billing or support for the full billing history.",
           ],
         },
         {
           title: "Update payment methods",
           ordered: [
             "Open Settings → Billing.",
-            "Open the account management link from your latest FastSpring purchase confirmation email.",
+            "Open the account management link from Settings ? Billing.",
             "Add a new card or replace an existing payment method there.",
             "Set the new method as default if prompted.",
             "Return to Auroranexis and confirm billing status shows as active.",
@@ -118,7 +118,7 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "Change or cancel a subscription",
           ordered: [
-            "Open Settings → Billing, then use the account management link from your FastSpring purchase confirmation email, or contact support.",
+            "Open Settings → Billing, then use the account management link from Settings ? Billing or support, or contact support.",
             "To upgrade or downgrade, select the desired plan change and confirm.",
             "Review proration details shown before confirming mid-cycle changes.",
             "To cancel, choose cancel subscription and follow the prompts.",
@@ -132,7 +132,7 @@ export const BILLING_DOC: DocPageInput = {
       title: "Best Practices",
       bullets: [
         "Keep a valid payment method on file and update cards before they expire to avoid service interruption.",
-        "Ensure your billing email address receives FastSpring invoice and payment failure notifications.",
+        "Ensure your billing email address receives billing invoice and payment failure notifications.",
         "Review Settings → Usage after any plan change to confirm new limits meet operational needs.",
         "Export reports and client data before cancelling if you may need records after access ends.",
         "Apply discount codes during checkout — they cannot typically be applied retroactively to existing subscriptions.",
@@ -153,13 +153,13 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "AI automation agency",
           paragraphs: [
-            "A twelve-person automation shop on Professional approaches monthly automation run limits while onboarding webhook-driven workflows for thirty clients. The founder opens Settings → Billing, compares Business tier automation allowances, and completes FastSpring checkout. Prorated charges apply for the remainder of the cycle. After upgrade, the team confirms expanded run limits in Settings → Usage before enabling high-volume incident-creation automations.",
+            "A twelve-person automation shop on Professional approaches monthly automation run limits while onboarding webhook-driven workflows for thirty clients. The founder opens Settings → Billing, compares Business tier automation allowances, and completes Mollie checkout. Prorated charges apply for the remainder of the cycle. After upgrade, the team confirms expanded run limits in Settings → Usage before enabling high-volume incident-creation automations.",
           ],
         },
         {
           title: "MSP",
           paragraphs: [
-            "A twelve-person MSP on Professional needs expanded client and portal capacity for forty managed clients. The operations director opens Settings → Billing, selects Business, and completes FastSpring checkout. The upgrade takes effect immediately with prorated charges for the remainder of the billing cycle. The team verifies automation and portal modules remain available and checks Settings → Usage for updated client and seat limits before rolling out portal access to key accounts.",
+            "A twelve-person MSP on Professional needs expanded client and portal capacity for forty managed clients. The operations director opens Settings → Billing, selects Business, and completes Mollie checkout. The upgrade takes effect immediately with prorated charges for the remainder of the billing cycle. The team verifies automation and portal modules remain available and checks Settings → Usage for updated client and seat limits before rolling out portal access to key accounts.",
           ],
         },
         {
@@ -184,7 +184,7 @@ export const BILLING_DOC: DocPageInput = {
         rows: [
           [
             "Checkout completed but plan did not update",
-            "FastSpring confirmation may still be processing",
+            "Mollie confirmation may still be processing",
             "Refresh Settings → Billing and wait a few minutes. If unchanged, contact support with the approximate checkout time.",
           ],
           [
@@ -195,7 +195,7 @@ export const BILLING_DOC: DocPageInput = {
           [
             "Workspace shows past due or limited access",
             "Payment failed due to expired card, insufficient funds, or bank decline",
-            "Use the account management link from your FastSpring purchase confirmation email to update your default payment method immediately.",
+            "Use the account management link from Settings ? Billing or support to update your default payment method immediately.",
           ],
           [
             "Cannot open the customer portal",
@@ -225,12 +225,12 @@ export const BILLING_DOC: DocPageInput = {
     {
       question: "Who can manage billing in my workspace?",
       answer:
-        "Workspace owners and admins with billing permissions can change plans, apply discount codes, and access FastSpring account management. Other roles cannot modify subscription or payment settings.",
+        "Workspace owners and admins with billing permissions can change plans, apply discount codes, and manage billing in Settings ? Billing. Other roles cannot modify subscription or payment settings.",
     },
     {
       question: "Where are my payment details stored?",
       answer:
-        "Payment card and bank details are collected and stored by FastSpring, not in Auroranexis application databases. The billing page shows subscription status without exposing sensitive payment data.",
+        "Payment card and bank details are processed by Mollie, not in Auroranexis application databases. The billing page shows subscription status without exposing sensitive payment data.",
     },
     {
       question: "What happens when I cancel my subscription?",
@@ -245,12 +245,12 @@ export const BILLING_DOC: DocPageInput = {
     {
       question: "How do I get a copy of an invoice for accounting?",
       answer:
-        "Open Settings → Billing to view recent invoices and download PDFs. The account management link in your FastSpring purchase confirmation email provides the full invoice history.",
+        "Open Settings → Billing to view recent invoices and download PDFs. The billing history in Settings ? Billing provides the full invoice history.",
     },
     {
       question: "What is the difference between Business and Enterprise?",
       answer:
-        "Business is a self-serve tier with expanded limits and features available through FastSpring checkout. Enterprise involves a reviewed request process with custom limits, onboarding, and negotiated terms submitted from Settings → Enterprise or Settings → Billing.",
+        "Business is a self-serve tier with expanded limits and features available through Mollie checkout. Enterprise involves a reviewed request process with custom limits, onboarding, and negotiated terms submitted from Settings → Enterprise or Settings → Billing.",
     },
     {
       question: "What are Pilot Partner and Founding Customer programs?",
@@ -271,7 +271,7 @@ export const SECURITY_DOC: DocPageInput = {
   description:
     "Organization-scoped access, role-based permissions, encryption, audit trails, and secure billing.",
   intro:
-    "Auroranexis is designed for agency operations with organization-scoped data, role-based access control, encrypted transport and storage, and secure billing through FastSpring. This page describes security controls available to customers — not internal platform infrastructure.",
+    "Auroranexis is designed for agency operations with organization-scoped data, role-based access control, encrypted transport and storage, and secure billing through Mollie. This page describes security controls available to customers — not internal platform infrastructure.",
   callouts: [
     {
       variant: "warning",
@@ -305,7 +305,7 @@ export const SECURITY_DOC: DocPageInput = {
         "Encryption in transit — all web and API traffic uses TLS.",
         "Encryption at rest — platform data stores encrypt stored data.",
         "Audit trail — a chronological record of significant actions performed in the workspace.",
-        "Secure billing — payment details are handled entirely by FastSpring; Auroranexis never stores card numbers.",
+        "Secure billing — payment details are handled by Mollie; Auroranexis never stores card numbers.",
         "Compliance readiness — plan-specific capabilities that support your internal compliance program without implying third-party certification.",
       ],
     },
@@ -354,9 +354,9 @@ export const SECURITY_DOC: DocPageInput = {
         {
           title: "Secure billing",
           bullets: [
-            "Payment card and bank details are collected and stored by FastSpring — not in Auroranexis databases.",
+            "Payment card and bank details are processed by Mollie — not in Auroranexis databases.",
             "Billing pages display subscription status without exposing card numbers or CVV data.",
-            "Only authorized roles can initiate checkout or access FastSpring account management.",
+            "Only authorized roles can initiate checkout or manage billing in Settings ? Billing.",
           ],
         },
       ],
@@ -449,7 +449,7 @@ export const SECURITY_DOC: DocPageInput = {
         {
           title: "Consultancy",
           paragraphs: [
-            "A small IT consultancy's client requests evidence of access controls. The owner exports activity history for the relevant date range, documents the RBAC matrix showing Owner, Admin, Staff, and Viewer assignments, and confirms billing data is handled by FastSpring without card storage in Auroranexis. The package supports the client's vendor review without claiming third-party certification on the agency's behalf.",
+            "A small IT consultancy's client requests evidence of access controls. The owner exports activity history for the relevant date range, documents the RBAC matrix showing Owner, Admin, Staff, and Viewer assignments, and confirms billing data is handled by Mollie without card storage in Auroranexis. The package supports the client's vendor review without claiming third-party certification on the agency's behalf.",
           ],
         },
         {
@@ -514,12 +514,12 @@ export const SECURITY_DOC: DocPageInput = {
     {
       question: "Where is payment information stored?",
       answer:
-        "Payment card and bank details are stored by FastSpring, our Merchant of Record. Auroranexis does not store card numbers or CVV data in application databases.",
+        "Payment card and bank details are processed by Mollie. Auroranexis does not store card numbers or CVV data in application databases.",
       },
       {
         question: "Can staff members access billing settings?",
         answer:
-          "Only workspace owners and admins with billing permissions can manage subscriptions and access FastSpring account management. Staff and viewer roles cannot modify billing settings.",
+          "Only workspace owners and admins with billing permissions can manage subscriptions and manage billing in Settings ? Billing. Staff and viewer roles cannot modify billing settings.",
       },
     {
       question: "How do I report a security vulnerability?",
@@ -820,7 +820,7 @@ export const ENTERPRISE_DOC: DocPageInput = {
       title: "Overview",
       paragraphs: [
         "Enterprise arrangements extend Professional and Business capabilities with negotiated limits, feature enablement, dedicated onboarding, and priority support. Enterprise customers typically manage large client portfolios, operate integration-heavy environments, or require compliance and branding configurations beyond standard plan tiers.",
-        "Unlike self-serve plan upgrades through FastSpring checkout, enterprise onboarding involves a review process. Once approved, plan overrides and support contacts are applied to your workspace and visible in Settings → Enterprise and Settings → Billing.",
+        "Unlike self-serve plan upgrades through Mollie checkout, enterprise onboarding involves a review process. Once approved, plan overrides and support contacts are applied to your workspace and visible in Settings → Enterprise and Settings → Billing.",
         "Enterprise is designed for customer-facing outcomes: higher limits, tailored rollout, and direct support — not internal platform administration. All request, status, and override visibility flows through Settings → Enterprise and Settings → Billing within your workspace.",
       ],
     },
@@ -852,7 +852,7 @@ export const ENTERPRISE_DOC: DocPageInput = {
         "Feature enablement beyond standard plan tier boundaries.",
         "Dedicated onboarding with migration and rollout planning.",
         "Priority support with agreed response times.",
-        "Flexible billing arrangements negotiated outside standard FastSpring checkout where applicable.",
+        "Flexible billing arrangements negotiated outside standard Mollie checkout where applicable.",
         "Plan override visibility in Settings → Enterprise.",
       ],
       subsections: [
@@ -979,8 +979,8 @@ export const ENTERPRISE_DOC: DocPageInput = {
           ],
           [
             "Self-serve checkout conflicts with enterprise agreement",
-            "Plan changes through FastSpring may not reflect negotiated terms",
-            "Contact your account contact before making plan changes through FastSpring.",
+            "Plan changes through Mollie may not reflect negotiated terms",
+            "Contact your account contact before making plan changes through Mollie.",
           ],
           [
             "Feature not enabled despite override",

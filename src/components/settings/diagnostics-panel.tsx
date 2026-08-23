@@ -317,7 +317,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
       {data.isDevelopment ? (
         <DiagnosticsSection
           title="Legacy Stripe webhooks (archive)"
-          description="Read-only history from before the FastSpring migration. Not used for active billing."
+          description="Read-only history from before the Mollie migration. Not used for active billing."
         >
         <dl>
           <Row

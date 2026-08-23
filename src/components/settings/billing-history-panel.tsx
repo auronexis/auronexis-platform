@@ -79,7 +79,7 @@ export function BillingHistoryPanel({
     <PageSurface>
       <PageSurfaceHeading
         title="Billing history"
-        description="Invoices and payments from FastSpring. Tax amounts are shown as provided by FastSpring as Merchant of Record."
+        description="Invoices and payments from Mollie. Historical FastSpring or Paddle invoices may also appear when present."
       />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">

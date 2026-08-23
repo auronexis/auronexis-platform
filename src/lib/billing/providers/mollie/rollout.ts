@@ -1,19 +1,18 @@
 /**
- * Mollie Phase 3/4 controlled rollout — per-org enablement and NEW-subscription cutover prep.
- * Never flips the global active provider away from FastSpring.
- * Never overwrites existing FastSpring or Mollie ownership.
+ * Mollie production rollout — sole active billing provider.
  *
  * Kill switches (independent):
  * - MOLLIE_BILLING_ROLLOUT — master switch for NEW Mollie checkout eligibility
- * - MOLLIE_BILLING_ORG_ALLOWLIST — per-org allowlist (when default-for-new is off)
- * - MOLLIE_BILLING_DEFAULT_FOR_NEW — optional global NEW-sub cutover (still requires ROLLOUT)
+ * - MOLLIE_BILLING_ORG_ALLOWLIST — per-org allowlist (when rollout is off, emergency partial enable)
+ * - MOLLIE_BILLING_DEFAULT_FOR_NEW — retained for diagnostics; with rollout on, all new orgs are Mollie
  * - MOLLIE_LIVE_CHARGING_ENABLED — LIVE API payment writes only (separate from rollout)
  *
- * Rollback NEW Mollie: set MOLLIE_BILLING_ROLLOUT=false (and/or clear allowlist / default-for-new).
+ * Rollback NEW Mollie: set MOLLIE_BILLING_ROLLOUT=false (allowlist still works for partial enable).
  * Existing Mollie-owned organization_subscriptions rows remain Mollie via ownership resolution.
+ * Historical FastSpring ownership is never overwritten.
  */
 
-/** Master switch — Mollie self-serve checkout for eligible orgs only. */
+/** Master switch — Mollie self-serve checkout for eligible orgs. */
 export function isMollieBillingRolloutEnabled(): boolean {
   const raw = process.env.MOLLIE_BILLING_ROLLOUT?.trim().toLowerCase();
   return raw === "1" || raw === "true" || raw === "yes" || raw === "on";
@@ -30,17 +29,19 @@ export function isMollieLiveChargingEnabled(): boolean {
 }
 
 /**
- * Prepare global cutover for NEW paid subscriptions only.
- * When truthy AND rollout is on, orgs without existing ownership become Mollie-eligible
- * without being on the allowlist. Existing FastSpring ownership is never overwritten.
- * Default: off. Safe to leave unset in production until operator cutover.
+ * When rollout is on, Mollie is the default for all NEW paid subscriptions
+ * (sole-provider mode). Explicit env still accepted for diagnostics/tests.
  */
 export function isMollieDefaultForNewSubscriptions(): boolean {
   if (!isMollieBillingRolloutEnabled()) {
     return false;
   }
   const raw = process.env.MOLLIE_BILLING_DEFAULT_FOR_NEW?.trim().toLowerCase();
-  return raw === "1" || raw === "true" || raw === "yes" || raw === "on";
+  if (raw === "0" || raw === "false" || raw === "no" || raw === "off") {
+    return false;
+  }
+  // Sole-provider default: rollout-on implies default-for-new.
+  return true;
 }
 
 /** Parse comma/space-separated organization UUID allowlist. */
@@ -70,19 +71,16 @@ export function isOrganizationOnMollieAllowlist(organizationId: string): boolean
 
 /**
  * Org may use Mollie production checkout for NEW subscriptions when:
- * - rollout is on AND org is allowlisted, OR
- * - rollout is on AND MOLLIE_BILLING_DEFAULT_FOR_NEW is on
+ * - rollout is on (sole-provider: all orgs), OR
+ * - org is allowlisted (emergency partial enable while rollout is off)
  *
- * Does not imply entitlements. Does not override FastSpring ownership
+ * Does not imply entitlements. Does not override historical FastSpring ownership
  * (ownership is enforced in provider-selection / checkout-eligibility).
  * Does not enable LIVE charging (MOLLIE_LIVE_CHARGING_ENABLED is separate).
  */
 export function isMollieProductionCheckoutEligible(organizationId: string): boolean {
-  if (!isMollieBillingRolloutEnabled()) {
-    return false;
-  }
   if (isOrganizationOnMollieAllowlist(organizationId)) {
     return true;
   }
-  return isMollieDefaultForNewSubscriptions();
+  return isMollieBillingRolloutEnabled();
 }

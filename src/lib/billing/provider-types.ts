@@ -2,22 +2,16 @@
  * Neutral billing provider types — UI and business logic depend on these,
  * not on Stripe- or Paddle-specific shapes.
  *
- * Stripe and Paddle have been removed from active billing. "stripe" and
- * "paddle" remain in this union only to label historical/archived data
- * (legacy subscription rows, invoices, webhook events) — neither is ever
- * returned by getActiveBillingProvider() and neither drives new checkout,
- * portal access, or entitlements.
+ * Stripe, Paddle, and FastSpring remain in this union only to label
+ * historical/archived data (legacy subscription rows, invoices, webhook events).
+ * None of them is returned by getActiveBillingProvider() or drives new checkout.
  *
- * "fastspring" is the global default active checkout provider.
- *
- * "mollie" is Phase 3 production-capable via per-org allowlist/rollout only —
- * never returned by getActiveBillingProvider(). Org resolution uses
- * resolveOrganizationBillingProvider / getOrganizationBillingProvider.
+ * "mollie" is the global default active checkout provider (sole active provider).
+ * Rollout / per-org allowlist still gate NEW Mollie eligibility when rollout is off.
  * Generic provider_* columns on organization_subscriptions are the persistence target.
  */
 
-import type { FastSpringCheckoutTags } from "@/lib/fastspring/checkout-tags";
-import type { FastSpringProductPath } from "@/lib/billing/catalog";
+import type { PlanKey } from "@/lib/billing/plans";
 
 export type BillingProvider = "stripe" | "paddle" | "fastspring" | "mollie";
 
@@ -41,16 +35,6 @@ export type CheckoutResult =
       checkoutUrl: string;
     }
   | {
-      provider: "fastspring";
-      mode: "popup";
-      storefront: string;
-      sblScriptSrc: string;
-      productPath: FastSpringProductPath;
-      tags: FastSpringCheckoutTags;
-      checkoutMode: "test" | "live";
-      pendingSyncMessage: string;
-    }
-  | {
       provider: "mollie";
       mode: "redirect";
       checkoutUrl: string;
@@ -66,3 +50,5 @@ export type PortalResult = {
 export function isInternalPlan(value: string | null | undefined): value is InternalPlan {
   return value === "professional" || value === "business" || value === "enterprise";
 }
+
+export type SelfServePlanKey = Extract<PlanKey, "professional" | "business" | "enterprise">;

@@ -40,7 +40,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "How is billing handled?",
-        answer: "Subscriptions are processed through FastSpring as Merchant of Record. Workspace owners and billing admins manage plans, invoices, and payment methods in Settings → Billing.",
+        answer: "Subscriptions are processed through Mollie. Workspace owners and billing admins manage plans, invoices, and cancellations in Settings → Billing.",
       },
       {
         question: "Can I change plans later?",

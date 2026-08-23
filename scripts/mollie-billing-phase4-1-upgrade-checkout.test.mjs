@@ -196,14 +196,14 @@ test("13: upgrade updates existing sub_ — never creates second subscription", 
   );
 });
 
-// 14 — FastSpring unchanged
-test("14: FastSpring global default and sole-provider path unchanged", () => {
+// 14 — Mollie sole provider; FastSpring checkout retired
+test("14: Mollie global default; FastSpring checkout path removed", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
-  assert.doesNotMatch(provider, /return "mollie"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
   const actions = readSource("src/lib/billing/actions.ts");
-  assert.match(actions, /createFastSpringCheckoutPayloadForPlan/);
-  assert.match(actions, /This workspace is billed via Mollie/);
+  assert.doesNotMatch(actions, /createFastSpringCheckoutPayloadForPlan/);
+  assert.match(actions, /Checkout is only available via Mollie|createMollieProductionFirstPayment/);
 });
 
 // 15 — LIVE=false still allows TEST checkout

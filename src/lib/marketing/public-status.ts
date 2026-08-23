@@ -9,7 +9,8 @@ import {
 import { checkDatabaseHealth, type DatabaseHealthLevel } from "@/lib/diagnostics/platform-health";
 import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
 import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
-import { isFastSpringApiConfigured, isFastSpringWebhookConfigured } from "@/lib/fastspring/env";
+import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
+import { isMollieBillingRolloutEnabled } from "@/lib/billing/providers/mollie/rollout";
 
 export type { StatusLevel };
 export type PublicStatusComponent = {
@@ -194,7 +195,7 @@ export async function getLiveStatusOverrides(): Promise<Record<string, PublicSta
     getCronDiagnosticsSnapshot(),
     getQueueDiagnosticsSnapshot(),
   ]);
-  const billingConfigured = isFastSpringApiConfigured() && isFastSpringWebhookConfigured();
+  const billingConfigured = isMollieApiConfigured() && isMollieBillingRolloutEnabled();
   const aiStatus = await resolvePublicAiStatus();
 
   return {

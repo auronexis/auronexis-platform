@@ -58,7 +58,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example
           NEXT_PUBLIC_APP_URL: https://www.auroranexis.com
-          FASTSPRING_STOREFRONT: example.test.onfastspring.com/popup-defaultB2B
-          FASTSPRING_WEBHOOK_SECRET: test_fastspring_webhook_secret
-          FASTSPRING_API_USERNAME: test_fastspring_api_username
-          FASTSPRING_API_PASSWORD: test_fastspring_api_password
+          MOLLIE_API_KEY: test_dGVzdGtleWZvcmljaQ
+          MOLLIE_BILLING_ROLLOUT: "true"
+          MOLLIE_LIVE_CHARGING_ENABLED: "false"

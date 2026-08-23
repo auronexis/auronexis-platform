@@ -26,9 +26,9 @@ export const PUBLIC_ENDPOINT_REGISTRY: PublicEndpointProtection[] = [
     authenticated: false,
   },
   {
-    path: "/api/fastspring/webhook",
+    path: "/api/mollie/webhook",
     methods: ["POST"],
-    protection: "FastSpring HMAC signature (FASTSPRING_WEBHOOK_SECRET) + idempotency table",
+    protection: "Mollie classic webhook id + API re-fetch + idempotency",
     authenticated: false,
   },
   {

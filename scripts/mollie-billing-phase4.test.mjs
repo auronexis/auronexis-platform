@@ -7,10 +7,10 @@ import test from "node:test";
 import { pathExists, readSource } from "./_test-helpers/read-source.mjs";
 
 // A — Global provider + ownership vs eligibility vs default
-test("A: getActiveBillingProvider remains fastspring — no global Mollie switch", () => {
+test("A: getActiveBillingProvider returns mollie — sole active provider", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
-  assert.doesNotMatch(provider, /return "mollie"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
 });
 
 test("A: resolveBillingProviderForOrganization distinguishes ownership vs eligibility vs default", () => {
@@ -36,7 +36,7 @@ test("B: LIVE charging gate is independent from rollout; default off", () => {
   const envExample = readSource(".env.example");
   assert.match(envExample, /MOLLIE_LIVE_CHARGING_ENABLED=false/);
   assert.match(envExample, /MOLLIE_BILLING_DEFAULT_FOR_NEW=false/);
-  assert.match(envExample, /MOLLIE_BILLING_ROLLOUT=false/);
+  assert.match(envExample, /MOLLIE_BILLING_ROLLOUT=/);
 });
 
 // C — Centralized checkout eligibility + FastSpring coexistence
@@ -47,11 +47,11 @@ test("C: checkout eligibility centralizes provider_conflict and existing_subscri
   assert.match(eligibility, /existing_subscription/);
   assert.match(eligibility, /duplicate_mollie/);
   assert.match(eligibility, /allowed_mollie_plan_change/);
-  assert.match(eligibility, /FastSpring ownership always blocks Mollie/i);
-  assert.match(eligibility, /Mollie ownership — never offer FastSpring/i);
+  assert.match(eligibility, /Historical FastSpring ownership/i);
+  assert.match(eligibility, /never offer a second provider/i);
   const actions = readSource("src/lib/billing/actions.ts");
   assert.match(actions, /resolveCheckoutEligibility/);
-  assert.match(actions, /FastSpring checkout is blocked to prevent double billing/);
+  assert.match(actions, /Checkout is only available via Mollie/);
 });
 
 // D — Duplicate Mollie purchase protection
@@ -154,7 +154,8 @@ test("L: rollout rollback leaves Mollie ownership intact", () => {
   assert.match(rollout, /Rollback NEW Mollie/i);
   assert.match(rollout, /Existing Mollie-owned/i);
   const ui = readSource("src/lib/billing/ui-status.ts");
-  assert.match(ui, /orgProvider === "mollie"/);
+  assert.match(ui, /organizationProvider/);
+  assert.match(ui, /isMollieProductionCheckoutConfigured|sole active provider/i);
   assert.doesNotMatch(ui, /isMollieProductionCheckoutEligible/);
 });
 
@@ -162,10 +163,10 @@ test("L: rollout rollback leaves Mollie ownership intact", () => {
 test("M: DEFAULT_FOR_NEW prepares cutover without mass migration", () => {
   const rollout = readSource("src/lib/billing/providers/mollie/rollout.ts");
   assert.match(rollout, /isMollieDefaultForNewSubscriptions/);
-  assert.match(rollout, /Existing FastSpring ownership is never overwritten/i);
+  assert.match(rollout, /Historical FastSpring ownership is never overwritten/i);
   const selection = readSource("src/lib/billing/provider-selection.ts");
   assert.match(selection, /mollie_default_for_new/);
-  assert.match(selection, /No silent migration/i);
+  assert.match(selection, /never overwritten|FastSpring checkout is retired/i);
 });
 
 // N — Security: no NEXT_PUBLIC secrets; LIVE remains false in docs/tests

@@ -30,12 +30,15 @@ export type IntegrationCenterSlack = {
   status: string;
 };
 
-export type IntegrationCenterFastSpring = {
+export type IntegrationCenterMollie = {
   connectionStatus: IntegrationConnectionLabel;
   mode: string | null;
   accountManagement: string;
   invoices: string;
 };
+
+/** @deprecated Prefer IntegrationCenterMollie — FastSpring retired. */
+export type IntegrationCenterFastSpring = IntegrationCenterMollie;
 
 export type IntegrationCenterWebhooks = {
   activeWebhooks: number | null;
@@ -60,7 +63,9 @@ export type IntegrationCenterSnapshot = {
   openai: IntegrationCenterOpenAI;
   anthropic: IntegrationCenterAnthropic;
   slack: IntegrationCenterSlack;
-  fastspring: IntegrationCenterFastSpring;
+  mollie: IntegrationCenterMollie;
+  /** @deprecated Alias of mollie for older UI — FastSpring retired. */
+  fastspring: IntegrationCenterMollie;
   webhooks: IntegrationCenterWebhooks;
   resend: IntegrationCenterResend;
   restApi: IntegrationCenterRestApi;
