@@ -451,6 +451,12 @@ async function reconcileMollieUpgradePayment(
 
   if (isMolliePaymentTerminalFailure(payment.status)) {
     await clearMollieUpgradePaymentAttempt(organizationId);
+    console.info("[billing][upgrade] upgrade_webhook_paid", {
+      organizationId,
+      paymentId,
+      result: "terminal_failure",
+      status: payment.status,
+    });
     return {
       handled: true,
       ignored: true,
@@ -470,12 +476,27 @@ async function reconcileMollieUpgradePayment(
     };
   }
 
+  console.info("[billing][upgrade] upgrade_webhook_paid", {
+    organizationId,
+    paymentId,
+    targetPlanKey: targetPlanRaw,
+  });
+
   const paidAt = new Date().toISOString();
   const upgradeResult = await applyMollieUpgradeAfterPayment({
     organizationId,
     paymentId,
     targetPlanKey: targetPlanRaw,
     providerSubscriptionId: subscriptionId,
+  });
+
+  console.info("[billing][upgrade] upgrade_apply", {
+    organizationId,
+    paymentId,
+    applied: upgradeResult.applied,
+    previousPlanKey: upgradeResult.previousPlanKey,
+    appliedPlanKey: upgradeResult.appliedPlanKey,
+    providerUpdateFailed: upgradeResult.providerUpdateFailed,
   });
 
   const targetPlan = getPlanByKey(targetPlanRaw);
@@ -508,9 +529,18 @@ async function reconcileMollieUpgradePayment(
           receiptUrl: payment._links?.checkout?.href ?? null,
         }),
       )
-      .catch((emailError) => {
-        console.error("[billing][upgrade] activated email failed", {
+      .then(() => {
+        console.info("[billing][upgrade] upgrade_email", {
           organizationId,
+          paymentId,
+          result: "queued_or_sent",
+        });
+      })
+      .catch((emailError) => {
+        console.error("[billing][upgrade] upgrade_email", {
+          organizationId,
+          paymentId,
+          result: "failed",
           message: emailError instanceof Error ? emailError.message : String(emailError),
         });
       });

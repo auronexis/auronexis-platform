@@ -31,12 +31,16 @@ export default async function MollieProductionReturnPage({ searchParams }: Molli
 
   const params = await searchParams;
   const attemptPresent = Boolean(params.attempt?.trim());
+  const isUpgradeReturn = params.purpose === "upgrade";
   const returnState = await resolveMollieProductionReturnPageState({
     organizationId: session.organization.id,
   });
 
-  const title =
-    returnState.kind === "success"
+  const title = isUpgradeReturn
+    ? returnState.kind === "success"
+      ? "Upgrade payment returned"
+      : "Verifying upgrade payment"
+    : returnState.kind === "success"
       ? "Subscription active"
       : returnState.kind === "activation_failed"
         ? "Activation needs attention"
@@ -44,8 +48,9 @@ export default async function MollieProductionReturnPage({ searchParams }: Molli
           ? "Activating subscription"
           : "Verifying payment";
 
-  const description =
-    returnState.kind === "success"
+  const description = isUpgradeReturn
+    ? "This return page does not grant Business access. Your current plan stays authoritative until Mollie confirms the upgrade payment via webhook."
+    : returnState.kind === "success"
       ? "Your workspace billing state is active. Entitlements were confirmed from authoritative provider sync — not this redirect."
       : returnState.kind === "activation_failed"
         ? "Payment was confirmed but subscription activation did not complete. Contact support or run operator recovery — do not pay again."
@@ -54,14 +59,17 @@ export default async function MollieProductionReturnPage({ searchParams }: Molli
           : "Return from hosted checkout. Payment confirmation happens via webhook and authoritative API re-fetch — not this page.";
 
   const alertVariant =
-    returnState.kind === "success"
+    returnState.kind === "success" && !isUpgradeReturn
       ? "success"
       : returnState.kind === "activation_failed"
         ? "error"
         : "warning";
 
-  const alertMessage =
-    returnState.kind === "success"
+  const alertMessage = isUpgradeReturn
+    ? attemptPresent
+      ? "Upgrade checkout returned. Business activates only after Mollie webhook confirms payment — redirect query params are not trusted."
+      : "Returned from upgrade checkout. Awaiting authoritative upgrade payment confirmation via webhook."
+    : returnState.kind === "success"
       ? "Your subscription is active."
       : returnState.kind === "activation_failed"
         ? `Paid payment detected (${returnState.paymentId ?? "unknown"}) but activation failed. Support can recover without a new payment.`

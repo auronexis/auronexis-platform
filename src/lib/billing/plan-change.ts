@@ -12,6 +12,15 @@ export const PLAN_CHANGE_ALREADY_SCHEDULED_MESSAGE =
 export const PLAN_CHANGE_CONFLICT_MESSAGE =
   "A different plan change is already scheduled. Wait for it to take effect or contact support.";
 
+export const UPGRADE_PAYMENT_IN_PROGRESS_MESSAGE =
+  "An upgrade payment is already in progress. Complete checkout or wait for it to expire before retrying.";
+
+export const UPGRADE_PAYMENT_SYNC_NEEDED_MESSAGE =
+  "Upgrade payment was received and is syncing. Refresh billing in a moment — do not start a second checkout.";
+
+export const UPGRADE_CHECKOUT_UNAVAILABLE_MESSAGE =
+  "Upgrade checkout is temporarily unavailable. Try again shortly or contact support.";
+
 export type ScheduledPlanChange = {
   pendingPlanKey: PlanKey;
   pendingPlanName: string;

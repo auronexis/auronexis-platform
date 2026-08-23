@@ -4,6 +4,9 @@ import {
 import {
   PLAN_CHANGE_ALREADY_SCHEDULED_MESSAGE,
   PLAN_CHANGE_CONFLICT_MESSAGE,
+  UPGRADE_CHECKOUT_UNAVAILABLE_MESSAGE,
+  UPGRADE_PAYMENT_IN_PROGRESS_MESSAGE,
+  UPGRADE_PAYMENT_SYNC_NEEDED_MESSAGE,
 } from "@/lib/billing/plan-change";
 import {
   PLAN_CHANGE_CANCEL_ALREADY_MESSAGE,
@@ -77,6 +80,14 @@ export function sanitizeBillingCustomerError(error: unknown, fallback: string): 
     return error.message;
   }
 
+  if (
+    /Mollie checkout is not configured|Mollie LIVE charging is disabled|not enabled for Mollie|sync is already in progress|FastSpring subscription|billed via Mollie/i.test(
+      error.message,
+    )
+  ) {
+    return error.message;
+  }
+
   const planChangeMessage = resolvePlanChangeCustomerError(error);
   if (planChangeMessage) {
     return planChangeMessage;
@@ -103,7 +114,10 @@ export function resolvePlanChangeCustomerError(error: unknown): string | null {
     return error.message;
   }
 
-  if (error.message === "No active Mollie subscription to change.") {
+  if (
+    error.message === "No active Mollie subscription to change." ||
+    error.message === "No active Mollie subscription to upgrade."
+  ) {
     return "No active subscription to change. Complete checkout first or contact support.";
   }
 
@@ -113,6 +127,37 @@ export function resolvePlanChangeCustomerError(error: unknown): string | null {
 
   if (error.message === "Enterprise plan changes are manual-only.") {
     return "Enterprise plan changes are manual-only. Contact sales.";
+  }
+
+  if (
+    error.message === UPGRADE_PAYMENT_IN_PROGRESS_MESSAGE ||
+    error.message.includes("upgrade payment is already in progress")
+  ) {
+    return UPGRADE_PAYMENT_IN_PROGRESS_MESSAGE;
+  }
+
+  if (error.message === UPGRADE_PAYMENT_SYNC_NEEDED_MESSAGE) {
+    return UPGRADE_PAYMENT_SYNC_NEEDED_MESSAGE;
+  }
+
+  if (error.message === UPGRADE_CHECKOUT_UNAVAILABLE_MESSAGE) {
+    return UPGRADE_CHECKOUT_UNAVAILABLE_MESSAGE;
+  }
+
+  if (error.message.includes("Billing period boundaries")) {
+    return "Billing sync is required before upgrade. Refresh billing or contact support.";
+  }
+
+  if (error.message.includes("cancellation is scheduled")) {
+    return "Upgrades are unavailable while cancellation is scheduled.";
+  }
+
+  if (error.message.includes("No prorated amount due")) {
+    return UPGRADE_CHECKOUT_UNAVAILABLE_MESSAGE;
+  }
+
+  if (error.message.includes("Mollie upgrade payment missing hosted checkout URL")) {
+    return UPGRADE_CHECKOUT_UNAVAILABLE_MESSAGE;
   }
 
   if (error.message === PLAN_CHANGE_CANCEL_ALREADY_MESSAGE) {
@@ -141,7 +186,10 @@ export function isExpectedPlanChangeError(error: unknown): boolean {
     (error.message.includes("already scheduled") ||
       error.message === "This is your organization's current plan." ||
       error.message === PLAN_CHANGE_CANCEL_ALREADY_MESSAGE ||
-      error.message === SUBSCRIPTION_CANCEL_ALREADY_MESSAGE)
+      error.message === SUBSCRIPTION_CANCEL_ALREADY_MESSAGE ||
+      error.message === UPGRADE_PAYMENT_IN_PROGRESS_MESSAGE ||
+      error.message === UPGRADE_PAYMENT_SYNC_NEEDED_MESSAGE ||
+      error.message.includes("upgrade payment is already in progress"))
   );
 }
 
