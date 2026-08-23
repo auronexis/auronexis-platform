@@ -22,6 +22,7 @@ import {
   MOLLIE_METADATA_ORGANIZATION_ID,
   MOLLIE_METADATA_PLAN_KEY,
 } from "@/lib/billing/providers/mollie/foundation";
+import { buildMollieIdempotencyKey } from "@/lib/billing/providers/mollie/idempotency-key";
 import {
   isMolliePaymentPaid,
   isMolliePaymentTerminalFailure,
@@ -62,10 +63,6 @@ function buildMollieWebhookUrl(): string {
 
 function buildMollieUpgradeReturnUrl(attemptId: string): string {
   return `${getAppUrl()}/settings/billing/mollie/return?attempt=${encodeURIComponent(attemptId)}&purpose=upgrade`;
-}
-
-function buildIdempotencyKey(organizationId: string, operation: string, attemptId: string): string {
-  return `mollie:prod:${organizationId}:${operation}:${attemptId}`.slice(0, 255);
 }
 
 function logUpgradeStage(
@@ -480,7 +477,12 @@ export async function createMollieUpgradePaymentCheckout(input: {
   try {
     payment = await client.customerPayments.create({
       customerId: existing.provider_customer_id,
-      idempotencyKey: buildIdempotencyKey(input.organizationId, "upgrade_adjustment", checkoutAttemptId),
+      idempotencyKey: buildMollieIdempotencyKey({
+        surface: "prod",
+        organizationId: input.organizationId,
+        operation: "upgrade_adjustment",
+        attemptId: checkoutAttemptId,
+      }),
       amount: { currency: proration.currency, value: amountValue },
       description: `Auroranexis upgrade adjustment — ${previousPlan.name} to ${targetPlan.name}`,
       sequenceType: SequenceType.oneoff,

@@ -27,6 +27,7 @@ import {
   MOLLIE_METADATA_PLAN_KEY,
   MOLLIE_METADATA_BILLING_SURFACE,
 } from "@/lib/billing/providers/mollie/foundation";
+import { buildMollieIdempotencyKey } from "@/lib/billing/providers/mollie/idempotency-key";
 import { assertMolliePaymentOpsAllowed, getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
 import {
   getMollieOrganizationSubscription,
@@ -48,10 +49,6 @@ function buildMollieWebhookUrl(): string {
 
 function buildMollieProductionReturnUrl(checkoutAttemptId: string): string {
   return `${getAppUrl()}/settings/billing/mollie/return?attempt=${encodeURIComponent(checkoutAttemptId)}`;
-}
-
-function buildIdempotencyKey(organizationId: string, operation: string, attemptId: string): string {
-  return `mollie:prod:${organizationId}:${operation}:${attemptId}`.slice(0, 255);
 }
 
 async function readOrganizationSubscriptionRow(
@@ -291,7 +288,12 @@ export async function createMollieProductionFirstPayment(input: {
 
   const payment = await client.customerPayments.create({
     customerId,
-    idempotencyKey: buildIdempotencyKey(input.organizationId, "first_payment", checkoutAttemptId),
+    idempotencyKey: buildMollieIdempotencyKey({
+      surface: "prod",
+      organizationId: input.organizationId,
+      operation: "first_payment",
+      attemptId: checkoutAttemptId,
+    }),
     amount: { currency: plan.currency, value: amountValue },
     description: `Auroranexis ${plan.name} — first payment`,
     sequenceType: SequenceType.first,
@@ -382,7 +384,12 @@ export async function createMollieProductionSubscriptionAfterMandate(input: {
 
   const subscription = await client.customerSubscriptions.create({
     customerId: input.customerId,
-    idempotencyKey: buildIdempotencyKey(input.organizationId, "subscription", input.paymentId),
+    idempotencyKey: buildMollieIdempotencyKey({
+      surface: "prod",
+      organizationId: input.organizationId,
+      operation: "subscription",
+      attemptId: input.paymentId,
+    }),
     amount: { currency: plan.currency, value: amountValue },
     interval: "1 month",
     description: `Auroranexis ${plan.name} subscription`,

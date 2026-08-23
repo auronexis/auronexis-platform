@@ -42,7 +42,9 @@ export const MOLLIE_METADATA_BILLING_SURFACE = "auroranexis_billing_surface";
  * 1. Inbound webhooks: dedicated `mollie_webhook_events` ledger (provider + event id unique),
  *    mirroring fastspring_webhook_events. Always fetch authoritative object from Mollie API
  *    before mutating storage.
- * 2. Outbound charge/subscription creation: deterministic idempotency key on POST.
+ * 2. Outbound charge/subscription creation: deterministic Idempotency-Key via
+ *    `buildMollieIdempotencyKey` (`idempotency-key.ts`) — always ≤ 100 chars
+ *    (`m:{t|p}:{sha256}` of surface + org + operation + attemptId).
  * 3. Payload hash mismatch on redelivery → fail closed (same pattern as FastSpring).
  * 4. Provider coexistence: Mollie never overwrites FastSpring organization_subscriptions rows.
  */

@@ -209,7 +209,8 @@ test("L: webhook idempotency ledger + checkout idempotency keys", () => {
   assert.match(webhooks, /23505/);
   const prod = readSource("src/lib/billing/providers/mollie/production-checkout.ts");
   assert.match(prod, /idempotencyKey/);
-  assert.match(prod, /mollie:prod:/);
+  assert.match(prod, /buildMollieIdempotencyKey/);
+  assert.match(prod, /surface:\s*"prod"/);
 });
 
 // M — Security
