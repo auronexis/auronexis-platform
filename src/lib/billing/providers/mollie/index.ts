@@ -66,6 +66,10 @@ export {
   changeMollieOrganizationPlan,
 } from "@/lib/billing/providers/mollie/lifecycle";
 export {
+  withdrawMollieOrganizationSubscriptionCancellation,
+  type MollieSubscriptionCancellationWithdrawResult,
+} from "@/lib/billing/providers/mollie/cancellation-withdrawal";
+export {
   applyMolliePendingPlanChangeIfReady,
   getMollieOrganizationSubscription,
   scheduleMolliePendingPlanChange,

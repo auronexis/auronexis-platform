@@ -16,6 +16,15 @@ export const SUBSCRIPTION_CANCEL_ALREADY_MESSAGE =
 export const SUBSCRIPTION_NOT_CANCELABLE_MESSAGE =
   "No active subscription to cancel. Complete checkout first or contact support.";
 
+export const SUBSCRIPTION_CANCELLATION_WITHDRAW_ALREADY_MESSAGE =
+  "Your subscription is already set to renew. Cancellation is not scheduled.";
+
+export const SUBSCRIPTION_CANCELLATION_WITHDRAW_EXPIRED_MESSAGE =
+  "The billing period has ended. Cancellation can no longer be withdrawn — start a new subscription.";
+
+export const SUBSCRIPTION_CANCELLATION_WITHDRAW_NOT_SCHEDULED_MESSAGE =
+  "No scheduled cancellation to withdraw.";
+
 export type SubscriptionManagementState = {
   cancelAtPeriodEnd: boolean;
   isPaidThrough: boolean;
@@ -25,7 +34,10 @@ export type SubscriptionManagementState = {
   renewalLabel: string;
   canCancelSubscription: boolean;
   canCancelScheduledPlanChange: boolean;
+  /** Same Mollie sub_ cannot be reactivated; withdrawal recreates via lifecycle. */
   canResumeSubscription: false;
+  /** Withdraw scheduled cancellation before current_period_end (recreate path). */
+  canWithdrawCancellation: boolean;
 };
 
 /** Paid access continues until current_period_end when cancel_at_period_end is set. */
@@ -116,6 +128,7 @@ export function resolveSubscriptionManagementState(
     canCancelSubscription: isUsable && !cancelAtPeriodEnd && Boolean(subscription?.provider_subscription_id),
     canCancelScheduledPlanChange: hasPendingPlanChange && !cancelAtPeriodEnd,
     canResumeSubscription: false,
+    canWithdrawCancellation: isUsable && cancelAtPeriodEnd && isPaidThrough,
   };
 }
 
@@ -135,6 +148,16 @@ export function formatSubscriptionCancellationScheduledSuccessMessage(input: {
     ? ` until ${input.accessUntilLabel}`
     : " until the end of your current billing period";
   return `Cancellation scheduled. You keep ${input.planName} access${datePart}.`;
+}
+
+export function formatSubscriptionCancellationWithdrawnSuccessMessage(input: {
+  planName: string;
+  renewalLabel: string | null;
+}): string {
+  const renewalPart = input.renewalLabel
+    ? ` Next renewal: ${input.renewalLabel}.`
+    : " Your renewal date has been restored.";
+  return `Cancellation withdrawn. Your ${input.planName} subscription will continue.${renewalPart} No charge today.`;
 }
 
 export function buildPlanChangeCanceledTemplateKey(
@@ -158,6 +181,14 @@ export function buildSubscriptionEndedTemplateKey(
 ): string {
   const suffix = accessUntil ?? "ended";
   return `subscription_ended:${providerSubscriptionId}:${suffix}`;
+}
+
+export function buildSubscriptionCancellationWithdrawnTemplateKey(
+  providerSubscriptionId: string,
+  renewalAt: string | null,
+): string {
+  const suffix = renewalAt ?? "renewal";
+  return `subscription_cancellation_withdrawn:${providerSubscriptionId}:${suffix}`;
 }
 
 export function resolveSubscriptionEmailPlanName(planKey: string | null | undefined): string {

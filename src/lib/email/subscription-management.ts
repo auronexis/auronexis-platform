@@ -4,6 +4,7 @@ import { formatBillingDate } from "@/lib/billing/types";
 import {
   buildPlanChangeCanceledTemplateKey,
   buildSubscriptionCancellationScheduledTemplateKey,
+  buildSubscriptionCancellationWithdrawnTemplateKey,
   buildSubscriptionEndedTemplateKey,
   resolveSubscriptionEmailPlanName,
 } from "@/lib/billing/subscription-management";
@@ -17,6 +18,9 @@ import {
   buildSubscriptionCancellationScheduledHtml,
   buildSubscriptionCancellationScheduledPlainText,
   buildSubscriptionCancellationScheduledSubject,
+  buildSubscriptionCancellationWithdrawnHtml,
+  buildSubscriptionCancellationWithdrawnPlainText,
+  buildSubscriptionCancellationWithdrawnSubject,
   buildSubscriptionEndedHtml,
   buildSubscriptionEndedPlainText,
   buildSubscriptionEndedSubject,
@@ -225,6 +229,57 @@ export async function sendSubscriptionEndedEmail(input: {
 
   if (!result.success) {
     console.error("[email][subscription-expire] ended email failed", {
+      templateKey,
+      organizationId: input.organizationId,
+    });
+  }
+}
+
+export async function sendSubscriptionCancellationWithdrawnEmail(input: {
+  organizationId: string;
+  organizationName: string;
+  userId: string;
+  recipientEmail: string;
+  planKey: string;
+  renewalAt: string | null;
+  providerSubscriptionId: string;
+}): Promise<void> {
+  const planName = resolveSubscriptionEmailPlanName(input.planKey);
+  const renewalLabel = formatBillingDate(input.renewalAt);
+  const templateKey = buildSubscriptionCancellationWithdrawnTemplateKey(
+    input.providerSubscriptionId,
+    input.renewalAt,
+  );
+
+  const result = await sendTransactionalEmail({
+    category: EMAIL_CATEGORIES.BILLING_SYSTEM,
+    templateKey,
+    organizationId: input.organizationId,
+    userId: input.userId,
+    to: input.recipientEmail,
+    subject: buildSubscriptionCancellationWithdrawnSubject({ planName }),
+    html: buildSubscriptionCancellationWithdrawnHtml({
+      organizationName: input.organizationName,
+      planName,
+      renewalLabel,
+    }),
+    text: buildSubscriptionCancellationWithdrawnPlainText({
+      organizationName: input.organizationName,
+      planName,
+      renewalLabel,
+    }),
+  });
+
+  if (result.skipped) {
+    console.info("[email][subscription-withdraw] email skipped (idempotent)", {
+      templateKey,
+      organizationId: input.organizationId,
+    });
+    return;
+  }
+
+  if (!result.success) {
+    console.error("[email][subscription-withdraw] email failed", {
       templateKey,
       organizationId: input.organizationId,
     });

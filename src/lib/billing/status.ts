@@ -120,8 +120,21 @@ export function getBillingStatusTone(status: string | null | undefined): Billing
   return "neutral";
 }
 
-/** Payment summary label derived from subscription status (not invoice rows). */
-export function getPaymentSummaryLabel(status: string | null | undefined): string {
+/**
+ * Payment summary label derived from subscription status (not invoice rows).
+ * When cancel_at_period_end preserves paid-through access, callers must pass
+ * paidThrough so canceled provider_status does not show "No payment on file".
+ */
+export function getPaymentSummaryLabel(
+  status: string | null | undefined,
+  options?: { paidThrough?: boolean; paidThroughLabel?: string | null },
+): string {
+  if (options?.paidThrough) {
+    return options.paidThroughLabel
+      ? `Paid through ${options.paidThroughLabel}`
+      : "Paid";
+  }
+
   if (isSubscriptionUsable(status)) {
     return "Paid";
   }
@@ -141,8 +154,11 @@ export function getPaymentSummaryLabel(status: string | null | undefined): strin
   return "No payment on file";
 }
 
-export function getPaymentSummaryTone(status: string | null | undefined): BillingStatusTone {
-  if (isSubscriptionUsable(status)) {
+export function getPaymentSummaryTone(
+  status: string | null | undefined,
+  options?: { paidThrough?: boolean },
+): BillingStatusTone {
+  if (options?.paidThrough || isSubscriptionUsable(status)) {
     return "success";
   }
 

@@ -283,7 +283,10 @@ export function buildBillingOverview(
     planLabel,
     currentPlanKey: isUsable ? currentPlanKey : hasPaymentProblem || paymentPending ? currentPlanKey : null,
     statusLabel,
-    paymentStatusLabel: getPaymentSummaryLabel(rawStatus),
+    paymentStatusLabel: getPaymentSummaryLabel(rawStatus, {
+      paidThrough: subscriptionManagement.isPaidThrough,
+      paidThroughLabel: subscriptionManagement.accessUntilLabel,
+    }),
     renewalDate,
     billingPeriodLabel,
     trialEndsAt: displaySubscription?.trial_ends_at ?? null,

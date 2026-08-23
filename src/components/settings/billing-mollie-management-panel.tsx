@@ -11,6 +11,7 @@ import { PageSurface, PageSurfaceHeading } from "@/components/ui/page-surface";
 import {
   cancelMollieScheduledPlanChangeAction,
   cancelMollieSubscriptionAction,
+  withdrawMollieSubscriptionCancellationAction,
 } from "@/lib/billing/actions";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import { formatScheduledPlanChangeSummary } from "@/lib/billing/plan-change";
@@ -45,9 +46,11 @@ export function BillingMollieManagementPanel({
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [isCancelChangePending, startCancelChangeTransition] = useTransition();
   const [isCancelSubPending, startCancelSubTransition] = useTransition();
+  const [isWithdrawPending, startWithdrawTransition] = useTransition();
 
   const cancelChangeDialogRef = useRef<HTMLDialogElement>(null);
   const cancelSubDialogRef = useRef<HTMLDialogElement>(null);
+  const withdrawDialogRef = useRef<HTMLDialogElement>(null);
 
   if (!canManage) {
     return null;
@@ -75,6 +78,12 @@ export function BillingMollieManagementPanel({
 
   const closeCancelChangeDialog = () => cancelChangeDialogRef.current?.close();
   const closeCancelSubDialog = () => cancelSubDialogRef.current?.close();
+  const openWithdrawDialog = () => {
+    setActionError(null);
+    setActionSuccess(null);
+    withdrawDialogRef.current?.showModal();
+  };
+  const closeWithdrawDialog = () => withdrawDialogRef.current?.close();
 
   const confirmCancelScheduledChange = () => {
     startCancelChangeTransition(async () => {
@@ -95,6 +104,21 @@ export function BillingMollieManagementPanel({
     startCancelSubTransition(async () => {
       const result = await cancelMollieSubscriptionAction();
       closeCancelSubDialog();
+      if (result?.error) {
+        setActionError(result.error);
+        return;
+      }
+      if (result?.success) {
+        setActionSuccess(result.success);
+        window.setTimeout(() => window.location.reload(), 800);
+      }
+    });
+  };
+
+  const confirmWithdrawCancellation = () => {
+    startWithdrawTransition(async () => {
+      const result = await withdrawMollieSubscriptionCancellationAction();
+      closeWithdrawDialog();
       if (result?.error) {
         setActionError(result.error);
         return;
@@ -177,13 +201,30 @@ export function BillingMollieManagementPanel({
         <div className="rounded-lg border border-border/70 p-4">
           <p className="text-sm font-semibold text-foreground">Subscription</p>
           {management.cancelAtPeriodEnd && management.isPaidThrough ? (
-            <p className="mt-2 text-sm text-muted">
-              Cancellation is scheduled. You keep access until{" "}
-              <span className="font-medium text-foreground">
-                {management.accessUntilLabel ?? "the end of your billing period"}
-              </span>
-              .
-            </p>
+            <>
+              <p className="mt-2 text-sm text-muted">
+                Cancellation is scheduled. {currentPlan?.name ?? overview.planLabel} remains active
+                until{" "}
+                <span className="font-medium text-foreground">
+                  {management.accessUntilLabel ?? "the end of your billing period"}
+                </span>
+                .
+              </p>
+              {management.canWithdrawCancellation ? (
+                <FormFooter className="border-t-0 pt-3">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    disabled={isWithdrawPending}
+                    loading={isWithdrawPending}
+                    loadingText="Restoring…"
+                    onClick={openWithdrawDialog}
+                  >
+                    Keep subscription
+                  </Button>
+                </FormFooter>
+              ) : null}
+            </>
           ) : management.canCancelSubscription ? (
             <p className="mt-2 text-sm text-muted">
               Cancel future renewals. You keep paid access until the end of your current billing
@@ -306,6 +347,54 @@ export function BillingMollieManagementPanel({
             onClick={confirmCancelSubscription}
           >
             Confirm cancellation
+          </Button>
+        </FormFooter>
+      </Dialog>
+
+      <Dialog
+        dialogRef={withdrawDialogRef}
+        title="Keep subscription?"
+        description="This restores automatic renewal. You will not be charged today."
+        onClose={closeWithdrawDialog}
+      >
+        <div className="space-y-3 text-sm text-muted">
+          <p>
+            Plan:{" "}
+            <span className="font-medium text-foreground">
+              {currentPlan?.name ?? overview.planLabel}
+            </span>
+          </p>
+          {management.accessUntilLabel ? (
+            <p>
+              Next renewal:{" "}
+              <span className="font-medium text-foreground">{management.accessUntilLabel}</span>
+            </p>
+          ) : (
+            <p>Your next renewal stays at the end of the current billing period.</p>
+          )}
+          <p>
+            No charge today. Mollie will resume renewals using your existing payment mandate at the
+            period end date above.
+          </p>
+        </div>
+        <FormFooter className="border-t-0 pt-4">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={closeWithdrawDialog}
+            disabled={isWithdrawPending}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            disabled={isWithdrawPending}
+            loading={isWithdrawPending}
+            loadingText="Restoring…"
+            onClick={confirmWithdrawCancellation}
+          >
+            Confirm keep subscription
           </Button>
         </FormFooter>
       </Dialog>

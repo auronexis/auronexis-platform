@@ -39,11 +39,13 @@ import {
   cancelMollieScheduledPlanChange,
   scheduleMollieOrganizationDowngrade,
 } from "@/lib/billing/providers/mollie/lifecycle";
+import { withdrawMollieOrganizationSubscriptionCancellation } from "@/lib/billing/providers/mollie/cancellation-withdrawal";
 import { createMollieUpgradePaymentCheckout } from "@/lib/billing/providers/mollie/upgrade-payment";
 import { formatPlanChangeScheduledSuccessMessage, formatUpgradePaymentCheckoutMessage } from "@/lib/billing/plan-change";
 import {
   formatPlanChangeCanceledSuccessMessage,
   formatSubscriptionCancellationScheduledSuccessMessage,
+  formatSubscriptionCancellationWithdrawnSuccessMessage,
   resolveSubscriptionEmailPlanName,
 } from "@/lib/billing/subscription-management";
 import { formatBillingDate } from "@/lib/billing/types";
@@ -51,6 +53,7 @@ import { sendPlanChangeScheduledEmail } from "@/lib/email/plan-change";
 import {
   sendPlanChangeCanceledEmail,
   sendSubscriptionCancellationScheduledEmail,
+  sendSubscriptionCancellationWithdrawnEmail,
 } from "@/lib/email/subscription-management";
 import { resolvePrimaryBillingRecipientForEmail } from "@/lib/email/billing-recipient";
 import { getPlanByKey } from "@/lib/billing/plans";
@@ -391,6 +394,69 @@ export async function cancelMollieSubscriptionAction(): Promise<BillingActionSta
     console.error("[billing][subscription-cancel] failed", error);
     return {
       error: sanitizeBillingCustomerError(error, "Unable to cancel subscription."),
+    };
+  }
+}
+
+/** Withdraw scheduled Mollie cancellation — Owner/Admin only. No immediate charge. */
+export async function withdrawMollieSubscriptionCancellationAction(): Promise<BillingActionState> {
+  const session = await requireSession();
+
+  if (!canManageOrganizationSettings(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
+  }
+
+  try {
+    const subscription = await getOrganizationSubscription(session);
+    const orgProvider = getOrganizationBillingProvider({
+      organizationId: session.organization.id,
+      subscription,
+    });
+
+    if (orgProvider !== "mollie") {
+      return {
+        error: "Cancellation withdrawal is only available for Mollie-billed workspaces.",
+      };
+    }
+
+    const result = await withdrawMollieOrganizationSubscriptionCancellation({
+      organizationId: session.organization.id,
+    });
+
+    const planName = resolveSubscriptionEmailPlanName(result.planKey);
+    const renewalLabel = formatBillingDate(result.renewalAt);
+    const billingRecipient = await resolvePrimaryBillingRecipientForEmail(session.organization.id);
+
+    if (billingRecipient) {
+      void sendSubscriptionCancellationWithdrawnEmail({
+        organizationId: session.organization.id,
+        organizationName: session.organization.name,
+        userId: billingRecipient.userId,
+        recipientEmail: billingRecipient.email,
+        planKey: result.planKey,
+        renewalAt: result.renewalAt,
+        providerSubscriptionId: result.providerSubscriptionId,
+      }).catch((emailError) => {
+        console.error("[billing][subscription-withdraw] email failed", {
+          message: emailError instanceof Error ? emailError.message : String(emailError),
+        });
+      });
+    } else {
+      console.error("[billing][subscription-withdraw] no billing recipient for withdrawal email", {
+        organizationId: session.organization.id,
+      });
+    }
+
+    return {
+      success: formatSubscriptionCancellationWithdrawnSuccessMessage({
+        planName,
+        renewalLabel,
+      }),
+    };
+  } catch (error) {
+    console.error("[billing][subscription-withdraw] failed", error);
+    return {
+      error: sanitizeBillingCustomerError(error, "Unable to keep subscription."),
     };
   }
 }

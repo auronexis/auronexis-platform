@@ -113,7 +113,11 @@ function resolveStatusTone(overview: BillingDashboardData["overview"]): "green" 
 }
 
 function resolvePaymentTone(overview: BillingDashboardData["overview"]): "green" | "amber" | "red" | "slate" {
-  return billingStatusToneToBadge(getPaymentSummaryTone(overview.subscription?.status ?? "inactive"));
+  return billingStatusToneToBadge(
+    getPaymentSummaryTone(overview.subscription?.status ?? "inactive", {
+      paidThrough: overview.subscriptionManagement?.isPaidThrough,
+    }),
+  );
 }
 
 function BillingContactCard({ card }: { card: BillingContactCardContent }) {

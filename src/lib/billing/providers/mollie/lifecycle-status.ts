@@ -97,8 +97,11 @@ export function isMollieSubscriptionEntitlementGranting(
 export const MOLLIE_SUPPORTS_CANCEL_AT_PERIOD_END = true as const;
 
 /**
- * Mollie does not expose a "reactivate canceled subscription" API.
- * Recovery after cancel requires a new first-payment → mandate → subscription.
+ * Mollie does not expose a "reactivate canceled subscription" API on the same sub_ id.
+ * Cancellation withdrawal recreates a NEW subscription with the existing customer +
+ * valid mandate and a future startDate (no immediate charge) — see
+ * withdrawMollieOrganizationSubscriptionCancellation in cancellation-withdrawal.ts.
+ * Fresh purchase after full expiry may still require first-payment if no mandate remains.
  */
 export const MOLLIE_SUPPORTS_SUBSCRIPTION_REACTIVATION = false as const;
 
