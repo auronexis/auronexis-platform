@@ -59,7 +59,7 @@ export function merchantReturnPolicyJsonLd() {
         "@type": "PropertyValue",
         name: "paymentProcessing",
         value:
-          "New self-serve purchases are processed via Mollie. See /refund-policy for cancellation and refund request handling.",
+          "Payments for Auroranexis subscriptions are processed securely through our payment service provider, Mollie. See /refund-policy for cancellation and refund request handling.",
       },
     ],
   };
@@ -264,7 +264,7 @@ export function pricingPlanProductsJsonLd(): Record<string, unknown>[] {
 
 /**
  * Aggregate Product for the pricing page graph (Offer catalog of public self-serve plans).
- * Private invite-only FastSpring programs remain excluded from public offer generation.
+ * Private invite-only programs remain excluded from public offer generation.
  */
 export function pricingPageJsonLd() {
   return {

@@ -46,7 +46,7 @@ export default async function MollieTestCheckoutPage() {
         module="settings"
         eyebrow="Internal · TEST MODE"
         title="Mollie Test Checkout"
-        description="Launch an isolated Mollie TEST subscription lifecycle (customer → first payment → mandate → subscription). Does not affect FastSpring entitlements or production billing."
+        description="Launch an isolated Mollie TEST subscription lifecycle (customer → first payment → mandate → subscription). Does not affect production billing."
       />
 
       <MollieTestCheckoutPanel configured={configured} initialDiagnostics={initialDiagnostics} />

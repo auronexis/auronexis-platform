@@ -79,7 +79,7 @@ export function BillingHistoryPanel({
     <PageSurface>
       <PageSurfaceHeading
         title="Billing history"
-        description="Invoices and payments from Mollie. Historical FastSpring or Paddle invoices may also appear when present."
+        description="Invoices and payments for your Auroranexis subscription."
       />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">

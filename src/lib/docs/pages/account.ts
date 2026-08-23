@@ -7,7 +7,7 @@ export const BILLING_DOC: DocPageInput = {
   description:
     "Plans, Mollie checkout, invoices, payment methods, and subscription management.",
   intro:
-    "Billing is managed in Settings → Billing. Workspace owners and admins with billing permissions can compare plans, start Mollie checkout, download invoices, and manage subscriptions via the account management link in their FastSpring purchase confirmation email or by contacting support.",
+    "Billing is managed in Settings → Billing. Workspace owners and admins with billing permissions can compare plans, start Mollie checkout, download invoices, and manage subscriptions in Settings → Billing or by contacting support.",
   callouts: [
     {
       variant: "info",

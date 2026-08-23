@@ -197,7 +197,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [LEGAL_ROUTES.refundPolicy]: {
     title: "Refund and Cancellation Policy",
     description:
-      "Refund and cancellation rules for Auroranexis subscriptions. New purchases are processed via Mollie. Cancellation is distinct from a refund.",
+      "Refund and cancellation rules for Auroranexis subscriptions. Payments are processed via Mollie. Cancellation is distinct from a refund.",
   },
   "/docs": {
     title: "Documentation Hub",

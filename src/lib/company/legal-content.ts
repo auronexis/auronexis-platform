@@ -83,7 +83,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Categories of data processed",
         body:
-          "We process: account and profile data (name, email, role, organization); operational data you enter (clients, reports, risks, incidents, knowledge, automation configurations); usage, audit, and security logs; billing and subscription identifiers processed via Mollie (historical subscriptions may have been processed via FastSpring or Paddle); connector and integration tokens (stored encrypted); support communications; and, where enabled, inputs/outputs for AI-assisted features.",
+          "We process: account and profile data (name, email, role, organization); operational data you enter (clients, reports, risks, incidents, knowledge, automation configurations); usage, audit, and security logs; billing and subscription identifiers processed via Mollie; connector and integration tokens (stored encrypted); support communications; and, where enabled, inputs/outputs for AI-assisted features.",
       },
       {
         heading: "Purposes and legal bases",
@@ -98,7 +98,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Sub-processors and transfers",
         body:
-          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, Mollie, Resend, and optional AI providers when enabled; FastSpring and Paddle processed historical transactions). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
+          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, Mollie, Resend, and optional AI providers when enabled). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
       },
       {
         heading: "Your rights",
@@ -179,26 +179,26 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
         heading: "11. Prices, payment, invoices, and taxes",
         body:
           "Listed self-serve plans (base USD catalog): Professional $179/month; Business $599/month; Enterprise $1,799/month. Final amounts and applicable taxes are confirmed at checkout. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
-        },
-        {
+      },
+      {
         heading: "11a. Payment processing",
         body:
-          "New self-serve purchases and renewals are processed via Mollie. Auroranexis supplies and licenses software access. Payment method handling, settlement, and related payment-provider terms apply to the payment transaction. For legacy subscriptions originally purchased through FastSpring or Paddle, those providers' historical purchase terms applied to those transactions. These Terms continue to govern use of Auroranexis. LEGAL_REVIEW_REQUIRED: confirm whether Auroranexis or Mollie acts as Merchant of Record for tax collection in each selling jurisdiction before relying on MoR-specific wording.",
-        },
+          "Payments for Auroranexis subscriptions are processed securely through our payment service provider, Mollie. Auroranexis supplies and licenses software access. Payment method handling, settlement, and related payment-provider terms apply to the payment transaction. These Terms continue to govern use of Auroranexis.",
+      },
       {
         heading: "12. Upgrades, downgrades, and renewal",
         body:
-          "Upgrades take effect according to the workflow shown in billing settings and the active checkout provider. Downgrades may take effect at the next billing period unless otherwise stated at checkout. Subscriptions renew automatically for the selected billing interval unless cancelled before the renewal date. The customer portal and billing settings are the primary source for managing subscriptions where available.",
+          "Upgrades take effect according to the workflow shown in billing settings. Downgrades may take effect at the next billing period unless otherwise stated at checkout. Subscriptions renew automatically for the selected billing interval unless cancelled before the renewal date. Billing settings are the primary source for managing subscriptions where available.",
       },
       {
         heading: "13. Cancellation and termination",
         body:
-          "You may cancel future renewals via billing settings or by contacting support. For questions about a legacy subscription originally purchased through FastSpring or Paddle, contact support with your account email and any available transaction reference. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
+          "You may cancel future renewals via Settings → Billing or by contacting support. Cancellation stops future billing cycles; it does not retroactively refund an already-started billing period unless mandatory law requires otherwise or we expressly agree in writing. Paid access continues until the end of the already-paid period. After effective cancellation, no further renewals occur. We may terminate for material breach, non-payment after notice, illegal use, or security risk, subject to applicable law. Upon termination, access ends at the end of the paid period or immediately where legally permitted for cause.",
       },
       {
         heading: "14. Refunds and withdrawal rights",
         body:
-          `Refund and cancellation details are published in our Refund and Cancellation Policy at /refund-policy. Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply where services are directed exclusively at entrepreneurs; where a buyer qualifies as a consumer and mandatory law applies, statutory rights remain unaffected. For billing errors or material service issues, contact ${COMPANY_CONTACT.supportEmail}. Cancellation prevents future renewals and is distinct from a refund. Historical FastSpring or Paddle purchases may remain subject to those providers' historical buyer terms.`,
+          `Refund and cancellation details are published in our Refund and Cancellation Policy at /refund-policy. Statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply where services are directed exclusively at entrepreneurs; where a buyer qualifies as a consumer and mandatory law applies, statutory rights remain unaffected. For billing errors or material service issues, contact ${COMPANY_CONTACT.supportEmail}. Cancellation prevents future renewals and is distinct from a refund.`,
       },
       {
         heading: "15. Data protection and DPA",
@@ -218,7 +218,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "18. Third-party services",
         body:
-          "The platform integrates third-party services (e.g., Mollie, Supabase, Vercel, connectors, optional AI providers; FastSpring and Paddle processed historical transactions). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
+          "The platform integrates third-party services (e.g., Mollie, Supabase, Vercel, connectors, optional AI providers). Their terms and privacy policies apply to their services. We are not responsible for third-party outages, API changes, or data handling outside our control, except where mandatory law provides otherwise.",
       },
       {
         heading: "19. Service changes",
@@ -363,11 +363,6 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
           "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nMollie — payment processing for subscription billing.\nResend — transactional email delivery.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
       },
       {
-        heading: "Historical sub-processors",
-        body:
-          "FastSpring — payment processing / Merchant of Record for transactions purchased before our transition to Mollie. Retained for transparency about historical processing only; not used for new or active billing.\nPaddle — Merchant of Record for transactions purchased before the FastSpring era. Historical transparency only; not used for new or active billing.",
-      },
-      {
         heading: "International transfers",
         body:
           "Where sub-processors process data outside the EEA, we rely on appropriate safeguards such as Standard Contractual Clauses and supplementary measures where required.",
@@ -473,43 +468,52 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
   },
   refundPolicy: {
     title: "Refund and Cancellation Policy",
-    description: `Refund and cancellation rules for ${productName} subscriptions. New purchases are processed via Mollie. Cancellation is distinct from a refund.`,
+    description: `Refund and cancellation rules for ${productName} subscriptions. Payments are processed via Mollie. Cancellation is distinct from a refund.`,
     lastUpdated: LEGAL_LAST_UPDATED,
     showCompanyCard: true,
     companyCardTitle: "Provider",
     sections: [
       {
         heading: "1. Scope",
-        body: `${productName} is primarily offered to businesses, professional users, AI agencies, managed service providers, IT service providers, and enterprise organizations.\n\nThis policy sets out Auroranexis's contractual refund and cancellation terms for ${productName} subscriptions. Payments for new self-serve subscriptions are processed via Mollie. There is no self-service refund button in the product; refund requests are reviewed by Auroranexis support and, if approved, issued by an operator through Mollie.\n\nLEGAL_REVIEW_REQUIRED: confirm Merchant of Record / tax remittance roles for Mollie-processed payments in each selling jurisdiction before publishing MoR-specific claims.\n\nFor legacy subscriptions purchased through FastSpring or Paddle, those providers' historical buyer terms applied to those purchases.`,
+        body: `This Refund and Cancellation Policy applies to paid ${productName} subscriptions offered by ${legalName}. ${productName} is primarily offered to businesses, professional users, AI agencies, managed service providers, IT service providers, and enterprise organizations.\n\nThis policy sets out Auroranexis's contractual refund and cancellation terms. It does not replace the Terms of Service and does not exclude rights that cannot legally be excluded.`,
       },
       {
-        heading: "2. Business customers",
+        heading: "2. Subscription Billing",
         body:
-          "Unless otherwise agreed in writing or required by mandatory law, business customers do not have a statutory consumer right of withdrawal. Subscription fees already paid are generally non-refundable for the current billing period.\n\nNothing in this policy excludes rights that cannot legally be excluded.",
+          "Payments for Auroranexis subscriptions are processed securely through our payment service provider, Mollie.\n\nSubscriptions renew automatically for the selected billing period until cancelled. You authorize recurring charges for the plan you select until cancellation takes effect.",
       },
       {
-        heading: "3. Consumers",
+        heading: "3. Cancellation",
         body:
-          "Auroranexis is designed primarily for business use. Where a buyer qualifies as a consumer and mandatory consumer-protection law applies, the buyer retains all statutory withdrawal and refund rights.\n\nConsumer refund or withdrawal requests are handled in accordance with applicable law and this policy. Historical FastSpring or Paddle purchases may remain subject to those providers' historical buyer terms.",
+          "You may cancel future renewals in Settings → Billing or by contacting support.\n\nCancellation stops future renewals. It does not automatically refund charges already paid.\n\nUnless mandatory law requires otherwise, paid access continues until the end of the already-paid billing period. After effective cancellation, no further renewals occur.\n\nStatutory rights remain unaffected.",
       },
       {
-        heading: "4. Cancellation",
+        heading: "4. Refund Eligibility",
         body:
-          "Customers may cancel an automatically renewing subscription in Settings → Billing or by contacting support.\n\nUnless mandatory law or applicable purchase terms require otherwise, cancellation prevents the next renewal and access continues until the end of the paid billing period.\n\nCancellation is different from a refund. Canceling a subscription does not automatically refund charges already paid.",
+          "Unless otherwise agreed in writing or required by mandatory law, subscription fees already paid for the current billing period are generally non-refundable for business customers.\n\nAuroranexis may review requests involving duplicate charges, incorrect charges, confirmed billing errors, unauthorized transactions, or material technical failure that prevented access to the purchased service. A review does not guarantee a refund.\n\nNothing in this policy promises a refund where this policy or applicable law does not provide one.",
       },
       {
-        heading: "5. Billing errors and service issues",
+        heading: "5. How to Request a Refund",
+        body: `Refund requests must be submitted to ${COMPANY_CONTACT.supportEmail} and are reviewed individually in accordance with this policy and applicable law.\n\nPlease include your account email, organization name, transaction reference where available, and a clear description of the issue. Never send full payment-card details.\n\nApproved refunds are returned to the original payment method where technically possible.`,
+      },
+      {
+        heading: "6. Failed or Duplicate Payments",
         body:
-          "Auroranexis reviews requests involving duplicate charges, incorrect charges, confirmed billing errors, unauthorized transactions, or material technical failure that prevented access to the purchased service.\n\nA review does not guarantee a refund. Where Mollie processed the payment, any approved refund is issued by an operator through Mollie. Where FastSpring or Paddle processed a legacy payment, any approved refund for that historical transaction is handled according to that historical provider's process.",
+          "If a payment fails, we may retry according to the payment method and subscription settings, and access may be restricted after reasonable notice if the subscription remains unpaid.\n\nIf you believe you were charged twice or incorrectly, contact support promptly with the transaction details so we can investigate.",
       },
       {
-        heading: "6. Requesting assistance",
-        body: `Contact support at ${COMPANY_CONTACT.supportEmail} or legal at ${COMPANY_CONTACT.legalEmail}.\n\nPlease provide account email, organization name, transaction reference where available, and a description of the issue. Never send full payment-card details.`,
-      },
-      {
-        heading: "7. Changes",
+        heading: "7. Exceptional Circumstances",
         body:
-          "Auroranexis may update this policy to reflect changes to the service, payment provider, or applicable requirements. The latest version is published on this page.",
+          "Auroranexis may approve a refund or other commercial remedy in exceptional cases at its discretion, for example confirmed billing errors or material service failure that prevented use of the purchased subscription. Any such decision is case-specific and does not create a standing entitlement to refunds.",
+      },
+      {
+        heading: "8. Mandatory Legal Rights",
+        body:
+          "Auroranexis is designed primarily for business use. Where services are directed exclusively at entrepreneurs within the meaning of § 14 BGB, statutory consumer withdrawal rights under §§ 312g, 355 BGB do not apply.\n\nWhere a buyer qualifies as a consumer and mandatory consumer-protection law applies, that buyer retains all statutory withdrawal and refund rights. Those rights are not limited by this policy.\n\nNothing in this policy excludes liability or rights that cannot be excluded under applicable law.",
+      },
+      {
+        heading: "9. Contact",
+        body: `Refund and billing support: ${COMPANY_CONTACT.supportEmail}.\nLegal inquiries: ${COMPANY_CONTACT.legalEmail}.\n\nAuroranexis may update this policy to reflect changes to the service or applicable requirements. The latest version is published on this page.`,
       },
     ],
   },

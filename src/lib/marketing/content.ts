@@ -164,7 +164,7 @@ export const USE_CASES = [
 export const PUBLIC_PRICING_PLANS = [
   {
     name: "Professional",
-    /** Fallback only — public pages prefer FastSpring localized display. */
+    /** Fallback only — public pages prefer provider-localized display when available. */
     price: "$179",
     period: "/ month",
     productPath: "professional" as const,

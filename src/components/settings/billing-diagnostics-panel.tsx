@@ -168,8 +168,8 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
         Internal billing maintenance and diagnostics only. No records are deleted automatically.{" "}
         {isMollieMode ? (
           <>
-            Mollie is the active billing provider. Historical Stripe, Paddle, and FastSpring data is
-            read-only and never drives new checkout. Customer-facing billing remains on{" "}
+            Mollie is the active billing provider. Archived historical billing records are
+            read-only and never drive new checkout. Customer-facing billing remains on{" "}
           </>
         ) : (
           <>
