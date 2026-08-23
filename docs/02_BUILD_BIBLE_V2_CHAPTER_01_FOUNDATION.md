@@ -105,7 +105,7 @@ Every modification must be:
 
 ## Billing
 
-- **FastSpring is the sole active billing provider.**
+- **Mollie is the sole active billing provider.** FastSpring / Paddle / Stripe are historical archive only.
 - Do not reintroduce Stripe or Paddle runtime (SDKs, `/api/stripe`, `/api/paddle`, checkout/portal branching on Stripe or Paddle).
 - Historical Stripe and Paddle data remains archive-only.
 - Platform catalog prices use the plan's billed currency (currently EUR); workspace CRM currency (`organizations.currency`) is a separate domain.

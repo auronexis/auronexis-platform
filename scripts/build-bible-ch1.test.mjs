@@ -23,7 +23,7 @@ function walkTsFiles(dir, out = []) {
 test("Build Bible V2 Chapter 1 foundation doc exists", () => {
   assert.ok(existsSync(join(rootDir, "docs/02_BUILD_BIBLE_V2_CHAPTER_01_FOUNDATION.md")));
   const doc = readSource("docs/02_BUILD_BIBLE_V2_CHAPTER_01_FOUNDATION.md");
-  assert.match(doc, /FastSpring is the sole active billing provider/);
+  assert.match(doc, /Mollie is the sole active billing provider/);
   assert.match(doc, /Row Level Security/);
   assert.match(doc, /formatMoneyFromCentsLocale/);
 });
@@ -31,7 +31,7 @@ test("Build Bible V2 Chapter 1 foundation doc exists", () => {
 test("Cursor always-apply foundation rule exists", () => {
   const rule = readSource(".cursor/rules/build-bible-v2-ch1-foundation.mdc");
   assert.match(rule, /alwaysApply:\s*true/);
-  assert.match(rule, /FastSpring sole billing provider/);
+  assert.match(rule, /Mollie sole billing provider/);
   assert.match(rule, /TODO/);
 });
 
@@ -77,11 +77,12 @@ test("src has no TODO or FIXME comment markers", () => {
   assert.deepEqual(hits, [], `Forbidden TODO/FIXME comments:\n${hits.join("\n")}`);
 });
 
-test("active billing provider is FastSpring with legacy Paddle entitlement path", () => {
+test("active billing provider is Mollie; FastSpring/Paddle/Stripe never drive new checkout", () => {
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "stripe"/);
   assert.doesNotMatch(provider, /return "paddle"/);
   assert.doesNotMatch(provider, /readLegacyBillingProviderEnv/);
-  assert.match(provider, /Usable legacy Paddle subscription/);
+  assert.match(provider, /Mollie is the sole active billing provider/i);
 });

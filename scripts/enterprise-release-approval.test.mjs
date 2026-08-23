@@ -72,10 +72,13 @@ test("chapter 19 always-apply rule is installed", () => {
   assert.match(readSource(rule), /alwaysApply:\s*true/);
 });
 
-test("fastspring webhook path is required for release; paddle and stripe absent", () => {
+test("mollie webhook path is required for release; paddle and stripe absent", () => {
   assert.equal(pathExists("src/app/api/paddle/webhook/route.ts"), false);
+  assert.ok(pathExists("src/app/api/mollie/webhook/route.ts"));
+  // FastSpring route retained as 410 retirement stub only.
   assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
   assert.equal(pathExists("src/app/api/stripe"), false);
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
 });

@@ -17,31 +17,32 @@ test("Build Bible V2 Chapter 12 billing doc and rule exist", () => {
   assert.match(rule, /resolveOrganizationEntitlements/);
 });
 
-test("FastSpring is the sole active checkout provider; legacy Paddle remains entitled", () => {
+test("Mollie is the sole active checkout provider; FastSpring webhook is retired", () => {
   const provider = readSource("src/lib/billing/provider.ts");
   const selection = readSource("src/lib/billing/subscription-selection.ts");
   const actions = readSource("src/lib/billing/actions.ts");
-  assert.match(provider, /return "fastspring"/);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "stripe"/);
   assert.doesNotMatch(provider, /return "paddle"/);
-  assert.match(provider, /Usable legacy Paddle subscription/);
-  assert.match(selection, /legacy Paddle/i);
-  assert.match(actions, /activeProvider|createFastSpringCheckoutPayloadForPlan/);
+  assert.match(provider, /Mollie is the sole active billing provider/i);
+  assert.match(selection, /legacy Paddle|FastSpring|Mollie/i);
+  assert.match(actions, /createMollieProductionFirstPayment|mollieCheckout/);
+  assert.doesNotMatch(actions, /createFastSpringCheckoutPayloadForPlan/);
   assert.ok(!pathExists("src/lib/stripe"));
   assert.ok(!pathExists("src/lib/paddle"));
   assert.ok(!pathExists("src/app/api/paddle/webhook/route.ts"));
+  assert.ok(pathExists("src/app/api/mollie/webhook/route.ts"));
   assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
 });
 
-test("fastspring webhook route verifies signature and emits commercial events", () => {
+test("fastspring webhook route is retired to 410; Mollie webhook is active", () => {
   const route = readSource("src/app/api/fastspring/webhook/route.ts");
-  const webhooks = readSource("src/lib/fastspring/webhooks.ts");
-  assert.match(route, /verifyFastSpringSignature/);
-  assert.match(route, /ensureFastSpringIdempotency/);
-  assert.match(webhooks, /trackBillingLifecycleEvent/);
-  const events = readSource("src/lib/fastspring/events.ts");
-  assert.match(events, /order\.completed/);
-  assert.match(events, /subscription\.activated/);
+  assert.match(route, /status:\s*410/);
+  assert.doesNotMatch(route, /verifyFastSpringSignature|handleFastSpringWebhookEvent/);
+  assert.ok(pathExists("src/app/api/mollie/webhook/route.ts"));
+  const mollieRoute = readSource("src/app/api/mollie/webhook/route.ts");
+  assert.match(mollieRoute, /mollie|payment/i);
 });
 
 test("idempotency recovers stale processing and checks payload hash", () => {
@@ -63,7 +64,7 @@ test("customer portal emits billing_portal_opened commercial event", () => {
   assert.match(actions, /trackBillingLifecycleEvent/);
 });
 
-test("commercial event catalog and ops doc are FastSpring-sole", () => {
+test("commercial event catalog and ops doc describe sole active billing provider", () => {
   const commercial = readSource("src/lib/billing/commercial-events.ts");
   const docs = readSource("docs/paddle-billing.md");
   assert.match(commercial, /COMMERCIAL_EVENT_NAMES/);

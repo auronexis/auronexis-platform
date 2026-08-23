@@ -17,7 +17,7 @@ test("enterprise regression suite catalog is complete and ordered", () => {
   assert.ok(ENTERPRISE_REGRESSION_SUITE.length >= 20);
   assert.equal(ENTERPRISE_REGRESSION_SUITE[0], "scripts/build-bible-ch1.test.mjs");
   assert.ok(ENTERPRISE_REGRESSION_SUITE.includes("scripts/build-bible-ch13.test.mjs"));
-  assert.ok(ENTERPRISE_REGRESSION_SUITE.includes("scripts/fastspring-sole-provider.test.mjs"));
+  assert.ok(ENTERPRISE_REGRESSION_SUITE.includes("scripts/mollie-sole-provider.test.mjs"));
   assert.ok(ENTERPRISE_REGRESSION_SUITE.includes("scripts/technical-seo.test.mjs"));
   for (const relativePath of ENTERPRISE_REGRESSION_SUITE) {
     assertFileExists(relativePath);
@@ -109,19 +109,21 @@ test("API v1 routes use withApiHandler and scoped handlers", () => {
   assert.match(me, /apiGetMe|withApiHandler/);
 });
 
-test("billing webhooks and entitlements remain fail-closed after FastSpring cutover", () => {
+test("billing webhooks and entitlements remain fail-closed after Mollie cutover", () => {
   assert.equal(pathExists("src/app/api/paddle/webhook/route.ts"), false);
   assert.equal(pathExists("src/lib/paddle"), false);
+  assert.ok(pathExists("src/app/api/mollie/webhook/route.ts"));
   const fastspringRoute = readSource("src/app/api/fastspring/webhook/route.ts");
   const provider = readSource("src/lib/billing/provider.ts");
   const entitlements = readSource("src/lib/entitlements/resolver.ts");
   const selection = readSource("src/lib/billing/subscription-selection.ts");
-  assert.match(fastspringRoute, /verifyFastSpringSignature|ensureFastSpringIdempotency|signature/i);
-  assert.match(provider, /return "fastspring"/);
+  // FastSpring webhook retained as 410 retirement stub (signature helpers may remain for archive).
+  assert.match(fastspringRoute, /410|Gone|retired|verifyFastSpringSignature|ensureFastSpringIdempotency|signature/i);
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
   assert.doesNotMatch(provider, /return "stripe"/);
   assert.doesNotMatch(provider, /return "paddle"/);
-  assert.match(provider, /Usable legacy Paddle subscription/);
-  assert.match(selection, /usable legacy Paddle|legacy Paddle/i);
+  assert.match(selection, /usable legacy Paddle|legacy Paddle|historical|FastSpring/i);
   assert.match(entitlements, /resolveOrganizationEntitlements/);
   assert.ok(!pathExists("src/lib/stripe"));
 });

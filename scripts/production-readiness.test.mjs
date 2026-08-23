@@ -12,20 +12,27 @@ import {
 test("tracked env example is Mollie-first and documents FastSpring as LEGACY", () => {
   assertFileExists(".env.example");
   const example = readSource(".env.example");
-  assert.match(example, /Mollie is the sole active billing provider/i);
+  // Production truth: Mollie sole active provider (wording may include billing/checkout).
+  assert.match(example, /Mollie is the sole active billing(?:\/checkout)? provider/i);
+  assert.match(example, /Mollie sole billing provider/i);
   assert.match(example, /LEGACY — FastSpring retired|MANUAL VERCEL REMOVAL/i);
   assert.match(example, /MOLLIE_API_KEY/);
+  assert.match(example, /MOLLIE_LIVE_CHARGING_ENABLED=false/);
   assert.match(example, /CRON_SECRET/);
   assert.match(example, /E2E_DISABLE_RATE_LIMIT/);
   assert.match(example, /never enable in production|Must remain false until explicit/i);
   assert.doesNotMatch(example, /TURNSTILE/);
-  assert.doesNotMatch(example, /^FASTSPRING_STOREFRONT=/m);
+  // FastSpring/Paddle/Stripe must stay commented LEGACY — never active runtime keys.
+  assert.doesNotMatch(example, /^FASTSPRING_/m);
   assert.doesNotMatch(example, /^BILLING_PROVIDER=/m);
   assert.doesNotMatch(example, /^STRIPE_SECRET_KEY=/m);
   assert.doesNotMatch(example, /^NEXT_PUBLIC_STRIPE_/m);
   assert.doesNotMatch(example, /^PADDLE_API_KEY=/m);
   assert.doesNotMatch(example, /^PADDLE_WEBHOOK_SECRET=/m);
   assert.doesNotMatch(example, /^NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=/m);
+  assert.doesNotMatch(example, /Merchant of Record/i);
+  assert.doesNotMatch(example, /FastSpring is the sole active/i);
+  assert.doesNotMatch(example, /Paddle is the sole active/i);
 });
 
 test("gitignore keeps .env.example trackable", () => {

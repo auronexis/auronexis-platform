@@ -35,14 +35,14 @@ test("shared test helpers exist and are used by chapter 13 suites", () => {
   assert.match(runner, /ENTERPRISE_REGRESSION_SUITE/);
 });
 
-test("enterprise regression suite includes prior Build Bible chapters and fastspring", () => {
+test("enterprise regression suite includes prior Build Bible chapters and mollie", () => {
   for (const chapter of [1, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]) {
     assert.ok(
       ENTERPRISE_REGRESSION_SUITE.some((entry) => entry.includes(`build-bible-ch${chapter}.test.mjs`)),
       `missing chapter ${chapter}`,
     );
   }
-  assert.ok(ENTERPRISE_REGRESSION_SUITE.some((entry) => entry.includes("fastspring-sole-provider")));
+  assert.ok(ENTERPRISE_REGRESSION_SUITE.some((entry) => entry.includes("mollie-sole-provider")));
   assert.ok(ENTERPRISE_REGRESSION_SUITE.some((entry) => entry.includes("technical-seo")));
   assert.ok(ENTERPRISE_REGRESSION_SUITE.some((entry) => entry.includes("workspace-currency")));
   assert.ok(ENTERPRISE_REGRESSION_SUITE.some((entry) => entry.includes("production-readiness")));

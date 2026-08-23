@@ -52,12 +52,13 @@ test("cron job actions require session authorization", () => {
   assert.match(jobs, /canManageOrganizationSettings/);
 });
 
-test("fastspring webhook fails closed on idempotency store errors", () => {
+test("fastspring webhook is retired to 410; historical idempotency helpers remain", () => {
   const idem = readSource("src/lib/fastspring/idempotency.ts");
   const route = readSource("src/app/api/fastspring/webhook/route.ts");
   assert.match(idem, /unavailable/);
-  assert.match(route, /status === "unavailable"/);
-  assert.match(route, /Webhook processing failed/);
+  assert.match(route, /status:\s*410/);
+  assert.match(route, /FastSpring webhooks are retired|gone/i);
+  assert.doesNotMatch(route, /verifyFastSpringSignature|handleFastSpringWebhookEvent/);
   assert.doesNotMatch(route, /error: message/);
 });
 

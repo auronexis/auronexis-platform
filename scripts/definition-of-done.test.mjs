@@ -119,10 +119,11 @@ test("critical production surfaces remain present", () => {
     assert.ok(pathExists(relative), `missing ${relative}`);
   }
   const provider = readSource("src/lib/billing/provider.ts");
-  assert.match(provider, /return "fastspring"/);
+  assert.match(provider, /return "mollie"/);
   assert.doesNotMatch(provider, /return "stripe"/);
   assert.doesNotMatch(provider, /return "paddle"/);
-  assert.match(provider, /Usable legacy Paddle subscription/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
+  assert.match(provider, /Mollie is the sole active billing provider/i);
   assert.equal(pathExists("src/app/api/paddle/webhook/route.ts"), false);
   assert.equal(pathExists("src/lib/paddle"), false);
 });

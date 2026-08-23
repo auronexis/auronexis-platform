@@ -18,7 +18,7 @@ export type PublicPricingPlanView = {
 
 /**
  * Server-rendered public pricing cards from the canonical USD catalog.
- * Mollie is the sole active billing provider — no FastSpring Price API.
+ * Mollie is the sole active billing provider — catalog display prices only.
  */
 export async function loadPublicPricingPlanViews(_options?: {
   explicitCountry?: string | null;
