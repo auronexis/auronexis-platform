@@ -23,6 +23,7 @@ import {
   SUBSCRIPTION_CANCEL_ALREADY_MESSAGE,
 } from "@/lib/billing/subscription-management";
 import { clearMollieUpgradePaymentAttempt } from "@/lib/billing/providers/mollie/upgrade-payment";
+import { resolveMollieBillingPeriodUpdate } from "@/lib/billing/providers/mollie/billing-period";
 import {
   getMollieOrganizationSubscription,
   scheduleMolliePendingPlanChange,
@@ -242,6 +243,13 @@ export async function applyMollieUpgradeAfterPayment(input: {
   const nextPaymentDate =
     typeof remote.nextPaymentDate === "string" ? remote.nextPaymentDate : existing.current_period_end;
 
+  const period = resolveMollieBillingPeriodUpdate({
+    existingStart: existing.current_period_start,
+    existingEnd: existing.current_period_end,
+    nextPaymentDate,
+    mode: "sync",
+  });
+
   await upsertMollieOrganizationSubscription({
     organizationId: input.organizationId,
     providerCustomerId: existing.provider_customer_id,
@@ -251,10 +259,11 @@ export async function applyMollieUpgradeAfterPayment(input: {
     normalizedStatus: resolveMollieStoredSubscriptionStatus({
       providerStatus: remote.status,
       cancelAtPeriodEnd: existing.cancel_at_period_end,
-      currentPeriodEnd: nextPaymentDate,
+      currentPeriodEnd: period.currentPeriodEnd,
     }),
     syncPending: providerUpdateFailed,
-    currentPeriodEnd: nextPaymentDate,
+    currentPeriodStart: period.currentPeriodStart,
+    currentPeriodEnd: period.currentPeriodEnd,
     clearPendingPlanChange: true,
     clearUpgradePaymentAttempt: true,
     providerChangeReference: input.paymentId,

@@ -33,6 +33,11 @@ import {
   upsertMollieOrganizationSubscription,
 } from "@/lib/billing/providers/mollie/organization-sync";
 import {
+  isValidMollieBillingPeriod,
+  resolveMollieBillingPeriodRepair,
+  resolveMollieBillingPeriodUpdate,
+} from "@/lib/billing/providers/mollie/billing-period";
+import {
   calculateMollieUpgradeProration,
   type MollieUpgradeProration,
 } from "@/lib/billing/providers/mollie/upgrade-proration";
@@ -208,17 +213,18 @@ async function findReusableOpenUpgradePayment(input: {
 }
 
 /**
- * Ensure period boundaries exist for proration. Recovered active subscriptions may
- * lack local bounds even when Mollie nextPaymentDate is available — refresh generically.
+ * Ensure period boundaries exist and are valid for proration.
+ * Never treats nextPaymentDate as current_period_start.
+ * Sync-style refresh preserves a valid local start when Mollie only exposes nextPaymentDate.
  */
 async function resolveUpgradePeriodBounds(existing: OrganizationSubscription): Promise<{
   currentPeriodStart: string;
   currentPeriodEnd: string;
 }> {
-  if (existing.current_period_start && existing.current_period_end) {
+  if (isValidMollieBillingPeriod(existing.current_period_start, existing.current_period_end)) {
     return {
-      currentPeriodStart: existing.current_period_start,
-      currentPeriodEnd: existing.current_period_end,
+      currentPeriodStart: existing.current_period_start!,
+      currentPeriodEnd: existing.current_period_end!,
     };
   }
 
@@ -245,13 +251,52 @@ async function resolveUpgradePeriodBounds(existing: OrganizationSubscription): P
     );
   }
 
-  const periodEnd = nextPaymentDate.includes("T")
-    ? nextPaymentDate
-    : `${nextPaymentDate}T00:00:00.000Z`;
-  const endMs = Date.parse(periodEnd);
-  const periodStart =
-    existing.current_period_start ??
-    new Date(endMs - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const evidenceStarts: Array<string | null | undefined> = [
+    existing.current_period_start,
+    typeof remote.startDate === "string" ? remote.startDate : null,
+    typeof remote.createdAt === "string" ? remote.createdAt : null,
+  ];
+
+  const repair = resolveMollieBillingPeriodRepair({
+    existingStart: existing.current_period_start,
+    existingEnd: existing.current_period_end,
+    nextPaymentDate,
+    evidenceStarts,
+  });
+
+  if (!repair.repaired) {
+    // Last resort: sync end only while preserving start if it forms a valid window with nextPaymentDate.
+    const synced = resolveMollieBillingPeriodUpdate({
+      existingStart: existing.current_period_start,
+      existingEnd: existing.current_period_end,
+      nextPaymentDate,
+      mode: "sync",
+    });
+    if (
+      !isValidMollieBillingPeriod(synced.currentPeriodStart, synced.currentPeriodEnd)
+    ) {
+      throw new Error(
+        "Billing period boundaries are invalid — refusing prorated upgrade. Contact support.",
+      );
+    }
+    await upsertMollieOrganizationSubscription({
+      organizationId: existing.organization_id,
+      providerCustomerId: existing.provider_customer_id,
+      providerSubscriptionId: existing.provider_subscription_id,
+      planKey: (existing.provider_price_id && isMollieSelfServePlanKey(existing.provider_price_id)
+        ? existing.provider_price_id
+        : "professional") as MollieSelfServePlanKey,
+      providerStatus: remote.status ?? existing.provider_status,
+      normalizedStatus: mapMollieSubscriptionStatus(remote.status ?? existing.provider_status),
+      syncPending: false,
+      currentPeriodStart: synced.currentPeriodStart,
+      currentPeriodEnd: synced.currentPeriodEnd,
+    });
+    return {
+      currentPeriodStart: synced.currentPeriodStart!,
+      currentPeriodEnd: synced.currentPeriodEnd!,
+    };
+  }
 
   await upsertMollieOrganizationSubscription({
     organizationId: existing.organization_id,
@@ -263,18 +308,22 @@ async function resolveUpgradePeriodBounds(existing: OrganizationSubscription): P
     providerStatus: remote.status ?? existing.provider_status,
     normalizedStatus: mapMollieSubscriptionStatus(remote.status ?? existing.provider_status),
     syncPending: false,
-    currentPeriodStart: periodStart,
-    currentPeriodEnd: periodEnd,
+    currentPeriodStart: repair.currentPeriodStart,
+    currentPeriodEnd: repair.currentPeriodEnd,
   });
 
   logUpgradeStage("upgrade_proration", {
     organizationId: existing.organization_id,
     refreshedPeriodBounds: true,
-    currentPeriodStart: periodStart,
-    currentPeriodEnd: periodEnd,
+    currentPeriodStart: repair.currentPeriodStart,
+    currentPeriodEnd: repair.currentPeriodEnd,
+    repairSource: repair.source,
   });
 
-  return { currentPeriodStart: periodStart, currentPeriodEnd: periodEnd };
+  return {
+    currentPeriodStart: repair.currentPeriodStart,
+    currentPeriodEnd: repair.currentPeriodEnd,
+  };
 }
 
 /**

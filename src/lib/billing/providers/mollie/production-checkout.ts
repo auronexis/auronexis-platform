@@ -32,6 +32,7 @@ import {
   getMollieOrganizationSubscription,
   upsertMollieOrganizationSubscription,
 } from "@/lib/billing/providers/mollie/organization-sync";
+import { resolveMollieInitialBillingPeriod } from "@/lib/billing/providers/mollie/billing-period";
 import {
   isMollieLiveChargingEnabled,
   isMollieProductionCheckoutEligible,
@@ -396,7 +397,16 @@ export async function createMollieProductionSubscriptionAfterMandate(input: {
 
   const nextPaymentDate =
     typeof subscription.nextPaymentDate === "string" ? subscription.nextPaymentDate : null;
-  const periodStart = new Date().toISOString();
+  const remoteStart =
+    typeof subscription.startDate === "string" && subscription.startDate.length > 0
+      ? subscription.startDate
+      : typeof subscription.createdAt === "string" && subscription.createdAt.length > 0
+        ? subscription.createdAt
+        : new Date().toISOString();
+  const period = resolveMollieInitialBillingPeriod({
+    periodStart: remoteStart,
+    nextPaymentDate,
+  });
 
   await upsertMollieOrganizationSubscription({
     organizationId: input.organizationId,
@@ -406,8 +416,8 @@ export async function createMollieProductionSubscriptionAfterMandate(input: {
     providerStatus: subscription.status,
     normalizedStatus: mapMollieSubscriptionStatus(subscription.status),
     syncPending: false,
-    currentPeriodStart: periodStart,
-    currentPeriodEnd: nextPaymentDate,
+    currentPeriodStart: period.currentPeriodStart,
+    currentPeriodEnd: period.currentPeriodEnd,
   });
 
   return {

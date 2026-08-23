@@ -4,6 +4,7 @@ import {
   analyzeMollieDuplicatePaidFirstPayments,
   recoverMolliePaidFreshPurchase,
 } from "@/lib/billing/providers/mollie/paid-purchase-recovery";
+import { repairMollieOrganizationBillingPeriod } from "@/lib/billing/providers/mollie/billing-period-repair";
 import { isMollieLiveChargingEnabled } from "@/lib/billing/providers/mollie/rollout";
 import { getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
 import { verifyCronAuthorization } from "@/lib/env";
@@ -11,7 +12,7 @@ import { verifyCronAuthorization } from "@/lib/env";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type RecoveryAction = "recover" | "analyze-duplicates";
+type RecoveryAction = "recover" | "analyze-duplicates" | "repair-billing-period";
 
 type RecoveryRequestBody = {
   action: RecoveryAction;
@@ -27,7 +28,11 @@ function parseBody(raw: unknown): RecoveryRequestBody | null {
   const body = raw as Record<string, unknown>;
   const action = body.action;
   const organizationId = body.organizationId;
-  if (action !== "recover" && action !== "analyze-duplicates") {
+  if (
+    action !== "recover" &&
+    action !== "analyze-duplicates" &&
+    action !== "repair-billing-period"
+  ) {
     return null;
   }
   if (typeof organizationId !== "string" || organizationId.trim().length < 8) {
@@ -42,11 +47,12 @@ function parseBody(raw: unknown): RecoveryRequestBody | null {
 }
 
 /**
- * Operator-only Mollie paid-purchase recovery (Recovery V3).
+ * Operator-only Mollie paid-purchase recovery / billing-period repair.
  * Requires Bearer CRON_SECRET — no session shortcut (mutates billing state).
  *
  * POST { "action": "recover", "organizationId": "<uuid>", "paymentId": "tr_..." }
  * POST { "action": "analyze-duplicates", "organizationId": "<uuid>", "customerId": "cst_..." }
+ * POST { "action": "repair-billing-period", "organizationId": "<uuid>" }
  */
 export async function POST(request: Request): Promise<Response> {
   if (!verifyCronAuthorization(request)) {
@@ -72,13 +78,27 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json(
       {
         error:
-          "Invalid body. Use action recover (organizationId, paymentId) or analyze-duplicates (organizationId, customerId).",
+          "Invalid body. Use action recover (organizationId, paymentId), analyze-duplicates (organizationId, customerId), or repair-billing-period (organizationId).",
       },
       { status: 400 },
     );
   }
 
   try {
+    if (body.action === "repair-billing-period") {
+      const result = await repairMollieOrganizationBillingPeriod({
+        organizationId: body.organizationId,
+      });
+
+      console.info("[billing][operator-recovery] repair-billing-period", {
+        organizationIdPrefix: body.organizationId.slice(0, 8),
+        repaired: result.repaired,
+        reason: result.repaired ? undefined : result.reason,
+      });
+
+      return NextResponse.json({ ok: true, action: "repair-billing-period", result });
+    }
+
     if (body.action === "recover") {
       if (!body.paymentId?.startsWith("tr_")) {
         return NextResponse.json({ error: "paymentId must be a Mollie tr_ id." }, { status: 400 });

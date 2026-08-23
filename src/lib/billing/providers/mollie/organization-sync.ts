@@ -322,6 +322,7 @@ export async function applyMolliePendingPlanChangeIfReady(input: {
   providerSubscriptionId: string;
   providerStatus: string | null;
   normalizedStatus: string;
+  currentPeriodStart?: string | null;
   currentPeriodEnd?: string | null;
 }): Promise<{
   applied: boolean;
@@ -368,6 +369,7 @@ export async function applyMolliePendingPlanChangeIfReady(input: {
     providerStatus: input.providerStatus,
     normalizedStatus: input.normalizedStatus,
     syncPending: false,
+    currentPeriodStart: input.currentPeriodStart,
     currentPeriodEnd: input.currentPeriodEnd,
     clearPendingPlanChange: true,
   });

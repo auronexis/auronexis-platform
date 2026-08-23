@@ -84,6 +84,15 @@ export {
   analyzeMollieDuplicatePaidFirstPayments,
   recoverMolliePaidFreshPurchase,
 } from "@/lib/billing/providers/mollie/paid-purchase-recovery";
+export { repairMollieOrganizationBillingPeriod } from "@/lib/billing/providers/mollie/billing-period-repair";
+export {
+  coerceMolliePeriodInstant,
+  isValidMollieBillingPeriod,
+  normalizeMolliePeriodBoundary,
+  resolveMollieBillingPeriodRepair,
+  resolveMollieBillingPeriodUpdate,
+  resolveMollieInitialBillingPeriod,
+} from "@/lib/billing/providers/mollie/billing-period";
 export {
   classifyMollieProductionPayment,
   isStaleMollieOrganizationSubscription,

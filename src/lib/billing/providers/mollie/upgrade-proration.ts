@@ -1,4 +1,8 @@
 import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
+import {
+  isValidMollieBillingPeriod,
+  normalizeMolliePeriodBoundary,
+} from "@/lib/billing/providers/mollie/billing-period";
 
 export type MollieUpgradeSelfServePlanKey = Extract<PlanKey, "professional" | "business">;
 
@@ -16,17 +20,10 @@ export type MollieUpgradeProration = {
   formattedNetDue: string;
 };
 
+export { normalizeMolliePeriodBoundary, isValidMollieBillingPeriod };
+
 function formatUpgradeAmount(value: number): string {
   return value.toFixed(2);
-}
-
-/** Normalize Mollie date-only boundaries to a stable UTC instant for remaining-time math. */
-export function normalizeMolliePeriodBoundary(value: string, bound: "start" | "end"): number {
-  const trimmed = value.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    return Date.parse(bound === "end" ? `${trimmed}T23:59:59.999Z` : `${trimmed}T00:00:00.000Z`);
-  }
-  return Date.parse(trimmed);
 }
 
 /**
@@ -48,11 +45,12 @@ export function calculateMollieUpgradeProration(input: {
     );
   }
 
-  const periodStartMs = normalizeMolliePeriodBoundary(input.currentPeriodStart, "start");
-  const periodEndMs = normalizeMolliePeriodBoundary(input.currentPeriodEnd, "end");
-  if (!Number.isFinite(periodStartMs) || !Number.isFinite(periodEndMs) || periodEndMs <= periodStartMs) {
+  if (!isValidMollieBillingPeriod(input.currentPeriodStart, input.currentPeriodEnd)) {
     throw new Error("Billing period boundaries are invalid — refusing prorated upgrade.");
   }
+
+  const periodStartMs = normalizeMolliePeriodBoundary(input.currentPeriodStart, "start");
+  const periodEndMs = normalizeMolliePeriodBoundary(input.currentPeriodEnd, "end");
 
   const now = input.referenceDate ?? new Date();
   const remainingMs = Math.max(0, periodEndMs - now.getTime());

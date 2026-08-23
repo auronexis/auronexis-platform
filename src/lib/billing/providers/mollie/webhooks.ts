@@ -27,6 +27,7 @@ import {
   getMollieOrganizationSubscription,
   upsertMollieOrganizationSubscription,
 } from "@/lib/billing/providers/mollie/organization-sync";
+import { resolveMollieBillingPeriodUpdate } from "@/lib/billing/providers/mollie/billing-period";
 import { upsertMollieBillingTransaction } from "@/lib/billing/providers/mollie/transactions";
 import {
   MOLLIE_BILLING_PURPOSE_UPGRADE_ADJUSTMENT,
@@ -908,6 +909,17 @@ async function reconcileMollieProductionPaymentWebhook(
     const nextPaymentDate =
       typeof subscription.nextPaymentDate === "string" ? subscription.nextPaymentDate : null;
 
+    const paymentKind = classifyMollieProductionPayment({
+      sequenceType: payment.sequenceType,
+      billingPurpose,
+    });
+    const periodUpdate = resolveMollieBillingPeriodUpdate({
+      existingStart: orgRow?.current_period_start,
+      existingEnd: orgRow?.current_period_end,
+      nextPaymentDate,
+      mode: paymentKind === "renewal" ? "renewal" : "sync",
+    });
+
     // Recurring/paid confirmation: apply scheduled pending_plan if present.
     // Authoritative provider_price_id stays on the previous plan until this path runs.
     const pendingApply = await applyMolliePendingPlanChangeIfReady({
@@ -918,9 +930,10 @@ async function reconcileMollieProductionPaymentWebhook(
       normalizedStatus: resolveMollieStoredSubscriptionStatus({
         providerStatus: subscription.status,
         cancelAtPeriodEnd: orgRow?.cancel_at_period_end ?? false,
-        currentPeriodEnd: nextPaymentDate,
+        currentPeriodEnd: periodUpdate.currentPeriodEnd,
       }),
-      currentPeriodEnd: nextPaymentDate,
+      currentPeriodStart: periodUpdate.currentPeriodStart,
+      currentPeriodEnd: periodUpdate.currentPeriodEnd,
     });
 
     if (
@@ -965,11 +978,11 @@ async function reconcileMollieProductionPaymentWebhook(
         normalizedStatus: resolveMollieStoredSubscriptionStatus({
           providerStatus: subscription.status,
           cancelAtPeriodEnd: orgRow?.cancel_at_period_end ?? false,
-          currentPeriodEnd: nextPaymentDate,
+          currentPeriodEnd: periodUpdate.currentPeriodEnd,
         }),
         syncPending: false,
-        currentPeriodStart: orgRow?.current_period_end ?? orgRow?.current_period_start ?? new Date().toISOString(),
-        currentPeriodEnd: nextPaymentDate,
+        currentPeriodStart: periodUpdate.currentPeriodStart,
+        currentPeriodEnd: periodUpdate.currentPeriodEnd,
       });
     }
 
@@ -999,10 +1012,6 @@ async function reconcileMollieProductionPaymentWebhook(
         ? orgRow.provider_price_id
         : planKey);
     const renewalPlan = getPlanByKey(renewalPlanKey);
-    const paymentKind = classifyMollieProductionPayment({
-      sequenceType: payment.sequenceType,
-      billingPurpose,
-    });
     await recordMolliePaidTransaction({
       organizationId,
       paymentId: payment.id,
@@ -1016,8 +1025,8 @@ async function reconcileMollieProductionPaymentWebhook(
         paymentKind,
         planName: renewalPlan.name,
       }),
-      billingPeriodStart: orgRow?.current_period_start ?? null,
-      billingPeriodEnd: nextPaymentDate,
+      billingPeriodStart: periodUpdate.currentPeriodStart,
+      billingPeriodEnd: periodUpdate.currentPeriodEnd,
       invoiceUrl: payment._links?.checkout?.href ?? null,
     });
 
