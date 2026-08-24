@@ -178,7 +178,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "11. Prices, payment, invoices, and taxes",
         body:
-          "Listed self-serve plans (base USD catalog): Professional $179/month; Business $599/month; Enterprise $1,799/month. Final amounts and applicable taxes are confirmed at checkout. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
+          "Listed self-serve plans (VAT-inclusive EUR catalog where the applicable tax model permits): Professional €179/month; Business €599/month; Enterprise €1,799/month. Final tax treatment is confirmed at checkout. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
       },
       {
         heading: "11a. Payment processing",

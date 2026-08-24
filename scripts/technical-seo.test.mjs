@@ -115,25 +115,31 @@ test("pricing structured data matches canonical billing plan prices", () => {
     /PUBLIC_SELF_SERVE_PLAN_KEYS = \["professional", "business", "enterprise"\]/,
   );
 
-  // Canonical FastSpring public base USD fallbacks — structured data must stay aligned.
+  // Canonical public EUR minor-unit prices — structured data must stay aligned.
   const publicUsdFallbacks = {
     professional: 179,
     business: 599,
     enterprise: 1799,
   };
 
+  const publicEurMinors = {
+    professional: "17_900",
+    business: "59_900",
+    enterprise: "179_900",
+  };
+
   for (const [planKey, usd] of Object.entries(publicUsdFallbacks)) {
     assert.match(
       catalog,
       new RegExp(
-        `productPath: "${planKey}"[\\s\\S]*?visibility: "public"[\\s\\S]*?fallbackMonthlyUsd: ${usd}`,
+        `productPath: "${planKey}"[\\s\\S]*?visibility: "public"[\\s\\S]*?amountMinor: ${publicEurMinors[planKey]}`,
       ),
-      `catalog missing public ${planKey}=${usd}`,
+      `catalog missing public ${planKey} amountMinor=${publicEurMinors[planKey]} (major ${usd})`,
     );
     assert.match(
       plans,
-      new RegExp(`key: "${planKey}"[\\s\\S]*?priceMonthly: ${usd}[\\s\\S]*?currency: "USD"`),
-      `plans.ts missing ${planKey} USD fallback ${usd} used by JSON-LD`,
+      new RegExp(`key: "${planKey}"[\\s\\S]*?amountMinorFallback:\\s*${publicEurMinors[planKey]}`),
+      `plans.ts missing ${planKey} EUR amountMinorFallback ${publicEurMinors[planKey]}`,
     );
   }
 

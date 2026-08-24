@@ -52,10 +52,30 @@ import {
 import { resolvePrimaryBillingRecipientForEmail } from "@/lib/email/billing-recipient";
 import { getPlanByKey } from "@/lib/billing/plans";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
+import {
+  buildCheckoutContractSummary,
+  buildB2bEntrepreneurAcceptanceEvidence,
+  buildDpaAcceptanceEvidence,
+  buildTermsAcceptanceEvidence,
+  type CheckoutContractSummary,
+} from "@/lib/billing/contracting";
+import { persistContractAcceptance } from "@/lib/billing/contract-acceptance";
+import { upsertOrganizationBillingIdentity } from "@/lib/billing/billing-identity";
+import { determineTaxPolicy } from "@/lib/billing/tax-policy";
+import { validateVatIdWithVies } from "@/lib/billing/vies";
+import { LEGAL_COMPANY_NAME } from "@/lib/company/company-information";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type BillingActionState = {
   error?: string;
   success?: string;
+};
+
+export type CheckoutContractInput = {
+  termsAccepted: boolean;
+  b2bEntrepreneurConfirmed: boolean;
+  countryCode: string;
+  vatId?: string;
 };
 
 export type CheckoutActionResult = BillingActionState & {
@@ -64,13 +84,112 @@ export type CheckoutActionResult = BillingActionState & {
     checkoutAttemptId: string;
     pendingSyncMessage: string;
   };
+  contractSummary?: CheckoutContractSummary;
 };
 
 const planKeySchema = z.enum(["starter", "professional", "business", "enterprise"]);
 
+const checkoutContractSchema = z.object({
+  termsAccepted: z.boolean().refine((value) => value === true, {
+    message: "You must accept the Terms to continue.",
+  }),
+  b2bEntrepreneurConfirmed: z.boolean().refine((value) => value === true, {
+    message: "Entrepreneur confirmation is required for B2B checkout.",
+  }),
+  countryCode: z.string().min(2).max(8),
+  vatId: z.string().optional(),
+});
+
+/** Build checkout contract summary before Mollie redirect. */
+export async function prepareCheckoutContractSummaryAction(
+  planKey: string,
+): Promise<{ error?: string; summary?: CheckoutContractSummary }> {
+  const session = await requireSession();
+  if (!canManageOrganizationSettings(session)) {
+    return { error: ACTION_DENIED_MESSAGE };
+  }
+  const parsed = planKeySchema.safeParse(planKey);
+  if (!parsed.success || parsed.data === "starter" || !isInternalPlan(parsed.data)) {
+    return { error: "Invalid subscription plan selected." };
+  }
+  const plan = getPlanByKey(parsed.data);
+  return {
+    summary: buildCheckoutContractSummary({
+      planKey: plan.key,
+      planName: plan.name,
+      currency: plan.currency,
+      amountMinor: plan.amountMinor,
+      priceVersion: plan.priceVersion,
+      sellerName: LEGAL_COMPANY_NAME,
+      taxOutcomeLabel: "Confirmed at checkout after billing country and VAT checks",
+    }),
+  };
+}
+
+async function enforceCheckoutContractAndTax(input: {
+  organizationId: string;
+  userId: string;
+  contract: CheckoutContractInput;
+}): Promise<{ error?: string }> {
+  const parsed = checkoutContractSchema.safeParse(input.contract);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Contract acceptance is incomplete." };
+  }
+
+  const countryCode =
+    parsed.data.countryCode === "OTHER" ? null : parsed.data.countryCode.trim().toUpperCase();
+  const vies = countryCode && countryCode !== "DE" && parsed.data.vatId
+    ? await validateVatIdWithVies(parsed.data.vatId)
+    : { status: "not_checked" as const, checkedAt: new Date().toISOString() };
+
+  const determination = determineTaxPolicy({
+    customerCountryCode: countryCode,
+    vatId: parsed.data.vatId ?? null,
+    viesStatus: vies.status,
+    isB2bEntrepreneurConfirmed: true,
+  });
+
+  if (determination.blocksCheckout) {
+    return {
+      error:
+        determination.reasonCode === "eu_b2b_reverse_charge_legend_pending_counsel"
+          ? "Cross-border EU B2B checkout requires manual review until reverse-charge invoice wording is counsel-approved. Contact sales."
+          : "Checkout is blocked until billing country / VAT details can be confirmed. Contact sales for manual review.",
+    };
+  }
+
+  await upsertOrganizationBillingIdentity({
+    organizationId: input.organizationId,
+    countryCode,
+    vatId: parsed.data.vatId ?? null,
+    viesStatus: vies.status,
+    viesCheckedAt: vies.checkedAt,
+  });
+
+  const now = new Date().toISOString();
+  await persistContractAcceptance({
+    organizationId: input.organizationId,
+    userId: input.userId,
+    evidence: buildTermsAcceptanceEvidence({ acceptedAt: now, source: "checkout" }),
+  });
+  await persistContractAcceptance({
+    organizationId: input.organizationId,
+    userId: input.userId,
+    evidence: buildB2bEntrepreneurAcceptanceEvidence({ acceptedAt: now, source: "checkout" }),
+  });
+  await persistContractAcceptance({
+    organizationId: input.organizationId,
+    userId: input.userId,
+    evidence: buildDpaAcceptanceEvidence({ acceptedAt: now, source: "checkout" }),
+  });
+
+  return {};
+}
+
 /** Create checkout for the active billing provider. Owner/Admin only. */
 export async function createCheckoutSessionAction(
   planKey: string,
+  contract?: CheckoutContractInput,
 ): Promise<CheckoutActionResult> {
   const session = await requireSession();
 
@@ -129,6 +248,31 @@ export async function createCheckoutSessionAction(
             "Mollie checkout is not configured for this workspace. Contact support if you expected Mollie billing.",
         };
       }
+
+      if (!contract) {
+        return { error: "Contract acceptance is required before Mollie checkout." };
+      }
+
+      const contractGate = await enforceCheckoutContractAndTax({
+        organizationId: session.organization.id,
+        userId: session.user.id,
+        contract,
+      });
+      if (contractGate.error) {
+        return { error: contractGate.error };
+      }
+
+      const plan = getPlanByKey(parsed.data);
+      const admin = createAdminClient();
+      await admin
+        .from("organization_subscriptions")
+        .update({
+          billing_currency: plan.currency,
+          catalog_price_version: plan.priceVersion,
+          catalog_amount_minor: plan.amountMinor,
+          updated_at: new Date().toISOString(),
+        } as never)
+        .eq("organization_id", session.organization.id);
 
       // Existing usable Mollie subscription → plan change (upgrade payment or downgrade schedule).
       if (eligibility.code === "allowed_mollie_plan_change") {

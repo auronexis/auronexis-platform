@@ -1,4 +1,11 @@
 import { formatWorkspaceMoney } from "@/lib/i18n/format";
+import {
+  ACTIVE_EUR_PRICE_VERSION,
+  PRIMARY_BILLING_CURRENCY,
+  amountMinorToMajorUnits,
+  getActiveCatalogPrice,
+  type CatalogBillingCurrency,
+} from "@/lib/billing/price-catalog";
 
 export type PlanKey = "starter" | "professional" | "business" | "enterprise";
 
@@ -7,25 +14,60 @@ export type PlanActionLabel = "current" | "choose" | "upgrade" | "downgrade" | "
 export type SubscriptionPlanDefinition = {
   key: PlanKey;
   name: string;
-  /** Catalog monthly amount (USD) for display and Mollie charging. */
+  /** Canonical catalog monthly amount in integer minor units (VAT-inclusive list total). */
+  amountMinor: number;
+  /**
+   * Major-unit convenience for Mollie amount.value formatting (amountMinor / 100).
+   * Prefer amountMinor for money math.
+   */
   priceMonthly: number;
-  /** Catalog currency for priceMonthly. */
-  currency: "USD";
+  /** Catalog / billing currency for this plan definition. */
+  currency: CatalogBillingCurrency;
+  /** Active price catalog version. */
+  priceVersion: string;
   description: string;
   features: string[];
   recommended?: boolean;
   order: number;
 };
 
+function buildPlanFromCatalog(input: {
+  key: PlanKey;
+  name: string;
+  description: string;
+  features: string[];
+  order: number;
+  recommended?: boolean;
+  /** Fallback minor units when catalog lookup has no entry (starter mirror). */
+  amountMinorFallback: number;
+}): SubscriptionPlanDefinition {
+  const catalog =
+    input.key === "starter"
+      ? null
+      : getActiveCatalogPrice({ planKey: input.key, currency: PRIMARY_BILLING_CURRENCY });
+  const amountMinor = catalog?.amountMinor ?? input.amountMinorFallback;
+  return {
+    key: input.key,
+    name: input.name,
+    amountMinor,
+    priceMonthly: amountMinorToMajorUnits(amountMinor),
+    currency: catalog?.currency ?? PRIMARY_BILLING_CURRENCY,
+    priceVersion: catalog?.priceVersion ?? ACTIVE_EUR_PRICE_VERSION,
+    description: input.description,
+    features: [...input.features],
+    recommended: input.recommended,
+    order: input.order,
+  };
+}
+
 /** Public self-serve tiers shown in marketing and workspace plan pickers. */
 export const PUBLIC_SELF_SERVE_PLAN_KEYS = ["professional", "business", "enterprise"] as const satisfies readonly PlanKey[];
 
 export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
-  {
+  buildPlanFromCatalog({
     key: "starter",
     name: "Professional",
-    priceMonthly: 179,
-    currency: "USD",
+    amountMinorFallback: 17_900,
     description: "Internal fallback tier — Professional limits apply without an active subscription",
     order: 0,
     features: [
@@ -35,12 +77,11 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
       "Customer portal",
       "Basic activity feed",
     ],
-  },
-  {
+  }),
+  buildPlanFromCatalog({
     key: "professional",
     name: "Professional",
-    priceMonthly: 179,
-    currency: "USD",
+    amountMinorFallback: 17_900,
     description: "For growing agencies starting with automation and client portal delivery",
     order: 1,
     features: [
@@ -51,12 +92,11 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
       "Report templates and scheduling",
       "AI report assistant",
     ],
-  },
-  {
+  }),
+  buildPlanFromCatalog({
     key: "business",
     name: "Business",
-    priceMonthly: 599,
-    currency: "USD",
+    amountMinorFallback: 59_900,
     description: "For established agencies with compliance, white-label, and higher limits",
     order: 2,
     recommended: true,
@@ -68,12 +108,11 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
       "Automation engine",
       "Advanced AI knowledge features",
     ],
-  },
-  {
+  }),
+  buildPlanFromCatalog({
     key: "enterprise",
     name: "Enterprise",
-    priceMonthly: 1799,
-    currency: "USD",
+    amountMinorFallback: 179_900,
     description: "For large portfolios and custom requirements",
     order: 3,
     features: [
@@ -84,7 +123,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
       "Advanced reporting",
       "Enterprise API readiness",
     ],
-  },
+  }),
 ];
 
 const PLAN_BY_KEY = new Map(SUBSCRIPTION_PLANS.map((plan) => [plan.key, plan]));

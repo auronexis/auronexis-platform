@@ -30,7 +30,7 @@ function formatUpgradeAmount(value: number): string {
  * Proration: (target_price - current_price) * (remaining_time / total_period_time)
  * using minor units. Fails closed when period bounds are unavailable.
  *
- * Professional $179 → Business $599 uses catalog monthly prices (USD minor units).
+ * Professional €179 → Business €599 uses catalog amountMinor (EUR).
  */
 export function calculateMollieUpgradeProration(input: {
   previousPlanKey: MollieUpgradeSelfServePlanKey;
@@ -58,8 +58,8 @@ export function calculateMollieUpgradeProration(input: {
 
   const previousPlan = getPlanByKey(input.previousPlanKey);
   const targetPlan = getPlanByKey(input.targetPlanKey);
-  const previousPriceCents = previousPlan.priceMonthly * 100;
-  const targetPriceCents = targetPlan.priceMonthly * 100;
+  const previousPriceCents = previousPlan.amountMinor;
+  const targetPriceCents = targetPlan.amountMinor;
 
   const priceDeltaCents = targetPriceCents - previousPriceCents;
   const netDueCents = Math.max(0, Math.round((priceDeltaCents * remainingMs) / totalPeriodMs));

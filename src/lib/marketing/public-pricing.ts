@@ -2,6 +2,7 @@ import "server-only";
 
 import { getCatalogDisplayPrices, type CatalogDisplayPlanPrice } from "@/lib/billing/display-pricing";
 import { PUBLIC_PRICING_PLANS } from "@/lib/marketing/content";
+import { PRIMARY_BILLING_CURRENCY } from "@/lib/billing/price-catalog";
 
 export type PublicPricingPlanView = {
   name: string;
@@ -17,7 +18,7 @@ export type PublicPricingPlanView = {
 };
 
 /**
- * Server-rendered public pricing cards from the canonical USD catalog.
+ * Server-rendered public pricing cards from the canonical EUR catalog.
  * Mollie is the sole active billing provider — catalog display prices only.
  */
 export async function loadPublicPricingPlanViews(_options?: {
@@ -36,11 +37,11 @@ export async function loadPublicPricingPlanViews(_options?: {
       description: plan.description,
       highlights: plan.highlights,
       featured: plan.featured,
-      currency: price?.currency ?? "USD",
-      country: "US",
-      source: price?.source ?? "catalog_usd",
+      currency: price?.currency ?? PRIMARY_BILLING_CURRENCY,
+      country: "DE",
+      source: price?.source ?? "catalog_eur",
     };
   });
 
-  return { country: "US", plans };
+  return { country: "DE", plans };
 }

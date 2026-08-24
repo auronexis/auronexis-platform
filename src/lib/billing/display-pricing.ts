@@ -6,19 +6,21 @@ import {
 } from "@/lib/billing/catalog";
 import { formatWorkspaceMoney } from "@/lib/i18n/format";
 import type { PlanKey } from "@/lib/billing/plans";
+import type { CatalogBillingCurrency } from "@/lib/billing/price-catalog";
 
 /**
  * Catalog-backed display prices for public and workspace plan surfaces.
  * Mollie is the sole active billing provider — amounts match catalog /
- * SUBSCRIPTION_PLANS (USD). No third-party Price API is consulted.
+ * SUBSCRIPTION_PLANS (EUR). No third-party Price API is consulted.
  */
 
-export type CatalogDisplayPriceSource = "catalog_usd";
+export type CatalogDisplayPriceSource = "catalog_eur";
 
 export type CatalogDisplayPlanPrice = {
   productPath: PlanKey;
-  currency: "USD";
+  currency: CatalogBillingCurrency;
   amount: number;
+  amountMinor: number;
   formattedAmount: string;
   interval: "month";
   source: CatalogDisplayPriceSource;
@@ -28,19 +30,21 @@ function toPlanKey(entry: CanonicalPlanCatalogEntry): PlanKey | null {
   return entry.planKey;
 }
 
-/** Public self-serve catalog prices formatted for UI (USD). */
+/** Public self-serve catalog prices formatted for UI (EUR). */
 export function getCatalogDisplayPrices(): CatalogDisplayPlanPrice[] {
   return listPublicCatalogEntries()
     .map((entry) => {
       const planKey = toPlanKey(entry);
       if (!planKey) return null;
+      const amount = Math.trunc(entry.amountMinor / 100);
       return {
         productPath: planKey,
-        currency: "USD" as const,
-        amount: entry.fallbackMonthlyUsd,
-        formattedAmount: formatWorkspaceMoney(entry.fallbackMonthlyUsd, "USD", "en"),
+        currency: entry.currency,
+        amount,
+        amountMinor: entry.amountMinor,
+        formattedAmount: formatWorkspaceMoney(amount, entry.currency, "en"),
         interval: "month" as const,
-        source: "catalog_usd" as const,
+        source: "catalog_eur" as const,
       };
     })
     .filter((row): row is CatalogDisplayPlanPrice => row !== null);

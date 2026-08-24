@@ -76,7 +76,7 @@ test("4: prorated amount uses remaining-period formula Pro→Business", () => {
   const proration = readSource("src/lib/billing/providers/mollie/upgrade-proration.ts");
   assert.match(proration, /target_price - current_price/);
   assert.match(proration, /remaining_time \/ total_period_time/);
-  assert.match(proration, /Professional \$179 → Business \$599/);
+  assert.match(proration, /Professional €179 → Business €599/);
 
   const periodStart = "2026-08-22T00:00:00.000Z";
   const periodEnd = "2026-09-22T00:00:00.000Z";

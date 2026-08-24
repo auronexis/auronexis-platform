@@ -24,7 +24,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
       paragraphs: [
         "Getting started in Auroranexis means creating your agency workspace, inviting teammates with appropriate roles, and configuring the settings that govern delivery. The Operations Command Center dashboard surfaces portfolio health, open incidents, SLA status, and recent activity so operators can orient quickly without hunting across disconnected tools.",
         "Your workspace is an isolated tenant. All modules—Clients, Reports, Risks, Incidents, Monitoring—read and write data only within your organization identifier. Internal users, portal users, and automation workflows all respect this boundary, which keeps client data segregated and audit-friendly as your portfolio grows.",
-        "Billing runs through Stripe. Plan limits on clients, monitoring connectors, and advanced modules are enforced at the organization level. Owners and admins manage subscriptions in Settings → Billing; all roles can review effective limits in Settings → Usage before onboarding large client batches.",
+        "Billing runs through Mollie as payment service provider; Auroranexis remains the seller. Plan limits on clients, monitoring connectors, and advanced modules are enforced at the organization level. Owners and admins manage subscriptions in Settings → Billing; all roles can review effective limits in Settings → Usage before onboarding large client batches.",
         "The recommended onboarding path moves from workspace identity and team access to your first managed clients, then to SLA policies, report templates, and optional portal access. Completing these steps in order reduces rework and ensures health scores, SLA timers, and portfolio views reflect accurate data from day one.",
       ],
     },
@@ -99,7 +99,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
         "Reports with templates, schedules, draft and publish workflow, PDF export, and portal delivery.",
         "Risks and Incidents with ownership, SLA timers, and optional portal visibility on incidents.",
         "Monitoring connectors linked to clients with event history and health impact.",
-        "Stripe checkout, invoices, and customer portal for subscription management.",
+        "Mollie checkout, Auroranexis sales invoices, and subscription management in Settings → Billing.",
         "Usage meters for clients, monitoring connectors, and plan-specific limits.",
         "Activity logging across major operational records for audit-friendly history.",
         "Client portal publishing for reports and selective incident transparency.",
@@ -112,7 +112,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
         "Sign in to reach the Operations Command Center dashboard.",
         "Open Settings → Organization and verify your workspace name and profile details.",
         "Open Settings → Team and invite owners, admins, staff, or viewers as needed.",
-        "Review Settings → Billing to confirm your plan; complete Stripe checkout if upgrading.",
+        "Review Settings → Billing to confirm your plan; complete Mollie checkout if upgrading.",
         "Check Settings → Usage to understand current limits before adding many clients or connectors.",
         "Add your first client from Clients → New client with status and internal owner assigned.",
         "Open Settings → SLA and create or review policies before assigning them to clients.",
@@ -198,7 +198,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
           ],
           [
             "Checkout completed but plan unchanged",
-            "Stripe webhook delay or session mismatch",
+            "Mollie webhook delay or session mismatch",
             "Refresh Settings → Billing; contact support with the approximate checkout time if the issue persists.",
           ],
           [

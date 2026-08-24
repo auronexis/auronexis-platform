@@ -255,9 +255,10 @@ test("Billing actions.ts routes Mollie only via org provider resolution", () => 
 
 test("Canonical plan prices unchanged", () => {
   const plans = readSource("src/lib/billing/plans.ts");
-  assert.match(plans, /priceMonthly: 179/);
-  assert.match(plans, /priceMonthly: 599/);
-  assert.match(plans, /currency: "USD"/);
+  assert.match(plans, /amountMinorFallback:\s*17_900|amountMinor:\s*17_900/);
+  assert.match(plans, /amountMinorFallback:\s*59_900|amountMinor:\s*59_900/);
+  const catalog = readSource("src/lib/billing/price-catalog.ts");
+  assert.match(catalog, /PRIMARY_BILLING_CURRENCY.*=.*"EUR"/);
 });
 
 test("Runtime Phase 2 modules remain present (Phase 3 adds alongside)", () => {

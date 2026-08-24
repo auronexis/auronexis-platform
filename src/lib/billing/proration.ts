@@ -4,7 +4,7 @@ import { formatBillingDate } from "@/lib/billing/types";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 
 function planPriceCents(planKey: PlanKey): number {
-  return getPlanByKey(planKey).priceMonthly * 100;
+  return getPlanByKey(planKey).amountMinor;
 }
 
 function resolveDirection(fromPlan: PlanKey, toPlan: PlanKey): ProrationPreview["direction"] {

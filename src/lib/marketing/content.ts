@@ -164,8 +164,8 @@ export const USE_CASES = [
 export const PUBLIC_PRICING_PLANS = [
   {
     name: "Professional",
-    /** Fallback only — public pages prefer provider-localized display when available. */
-    price: "$179",
+    /** Fallback only — public pages prefer catalog display helpers when available. */
+    price: "€179",
     period: "/ month",
     productPath: "professional" as const,
     description: "For growing agencies starting with automation and client portal delivery.",
@@ -174,7 +174,7 @@ export const PUBLIC_PRICING_PLANS = [
   },
   {
     name: "Business",
-    price: "$599",
+    price: "€599",
     period: "/ month",
     productPath: "business" as const,
     description: "For established agencies with compliance, white-label, and higher operational limits.",
@@ -183,7 +183,7 @@ export const PUBLIC_PRICING_PLANS = [
   },
   {
     name: "Enterprise",
-    price: "$1,799",
+    price: "€1,799",
     period: "/ month",
     productPath: "enterprise" as const,
     description: "For large portfolios and custom requirements. Contact Sales for tailored agreements when needed.",
@@ -194,8 +194,7 @@ export const PUBLIC_PRICING_PLANS = [
 
 /** Copy-only footnote for public pricing pages — invite-only programs are not listed here. */
 export const PUBLIC_PRICING_NOTE =
-  "Prices shown are list prices in USD from our catalog. Final amounts and applicable taxes are confirmed at checkout. Contact sales for custom enterprise agreements when needed.";
-
+  "Prices shown are VAT-inclusive list prices in EUR from our catalog where the applicable tax model permits. Final tax treatment is confirmed at checkout. Contact sales for custom enterprise agreements when needed.";
 export const INVITE_ONLY_PROGRAMS_NOTE = "Pilot and Founding programs are invite-only.";
 
 export const SECURITY_HIGHLIGHTS = [

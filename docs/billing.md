@@ -1,23 +1,23 @@
 # Billing, Usage & Subscription Platform
 
-> **Canonical billing:** [paddle-billing.md](./paddle-billing.md)  
-> **Ops:** [enterprise-deployment.md](./enterprise-deployment.md) · Build Bible Chapter 12
+> **Canonical billing:** Mollie sole PSP (`src/lib/billing/providers/mollie/**`)  
+> **Ops:** [enterprise-deployment.md](./enterprise-deployment.md) · Build Bible Chapter 12 (historical Paddle title; content superseded)
 
-Auroranexis billing is **FastSpring-only**. Historical Stripe and Paddle tables/columns may remain for archive/diagnostics; they do not drive checkout, portal, or entitlements.
+Auroranexis billing is **Mollie-only** for active checkout, portal, webhooks, and entitlements. Auroranexis is the seller (not Mollie Merchant of Record). Historical Stripe, Paddle, and FastSpring tables/columns may remain for archive/diagnostics; they do not drive active customer billing.
 
 ## Architecture
 
 ```
-organization_subscriptions (FastSpring sync)
+organization_subscriptions (Mollie sync)
         ↓
-billing/ platform (metering, usage, enforcement, history)
+billing/ platform (metering, usage, enforcement, history, sales invoices)
         ↓
 billing_usage_events + subscription_usage_snapshots
-billing_events + discount_codes
+billing_events + discount_codes + sales_invoices
         ↓
 /settings/billing + /settings/usage + Diagnostics
         ↓
-FastSpring Store Builder Checkout / Webhooks (/api/fastspring/webhook)
+Mollie Checkout / Webhooks (/api/mollie/webhook)
 ```
 
 ### Module layout (`src/lib/billing/`)
@@ -25,14 +25,16 @@ FastSpring Store Builder Checkout / Webhooks (/api/fastspring/webhook)
 | Concern | Location |
 |---------|----------|
 | Types & overview | `types.ts`, `queries.ts` |
-| Plans & pricing | `plans.ts`, `plans.server.ts` (Stripe resolvers retired stubs) |
-| FastSpring sync / checkout | `src/lib/fastspring/*`, `checkout` actions |
+| Plans & pricing | `plans.ts`, `price-catalog.ts`, `catalog.ts`, `display-pricing.ts` |
+| Mollie sync / checkout | `providers/mollie/*`, checkout actions |
+| Tax / VAT boundaries | `tax-policy.ts`, `taxes.ts`, `vies.ts` |
+| Sales invoices | `sales-invoice.ts`, `e-invoice.ts` (generator deferred) |
 | Usage metering | `usage.ts`, `metering.ts`, `enforcement.ts` |
-| Invoices / history | FastSpring transaction history; Stripe invoice mirror retired |
 | Diagnostics | `diagnostics.ts`, Settings → Billing → Diagnostics |
 
 ## Related
 
-- [paddle-billing.md](./paddle-billing.md) — sole-provider contracts
-- [14_BUILD_BIBLE_V2_CHAPTER_12_PADDLE_BILLING.md](./14_BUILD_BIBLE_V2_CHAPTER_12_PADDLE_BILLING.md)
+- [enterprise-deployment.md](./enterprise-deployment.md)
+- [14_BUILD_BIBLE_V2_CHAPTER_12_PADDLE_BILLING.md](./14_BUILD_BIBLE_V2_CHAPTER_12_PADDLE_BILLING.md) — historical title; FastSpring/Paddle retired
 - [technical-debt.md](./technical-debt.md) — deferred Stripe-named field renames
+- [p1-002-remediation-pricing-tax-invoice-contracting.md](./p1-002-remediation-pricing-tax-invoice-contracting.md)

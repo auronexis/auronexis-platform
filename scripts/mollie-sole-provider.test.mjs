@@ -33,7 +33,7 @@ test("public pricing uses catalog display prices — no FastSpring Price API", (
   assert.doesNotMatch(publicPricing, /getPublicLocalizedPrices/);
 
   const display = readSource("src/lib/billing/display-pricing.ts");
-  assert.match(display, /catalog_usd/);
+  assert.match(display, /catalog_eur/);
   assert.doesNotMatch(display, /fastSpringApiFetch|api\.fastspring\.com/);
 });
 

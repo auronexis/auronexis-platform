@@ -66,7 +66,7 @@ export async function listActiveDiscountPreviews(planKey: PlanKey): Promise<Disc
   if (!plan) {
     return [];
   }
-  const planPriceCents = plan.priceMonthly * 100;
+  const planPriceCents = plan.amountMinor;
   const now = new Date().toISOString();
 
   const { data, error } = await admin
@@ -105,7 +105,7 @@ export async function validateDiscountCode(
   if (!plan) {
     return { valid: false, message: BILLING_PROMO_MESSAGES.INVALID };
   }
-  const planPriceCents = plan.priceMonthly * 100;
+  const planPriceCents = plan.amountMinor;
 
   const { data, error } = await admin
     .from("discount_codes")

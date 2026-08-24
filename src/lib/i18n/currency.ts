@@ -33,7 +33,7 @@ export const APP_CURRENCIES: readonly AppCurrency[] = [
   "RON",
 ] as const;
 
-export const DEFAULT_CURRENCY: AppCurrency = "USD";
+export const DEFAULT_CURRENCY: AppCurrency = "EUR";
 
 export const APP_CURRENCY_LABELS: Record<AppCurrency, string> = {
   USD: "US Dollar (USD)",

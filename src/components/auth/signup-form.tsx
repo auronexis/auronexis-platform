@@ -92,6 +92,40 @@ export function SignUpForm() {
         />
       </div>
 
+      <label className="flex items-start gap-3 text-sm text-slate-800">
+        <input
+          type="checkbox"
+          name="b2bEntrepreneurConfirmed"
+          className="mt-1 h-4 w-4 rounded border-slate-300"
+        />
+        <span>
+          I confirm that I am registering as an entrepreneur (§14 BGB) for business use, not as a
+          consumer.
+        </span>
+      </label>
+
+      <label className="flex items-start gap-3 text-sm text-slate-800">
+        <input
+          type="checkbox"
+          name="termsAccepted"
+          className="mt-1 h-4 w-4 rounded border-slate-300"
+        />
+        <span>
+          I accept the{" "}
+          <Link href="/terms" className="font-medium text-blue-600 hover:text-blue-700">
+            Terms
+          </Link>{" "}
+          and acknowledge the{" "}
+          <Link
+            href="/data-processing-agreement"
+            className="font-medium text-blue-600 hover:text-blue-700"
+          >
+            Data Processing Agreement summary
+          </Link>
+          .
+        </span>
+      </label>
+
       {state.success ? (
         <FormAlert variant="success" className="[color-scheme:light]">
           <span role="status" aria-live="polite">

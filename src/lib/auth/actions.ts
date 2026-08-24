@@ -9,6 +9,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { slugifyOrganizationName } from "@/lib/tenancy/context";
+import {
+  buildB2bEntrepreneurAcceptanceEvidence,
+  buildDpaAcceptanceEvidence,
+  buildTermsAcceptanceEvidence,
+} from "@/lib/billing/contracting";
+import { persistContractAcceptance } from "@/lib/billing/contract-acceptance";
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters."),
@@ -17,6 +23,12 @@ const loginSchema = z.object({
 const signupSchema = loginSchema.extend({
   fullName: z.string().min(2, "Full name is required."),
   organizationName: z.string().min(2, "Organization name is required."),
+  termsAccepted: z.boolean().refine((value) => value === true, {
+    message: "You must accept the Terms to create an account.",
+  }),
+  b2bEntrepreneurConfirmed: z.boolean().refine((value) => value === true, {
+    message: "Entrepreneur confirmation is required for B2B registration.",
+  }),
 });
 
 export type AuthActionState = {
@@ -82,6 +94,8 @@ export async function signUp(
     password: formData.get("password"),
     fullName: formData.get("fullName"),
     organizationName: formData.get("organizationName"),
+    termsAccepted: formData.get("termsAccepted") === "on",
+    b2bEntrepreneurConfirmed: formData.get("b2bEntrepreneurConfirmed") === "on",
   });
 
   if (!parsed.success) {
@@ -143,6 +157,27 @@ export async function signUp(
     await admin.from("organizations").delete().eq("id", organization.id);
     await admin.auth.admin.deleteUser(authData.user.id);
     return { error: "Unable to create user profile." };
+  }
+
+  try {
+    const acceptedAt = new Date().toISOString();
+    await persistContractAcceptance({
+      organizationId: organization.id,
+      userId: profile.id,
+      evidence: buildTermsAcceptanceEvidence({ acceptedAt, source: "signup" }),
+    });
+    await persistContractAcceptance({
+      organizationId: organization.id,
+      userId: profile.id,
+      evidence: buildB2bEntrepreneurAcceptanceEvidence({ acceptedAt, source: "signup" }),
+    });
+    await persistContractAcceptance({
+      organizationId: organization.id,
+      userId: profile.id,
+      evidence: buildDpaAcceptanceEvidence({ acceptedAt, source: "signup" }),
+    });
+  } catch {
+    console.error("[auth] contract acceptance persistence failed (account retained)");
   }
 
   // Welcome mail is best-effort — never roll back a successful provisioning.

@@ -29,6 +29,7 @@ import {
 } from "@/lib/billing/providers/mollie/organization-sync";
 import { resolveMollieBillingPeriodUpdate } from "@/lib/billing/providers/mollie/billing-period";
 import { upsertMollieBillingTransaction } from "@/lib/billing/providers/mollie/transactions";
+import { maybeIssueSalesInvoiceForPaidMolliePayment } from "@/lib/billing/sales-invoice-from-mollie";
 import {
   MOLLIE_BILLING_PURPOSE_UPGRADE_ADJUSTMENT,
   clearMollieUpgradePaymentAttempt,
@@ -405,7 +406,7 @@ async function recordMolliePaidTransaction(input: {
     providerPriceId: input.planKey,
     status: "paid",
     amountTotal: parsePaymentAmountCents(input.amountValue),
-    currency: input.currency ?? "eur",
+    currency: input.currency ?? null,
     occurredAt: input.paidAt,
     paidAt: input.paidAt,
     invoiceUrl: input.invoiceUrl ?? null,
@@ -413,6 +414,23 @@ async function recordMolliePaidTransaction(input: {
     billingPeriodStart: input.billingPeriodStart ?? null,
     billingPeriodEnd: input.billingPeriodEnd ?? null,
   });
+
+  try {
+    await maybeIssueSalesInvoiceForPaidMolliePayment({
+      organizationId: input.organizationId,
+      paymentId: input.paymentId,
+      amountTotalMinor: parsePaymentAmountCents(input.amountValue),
+      currency: input.currency ?? null,
+      productName: input.productName,
+      billingPeriodStart: input.billingPeriodStart ?? null,
+      billingPeriodEnd: input.billingPeriodEnd ?? null,
+    });
+  } catch (invoiceError) {
+    console.error("[billing][sales-invoice] issuance failed (payment retained)", {
+      message: invoiceError instanceof Error ? invoiceError.message : String(invoiceError),
+      paymentId: input.paymentId,
+    });
+  }
 }
 
 async function reconcileMollieUpgradePayment(

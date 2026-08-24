@@ -46,7 +46,7 @@ export const BILLING_DOC: DocPageInput = {
         "Account management — in-app subscription management in Settings ? Billing.",
         "Usage limits — caps on clients, seats, API calls, monitoring targets, and other resources defined by your plan.",
         "Past due — a subscription status indicating a failed or overdue payment that requires attention.",
-        "Invoice — a billing document issued for each Mollie charge for each charge, available as PDF from Settings → Billing or support.",
+        "Invoice — an Auroranexis sales invoice (Net, VAT, Total) issued for each paid charge where tax determination allows; Mollie payment links are receipts, not sales invoices.",
       ],
       paragraphs: [
         "Plan changes and payment events are reflected in Settings → Billing after Mollie confirms the transaction. There may be a short delay between completing checkout and seeing the updated plan in the dashboard. Payment card details never appear in Auroranexis — they are entered and stored entirely within Mollie's secure checkout.",

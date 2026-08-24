@@ -1194,6 +1194,9 @@ export type Database = {
           upgrade_payment_id: string | null;
           upgrade_target_plan: string | null;
           trial_ends_at: string | null;
+          billing_currency: string | null;
+          catalog_price_version: string | null;
+          catalog_amount_minor: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -1220,6 +1223,9 @@ export type Database = {
           upgrade_payment_id?: string | null;
           upgrade_target_plan?: string | null;
           trial_ends_at?: string | null;
+          billing_currency?: string | null;
+          catalog_price_version?: string | null;
+          catalog_amount_minor?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1246,6 +1252,9 @@ export type Database = {
           upgrade_payment_id?: string | null;
           upgrade_target_plan?: string | null;
           trial_ends_at?: string | null;
+          billing_currency?: string | null;
+          catalog_price_version?: string | null;
+          catalog_amount_minor?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -4593,6 +4602,192 @@ export type Database = {
             foreignKeyName: "mollie_test_subscriptions_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      organization_billing_identities: {
+        Row: {
+          organization_id: string;
+          legal_name: string | null;
+          billing_email: string | null;
+          country_code: string | null;
+          address_line1: string | null;
+          address_line2: string | null;
+          postal_code: string | null;
+          city: string | null;
+          vat_id: string | null;
+          vat_id_normalized: string | null;
+          vies_status: string | null;
+          vies_checked_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          organization_id: string;
+          legal_name?: string | null;
+          billing_email?: string | null;
+          country_code?: string | null;
+          address_line1?: string | null;
+          address_line2?: string | null;
+          postal_code?: string | null;
+          city?: string | null;
+          vat_id?: string | null;
+          vat_id_normalized?: string | null;
+          vies_status?: string | null;
+          vies_checked_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          organization_id?: string;
+          legal_name?: string | null;
+          billing_email?: string | null;
+          country_code?: string | null;
+          address_line1?: string | null;
+          address_line2?: string | null;
+          postal_code?: string | null;
+          city?: string | null;
+          vat_id?: string | null;
+          vat_id_normalized?: string | null;
+          vies_status?: string | null;
+          vies_checked_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_billing_identities_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      organization_contract_acceptances: {
+        Row: {
+          id: string;
+          organization_id: string;
+          user_id: string | null;
+          kind: string;
+          document_version: string;
+          accepted_at: string;
+          source: string;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          user_id?: string | null;
+          kind: string;
+          document_version: string;
+          accepted_at?: string;
+          source: string;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          user_id?: string | null;
+          kind?: string;
+          document_version?: string;
+          accepted_at?: string;
+          source?: string;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_contract_acceptances_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sales_invoices: {
+        Row: {
+          id: string;
+          organization_id: string;
+          invoice_number: string;
+          status: string;
+          currency: string;
+          net_minor: number;
+          vat_rate_bps: number;
+          vat_minor: number;
+          gross_minor: number;
+          tax_policy_outcome: string;
+          tax_note: string | null;
+          billing_period_start: string | null;
+          billing_period_end: string | null;
+          mollie_payment_id: string | null;
+          provider_transaction_id: string | null;
+          buyer_legal_name: string | null;
+          buyer_vat_id: string | null;
+          buyer_country_code: string | null;
+          lines_json: Json;
+          issued_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          invoice_number: string;
+          status?: string;
+          currency: string;
+          net_minor: number;
+          vat_rate_bps?: number;
+          vat_minor: number;
+          gross_minor: number;
+          tax_policy_outcome: string;
+          tax_note?: string | null;
+          billing_period_start?: string | null;
+          billing_period_end?: string | null;
+          mollie_payment_id?: string | null;
+          provider_transaction_id?: string | null;
+          buyer_legal_name?: string | null;
+          buyer_vat_id?: string | null;
+          buyer_country_code?: string | null;
+          lines_json?: Json;
+          issued_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          invoice_number?: string;
+          status?: string;
+          currency?: string;
+          net_minor?: number;
+          vat_rate_bps?: number;
+          vat_minor?: number;
+          gross_minor?: number;
+          tax_policy_outcome?: string;
+          tax_note?: string | null;
+          billing_period_start?: string | null;
+          billing_period_end?: string | null;
+          mollie_payment_id?: string | null;
+          provider_transaction_id?: string | null;
+          buyer_legal_name?: string | null;
+          buyer_vat_id?: string | null;
+          buyer_country_code?: string | null;
+          lines_json?: Json;
+          issued_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoices_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },

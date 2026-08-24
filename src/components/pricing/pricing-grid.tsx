@@ -2,11 +2,17 @@
 
 import { useState, useTransition } from "react";
 import { CheckoutBlockBanner } from "@/components/billing/checkout-block-banner";
+import {
+  CheckoutContractSummaryDialog,
+  type CheckoutContractAcceptanceState,
+} from "@/components/billing/checkout-contract-summary-dialog";
 import { PricingCard } from "@/components/pricing/pricing-card";
 import {
   createCheckoutSessionAction,
   createPortalSessionAction,
+  prepareCheckoutContractSummaryAction,
 } from "@/lib/billing/actions";
+import type { CheckoutContractSummary } from "@/lib/billing/contracting";
 import type { CheckoutBlockState } from "@/lib/billing/checkout-block";
 import { resolveCheckoutBlockState } from "@/lib/billing/checkout-block";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
@@ -48,6 +54,13 @@ type PricingGridProps = {
   localizedDisplayPrices?: Partial<Record<PlanKey, string>>;
 };
 
+const INITIAL_ACCEPTANCE: CheckoutContractAcceptanceState = {
+  termsAccepted: false,
+  b2bEntrepreneurConfirmed: false,
+  countryCode: "DE",
+  vatId: "",
+};
+
 export function PricingGrid({
   plans,
   selection,
@@ -63,6 +76,10 @@ export function PricingGrid({
   const [pendingSyncMessage, setPendingSyncMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isPortalPending, startPortalTransition] = useTransition();
+  const [contractOpen, setContractOpen] = useState(false);
+  const [contractSummary, setContractSummary] = useState<CheckoutContractSummary | null>(null);
+  const [acceptance, setAcceptance] = useState<CheckoutContractAcceptanceState>(INITIAL_ACCEPTANCE);
+  const [contractError, setContractError] = useState<string | null>(null);
   const safeStripeStatus = normalizeBillingUiStatus(stripeStatus);
   const safeSelection = selection ?? createFallbackPricingSelection();
   const safePlans = Array.isArray(plans) ? plans : [];
@@ -78,16 +95,44 @@ export function PricingGrid({
   const selectPlan = (planKey: PlanKey) => {
     setError(null);
     setPendingSyncMessage(null);
+    setContractError(null);
     setPendingPlanKey(planKey);
+    setAcceptance(INITIAL_ACCEPTANCE);
     trackConversionEvent("subscription_checkout_started", {
       surface: "pricing_grid",
       plan_tier: planKey,
     });
     startTransition(async () => {
-      const result = await createCheckoutSessionAction(planKey);
-      if (result?.error) {
-        setError(sanitizeBillingCustomerError(new Error(result.error), "Unable to start checkout."));
+      const prepared = await prepareCheckoutContractSummaryAction(planKey);
+      if (prepared.error || !prepared.summary) {
+        setError(
+          sanitizeBillingCustomerError(
+            new Error(prepared.error ?? "Unable to prepare checkout."),
+            "Unable to start checkout.",
+          ),
+        );
         setPendingPlanKey(null);
+        return;
+      }
+      setContractSummary(prepared.summary);
+      setContractOpen(true);
+    });
+  };
+
+  const confirmContractCheckout = () => {
+    if (!pendingPlanKey) return;
+    setContractError(null);
+    startTransition(async () => {
+      const result = await createCheckoutSessionAction(pendingPlanKey, {
+        termsAccepted: acceptance.termsAccepted,
+        b2bEntrepreneurConfirmed: acceptance.b2bEntrepreneurConfirmed,
+        countryCode: acceptance.countryCode,
+        vatId: acceptance.vatId.trim() || undefined,
+      });
+      if (result?.error) {
+        setContractError(
+          sanitizeBillingCustomerError(new Error(result.error), "Unable to start checkout."),
+        );
         return;
       }
 
@@ -98,11 +143,13 @@ export function PricingGrid({
       }
 
       if (result?.success) {
+        setContractOpen(false);
         setPendingSyncMessage(result.success);
         setPendingPlanKey(null);
         return;
       }
 
+      setContractOpen(false);
       setPendingPlanKey(null);
     });
   };
@@ -224,6 +271,21 @@ export function PricingGrid({
           );
         })}
       </div>
+
+      <CheckoutContractSummaryDialog
+        open={contractOpen}
+        summary={contractSummary}
+        acceptance={acceptance}
+        onAcceptanceChange={setAcceptance}
+        onConfirm={confirmContractCheckout}
+        onCancel={() => {
+          setContractOpen(false);
+          setPendingPlanKey(null);
+          setContractError(null);
+        }}
+        pending={isPending}
+        error={contractError}
+      />
 
       {pendingSyncMessage ? <FormAlert variant="success">{pendingSyncMessage}</FormAlert> : null}
       {!pendingSyncMessage && scheduledPlanChange ? (

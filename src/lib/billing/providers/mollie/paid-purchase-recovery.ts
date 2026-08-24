@@ -232,7 +232,7 @@ async function recordRecoveryTransaction(input: {
     providerPriceId: input.planKey,
     status: "paid",
     amountTotal: parsePaymentAmountCents(input.payment.amount?.value),
-    currency: input.payment.amount?.currency ?? "eur",
+    currency: input.payment.amount?.currency ?? null,
     occurredAt: paidAt,
     paidAt,
     invoiceUrl: input.payment._links?.checkout?.href ?? null,

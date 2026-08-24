@@ -121,10 +121,12 @@ test("Enterprise flow untouched — manual billing contact path preserved", () =
 
 test("Canonical plan prices unchanged — SUBSCRIPTION_PLANS source of truth", () => {
   const plans = readSource("src/lib/billing/plans.ts");
-  assert.match(plans, /priceMonthly: 179/);
-  assert.match(plans, /priceMonthly: 599/);
-  assert.match(plans, /priceMonthly: 1799/);
-  assert.match(plans, /currency: "USD"/);
+  assert.match(plans, /amountMinorFallback:\s*17_900|amountMinor:\s*17_900/);
+  assert.match(plans, /amountMinorFallback:\s*59_900|amountMinor:\s*59_900/);
+  assert.match(plans, /amountMinorFallback:\s*179_900|amountMinor:\s*179_900/);
+  assert.match(plans, /PRIMARY_BILLING_CURRENCY/);
+  const catalog = readSource("src/lib/billing/price-catalog.ts");
+  assert.match(catalog, /currency:\s*"EUR"/);
 });
 
 test("Database billing_provider CHECK includes mollie in Phase 2 migration", () => {

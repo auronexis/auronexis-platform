@@ -79,7 +79,7 @@ export function BillingHistoryPanel({
     <PageSurface>
       <PageSurfaceHeading
         title="Billing history"
-        description="Invoices and payments for your Auroranexis subscription."
+        description="Payment records synced from Mollie. Where issued, Auroranexis sales invoices show Net, VAT, and Total — Mollie payment links are receipts, not sales invoices."
       />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -169,10 +169,12 @@ export function BillingHistoryPanel({
                         loading={isPending && pdfPendingId === item.providerTransactionId}
                         onClick={() => openPdf(item.providerTransactionId)}
                       >
-                        Download PDF
+                        Payment receipt
                       </Button>
                     ) : (
-                      <span className="text-xs text-muted">—</span>
+                      <span className="text-xs text-muted">
+                        {item.invoiceNumber ? "Sales invoice on file" : "—"}
+                      </span>
                     )}
                   </td>
                 </tr>
