@@ -35,6 +35,18 @@ test("white-label diagnostics distinguish entitlement vs configuration vs platfo
   assert.match(queries, /platform_unavailable/);
 });
 
+test("white-label schema prerequisite migration exists before DELETE policy", () => {
+  assert.equal(
+    pathExists("supabase/migrations/20250824115000_white_label_settings_schema_prerequisite.sql"),
+    true,
+  );
+  const prerequisite = readSource(
+    "supabase/migrations/20250824115000_white_label_settings_schema_prerequisite.sql",
+  );
+  assert.match(prerequisite, /CREATE TABLE IF NOT EXISTS public\.white_label_settings/);
+  assert.match(prerequisite, /ENABLE ROW LEVEL SECURITY/);
+});
+
 test("white-label DELETE RLS migration exists", () => {
   assert.equal(
     pathExists("supabase/migrations/20250824120000_white_label_settings_delete_policy.sql"),

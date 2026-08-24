@@ -170,6 +170,7 @@ Do not manually set `organizations.plan`.
 
 | Migration | Purpose |
 |-----------|---------|
+| `20250824115000_white_label_settings_schema_prerequisite.sql` | Idempotent CREATE TABLE + RLS + storage for `white_label_settings` (production repair) |
 | `20250824120000_white_label_settings_delete_policy.sql` | Additive DELETE RLS + GRANT for white_label_settings |
 
 No destructive changes. No fabricated subscriptions. No `organizations.plan` writes.
@@ -228,9 +229,11 @@ See section X for gate results (recorded after local runs).
    Then redeploy.  
    Verify: Diagnostics → Secrets → “Encryption key configured = Yes”; create a test vault secret safely.
 
-2. **Supabase:** apply migration `20250824120000_white_label_settings_delete_policy.sql` if not auto-applied.
+2. **Supabase:** apply migrations in order:
+   - `20250824115000_white_label_settings_schema_prerequisite.sql`
+   - `20250824120000_white_label_settings_delete_policy.sql`
 
-3. Confirm White Label settings table exists in production (`white_label_settings`).
+3. Confirm White Label settings table exists in production (`white_label_settings`) and Diagnostics → White label shows **Table reachable = Yes**.
 
 4. Do **not** enable `MOLLIE_LIVE_CHARGING_ENABLED` without separate go-live approval.
 
