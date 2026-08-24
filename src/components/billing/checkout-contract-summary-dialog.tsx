@@ -110,7 +110,7 @@ export function CheckoutContractSummaryDialog({
                 onAcceptanceChange({ ...acceptance, countryCode: event.target.value })
               }
               className={cn(
-                "h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950",
+                "h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 [color-scheme:light] [&>option]:bg-white [&>option]:text-slate-950",
                 focusRing,
               )}
             >

@@ -2,12 +2,12 @@ import type { SelectHTMLAttributes } from "react";
 import { cn } from "@/lib/utils/cn";
 import { auroraInputFocus, inputErrorShake } from "@/lib/ui/motion";
 import {
-  formControl,
   formControlHeight,
   formError,
   formFieldShell,
   formHelper,
   formLabel,
+  nativeSelectControl,
 } from "@/lib/ui/form-tokens";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 
@@ -56,9 +56,9 @@ export function Select({
           error ? `${selectId}-error` : description ? `${selectId}-desc` : undefined
         }
         className={cn(
-          "flex cursor-pointer",
+          "flex",
           formControlHeight,
-          formControl,
+          nativeSelectControl,
           transitionInteractive,
           auroraInputFocus,
           focusRing,

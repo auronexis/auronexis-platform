@@ -144,6 +144,40 @@
     outline: 2px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
     outline-offset: 2px;
   }
+
+  /*
+   * Native select/option theme safety.
+   * Closed control and opened OS/browser option lists must use semantic surface/foreground
+   * tokens so dark/light themes never produce unreadable option text.
+   */
+  select {
+    background-color: var(--color-surface);
+    color: var(--color-foreground);
+    color-scheme: inherit;
+  }
+
+  select option,
+  select optgroup {
+    background-color: var(--color-surface);
+    color: var(--color-foreground);
+  }
+
+  select:disabled,
+  select option:disabled {
+    color: var(--color-muted);
+  }
+
+  html.light select,
+  html.light select option,
+  html.light select optgroup {
+    color-scheme: light;
+  }
+
+  html.dark select,
+  html.dark select option,
+  html.dark select optgroup {
+    color-scheme: dark;
+  }
 }
 
 @layer utilities {

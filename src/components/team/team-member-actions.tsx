@@ -12,6 +12,7 @@ import {
 } from "@/lib/team/actions";
 import { USER_ROLE_LABELS, type TeamMemberView } from "@/lib/team/types";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
+import { nativeSelectControl } from "@/lib/ui/form-tokens";
 import { useFormActionFeedback } from "@/lib/ui/use-form-action-feedback";
 import { cn } from "@/lib/utils/cn";
 import type { UserRole } from "@/types/database";
@@ -46,7 +47,8 @@ export function TeamMemberActions({
           name="role"
           defaultValue={member.role}
           className={cn(
-            "h-9 cursor-pointer rounded-md border border-border bg-surface px-2 text-sm text-foreground shadow-xs",
+            "h-9 px-2",
+            nativeSelectControl,
             transitionInteractive,
             focusRing,
           )}

@@ -15,6 +15,7 @@ import {
 import type { ComplianceDashboardData } from "@/lib/compliance/types";
 import { FRAMEWORK_LABELS, GDPR_REQUEST_LABELS } from "@/lib/compliance/types";
 import { cn } from "@/lib/utils/cn";
+import { nativeSelectControl } from "@/lib/ui/form-tokens";
 
 type ComplianceWorkspaceProps = {
   dashboard: ComplianceDashboardData;
@@ -121,7 +122,7 @@ export function ComplianceWorkspace({
             action={(formData) => run(() => createGdprRequestAction({}, formData))}
             className="mt-4 space-y-3"
           >
-            <select name="requestType" className="w-full rounded-lg border border-border px-3 py-2 text-sm">
+            <select name="requestType" className={cn(nativeSelectControl, "rounded-lg")}>
               {Object.entries(GDPR_REQUEST_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
@@ -154,7 +155,7 @@ export function ComplianceWorkspace({
           >
             <Input name="title" label="Title" required />
             <Input name="description" label="Description" />
-            <select name="severity" className="w-full rounded-lg border border-border px-3 py-2 text-sm">
+            <select name="severity" className={cn(nativeSelectControl, "rounded-lg")}>
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>

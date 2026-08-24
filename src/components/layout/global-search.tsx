@@ -28,9 +28,11 @@ import {
   ShieldAlert,
   Sparkles,
   TrendingUp,
+  User,
   UserPlus,
   Users,
   Workflow,
+  Brain,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
@@ -77,6 +79,9 @@ const SEARCH_ICON_MAP: Record<WorkspaceSearchAction["icon"], LucideIcon> = {
   notifications: Bell,
   billing: CreditCard,
   create: UserPlus,
+  profile: User,
+  copilot: Brain,
+  predictive: LineChart,
 };
 
 function mapSearchActions(actions: WorkspaceSearchAction[]): QuickAction[] {

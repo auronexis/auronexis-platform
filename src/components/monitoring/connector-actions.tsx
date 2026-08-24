@@ -9,6 +9,8 @@ import {
   simulateMonitoringEventAction,
 } from "@/lib/monitoring/actions";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
+import { nativeSelectControl } from "@/lib/ui/form-tokens";
 
 type ConnectorActionsProps = {
   connectorId: string;
@@ -79,7 +81,7 @@ export function ConnectorActions({ connectorId, status, canManage }: ConnectorAc
         >
           <label className="text-xs font-medium text-muted">
             Simulate
-            <select name="severity" className="ml-2 rounded-lg border border-border px-2 py-1 text-sm">
+            <select name="severity" className={cn(nativeSelectControl, "ml-2 h-8 w-auto rounded-lg px-2 py-1")}>
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>

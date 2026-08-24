@@ -17,4 +17,15 @@ export const formGrid = "grid gap-6 sm:grid-cols-2";
 export const formControl =
   "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground shadow-xs placeholder:text-muted/80 disabled:cursor-not-allowed disabled:opacity-50";
 
+/**
+ * Theme-safe native `<select>` chrome.
+ * Pair with globals.css option rules so opened OS/browser popups stay readable in light and dark.
+ */
+export const nativeSelectControl = [
+  formControl,
+  "cursor-pointer",
+  "[&>option]:bg-surface [&>option]:text-foreground",
+  "[&>option:disabled]:text-muted [&>option:disabled]:opacity-70",
+].join(" ");
+
 export const formControlHeight = "h-10";

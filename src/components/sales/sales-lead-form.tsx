@@ -6,6 +6,7 @@ import { useActionState, useEffect } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Button } from "@/components/ui/button";
 import { focusRing } from "@/lib/ui/tokens";
+import { nativeSelectControl } from "@/lib/ui/form-tokens";
 import { cn } from "@/lib/utils/cn";
 import { createSalesLead, type SalesActionState } from "@/lib/sales/actions";
 import { LEAD_SOURCES, PIPELINE_STAGES } from "@/lib/sales/pipeline-stages";
@@ -89,7 +90,7 @@ export function SalesLeadForm({ teamMembers }: SalesLeadFormProps) {
           <select
             name="leadSource"
             defaultValue="other"
-            className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm"
+            className={cn(nativeSelectControl, "rounded-lg")}
           >
             {LEAD_SOURCES.map((source) => (
               <option key={source.key} value={source.key}>
@@ -103,7 +104,7 @@ export function SalesLeadForm({ teamMembers }: SalesLeadFormProps) {
           <select
             name="pipelineStage"
             defaultValue="pilot_lead"
-            className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm"
+            className={cn(nativeSelectControl, "rounded-lg")}
           >
             {PIPELINE_STAGES.map((stage) => (
               <option key={stage.key} value={stage.key}>
@@ -117,7 +118,7 @@ export function SalesLeadForm({ teamMembers }: SalesLeadFormProps) {
           <select
             name="ownerUserId"
             defaultValue=""
-            className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm"
+            className={cn(nativeSelectControl, "rounded-lg")}
           >
             <option value="">Assign to me</option>
             {teamMembers.map((member) => (

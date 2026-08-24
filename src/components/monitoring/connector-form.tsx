@@ -1,4 +1,6 @@
 import { MONITORING_PROVIDERS } from "@/lib/monitoring/types";
+import { nativeSelectControl } from "@/lib/ui/form-tokens";
+import { cn } from "@/lib/utils/cn";
 
 type ConnectorFormProps = {
   action: (formData: FormData) => void | Promise<void>;
@@ -44,7 +46,7 @@ export function ConnectorForm({
           id="provider"
           name="provider"
           defaultValue={defaultValues?.provider ?? "Manual"}
-          className="mt-1 w-full rounded-xl border border-border bg-surface-1 px-3 py-2 text-sm"
+          className={cn(nativeSelectControl, "mt-1 rounded-xl")}
         >
           {MONITORING_PROVIDERS.map((provider) => (
             <option key={provider} value={provider}>
@@ -63,7 +65,7 @@ export function ConnectorForm({
             id="clientId"
             name="clientId"
             defaultValue={defaultValues?.clientId ?? ""}
-            className="mt-1 w-full rounded-xl border border-border bg-surface-1 px-3 py-2 text-sm"
+            className={cn(nativeSelectControl, "mt-1 rounded-xl")}
           >
             <option value="">Organization-wide</option>
             {clients.map((client) => (

@@ -27,6 +27,7 @@ import {
 import { FormAlert } from "@/components/ui/form-alert";
 import { Button } from "@/components/ui/button";
 import { focusRing } from "@/lib/ui/tokens";
+import { formControl, nativeSelectControl } from "@/lib/ui/form-tokens";
 import { cn } from "@/lib/utils/cn";
 import { formatAppDateTime } from "@/lib/i18n/date";
 import type { TeamMemberView } from "@/lib/team/types";
@@ -115,7 +116,7 @@ export function SalesLeadDetail({
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Pipeline stage</span>
-                <select name="pipelineStage" defaultValue={lead.pipeline_stage} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm">
+                <select name="pipelineStage" defaultValue={lead.pipeline_stage} className={cn(nativeSelectControl, "rounded-lg")}>
                   {PIPELINE_STAGES.map((stage) => (
                     <option key={stage.key} value={stage.key}>{stage.label}</option>
                   ))}
@@ -123,7 +124,7 @@ export function SalesLeadDetail({
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Owner</span>
-                <select name="ownerUserId" defaultValue={lead.owner_user_id ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm">
+                <select name="ownerUserId" defaultValue={lead.owner_user_id ?? ""} className={cn(nativeSelectControl, "rounded-lg")}>
                   <option value="">Unassigned</option>
                   {teamMembers.map((member) => (
                     <option key={member.id} value={member.id}>{member.full_name}</option>
@@ -132,43 +133,43 @@ export function SalesLeadDetail({
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">MRR estimate</span>
-                <input name="mrrEstimate" type="number" min={0} step="0.01" defaultValue={lead.mrr_estimate ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="mrrEstimate" type="number" min={0} step="0.01" defaultValue={lead.mrr_estimate ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Deal value</span>
-                <input name="leadValue" type="number" min={0} step="0.01" defaultValue={lead.lead_value ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="leadValue" type="number" min={0} step="0.01" defaultValue={lead.lead_value ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Next follow-up</span>
-                <input name="nextFollowupAt" type="datetime-local" defaultValue={lead.next_followup_at?.slice(0, 16) ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="nextFollowupAt" type="datetime-local" defaultValue={lead.next_followup_at?.slice(0, 16) ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Company size</span>
-                <input name="companySize" defaultValue={lead.company_size ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="companySize" defaultValue={lead.company_size ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Website</span>
-                <input name="website" defaultValue={lead.website ?? ""} autoComplete="url" className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="website" defaultValue={lead.website ?? ""} autoComplete="url" className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm md:col-span-2">
                 <span className="mb-1 block font-medium text-foreground">Industry</span>
-                <input name="industry" defaultValue={lead.industry ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="industry" defaultValue={lead.industry ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">LinkedIn</span>
-                <input name="linkedinUrl" defaultValue={lead.linkedin_url ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="linkedinUrl" defaultValue={lead.linkedin_url ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Location</span>
-                <input name="location" defaultValue={lead.location ?? ""} autoComplete="address-level2" className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="location" defaultValue={lead.location ?? ""} autoComplete="address-level2" className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Employees</span>
-                <input name="employeeCount" type="number" min={0} defaultValue={lead.employee_count ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <input name="employeeCount" type="number" min={0} defaultValue={lead.employee_count ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Segment</span>
-                <select name="prospectSegment" defaultValue={lead.prospect_segment ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm">
+                <select name="prospectSegment" defaultValue={lead.prospect_segment ?? ""} className={cn(nativeSelectControl, "rounded-lg")}>
                   <option value="">—</option>
                   {OUTBOUND_LIST_TYPES.map((item) => (
                     <option key={item.key} value={item.key}>{item.label}</option>
@@ -177,7 +178,7 @@ export function SalesLeadDetail({
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Region</span>
-                <select name="sourceRegion" defaultValue={lead.source_region ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm">
+                <select name="sourceRegion" defaultValue={lead.source_region ?? ""} className={cn(nativeSelectControl, "rounded-lg")}>
                   <option value="">—</option>
                   {LEAD_SOURCE_REGIONS.map((item) => (
                     <option key={item.key} value={item.key}>{item.label}</option>
@@ -186,7 +187,7 @@ export function SalesLeadDetail({
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-foreground">Agency type</span>
-                <select name="agencyType" defaultValue={lead.agency_type ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm">
+                <select name="agencyType" defaultValue={lead.agency_type ?? ""} className={cn(nativeSelectControl, "rounded-lg")}>
                   <option value="">—</option>
                   {AGENCY_TYPES.map((item) => (
                     <option key={item.key} value={item.key}>{item.label}</option>
@@ -195,11 +196,11 @@ export function SalesLeadDetail({
               </label>
               <label className="block text-sm md:col-span-2">
                 <span className="mb-1 block font-medium text-foreground">Pain points</span>
-                <textarea name="painPoints" rows={3} defaultValue={lead.pain_points ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <textarea name="painPoints" rows={3} defaultValue={lead.pain_points ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
               <label className="block text-sm md:col-span-2">
                 <span className="mb-1 block font-medium text-foreground">Notes</span>
-                <textarea name="notes" rows={4} defaultValue={lead.notes ?? lead.message ?? ""} className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                <textarea name="notes" rows={4} defaultValue={lead.notes ?? lead.message ?? ""} className={cn(formControl, "rounded-lg")} />
               </label>
             </div>
             {updateState.error ? <FormAlert variant="error">{updateState.error}</FormAlert> : null}
@@ -293,7 +294,7 @@ export function SalesLeadDetail({
                 <input type="hidden" name="leadId" value={lead.id} />
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-foreground">Activity type</span>
-                  <select name="activityType" defaultValue="call" className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm">
+                  <select name="activityType" defaultValue="call" className={cn(nativeSelectControl, "rounded-lg")}>
                     {SALES_ACTIVITY_TYPES.filter((type) => type.key !== "note").map((type) => (
                       <option key={type.key} value={type.key}>{type.label}</option>
                     ))}
@@ -301,15 +302,15 @@ export function SalesLeadDetail({
                 </label>
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-foreground">Subject</span>
-                  <input required name="subject" placeholder="Subject" className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                  <input required name="subject" placeholder="Subject" className={cn(formControl, "rounded-lg")} />
                 </label>
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-foreground">Details (optional)</span>
-                  <textarea name="body" rows={2} placeholder="Details (optional)" className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                  <textarea name="body" rows={2} placeholder="Details (optional)" className={cn(formControl, "rounded-lg")} />
                 </label>
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-foreground">Follow-up due (optional)</span>
-                  <input name="dueAt" type="datetime-local" className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                  <input name="dueAt" type="datetime-local" className={cn(formControl, "rounded-lg")} />
                 </label>
                 {activityState.error ? <FormAlert variant="error">{activityState.error}</FormAlert> : null}
                 {activityState.success ? <FormAlert variant="success">Activity logged.</FormAlert> : null}
@@ -325,11 +326,11 @@ export function SalesLeadDetail({
                 <input type="hidden" name="leadId" value={lead.id} />
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-foreground">Subject</span>
-                  <input required name="subject" placeholder="Subject" className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                  <input required name="subject" placeholder="Subject" className={cn(formControl, "rounded-lg")} />
                 </label>
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium text-foreground">Note</span>
-                  <textarea required name="body" rows={3} placeholder="Note" className="w-full rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm" />
+                  <textarea required name="body" rows={3} placeholder="Note" className={cn(formControl, "rounded-lg")} />
                 </label>
                 {noteState.error ? <FormAlert variant="error">{noteState.error}</FormAlert> : null}
                 {noteState.success ? <FormAlert variant="success">Note added.</FormAlert> : null}

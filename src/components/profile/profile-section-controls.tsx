@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import {
-  formControl,
   formControlHeight,
+  nativeSelectControl,
 } from "@/lib/ui/form-tokens";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 
@@ -69,9 +69,9 @@ export function ProfileSelect({
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
       className={cn(
-        "flex cursor-pointer",
+        "flex",
         formControlHeight,
-        formControl,
+        nativeSelectControl,
         transitionInteractive,
         focusRing,
         disabled && "cursor-not-allowed opacity-60",
