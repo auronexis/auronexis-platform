@@ -56,8 +56,12 @@ export function safeGetPlanKeyFromSubscriptionPrice(input: {
 
   if (input.billingProvider === "mollie") {
     const priceId = input.providerPriceId?.trim().toLowerCase() ?? "";
-    if (priceId === "professional" || priceId === "business") {
+    if (priceId === "professional" || priceId === "business" || priceId === "enterprise") {
       return priceId;
+    }
+    // Pre-EUR / legacy catalog alias — maps safely without inventing paid access.
+    if (priceId === "pro") {
+      return "professional";
     }
     return null;
   }

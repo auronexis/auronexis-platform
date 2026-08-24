@@ -18,7 +18,7 @@ export async function ensureDefaultPolicies(organizationId: string): Promise<voi
   ];
 
   for (const policy of defaults) {
-    await admin.from("compliance_policies").upsert(
+    const { error } = await admin.from("compliance_policies").upsert(
       {
         organization_id: organizationId,
         framework: policy.framework,
@@ -29,6 +29,9 @@ export async function ensureDefaultPolicies(organizationId: string): Promise<voi
       } as never,
       { onConflict: "organization_id,framework,policy_key" },
     );
+    if (error) {
+      console.error("[compliance] policy upsert failed:", error.message);
+    }
   }
 }
 

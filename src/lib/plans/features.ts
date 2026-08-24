@@ -3,13 +3,6 @@ import type { PlanFeatureKey, PlanFeatures, PlanLimitKey } from "@/lib/plans/typ
 import { getSeatPlanBlockReason } from "@/lib/seats/plans";
 import type { SeatPlanBlockReason } from "@/lib/seats/types";
 
-const PLAN_ORDER: Record<PlanKey, number> = {
-  starter: 1,
-  professional: 2,
-  business: 3,
-  enterprise: 4,
-};
-
 const FEATURE_MINIMUM_PLAN: Record<PlanFeatureKey, PlanKey> = {
   reports: "starter",
   pdf_export: "starter",
@@ -180,9 +173,7 @@ export function getDefaultPlanKey(): PlanKey {
   return "starter";
 }
 
-export function planMeetsMinimum(currentPlan: PlanKey, minimumPlan: PlanKey): boolean {
-  return PLAN_ORDER[currentPlan] >= PLAN_ORDER[minimumPlan];
-}
+export { planMeetsMinimum, planRankAtLeast, PLAN_RANK, PLAN_HIERARCHY_ORDER } from "@/lib/plans/hierarchy";
 
 /** Full feature matrix for a plan key. */
 export function getPlanFeatures(planKey: PlanKey): PlanFeatures {

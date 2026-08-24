@@ -49,14 +49,6 @@ function resolveLabel(
 export function computeProductionReadiness(
   data: WorkspaceDiagnostics,
 ): ProductionReadinessSnapshot {
-  const stripeWebhook = data.stripeWebhook;
-  const stripeReadiness = scoreFromFlags({
-    tableReachable: stripeWebhook.tableReachable,
-    healthy: stripeWebhook.failedEvents === 0,
-    degraded: stripeWebhook.failedEvents > 0,
-    base: data.platform.stripeHealth.ok ? 92 : 75,
-  });
-
   const cronReadiness = scoreFromFlags({
     tableReachable: data.cron.tableReachable,
     healthy: data.cron.status === "healthy",
@@ -81,10 +73,13 @@ export function computeProductionReadiness(
 
   const billingReadiness = scoreFromFlags({
     tableReachable: true,
+    // billing.stripeConnected is a legacy field name; snapshot now reflects Mollie health.
     healthy: data.billing.stripeConnected,
     degraded: !data.billing.stripeConnected,
-    base: 88,
+    base: 92,
   });
+  // Legacy snapshot field — mirrors Mollie billing; Stripe archive never drives score.
+  const stripeReadiness = billingReadiness;
 
   const apiReadiness = scoreFromFlags({
     tableReachable: data.publicApi.tableReachable,

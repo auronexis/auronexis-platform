@@ -32,7 +32,7 @@ import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
 import { getStripeWebhookDiagnostics } from "@/lib/diagnostics/webhook-archive";
 import {
   checkDatabaseHealth,
-  checkPaddleHealth,
+  checkMollieApiConfigHealth,
   getBuildInfo,
 } from "@/lib/diagnostics/platform-health";
 import { getOrganizationSubscription } from "@/lib/billing/queries";
@@ -121,7 +121,7 @@ export async function getWorkspaceDiagnostics(
   ]);
   const platformEnv = getPlatformEnvDiagnostics();
   const buildInfo = getBuildInfo();
-  const stripeHealth = checkPaddleHealth();
+  const stripeHealth = checkMollieApiConfigHealth(); // legacy field — Mollie runtime health
 
   const enabledFeatures = listFeatureKeys().map((key) => ({
     key,
@@ -186,7 +186,7 @@ export async function getWorkspaceDiagnostics(
       row: subscription,
       missingMessage: subscription
         ? null
-        : "No subscription row found. This organization uses Professional limits until a plan is linked.",
+        : "No subscription row found. This organization uses Starter fallback limits until a Mollie plan is linked.",
     },
     platformEnv,
     matchedPlanFromSubscriptionPriceId,

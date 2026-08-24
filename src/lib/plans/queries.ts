@@ -1,29 +1,23 @@
 import { cache } from "react";
-import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
-import {
-  getPlanByPriceId,
-  safeGetPlanKeyFromSubscriptionPrice,
-} from "@/lib/billing/plans.server";
-import { selectPreferredSubscriptionSummaryRow } from "@/lib/billing/subscription-selection";
+import type { PlanKey } from "@/lib/billing/plans";
 import { applyPlanOverride } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";
-import { getDefaultPlanKey,
-  getEnabledModuleLabels,
-} from "@/lib/plans/features";
-import { getDevForcePlanOverride } from "@/lib/plans/dev-override";
+import { getEnabledModuleLabels } from "@/lib/plans/features";
+import {
+  resolveEffectivePlanFromSubscriptionRows,
+  type EffectivePlanSubscriptionRow,
+} from "@/lib/plans/effective-plan";
 import type {
   ClientLimitUsage,
   OrganizationPlanContext,
   OrganizationPlanUsageSummary,
-  PlanResolutionSource,
 } from "@/lib/plans/types";
-import { isSubscriptionUsable } from "@/lib/billing/status";
 import { countActiveClients } from "@/lib/clients/queries";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 const SUBSCRIPTION_SELECT =
-  "stripe_price_id, provider_price_id, provider_subscription_id, billing_provider, status, updated_at";
+  "stripe_price_id, provider_price_id, provider_subscription_id, billing_provider, provider_status, status, cancel_at_period_end, current_period_end, sync_pending, updated_at";
 
 /** Resolve the effective plan key for an organization. */
 export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {
@@ -34,7 +28,11 @@ export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {
 /** Alias for effective plan resolution. */
 export const getEffectivePlan = getCurrentPlan;
 
-/** Full plan context for an organization — override > FastSpring (or archived Stripe/Paddle) > starter fallback. */
+/**
+ * Full plan context for an organization.
+ * Canonical path: Mollie (or historical ownership) subscription row -> mapped plan.
+ * Never uses organizations.plan as an entitlement source. Fail closed to starter.
+ */
 export const getOrganizationPlanContext = cache(async function getOrganizationPlanContext(
   organizationId: string,
 ): Promise<OrganizationPlanContext> {
@@ -53,80 +51,29 @@ export const getOrganizationPlanContext = cache(async function getOrganizationPl
     throw new Error(error.message);
   }
 
-  const subscription = selectPreferredSubscriptionSummaryRow(
-    (data ?? []) as Array<{
-      stripe_price_id: string | null;
-      provider_price_id: string | null;
-      provider_subscription_id: string | null;
-      billing_provider: string | null;
-      status: string;
-      updated_at?: string;
-    }>,
-  );
-  const billingProvider = subscription?.billing_provider ?? "mollie";
-  const subscriptionPriceId =
-    billingProvider === "fastspring" || billingProvider === "paddle"
-      ? (subscription?.provider_price_id ?? null)
-      : (subscription?.stripe_price_id ?? subscription?.provider_price_id ?? null);
-  const subscriptionStatus = subscription?.status ?? null;
-  // Align with entitlements: only active/trialing grant paid plan features.
-  const isActiveSubscription = Boolean(
-    subscriptionPriceId && subscriptionStatus && isSubscriptionUsable(subscriptionStatus),
-  );
+  const rows = (data ?? []) as EffectivePlanSubscriptionRow[];
+  const resolved = resolveEffectivePlanFromSubscriptionRows({
+    organizationId,
+    rows,
+    planOverride: planOverride
+      ? { status: planOverride.status, plan: planOverride.plan }
+      : null,
+  });
 
-  let basePlanKey: PlanKey = getDefaultPlanKey();
-  let planSource: PlanResolutionSource = "starter_fallback";
-  let mappedPlanKeyFromPriceId: PlanKey | null = null;
-
-  if (isActiveSubscription && subscriptionPriceId) {
-    mappedPlanKeyFromPriceId = safeGetPlanKeyFromSubscriptionPrice({
-      billingProvider,
-      stripePriceId: subscription?.stripe_price_id,
-      providerPriceId: subscription?.provider_price_id ?? subscriptionPriceId,
-    });
-    const plan = mappedPlanKeyFromPriceId
-      ? safeGetPlanByKey(mappedPlanKeyFromPriceId)
-      : billingProvider === "fastspring" || billingProvider === "paddle"
-        ? null
-        : getPlanByPriceId(subscriptionPriceId);
-
-    if (plan) {
-      basePlanKey = plan.key;
-      planSource = "active_subscription";
-    } else {
-      planSource = "unmapped_price_id";
-    }
-  }
-
-  const devOverride = getDevForcePlanOverride();
-  let planOverrideActive = false;
-
-  if (devOverride) {
-    basePlanKey = devOverride;
-    planSource = "dev_override";
-  } else if (planOverride?.status === "active") {
-    basePlanKey = planOverride.plan;
-    planSource = "plan_override";
-    planOverrideActive = true;
-  }
-
-  const mergedFeatures = applyPlanOverride(basePlanKey, planOverride);
-  const plan = safeGetPlanByKey(basePlanKey) ?? safeGetPlanByKey(getDefaultPlanKey());
+  const mergedFeatures = applyPlanOverride(resolved.planKey, planOverride);
 
   return {
     organizationId,
-    planKey: basePlanKey,
-    planLabel: planOverrideActive
-      ? `${plan?.name ?? "Plan"} (Enterprise override)`
-      : (plan?.name ?? "Plan"),
-    isActiveSubscription,
+    planKey: resolved.planKey,
+    planLabel: resolved.planLabel,
+    isActiveSubscription: resolved.isActiveSubscription,
     features: mergedFeatures,
-    planSource,
-    devOverrideActive: devOverride !== null,
-    planOverrideActive,
-    subscriptionPriceId,
-    subscriptionStatus,
-    mappedPlanKeyFromPriceId,
+    planSource: resolved.planSource,
+    devOverrideActive: resolved.devOverrideActive,
+    planOverrideActive: resolved.planOverrideActive,
+    subscriptionPriceId: resolved.subscriptionPriceId,
+    subscriptionStatus: resolved.subscriptionStatus,
+    mappedPlanKeyFromPriceId: resolved.mappedPlanKeyFromPriceId,
   };
 });
 
@@ -165,7 +112,7 @@ export async function getClientLimitUsageForSession(
   };
 }
 
-/** Billing usage summary for Settings → Billing. */
+/** Billing usage summary for Settings -> Billing. */
 export async function getOrganizationPlanUsageSummary(
   session: SessionContext,
   seatUsed: number,

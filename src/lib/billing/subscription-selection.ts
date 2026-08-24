@@ -21,12 +21,12 @@ function sortByUpdatedAtDesc(
 
 /**
  * Pick the best subscription row for the resolved org billing provider.
- * FastSpring remains the global default. Mollie rows are selected only when
- * activeProvider === "mollie". Legacy Paddle rows never grant access.
+ * Mollie is the sole active provider default. Historical FastSpring rows are
+ * activeProvider === "fastspring". Legacy Paddle rows never grant access.
  */
 export function selectPreferredSubscriptionRow(
   rows: OrganizationSubscription[],
-  activeProvider: BillingProvider = "fastspring",
+  activeProvider: BillingProvider = "mollie",
 ): OrganizationSubscription | null {
   if (rows.length === 0) {
     return null;
@@ -111,7 +111,7 @@ export function selectPreferredSubscriptionSummaryRow<
     billing_provider?: string | null;
     provider_subscription_id?: string | null;
   },
->(rows: T[], activeProvider: BillingProvider = "fastspring"): T | null {
+>(rows: T[], activeProvider: BillingProvider = "mollie"): T | null {
   if (rows.length === 0) {
     return null;
   }

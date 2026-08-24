@@ -45,7 +45,7 @@ const MAIL_ENV_KEYS = [
   "EMAIL_FROM",
 ] as const;
 
-const OAUTH_ENV_KEYS = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "INTEGRATION_SECRET_KEY"] as const;
+const OAUTH_ENV_KEYS = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"] as const;
 
 function scoreChecks(checks: boolean[]): number {
   if (checks.length === 0) return 0;

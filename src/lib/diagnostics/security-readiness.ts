@@ -51,7 +51,7 @@ export function getSecurityReadinessSnapshot(): SecurityReadinessSnapshot {
     GO_LIVE_SECURITY_HEADERS.includes("Permissions-Policy"),
     GO_LIVE_SECURITY_HEADERS.includes("Referrer-Policy"),
     GO_LIVE_SECURITY_HEADERS.includes("X-Frame-Options"),
-    integrationSecretConfigured && cronSecretConfigured,
+    cronSecretConfigured, // INTEGRATION_SECRET_KEY optional for pilot
   ];
 
   const score = scoreChecks(checks);

@@ -151,7 +151,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
       {data.plan.devOverrideActive ? (
         <FormAlert variant="warning">
           Development override active — plan resolves to{" "}
-          <strong>{data.plan.planLabel}</strong> via DEV_FORCE_PLAN. Stripe subscription rows are
+          <strong>{data.plan.planLabel}</strong> via DEV_FORCE_PLAN. Mollie subscription rows are
           unchanged.
         </FormAlert>
       ) : null}
@@ -233,9 +233,9 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         <dl>
           <Row label="Row exists" value={<BoolBadge value={data.subscription.exists} />} />
           <Row label="Status" value={subscription?.status ?? "—"} />
-          <Row label="Stripe customer ID" value={subscription?.stripe_customer_id ?? "—"} />
-          <Row label="Stripe subscription ID" value={subscription?.stripe_subscription_id ?? "—"} />
-          <Row label="Stripe price ID" value={subscription?.stripe_price_id ?? "—"} />
+          <Row label="Provider customer ID (legacy Stripe col)" value={subscription?.stripe_customer_id ?? "—"} />
+          <Row label="Provider subscription ID (legacy Stripe col)" value={subscription?.stripe_subscription_id ?? "—"} />
+          <Row label="Provider price ID (legacy Stripe col)" value={subscription?.stripe_price_id ?? "—"} />
           <Row
             label="Matched plan from price ID"
             value={getMatchedPlanLabel(data.matchedPlanFromSubscriptionPriceId)}
@@ -742,13 +742,13 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
 
       <DiagnosticsSection
         title="Billing platform"
-        description="Subscription state, Stripe connectivity, usage metering, invoices, webhooks, and forecast health."
+        description="Subscription state, Mollie connectivity, usage metering, invoices, webhooks, and forecast health."
       >
         <dl>
           <Row label="Platform version" value={data.billing.platformVersion} />
           <Row label="Current plan" value={data.billing.currentPlanKey} />
           <Row label="Subscription state" value={data.billing.subscriptionState ?? "—"} />
-          <Row label="Stripe connected" value={<BoolBadge value={data.billing.stripeConnected} />} />
+          <Row label="Mollie configured" value={<BoolBadge value={data.billing.stripeConnected} />} />
           <Row label="Usage metering" value={<BoolBadge value={data.billing.usageMeteringEnabled} />} />
           <Row label="Invoice count" value={data.billing.invoiceCount} />
           <Row label="Webhook events (7d)" value={data.billing.webhookEventsLast7Days} />
@@ -926,7 +926,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         <dl>
           <Row label="Overall score" value={`${data.productionReadiness.overallScore}/100`} />
           <Row label="Recommendation" value={data.productionReadiness.label} />
-          <Row label="Stripe readiness" value={`${data.productionReadiness.stripeReadiness}/100`} />
+          <Row label="Billing readiness (Mollie)" value={`${data.productionReadiness.stripeReadiness}/100`} />
           <Row label="Cron readiness" value={`${data.productionReadiness.cronReadiness}/100`} />
           <Row label="Queue readiness" value={`${data.productionReadiness.queueReadiness}/100`} />
           <Row label="OAuth readiness" value={`${data.productionReadiness.oauthReadiness}/100`} />
@@ -1308,7 +1308,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
             }
           />
           <Row
-            label="Stripe configuration"
+            label="Billing provider configuration"
             value={
               <InlineBadgeRow
                 badge={data.platform.stripeHealth.ok}

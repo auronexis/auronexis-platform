@@ -59,9 +59,14 @@ export async function getComplianceDashboardData(
     return cached;
   }
 
+  // Fail soft: missing compliance seed tables must not HTTP 500 the workspace.
   await Promise.all([
-    ensureDefaultPolicies(session.organization.id),
-    ensureDefaultRetentionRules(session.organization.id),
+    ensureDefaultPolicies(session.organization.id).catch((error) => {
+      console.error("[compliance] ensureDefaultPolicies failed:", error instanceof Error ? error.message : error);
+    }),
+    ensureDefaultRetentionRules(session.organization.id).catch((error) => {
+      console.error("[compliance] ensureDefaultRetentionRules failed:", error instanceof Error ? error.message : error);
+    }),
   ]);
 
   const [
@@ -127,13 +132,44 @@ export async function getComplianceDashboardData(
 }
 
 export async function getComplianceWorkspaceData(session: SessionContext) {
-  const [dashboard, gdprRequests, securityIncidents, retentionRules, policies] = await Promise.all([
-    getComplianceDashboardData(session),
-    listGdprRequests(session.organization.id),
-    listSecurityIncidents(session.organization.id),
-    listRetentionRules(session.organization.id),
-    listPolicies(session.organization.id),
-  ]);
+  try {
+    const [dashboard, gdprRequests, securityIncidents, retentionRules, policies] = await Promise.all([
+      getComplianceDashboardData(session),
+      listGdprRequests(session.organization.id),
+      listSecurityIncidents(session.organization.id),
+      listRetentionRules(session.organization.id),
+      listPolicies(session.organization.id),
+    ]);
 
-  return { dashboard, gdprRequests, securityIncidents, retentionRules, policies };
+    return { dashboard, gdprRequests, securityIncidents, retentionRules, policies };
+  } catch (error) {
+    console.error(
+      "[compliance] workspace load failed:",
+      error instanceof Error ? error.message : error,
+    );
+    const emptyDashboard: ComplianceDashboardData = {
+      complianceScore: 0,
+      readinessPercent: 0,
+      maturityScore: 0,
+      readinessLevel: "initial",
+      openFindings: 0,
+      openSecurityIncidents: 0,
+      openGdprRequests: 0,
+      retentionCoveragePercent: 0,
+      activePolicies: 0,
+      lastExportAt: null,
+      frameworkScores: [],
+      controlScores: [],
+      recommendations: [
+        "Compliance data could not be loaded. Retry or contact support — no secrets are exposed in this message.",
+      ],
+    };
+    return {
+      dashboard: emptyDashboard,
+      gdprRequests: [],
+      securityIncidents: [],
+      retentionRules: [],
+      policies: [],
+    };
+  }
 }

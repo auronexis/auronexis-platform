@@ -121,9 +121,9 @@ function resolveMappedPlanKey(
 /**
  * Authoritative entitlement resolution for a workspace.
  *
- * FastSpring is the global default. Mollie grants entitlements only when the
- * org resolves to Mollie (allowlist + rollout, or existing Mollie row) and the
- * verified subscription status is usable. Legacy Paddle rows never grant access.
+ * Mollie is the sole active billing provider. Entitlements require a usable
+ * subscription for the resolved org provider (Mollie or historical FastSpring). The
+ * verified status must be usable. Legacy Paddle rows never grant access. organizations.plan is never an entitlement source.
  * Return-page callbacks never activate entitlements.
  */
 export async function resolveOrganizationEntitlements(

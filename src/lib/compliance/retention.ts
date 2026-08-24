@@ -22,7 +22,7 @@ export async function ensureDefaultRetentionRules(organizationId: string): Promi
   for (const [category, period] of Object.entries(DEFAULT_RETENTION) as Array<
     [RetentionDataCategory, RetentionPeriod]
   >) {
-    await admin.from("retention_rules").upsert(
+    const { error } = await admin.from("retention_rules").upsert(
       {
         organization_id: organizationId,
         data_category: category,
@@ -32,6 +32,9 @@ export async function ensureDefaultRetentionRules(organizationId: string): Promi
       } as never,
       { onConflict: "organization_id,data_category" },
     );
+    if (error) {
+      console.error("[compliance] retention upsert failed:", error.message);
+    }
   }
 }
 
