@@ -67,25 +67,30 @@ export async function getApiDiagnosticsSnapshot(
   const admin = createAdminClient();
   const today = startOfTodayIso();
 
-  const [{ count: keyCount, error: keyError }, { data: logs, error: logError }, { count: deliveryCount }] =
+  const [schemaProbe, { count: keyCount }, { data: logs }, { count: deliveryCount }] =
     await Promise.all([
+      Promise.all([
+        admin.from("api_keys").select("id", { count: "exact", head: true }),
+        admin.from("api_request_logs").select("id", { count: "exact", head: true }),
+      ]),
       admin
         .from("api_keys")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("organization_id", session.organization.id)
         .eq("status", "active"),
       admin
         .from("api_request_logs")
-        .select("*")
+        .select("id, duration_ms, status_code, rate_limited")
         .eq("organization_id", session.organization.id)
         .gte("created_at", today),
       admin
         .from("webhook_deliveries")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("organization_id", session.organization.id)
         .gte("created_at", today),
     ]);
 
+  const tableReachable = schemaProbe.every((result) => !result.error);
   const requestLogs = (logs ?? []) as ApiRequestLog[];
   const latencyValues = requestLogs.map((log) => log.duration_ms);
 
@@ -101,7 +106,7 @@ export async function getApiDiagnosticsSnapshot(
     rateLimitedToday: requestLogs.filter((log) => log.rate_limited).length,
     webhookDeliveriesToday: deliveryCount ?? 0,
     activeApiKeys: keyCount ?? 0,
-    tableReachable: !keyError && !logError,
+    tableReachable,
   };
 }
 

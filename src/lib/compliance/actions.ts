@@ -204,21 +204,29 @@ export async function exportAuditAction(input: {
     return denied;
   }
 
-  const result = await exportAuditData({
-    session,
-    format: input.format,
-    filters: {
-      query: input.query,
-      entityType: input.entityType,
-      severity: input.severity as never,
-    },
-  });
+  try {
+    const result = await exportAuditData({
+      session,
+      format: input.format,
+      filters: {
+        query: input.query,
+        entityType: input.entityType,
+        severity: input.severity as never,
+      },
+    });
 
-  return {
-    success: `Export completed (${result.rowCount} rows).`,
-    downloadContent: result.downloadPayload,
-    downloadFilename: `audit-export.${input.format === "csv" ? "csv" : "json"}`,
-  };
+    return {
+      success: `Export completed (${result.rowCount} rows).`,
+      downloadContent: result.downloadPayload,
+      downloadFilename: `audit-export.${input.format === "csv" ? "csv" : "json"}`,
+    };
+  } catch (error) {
+    console.error(
+      "[compliance] audit export failed:",
+      error instanceof Error ? error.message : error,
+    );
+    return { error: "Audit export failed. Retry or contact support." };
+  }
 }
 
 export async function exportEvidenceAction(): Promise<ComplianceActionState> {
@@ -228,10 +236,18 @@ export async function exportEvidenceAction(): Promise<ComplianceActionState> {
     return denied;
   }
 
-  const result = await exportEvidenceBundle(session);
-  return {
-    success: "Evidence bundle generated.",
-    downloadContent: result.content,
-    downloadFilename: "evidence-bundle.json",
-  };
+  try {
+    const result = await exportEvidenceBundle(session);
+    return {
+      success: "Evidence bundle generated.",
+      downloadContent: result.content,
+      downloadFilename: "evidence-bundle.json",
+    };
+  } catch (error) {
+    console.error(
+      "[compliance] evidence bundle failed:",
+      error instanceof Error ? error.message : error,
+    );
+    return { error: "Evidence bundle generation failed. Retry or contact support." };
+  }
 }

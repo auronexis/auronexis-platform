@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { countAuditEvents } from "@/lib/compliance/queries";
+import { safeJsonStringify } from "@/lib/audit/export-sanitize";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 type EvidenceSourceTable =
@@ -76,5 +77,6 @@ async function countTable(
 }
 
 export function serializeEvidenceSnapshot(snapshot: EvidenceSnapshot): string {
-  return JSON.stringify(snapshot, null, 2);
+  // Counts and source table names only — never include env secrets or credential values.
+  return safeJsonStringify(snapshot);
 }

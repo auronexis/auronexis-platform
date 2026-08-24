@@ -26,6 +26,29 @@ function scoreFromFlags(input: {
   return 70;
 }
 
+/**
+ * Platform-available modules without customer traffic should not score as "broken".
+ * Missing tables remain a real 40; zero usage with healthy infra scores the base.
+ */
+function scorePlatformModule(input: {
+  tableReachable: boolean;
+  failureRateHigh?: boolean;
+  maturityPercent?: number;
+  base: number;
+}): number {
+  if (!input.tableReachable) {
+    return 40;
+  }
+  if (input.failureRateHigh) {
+    return Math.max(55, input.base - 20);
+  }
+  if (typeof input.maturityPercent === "number" && input.maturityPercent < 40) {
+    // Tables exist; tenant maturity is low — partial, not platform failure.
+    return Math.max(70, Math.round(input.base * 0.85));
+  }
+  return input.base;
+}
+
 function resolveLabel(
   score: number,
   goLiveComplete: boolean,
@@ -63,7 +86,12 @@ export function computeProductionReadiness(
     base: 88,
   });
 
-  const oauthReadiness = data.connectors.oauthConfiguredConnectors > 0 ? 85 : 70;
+  const oauthReadiness =
+    data.connectors.oauthConfiguredConnectors > 0
+      ? 90
+      : data.connectors.registeredConnectors > 0
+        ? 82
+        : 70;
   const connectorReadiness = scoreFromFlags({
     tableReachable: true,
     healthy: data.connectors.unhealthyConnections === 0,
@@ -81,17 +109,15 @@ export function computeProductionReadiness(
   // Legacy snapshot field — mirrors Mollie billing; Stripe archive never drives score.
   const stripeReadiness = billingReadiness;
 
-  const apiReadiness = scoreFromFlags({
+  const apiReadiness = scorePlatformModule({
     tableReachable: data.publicApi.tableReachable,
-    healthy: data.publicApi.failedRequestsToday < 5,
-    degraded: data.publicApi.failedRequestsToday >= 5,
+    failureRateHigh: data.publicApi.failedRequestsToday >= 5,
     base: 84,
   });
 
-  const complianceReadiness = scoreFromFlags({
+  const complianceReadiness = scorePlatformModule({
     tableReachable: data.compliance.tablesReachable,
-    healthy: data.compliance.frameworkReadinessPercent >= 70,
-    degraded: data.compliance.frameworkReadinessPercent < 70,
+    maturityPercent: data.compliance.frameworkReadinessPercent,
     base: 90,
   });
 

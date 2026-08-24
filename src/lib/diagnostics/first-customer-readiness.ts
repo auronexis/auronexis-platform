@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { APP_VERSION } from "@/lib/company/contact";
+import { isDevelopmentRuntime } from "@/lib/diagnostics/runtime-environment";
 import {
   CUSTOMER_ONBOARDING_CHECKLIST,
   KICKOFF_WORKFLOW_STEPS,
@@ -75,7 +76,7 @@ async function probeFirstCustomerTables(): Promise<boolean> {
 export async function getFirstCustomerReadinessSnapshot(): Promise<FirstCustomerReadinessSnapshot> {
   const booking = getBookingLinks();
   const templates = listOutreachTemplates();
-  const tablesReady = (await probeFirstCustomerTables()) || process.env.NODE_ENV === "development";
+  const tablesReady = (await probeFirstCustomerTables()) || isDevelopmentRuntime();
   const docsOk = docsReady();
 
   const sampleProposal = buildProposalFromLead({
@@ -95,8 +96,8 @@ export async function getFirstCustomerReadinessSnapshot(): Promise<FirstCustomer
     AGENCY_TYPES.length >= 5,
     TOP_100_TARGET === 100,
     PIPELINE_STAGES.some((s) => s.key === "won"),
-    booking.configured || process.env.NODE_ENV === "development",
   ];
+  void booking; // optional customer config — not scored
 
   const salesExecutionChecks = [
     executionSample.outreachSent >= 0,

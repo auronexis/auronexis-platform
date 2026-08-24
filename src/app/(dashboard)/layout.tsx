@@ -34,7 +34,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     redirect("/login");
   }
 
-  const navItems = getNavItemsForRoleAndPlan(session.role, await getCurrentPlan(session.organization.id));
+  const navPlan = await getCurrentPlan(session.organization.id);
+  const navItems = getNavItemsForRoleAndPlan(session.role, navPlan);
   const [unreadNotificationCount, branding, notificationsEnabled] = await Promise.all([
     getUnreadNotificationCount(session),
     getOrganizationBranding(session),
@@ -61,7 +62,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
             <div id="dashboard-root" className="white-label-scope contents">
               <DashboardAnalyticsTracker
                 isRecentSignup={isRecentSignup}
-                planTier={session.organization.plan}
+                planTier={navPlan}
               />
               <DashboardShell
               navItems={navItems}

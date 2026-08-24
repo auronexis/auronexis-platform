@@ -13,6 +13,7 @@ import { getAbuseProtectionSnapshot } from "@/lib/diagnostics/abuse-protection";
 import { getDeploymentReadinessSnapshot } from "@/lib/diagnostics/deployment-readiness";
 import { getPilotAcquisitionSnapshot } from "@/lib/diagnostics/pilot-acquisition";
 import { getPilotExecutionReadinessSnapshot } from "@/lib/diagnostics/pilot-execution-readiness";
+import { isDevelopmentRuntime } from "@/lib/diagnostics/runtime-environment";
 import { getSecurityReadinessSnapshot } from "@/lib/diagnostics/security-readiness";
 import { getAppUrl } from "@/lib/env";
 import { getMollieApiKeyPresence } from "@/lib/billing/providers/mollie/env";
@@ -74,7 +75,7 @@ function isEmailConfigured(email: string): boolean {
 
 /** Sprint 6 go-live readiness — deployment, monitoring, security, billing, OAuth, and operations. */
 export function getGoLiveReadinessSnapshot(): GoLiveReadinessSnapshot {
-  const isDev = process.env.NODE_ENV !== "production";
+  const isDev = isDevelopmentRuntime();
   const appUrl = resolveAppUrl();
   const deployment = getDeploymentReadinessSnapshot();
   const acquisition = getPilotAcquisitionSnapshot();

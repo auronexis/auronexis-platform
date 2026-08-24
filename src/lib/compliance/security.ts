@@ -28,7 +28,15 @@ export async function logDataAccess(input: {
 }
 
 export async function complianceTablesReachable(): Promise<boolean> {
-  const admin = createAdminClient();
-  const { error } = await admin.from("audit_events").select("id").limit(1);
-  return !error;
+  try {
+    const admin = createAdminClient();
+    const probes = await Promise.all([
+      admin.from("audit_events").select("id", { count: "exact", head: true }),
+      admin.from("audit_exports").select("id", { count: "exact", head: true }),
+      admin.from("compliance_policies").select("id", { count: "exact", head: true }),
+    ]);
+    return probes.every((result) => !result.error);
+  } catch {
+    return false;
+  }
 }

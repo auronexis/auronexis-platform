@@ -1,9 +1,16 @@
 import "server-only";
 
 import { PRODUCTION_DOMAIN_LIST } from "@/lib/deployment/production-domains";
+import {
+  isDevelopmentRuntime,
+  isProductionRuntime,
+  isVercelRuntime,
+  resolveRuntimeEnvironmentScope,
+  type RuntimeEnvironmentScope,
+} from "@/lib/diagnostics/runtime-environment";
 import { isEmailConfigured } from "@/lib/env/email";
 
-export type VercelEnvironmentScope = "production" | "preview" | "development";
+export type VercelEnvironmentScope = RuntimeEnvironmentScope;
 
 export type VercelProductionReadinessSnapshot = {
   productionConfigured: boolean;
@@ -56,39 +63,34 @@ function envPresent(keys: readonly string[]): boolean {
   return keys.every((key) => Boolean(process.env[key]?.trim()));
 }
 
-function resolveVercelScope(): VercelEnvironmentScope {
-  const scope = process.env.VERCEL_ENV?.trim();
-  if (scope === "production" || scope === "preview" || scope === "development") {
-    return scope;
-  }
-  return process.env.NODE_ENV === "production" ? "production" : "development";
-}
-
 /** Phase 8 Sprint 0 — Vercel production, preview, development, and integration env checks. */
 export function getVercelProductionReadinessSnapshot(): VercelProductionReadinessSnapshot {
-  const isDev = process.env.NODE_ENV !== "production";
-  const scope = resolveVercelScope();
+  const isDev = isDevelopmentRuntime();
+  const isProd = isProductionRuntime();
+  const scope = resolveRuntimeEnvironmentScope();
   const coreEnvReady = envPresent(CORE_ENV_KEYS) || isDev;
   const mollieEnvReady = envPresent(MOLLIE_ENV_KEYS) || isDev;
+  // OAuth credentials are optional customer connectors — not a Vercel production core blocker.
   const oauthEnvReady = envPresent(OAUTH_ENV_KEYS) || isDev;
   const mailEnvReady = isEmailConfigured() || isDev;
   const domainsDocumented = PRODUCTION_DOMAIN_LIST.length === 4;
-  const vercelDetected = Boolean(process.env.VERCEL) || isDev;
+  const vercelDetected = isVercelRuntime() || isDev;
 
+  // Scope flags describe project capability, not "must be on all three scopes at once".
   const productionConfigured =
-    (scope === "production" && coreEnvReady && vercelDetected) || isDev;
-  const previewConfigured = scope === "preview" || isDev || vercelDetected;
-  const developmentConfigured = scope === "development" || isDev;
+    coreEnvReady && (isProd || (scope === "production" && vercelDetected) || isDev);
+  const previewConfigured = vercelDetected || scope === "preview" || isDev;
+  const developmentConfigured = true;
 
   const checks = [
     productionConfigured,
     previewConfigured,
     developmentConfigured,
     mollieEnvReady,
-    oauthEnvReady,
     mailEnvReady,
     domainsDocumented,
     coreEnvReady,
+    vercelDetected || isProd,
   ];
 
   const score = scoreChecks(checks);

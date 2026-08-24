@@ -115,8 +115,18 @@ export type WhiteLabelSettingsView = {
   updatedAt: string;
 };
 
+export type WhiteLabelConfigurationStatus =
+  | "platform_unavailable"
+  | "not_configured"
+  | "draft"
+  | "published";
+
 export type WhiteLabelDiagnosticsSnapshot = {
+  /** Platform/table reachability — independent of customer branding choices. */
   tableReachable: boolean;
+  /** Entitlement is plan-gated elsewhere; this flag documents the semantic split. */
+  entitlementSeparateFromConfig: boolean;
+  configurationStatus: WhiteLabelConfigurationStatus;
   brandConfigured: boolean;
   themeConfigured: boolean;
   portalConfigured: boolean;

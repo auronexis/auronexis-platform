@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isProductionRuntime } from "@/lib/diagnostics/runtime-environment";
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
@@ -15,7 +16,7 @@ export type IntegrationEncryptionKeyStatus = {
 
 export function getIntegrationEncryptionKeyStatus(): IntegrationEncryptionKeyStatus {
   const configured = Boolean(process.env.INTEGRATION_SECRET_KEY?.trim());
-  const isProduction = process.env.NODE_ENV === "production";
+  const isProduction = isProductionRuntime();
 
   if (configured) {
     return { configured: true, isProduction, warning: null };
@@ -32,12 +33,6 @@ export function getIntegrationEncryptionKeyStatus(): IntegrationEncryptionKeySta
 
 export function assertEncryptionKeyForSecretCreation(): void {
   const status = getIntegrationEncryptionKeyStatus();
-  if (!status.configured && status.isProduction) {
-    throw new Error(
-      "Integration secret encryption is not configured. Set INTEGRATION_SECRET_KEY before storing credentials.",
-    );
-  }
-
   if (!status.configured) {
     throw new Error(
       "INTEGRATION_SECRET_KEY is not configured. Set it in your environment to store integration credentials.",

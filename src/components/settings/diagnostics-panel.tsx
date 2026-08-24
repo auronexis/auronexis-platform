@@ -702,7 +702,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
 
       <DiagnosticsSection
         title="White Label"
-        description="Brand, theme, portal, email, PDF, domain, and asset configuration status."
+        description="Entitlement is plan-gated. Configuration fields are optional customer branding — not platform health."
       >
         <dl>
           <Row
@@ -712,6 +712,10 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           <Row
             label="Settings table reachable"
             value={<BoolBadge value={data.whiteLabel.tableReachable} />}
+          />
+          <Row
+            label="Configuration status"
+            value={data.whiteLabel.configurationStatus.replaceAll("_", " ")}
           />
           <Row label="Brand configured" value={<BoolBadge value={data.whiteLabel.brandConfigured} />} />
           <Row label="Theme configured" value={<BoolBadge value={data.whiteLabel.themeConfigured} />} />
@@ -726,10 +730,22 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
             value={<BoolBadge value={data.whiteLabel.customDomainConfigured} />}
           />
           <Row label="Assets configured" value={data.whiteLabel.assetsConfigured} />
-          <Row label="Cache enabled" value={<BoolBadge value={data.whiteLabel.cacheEnabled} />} />
           <Row label="Published" value={<BoolBadge value={data.whiteLabel.published} />} />
         </dl>
-        {data.permissions.canUseWhiteLabel ? (
+        {!data.whiteLabel.tableReachable ? (
+          <p className="mt-4 text-sm text-danger">
+            White Label settings table is unreachable (migration/RLS). This is a platform issue.
+          </p>
+        ) : data.permissions.canUseWhiteLabel &&
+          data.whiteLabel.configurationStatus === "not_configured" ? (
+          <p className="mt-4 text-sm text-muted">
+            White Label is available. Optional branding is not configured yet — manage at{" "}
+            <Link href="/settings/branding" className="font-medium text-primary hover:underline">
+              White Label Branding
+            </Link>
+            .
+          </p>
+        ) : data.permissions.canUseWhiteLabel ? (
           <p className="mt-4 text-sm text-muted">
             Manage branding at{" "}
             <Link href="/settings/branding" className="font-medium text-primary hover:underline">

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   PLATFORM_NAME,
@@ -178,14 +179,27 @@ export async function getBrandingFromWhiteLabelForOrganization(
 export async function getWhiteLabelDiagnosticsSnapshot(
   session: SessionContext,
 ): Promise<WhiteLabelDiagnosticsSnapshot> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("white_label_settings")
-    .select("*")
-    .eq("organization_id", session.organization.id)
-    .maybeSingle();
+  const admin = createAdminClient();
 
-  const row = data as WhiteLabelSettings | null;
+  // Infrastructure probe uses service role so missing customer config ≠ platform failure.
+  const { error: probeError } = await admin
+    .from("white_label_settings")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", session.organization.id);
+
+  const tableReachable = !probeError;
+
+  let row: WhiteLabelSettings | null = null;
+  if (tableReachable) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("white_label_settings")
+      .select("*")
+      .eq("organization_id", session.organization.id)
+      .maybeSingle();
+    row = (data as WhiteLabelSettings | null) ?? null;
+  }
+
   const assetFields = [
     row?.logo_light,
     row?.logo_dark,
@@ -194,17 +208,44 @@ export async function getWhiteLabelDiagnosticsSnapshot(
     row?.dashboard_background,
   ].filter(Boolean);
 
+  const brandConfigured = Boolean(row?.company_name && row.company_name.length > 1);
+  const themeConfigured = Boolean(row?.primary_color && row?.secondary_color);
+  const portalConfigured = Boolean(row?.portal_title || row?.portal_welcome_message);
+  const emailBrandingConfigured = Boolean(row?.email_sender_name || row?.email_sender_address);
+  const pdfBrandingConfigured = Boolean(row?.pdf_footer);
+  const customDomainConfigured = Boolean(row?.custom_domain);
+  const published = Boolean(row?.published_at);
+  const anyConfigured =
+    brandConfigured ||
+    themeConfigured ||
+    portalConfigured ||
+    emailBrandingConfigured ||
+    pdfBrandingConfigured ||
+    customDomainConfigured ||
+    assetFields.length > 0;
+
+  let configurationStatus: WhiteLabelDiagnosticsSnapshot["configurationStatus"] = "not_configured";
+  if (!tableReachable) {
+    configurationStatus = "platform_unavailable";
+  } else if (published) {
+    configurationStatus = "published";
+  } else if (anyConfigured) {
+    configurationStatus = "draft";
+  }
+
   return {
-    tableReachable: !error,
-    brandConfigured: Boolean(row?.company_name && row.company_name.length > 1),
-    themeConfigured: Boolean(row?.primary_color && row?.secondary_color),
-    portalConfigured: Boolean(row?.portal_title || row?.portal_welcome_message),
-    emailBrandingConfigured: Boolean(row?.email_sender_name || row?.email_sender_address),
-    pdfBrandingConfigured: Boolean(row?.pdf_footer),
-    customDomainConfigured: Boolean(row?.custom_domain),
+    tableReachable,
+    entitlementSeparateFromConfig: true,
+    configurationStatus,
+    brandConfigured,
+    themeConfigured,
+    portalConfigured,
+    emailBrandingConfigured,
+    pdfBrandingConfigured,
+    customDomainConfigured,
     assetsConfigured: assetFields.length,
     cacheEnabled: true,
-    published: Boolean(row?.published_at),
+    published,
   };
 }
 

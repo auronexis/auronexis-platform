@@ -1,6 +1,7 @@
 import "server-only";
 
 import { DEPLOYMENT_CRON_PATH, DEPLOYMENT_HEALTH_PATH } from "@/lib/diagnostics/deployment-readiness";
+import { isDevelopmentRuntime } from "@/lib/diagnostics/runtime-environment";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { countPendingQueueJobs } from "@/lib/queue/repository";
 
@@ -81,7 +82,7 @@ async function probeCronAndQueue(): Promise<{ cronReady: boolean; queueReady: bo
 
 /** Phase 8 Sprint 0 — Supabase production migrations, RLS, storage, cron, and queue checks. */
 export async function getSupabaseProductionReadinessSnapshot(): Promise<SupabaseProductionReadinessSnapshot> {
-  const isDev = process.env.NODE_ENV !== "production";
+  const isDev = isDevelopmentRuntime();
   const tablesReady = (await probeTables()) || isDev;
   const storageProbe = await probeStorage();
   const cronQueue = await probeCronAndQueue();

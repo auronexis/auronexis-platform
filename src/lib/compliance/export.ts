@@ -23,11 +23,22 @@ export async function exportEvidenceBundle(session: SessionContext): Promise<{
 }> {
   const snapshot = await generateEvidenceSnapshot(session);
   const content = serializeEvidenceSnapshot(snapshot);
-  const result = await createAuditExport({
-    session,
-    format: "evidence",
-    filters: { query: "evidence_snapshot" },
-  });
 
-  return { content, rowCount: Object.keys(snapshot.sources).length + result.rowCount };
+  // Persistence is optional — download must succeed even if audit_exports insert fails.
+  let persistedRows = 0;
+  try {
+    const result = await createAuditExport({
+      session,
+      format: "evidence",
+      filters: { query: "evidence_snapshot" },
+    });
+    persistedRows = result.rowCount;
+  } catch (error) {
+    console.error(
+      "[compliance] evidence export persistence failed:",
+      error instanceof Error ? error.message : error,
+    );
+  }
+
+  return { content, rowCount: Object.keys(snapshot.sources).length + persistedRows };
 }

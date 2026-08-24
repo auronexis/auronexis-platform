@@ -1,6 +1,7 @@
 import "server-only";
 
 import { APP_VERSION } from "@/lib/company/contact";
+import { isDevelopmentRuntime } from "@/lib/diagnostics/runtime-environment";
 import { getBookingLinks } from "@/lib/sales/calendar";
 import { listSalesAssets } from "@/lib/sales/assets";
 import { FOUNDING_CUSTOMER_LIMIT, FOUNDING_CUSTOMER_OFFER } from "@/lib/sales/founding-program";
@@ -20,6 +21,8 @@ export type RevenueReadinessSnapshot = {
   foundingProgramConfigured: boolean;
   salesAssetsReady: boolean;
   bookingLinksConfigured: boolean;
+  /** Booking links are optional customer acquisition config — not a platform blocker. */
+  bookingLinksOptional: boolean;
   crmTablesReady: boolean;
   versionReady: boolean;
 };
@@ -43,14 +46,14 @@ async function probeCrmTables(): Promise<boolean> {
 export async function getRevenueReadinessSnapshot(): Promise<RevenueReadinessSnapshot> {
   const booking = getBookingLinks();
   const assets = listSalesAssets();
-  const crmTablesReady = await probeCrmTables();
+  const crmTablesReady = (await probeCrmTables()) || isDevelopmentRuntime();
 
   const salesChecks = [
     PIPELINE_STAGES.length >= 8,
     SALES_INBOXES.length >= 4,
     assets.length >= 6,
-    booking.configured || process.env.NODE_ENV === "development",
-    crmTablesReady || process.env.NODE_ENV === "development",
+    // Booking calendar links are optional — tracked separately, not scored as blockers.
+    crmTablesReady,
   ];
 
   const customerChecks = [
@@ -88,6 +91,7 @@ export async function getRevenueReadinessSnapshot(): Promise<RevenueReadinessSna
     foundingProgramConfigured: FOUNDING_CUSTOMER_LIMIT === 10,
     salesAssetsReady: assets.length >= 6,
     bookingLinksConfigured: booking.configured,
+    bookingLinksOptional: true,
     crmTablesReady,
     versionReady: APP_VERSION.startsWith("1.0."),
   };

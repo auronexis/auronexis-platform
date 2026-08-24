@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { APP_VERSION } from "@/lib/company/contact";
+import { isDevelopmentRuntime } from "@/lib/diagnostics/runtime-environment";
 import { ENRICHMENT_FIELDS } from "@/lib/sales/enrichment";
 import { OUTBOUND_LIST_TYPES } from "@/lib/sales/outbound-lists";
 import { listOutreachTemplates } from "@/lib/sales/outreach-templates";
@@ -83,14 +84,15 @@ export async function getAcquisitionReadinessSnapshot(): Promise<AcquisitionRead
   const assets = listSalesAssets();
   const templates = listOutreachTemplates();
   const acquisitionTablesReady =
-    (await probeAcquisitionTables()) || process.env.NODE_ENV === "development";
+    (await probeAcquisitionTables()) || isDevelopmentRuntime();
   const acquisitionDocsReady = docsReady();
+  void booking; // optional — exposed via sales calendar helpers, not scored
 
   const salesChecks = [
     PIPELINE_STAGES.length >= 8,
     SALES_INBOXES.length >= 4,
     assets.length >= 6,
-    booking.configured || process.env.NODE_ENV === "development",
+    // Booking links optional — not a platform/acquisition blocker.
     PIPELINE_STAGES.some((stage) => stage.key === "discovery_call"),
     PIPELINE_STAGES.some((stage) => stage.key === "pilot_application"),
   ];

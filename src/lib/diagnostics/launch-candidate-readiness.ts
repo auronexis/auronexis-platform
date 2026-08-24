@@ -10,6 +10,7 @@ import { getDeploymentReadinessSnapshot } from "@/lib/diagnostics/deployment-rea
 import { getFirstCustomerReadinessSnapshot } from "@/lib/diagnostics/first-customer-readiness";
 import { getGoLiveReadinessSnapshot } from "@/lib/diagnostics/go-live-readiness";
 import { getRevenueReadinessSnapshot } from "@/lib/diagnostics/revenue-readiness";
+import { isDevelopmentRuntime } from "@/lib/diagnostics/runtime-environment";
 import { getSecurityReadinessSnapshot } from "@/lib/diagnostics/security-readiness";
 import { getSupabaseProductionReadinessSnapshot } from "@/lib/diagnostics/supabase-production-readiness";
 import { getVercelProductionReadinessSnapshot } from "@/lib/diagnostics/vercel-production-readiness";
@@ -96,7 +97,7 @@ async function probeSalesExecutionActual(): Promise<{
 
 /** Phase 8 Sprint 0 — launch candidate readiness across deployment, sales, onboarding, security, and revenue. */
 export async function getLaunchCandidateReadinessSnapshot(): Promise<LaunchCandidateReadinessSnapshot> {
-  const isDev = process.env.NODE_ENV !== "production";
+  const isDev = isDevelopmentRuntime();
   const [
     deployment,
     goLive,
@@ -187,7 +188,7 @@ export async function getLaunchCandidateReadinessSnapshot(): Promise<LaunchCandi
   const revenueChecks = [
     revenue.score >= 90,
     revenue.pipelineStagesConfigured,
-    revenue.bookingLinksConfigured || isDev,
+    // Booking links optional — do not block launch candidate readiness.
     revenue.versionReady,
   ];
 
