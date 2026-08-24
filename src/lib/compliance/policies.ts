@@ -3,6 +3,11 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { CompliancePolicyStatus, ComplianceFrameworkKey } from "@/lib/compliance/types";
 
+/**
+ * Idempotent draft scaffolding for missing policy keys only.
+ * Never overwrites an existing row (preserves active/deprecated tenant choices).
+ * Does not invent attestations or evidence.
+ */
 export async function ensureDefaultPolicies(organizationId: string): Promise<void> {
   const admin = createAdminClient();
   const defaults: Array<{
@@ -11,26 +16,42 @@ export async function ensureDefaultPolicies(organizationId: string): Promise<voi
     title: string;
     status: CompliancePolicyStatus;
   }> = [
-    { framework: "soc2", policy_key: "access_control", title: "Access control policy", status: "active" },
+    { framework: "soc2", policy_key: "access_control", title: "Access control policy", status: "draft" },
     { framework: "soc2", policy_key: "change_management", title: "Change management policy", status: "draft" },
-    { framework: "gdpr", policy_key: "data_processing", title: "Data processing policy", status: "active" },
+    { framework: "gdpr", policy_key: "data_processing", title: "Data processing policy", status: "draft" },
     { framework: "iso27001", policy_key: "information_security", title: "Information security policy", status: "draft" },
   ];
 
+  const { data: existing, error: listError } = await admin
+    .from("compliance_policies")
+    .select("framework, policy_key")
+    .eq("organization_id", organizationId);
+
+  if (listError) {
+    console.error("[compliance] policy list failed:", listError.message);
+    return;
+  }
+
+  const existingKeys = new Set(
+    (existing ?? []).map((row) => `${row.framework}:${row.policy_key}`),
+  );
+
   for (const policy of defaults) {
-    const { error } = await admin.from("compliance_policies").upsert(
-      {
-        organization_id: organizationId,
-        framework: policy.framework,
-        policy_key: policy.policy_key,
-        title: policy.title,
-        status: policy.status,
-        config: {},
-      } as never,
-      { onConflict: "organization_id,framework,policy_key" },
-    );
+    const key = `${policy.framework}:${policy.policy_key}`;
+    if (existingKeys.has(key)) {
+      continue;
+    }
+
+    const { error } = await admin.from("compliance_policies").insert({
+      organization_id: organizationId,
+      framework: policy.framework,
+      policy_key: policy.policy_key,
+      title: policy.title,
+      status: policy.status,
+      config: {},
+    } as never);
     if (error) {
-      console.error("[compliance] policy upsert failed:", error.message);
+      console.error("[compliance] policy insert failed:", error.message);
     }
   }
 }

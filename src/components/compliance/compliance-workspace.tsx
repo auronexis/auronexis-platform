@@ -77,8 +77,17 @@ export function ComplianceWorkspace({
   return (
     <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <ScoreCard title="Compliance score" value={dashboard.complianceScore} subtitle={`${dashboard.readinessLevel} maturity`} tone="success" />
-        <ScoreCard title="Readiness" value={`${dashboard.readinessPercent}%`} subtitle="Framework readiness (not certification)" />
+        <ScoreCard
+          title="Compliance score"
+          value={dashboard.complianceScore}
+          subtitle={`${dashboard.readinessLevel} workspace maturity — not certification`}
+          tone={dashboard.complianceScore >= 70 ? "success" : dashboard.complianceScore >= 45 ? "default" : "default"}
+        />
+        <ScoreCard
+          title="Framework maturity"
+          value={`${dashboard.readinessPercent}%`}
+          subtitle="Workspace evidence coverage (not certification)"
+        />
         <ScoreCard title="Open findings" value={dashboard.openFindings} tone={dashboard.openFindings > 0 ? "warning" : "default"} />
         <ScoreCard title="Security events" value={dashboard.openSecurityIncidents} tone={dashboard.openSecurityIncidents > 0 ? "warning" : "default"} />
       </div>
@@ -87,7 +96,10 @@ export function ComplianceWorkspace({
       {message?.success ? <FormAlert variant="success">{message.success}</FormAlert> : null}
 
       <PageSurface>
-        <PageSurfaceHeading title="Framework readiness" description="Readiness scoring only — no certification claims." />
+        <PageSurfaceHeading
+          title="Framework evidence coverage"
+          description="Mapped control coverage with tenant-backed evidence only. Gap analysis — not SOC 2, ISO 27001, GDPR, NIS2, DORA, or HIPAA certification. Low scores on a new workspace mean not yet configured, not a platform outage."
+        />
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {dashboard.frameworkScores.map((framework) => (
             <div key={framework.framework} className="rounded-lg border border-border/70 p-4">
@@ -95,6 +107,7 @@ export function ComplianceWorkspace({
               <p className="mt-1 text-2xl font-semibold">{framework.readinessPercent}%</p>
               <p className="text-sm text-muted">
                 {framework.implementedControls}/{framework.totalControls} controls with evidence
+                {framework.implementedControls === 0 ? " — not yet configured" : ""}
               </p>
             </div>
           ))}

@@ -8,6 +8,7 @@ import { countOpenGdprRequests } from "@/lib/compliance/gdpr";
 import { countOpenSecurityIncidents } from "@/lib/compliance/incidents";
 import { complianceTablesReachable } from "@/lib/compliance/security";
 import { calculateOverallReadiness } from "@/lib/governance/readiness";
+import { computeCompliancePlatformCapabilityPercent } from "@/lib/governance/maturity-formula";
 import type { ComplianceDiagnosticsSnapshot } from "@/lib/compliance/types";
 import { COMPLIANCE_PLATFORM_VERSION } from "@/lib/compliance/types";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -18,6 +19,8 @@ const EMPTY_COMPLIANCE_DIAGNOSTICS: ComplianceDiagnosticsSnapshot = {
   auditGrowth7d: 0,
   retentionCoveragePercent: 0,
   frameworkReadinessPercent: 0,
+  workspaceComplianceMaturityPercent: 0,
+  platformCapabilityPercent: 0,
   evidenceAvailable: false,
   openSecurityIncidents: 0,
   openGdprRequests: 0,
@@ -55,13 +58,20 @@ export async function getComplianceDiagnosticsSnapshot(
       calculateOverallReadiness(session),
     ]);
 
+    const workspaceComplianceMaturityPercent = readiness.readinessPercent;
+    const platformCapabilityPercent =
+      computeCompliancePlatformCapabilityPercent(tablesReachable);
+
     return {
       platformVersion: COMPLIANCE_PLATFORM_VERSION,
       auditEventsTotal,
       auditGrowth7d,
       retentionCoveragePercent,
-      frameworkReadinessPercent: readiness.readinessPercent,
-      evidenceAvailable: auditEventsTotal > 0,
+      frameworkReadinessPercent: workspaceComplianceMaturityPercent,
+      workspaceComplianceMaturityPercent,
+      platformCapabilityPercent,
+      // Audit trail rows or a completed export — not formal certification evidence.
+      evidenceAvailable: auditEventsTotal > 0 || Boolean(lastExportAt),
       openSecurityIncidents,
       openGdprRequests,
       activePolicies,
@@ -74,7 +84,11 @@ export async function getComplianceDiagnosticsSnapshot(
       error instanceof Error ? error.message : error,
     );
     const tablesReachable = await complianceTablesReachable().catch(() => false);
-    return { ...EMPTY_COMPLIANCE_DIAGNOSTICS, tablesReachable };
+    return {
+      ...EMPTY_COMPLIANCE_DIAGNOSTICS,
+      tablesReachable,
+      platformCapabilityPercent: computeCompliancePlatformCapabilityPercent(tablesReachable),
+    };
   }
 }
 

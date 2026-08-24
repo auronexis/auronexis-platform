@@ -806,7 +806,7 @@ export default async function DashboardPage() {
             <div className="lg:col-span-12 xl:col-span-4">
               <DashboardPanel
                 title="Compliance & Governance"
-                description="Audit readiness, framework scoring, and trust infrastructure."
+                description="Workspace maturity and audit activity — not certification status."
                 action={
                   <Link href="/dashboard/compliance" className={cn(linkText, "text-xs")}>
                     Open center
@@ -819,10 +819,13 @@ export default async function DashboardPage() {
                   <div className="rounded-lg border border-border/70 bg-surface/60 p-4">
                     <div className="flex items-center gap-2 text-sm text-muted">
                       <ShieldCheck className="h-4 w-4 text-primary" aria-hidden />
-                      Readiness
+                      Framework maturity
                     </div>
                     <p className="mt-2 text-2xl font-semibold text-foreground">
                       {complianceSummary.frameworkReadinessPercent}%
+                    </p>
+                    <p className="mt-1 text-xs text-muted">
+                      Workspace evidence coverage — not certification
                     </p>
                   </div>
                   <div className="rounded-lg border border-border/70 bg-surface/60 p-4">

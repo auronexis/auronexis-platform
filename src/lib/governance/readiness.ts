@@ -8,8 +8,17 @@ import { countOpenSecurityIncidents } from "@/lib/compliance/incidents";
 import type { ComplianceFrameworkKey, ReadinessLevel } from "@/lib/compliance/types";
 import { FRAMEWORK_CONTROL_MAP } from "@/lib/governance/frameworks";
 import { evaluateControlScores } from "@/lib/governance/controls";
+import {
+  averageControlScores,
+  averageFrameworkControlScores,
+  computeWorkspaceComplianceMaturity,
+} from "@/lib/governance/maturity-formula";
 import type { SessionContext } from "@/lib/tenancy/context";
 
+/**
+ * Per-framework maturity: mean score of mapped controls for this workspace.
+ * Not certification. Controls without evidence contribute low/zero scores via evaluateControlScores.
+ */
 export async function calculateFrameworkReadiness(
   session: SessionContext,
   framework: ComplianceFrameworkKey,
@@ -17,11 +26,13 @@ export async function calculateFrameworkReadiness(
   const controls = FRAMEWORK_CONTROL_MAP[framework];
   const scores = await evaluateControlScores(session);
   const relevant = scores.filter((score) => controls.includes(score.control));
-  if (relevant.length === 0) return 0;
-  const total = relevant.reduce((sum, item) => sum + item.score, 0);
-  return Math.round(total / relevant.length);
+  return averageFrameworkControlScores(relevant);
 }
 
+/**
+ * Overall workspace compliance maturity (tenant-specific).
+ * Low values on a fresh workspace are expected and do not mean the platform is broken.
+ */
 export async function calculateOverallReadiness(session: SessionContext): Promise<{
   readinessPercent: number;
   maturityScore: number;
@@ -42,25 +53,19 @@ export async function calculateOverallReadiness(session: SessionContext): Promis
       evaluateControlScores(session),
     ]);
 
-  const controlAverage =
-    controlScores.reduce((sum, item) => sum + item.score, 0) / Math.max(1, controlScores.length);
-
-  const readinessPercent = Math.round(
-    retention * 0.2 +
-      Math.min(policies * 10, 30) +
-      Math.min(auditTotal > 0 ? 20 : 0, 20) +
-      Math.min(audit7d > 0 ? 5 : 0, 5) +
-      controlAverage * 0.3,
-  );
-
-  const maturityScore = Math.round((readinessPercent + controlAverage) / 2);
-  const readinessLevel: ReadinessLevel =
-    maturityScore >= 85 ? "optimized" : maturityScore >= 70 ? "managed" : maturityScore >= 45 ? "developing" : "initial";
+  const controlAverage = averageControlScores(controlScores);
+  const maturity = computeWorkspaceComplianceMaturity({
+    retentionCoveragePercent: retention,
+    activePolicies: policies,
+    auditEventsTotal: auditTotal,
+    auditGrowth7d: audit7d,
+    controlAverage,
+  });
 
   return {
-    readinessPercent: Math.min(100, readinessPercent),
-    maturityScore: Math.min(100, maturityScore),
-    readinessLevel,
+    readinessPercent: maturity.readinessPercent,
+    maturityScore: maturity.maturityScore,
+    readinessLevel: maturity.readinessLevel,
     openFindings: gdprOpen + incidentsOpen + Math.max(0, 4 - policies),
   };
 }

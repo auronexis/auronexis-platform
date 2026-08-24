@@ -17,23 +17,43 @@ const DEFAULT_RETENTION: Record<RetentionDataCategory, RetentionPeriod> = {
   portal_activity: "1y",
 };
 
+/**
+ * Idempotent simulation-only retention scaffolding for missing categories.
+ * Never overwrites existing tenant rules. Simulation only — no automatic deletion.
+ */
 export async function ensureDefaultRetentionRules(organizationId: string): Promise<void> {
   const admin = createAdminClient();
+
+  const { data: existing, error: listError } = await admin
+    .from("retention_rules")
+    .select("data_category")
+    .eq("organization_id", organizationId);
+
+  if (listError) {
+    console.error("[compliance] retention list failed:", listError.message);
+    return;
+  }
+
+  const existingCategories = new Set(
+    (existing ?? []).map((row) => String(row.data_category)),
+  );
+
   for (const [category, period] of Object.entries(DEFAULT_RETENTION) as Array<
     [RetentionDataCategory, RetentionPeriod]
   >) {
-    const { error } = await admin.from("retention_rules").upsert(
-      {
-        organization_id: organizationId,
-        data_category: category,
-        retention_period: period,
-        simulation_only: true,
-        enabled: true,
-      } as never,
-      { onConflict: "organization_id,data_category" },
-    );
+    if (existingCategories.has(category)) {
+      continue;
+    }
+
+    const { error } = await admin.from("retention_rules").insert({
+      organization_id: organizationId,
+      data_category: category,
+      retention_period: period,
+      simulation_only: true,
+      enabled: true,
+    } as never);
     if (error) {
-      console.error("[compliance] retention upsert failed:", error.message);
+      console.error("[compliance] retention insert failed:", error.message);
     }
   }
 }

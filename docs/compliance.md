@@ -51,9 +51,17 @@ All tables are org-isolated. Owner/admin can read and manage (except `audit_even
 | `/dashboard/compliance` | Owner/admin | Compliance score, frameworks, GDPR, incidents, retention, evidence |
 | `/dashboard/compliance/audit` | Owner/admin | Audit explorer with search, filters, exports |
 
-## Framework readiness
+## Framework evidence coverage (workspace maturity)
 
-Readiness scoring is provided for SOC2, ISO27001, GDPR, NIS2, DORA, and HIPAA (placeholder). These scores indicate internal readiness only — **no certification claims**.
+Per-framework percentages and the workspace compliance maturity score measure **tenant configuration and evidence** (policies, retention rules, audit events, exports). They are **gap analysis only** — not SOC 2, ISO 27001, GDPR, NIS2, DORA, or HIPAA certification.
+
+**Platform capability** (schema / tables reachable) is separate and is what production readiness uses for go-live. A fresh workspace with 0% maturity and reachable tables is healthy infrastructure with not-yet-configured compliance content.
+
+Formula (workspace maturity):
+
+`retention% × 0.2 + min(activePolicies × 10, 30) + (audit > 0 ? 20 : 0) + (audit7d > 0 ? 5 : 0) + controlAverage × 0.3`
+
+Controls contribute only with tenant-backed evidence; zero open incidents is not evidence of an incident program.
 
 ## Security
 

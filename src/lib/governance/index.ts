@@ -3,3 +3,11 @@ export { calculateFrameworkReadiness, calculateOverallReadiness } from "@/lib/go
 export { evaluateControlScores } from "@/lib/governance/controls";
 export { generateEvidenceSnapshot, serializeEvidenceSnapshot } from "@/lib/governance/evidence";
 export { buildComplianceChecklist, buildAllFrameworkChecklists } from "@/lib/governance/checklists";
+export {
+  computeWorkspaceComplianceMaturity,
+  computeCompliancePlatformCapabilityPercent,
+  computeComplianceProductionReadinessScore,
+  countImplementedControlsWithEvidence,
+  averageControlScores,
+  averageFrameworkControlScores,
+} from "@/lib/governance/maturity-formula";

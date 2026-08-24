@@ -122,8 +122,9 @@ test("booking links are optional and do not block revenue/launch readiness score
 test("API and compliance readiness do not treat empty tenant maturity as platform-broken 40", () => {
   const readiness = readSource("src/lib/diagnostics/production-readiness.ts");
   assert.match(readiness, /scorePlatformModule/);
-  assert.match(readiness, /maturityPercent/);
+  assert.match(readiness, /workspace compliance maturity must not gate go-live/i);
   assert.match(readiness, /registeredConnectors/);
+  assert.doesNotMatch(readiness, /maturityPercent/);
 });
 
 test("retired Stripe/FastSpring/Paddle do not drive go-live billing checks", () => {

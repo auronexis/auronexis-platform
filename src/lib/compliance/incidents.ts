@@ -13,6 +13,16 @@ export async function countOpenSecurityIncidents(organizationId: string): Promis
   return count ?? 0;
 }
 
+/** Total incidents ever recorded (program evidence — not “zero open = healthy”). */
+export async function countSecurityIncidents(organizationId: string): Promise<number> {
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("security_incidents")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", organizationId);
+  return count ?? 0;
+}
+
 export async function listSecurityIncidents(organizationId: string) {
   const admin = createAdminClient();
   const { data } = await admin

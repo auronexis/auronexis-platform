@@ -795,7 +795,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
 
       <DiagnosticsSection
         title="Compliance platform"
-        description="Audit trail, retention coverage, framework readiness, evidence exports, GDPR requests, and security incidents."
+        description="Separates platform capability (schema/tables) from workspace compliance maturity. Low maturity on a fresh workspace is expected — not infrastructure failure and not certification."
       >
         <dl>
           <Row label="Platform version" value={data.compliance.platformVersion} />
@@ -803,20 +803,45 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
             label="Tables reachable"
             value={<BoolBadge value={data.compliance.tablesReachable} />}
           />
-          <Row label="Audit events total" value={data.compliance.auditEventsTotal} />
-          <Row label="Audit growth (7d)" value={data.compliance.auditGrowth7d} />
-          <Row label="Retention coverage" value={`${data.compliance.retentionCoveragePercent}%`} />
           <Row
-            label="Framework readiness"
-            value={`${data.compliance.frameworkReadinessPercent}%`}
+            label="Platform capability"
+            value={`${data.compliance.platformCapabilityPercent}%`}
           />
           <Row
-            label="Evidence available"
+            label="Audit events total"
+            value={
+              data.compliance.auditEventsTotal === 0
+                ? "0 (not yet configured)"
+                : data.compliance.auditEventsTotal
+            }
+          />
+          <Row label="Audit growth (7d)" value={data.compliance.auditGrowth7d} />
+          <Row
+            label="Retention coverage"
+            value={
+              data.compliance.retentionCoveragePercent === 0
+                ? "0% (not yet configured)"
+                : `${data.compliance.retentionCoveragePercent}%`
+            }
+          />
+          <Row
+            label="Workspace compliance maturity"
+            value={`${data.compliance.workspaceComplianceMaturityPercent}%`}
+          />
+          <Row
+            label="Audit evidence present"
             value={<BoolBadge value={data.compliance.evidenceAvailable} />}
           />
           <Row label="Open security incidents" value={data.compliance.openSecurityIncidents} />
           <Row label="Open GDPR requests" value={data.compliance.openGdprRequests} />
-          <Row label="Active policies" value={data.compliance.activePolicies} />
+          <Row
+            label="Active policies"
+            value={
+              data.compliance.activePolicies === 0
+                ? "0 (not yet configured)"
+                : data.compliance.activePolicies
+            }
+          />
           <Row
             label="Last export"
             value={
@@ -827,7 +852,9 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           />
         </dl>
         <p className="mt-4 text-sm text-muted">
-          Manage compliance at{" "}
+          Workspace compliance maturity is workspace-specific gap analysis — not SOC 2, ISO 27001,
+          GDPR, NIS2, DORA, or HIPAA certification. Platform capability reflects schema availability
+          for go-live. Manage maturity at{" "}
           <Link href="/dashboard/compliance" className="font-medium text-primary hover:underline">
             Compliance Center
           </Link>{" "}
@@ -959,7 +986,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           />
           <Row label="API readiness" value={`${data.productionReadiness.apiReadiness}/100`} />
           <Row
-            label="Compliance readiness"
+            label="Compliance readiness (platform)"
             value={`${data.productionReadiness.complianceReadiness}/100`}
           />
           <Row label="AI readiness" value={`${data.productionReadiness.aiReadiness}/100`} />

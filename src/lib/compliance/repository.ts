@@ -20,6 +20,7 @@ import { FRAMEWORK_LABELS } from "@/lib/compliance/types";
 import { calculateFrameworkReadiness, calculateOverallReadiness } from "@/lib/governance/readiness";
 import { evaluateControlScores } from "@/lib/governance/controls";
 import { FRAMEWORK_CONTROL_MAP } from "@/lib/governance/frameworks";
+import { countImplementedControlsWithEvidence } from "@/lib/governance/maturity-formula";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 function buildRecommendations(data: {
@@ -92,9 +93,7 @@ export async function getComplianceDashboardData(
     frameworks.map(async (framework) => {
       const readinessPercent = await calculateFrameworkReadiness(session, framework);
       const controls = FRAMEWORK_CONTROL_MAP[framework];
-      const implementedControls = controls.filter((control) =>
-        controlScores.some((score) => score.control === control && score.status !== "fail"),
-      ).length;
+      const implementedControls = countImplementedControlsWithEvidence(controls, controlScores);
       return {
         framework,
         label: FRAMEWORK_LABELS[framework],

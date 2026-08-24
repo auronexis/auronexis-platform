@@ -152,7 +152,15 @@ export type ComplianceDiagnosticsSnapshot = {
   auditEventsTotal: number;
   auditGrowth7d: number;
   retentionCoveragePercent: number;
+  /**
+   * Workspace compliance maturity (0–100). Same value as workspaceComplianceMaturityPercent.
+   * Historical field name — not certification and not platform health.
+   */
   frameworkReadinessPercent: number;
+  /** Explicit alias of frameworkReadinessPercent for UI clarity. */
+  workspaceComplianceMaturityPercent: number;
+  /** Platform schema/tables capability (0 or 100) — not tenant maturity. */
+  platformCapabilityPercent: number;
   evidenceAvailable: boolean;
   openSecurityIncidents: number;
   openGdprRequests: number;

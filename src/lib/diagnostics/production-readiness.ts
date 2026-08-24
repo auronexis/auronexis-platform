@@ -34,7 +34,6 @@ function scoreFromFlags(input: {
 function scorePlatformModule(input: {
   tableReachable: boolean;
   failureRateHigh?: boolean;
-  maturityPercent?: number;
   base: number;
 }): number {
   if (!input.tableReachable) {
@@ -42,10 +41,6 @@ function scorePlatformModule(input: {
   }
   if (input.failureRateHigh) {
     return Math.max(55, input.base - 20);
-  }
-  if (typeof input.maturityPercent === "number" && input.maturityPercent < 40) {
-    // Tables exist; tenant maturity is low — partial, not platform failure.
-    return Math.max(70, Math.round(input.base * 0.85));
   }
   return input.base;
 }
@@ -117,9 +112,9 @@ export function computeProductionReadiness(
     base: 84,
   });
 
+  // Platform availability only — workspace compliance maturity must not gate go-live.
   const complianceReadiness = scorePlatformModule({
     tableReachable: data.compliance.tablesReachable,
-    maturityPercent: data.compliance.frameworkReadinessPercent,
     base: 90,
   });
 
