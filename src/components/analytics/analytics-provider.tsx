@@ -35,11 +35,13 @@ function initPostHog(): void {
 
   const key = ANALYTICS_CONFIG.posthog.key;
   const host = ANALYTICS_CONFIG.posthog.host;
+  const assetHost = ANALYTICS_CONFIG.posthog.assetHost;
   if (!key) return;
 
   void import("posthog-js").then(({ default: posthog }) => {
     posthog.init(key, {
       api_host: host,
+      asset_host: assetHost,
       person_profiles: "identified_only",
       capture_pageview: false,
       capture_pageleave: true,

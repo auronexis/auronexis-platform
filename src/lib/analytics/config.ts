@@ -1,8 +1,28 @@
 import { isProductionAnalyticsRuntime } from "@/lib/analytics/runtime";
 
+/** PostHog EU Cloud ingestion endpoints — https://posthog.com/docs/api */
+export const POSTHOG_EU_API_HOST = "https://eu.i.posthog.com" as const;
+export const POSTHOG_EU_ASSET_HOST = "https://eu-assets.i.posthog.com" as const;
+
 function envEnabled(value: string | undefined): boolean {
   return isProductionAnalyticsRuntime() && Boolean(value?.trim());
 }
+
+function resolvePostHogAssetHost(apiHost: string): string {
+  const normalized = apiHost.replace(/\/$/, "");
+  if (normalized === POSTHOG_EU_API_HOST) {
+    return POSTHOG_EU_ASSET_HOST;
+  }
+
+  const assetOverride = process.env.NEXT_PUBLIC_POSTHOG_ASSET_HOST?.trim();
+  if (assetOverride) {
+    return assetOverride;
+  }
+
+  return POSTHOG_EU_ASSET_HOST;
+}
+
+const posthogApiHost = process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || POSTHOG_EU_API_HOST;
 
 /** Analytics provider configuration — production only, fail-silent when unset. */
 export const ANALYTICS_CONFIG = {
@@ -22,7 +42,8 @@ export const ANALYTICS_CONFIG = {
   },
   posthog: {
     key: process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim() || null,
-    host: process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || "https://us.i.posthog.com",
+    host: posthogApiHost,
+    assetHost: resolvePostHogAssetHost(posthogApiHost),
     enabled: envEnabled(process.env.NEXT_PUBLIC_POSTHOG_KEY),
   },
   /** Google Tag Manager — integration-ready stub; no hard-coded container load. */

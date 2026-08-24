@@ -22,6 +22,7 @@
     "test:phase-28": "node --test scripts/phase-28-international-billing-enterprise-integration.test.mjs",
     "test:phase-28-1": "node --test scripts/phase-28-1-organization-language-persistence.test.mjs",
     "test:clarity-csp": "node --test scripts/clarity-csp-integration.test.mjs",
+    "test:posthog-eu": "node --test scripts/posthog-eu-config.test.mjs",
     "test:openai-integration": "node --test scripts/openai-integration.test.mjs",
     "test:technical-seo": "node --test scripts/technical-seo.test.mjs",
     "test:vulnerability-disclosure": "node --test scripts/vulnerability-disclosure.test.mjs",

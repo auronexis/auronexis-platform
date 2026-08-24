@@ -42,9 +42,8 @@ test("vercel.json CSP stays aligned with csp.ts for Clarity hosts", () => {
 test("existing analytics providers remain in CSP", () => {
   const csp = readSource("src/lib/security/csp.ts");
   const providers = [
-    "https://us.i.posthog.com",
-    "https://us-assets.i.posthog.com",
     "https://eu.i.posthog.com",
+    "https://eu-assets.i.posthog.com",
     "https://plausible.io",
     "https://www.googletagmanager.com",
     "https://region1.google-analytics.com",
@@ -54,6 +53,12 @@ test("existing analytics providers remain in CSP", () => {
   for (const host of providers) {
     assert.match(csp, new RegExp(host.replace(/\./g, "\\.")));
   }
+});
+
+test("CSP does not allow US PostHog regional hosts", () => {
+  const csp = readSource("src/lib/security/csp.ts");
+  assert.doesNotMatch(csp, /https:\/\/us\.i\.posthog\.com/);
+  assert.doesNotMatch(csp, /https:\/\/us-assets\.i\.posthog\.com/);
 });
 
 test("Clarity script is injected only once with consent gating", () => {
