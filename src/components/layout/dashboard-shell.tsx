@@ -8,6 +8,7 @@ import { pageContainer } from "@/lib/ui/tokens";
 import { canAccessSettings } from "@/lib/rbac/permissions";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
 import type { NavItemView, SessionContext } from "@/lib/tenancy/context";
+import type { WorkspaceSearchAction } from "@/lib/layout/workspace-search";
 import type { UserRole } from "@/types/database";
 import { cn } from "@/lib/utils/cn";
 
@@ -21,6 +22,7 @@ type DashboardShellProps = {
   unreadNotificationCount: number;
   showNotifications: boolean;
   branding: ResolvedOrganizationBranding;
+  searchActions: WorkspaceSearchAction[];
 };
 
 /** Primary application shell — Operations Command Center layout. */
@@ -34,6 +36,7 @@ export function DashboardShell({
   unreadNotificationCount,
   showNotifications,
   branding,
+  searchActions,
 }: DashboardShellProps) {
   const showSettings = canAccessSettings(userRole as UserRole);
 
@@ -60,6 +63,7 @@ export function DashboardShell({
             />
           }
           branding={branding}
+          searchActions={searchActions}
         />
         <DashboardMain>
           <PageTransition className={cn(pageContainer, "min-w-0")}>

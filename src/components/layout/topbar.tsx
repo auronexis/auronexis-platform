@@ -15,6 +15,7 @@ import { AdaptiveBrandLogo } from "@/components/branding/brand-logo";
 import { Icon } from "@/components/ui/icon";
 import { getPageTitle } from "@/lib/layout/page-titles";
 import type { ResolvedOrganizationBranding } from "@/lib/branding/defaults";
+import type { WorkspaceSearchAction } from "@/lib/layout/workspace-search";
 import { cn } from "@/lib/utils/cn";
 import { iconButtonSurface } from "@/lib/ui/tokens";
 
@@ -25,6 +26,7 @@ type TopbarProps = {
   showSettings: boolean;
   notifications: ReactNode;
   branding: ResolvedOrganizationBranding;
+  searchActions: WorkspaceSearchAction[];
 };
 
 export function Topbar({
@@ -34,13 +36,14 @@ export function Topbar({
   showSettings,
   notifications,
   branding,
+  searchActions,
 }: TopbarProps) {
   const pathname = usePathname();
   const pageTitle = getPageTitle(pathname);
   const { toggle: toggleMobileNav } = useMobileNav();
 
   return (
-    <GlobalSearchProvider>
+    <GlobalSearchProvider actions={searchActions}>
       <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface/95 px-3 backdrop-blur-sm shadow-xs sm:gap-3 sm:px-4 lg:h-16 lg:gap-4 lg:px-6">
         <button
           type="button"

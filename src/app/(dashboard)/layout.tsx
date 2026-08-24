@@ -13,6 +13,7 @@ import { getOrganizationBranding } from "@/lib/branding/queries";
 import { getCurrentPlan } from "@/lib/plans/queries";
 import { canUseFeature } from "@/lib/plans/guards";
 import { getNavItemsForRoleAndPlan } from "@/lib/tenancy/context";
+import { buildWorkspaceSearchActions } from "@/lib/layout/workspace-search";
 import { getUnreadNotificationCount } from "@/lib/notifications/queries";
 import { DashboardAnalyticsTracker } from "@/components/analytics/dashboard-analytics-tracker";
 import { getStoredOrganizationCurrency, getStoredOrganizationRegionalSettings } from "@/lib/i18n";
@@ -36,6 +37,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
 
   const navPlan = await getCurrentPlan(session.organization.id);
   const navItems = getNavItemsForRoleAndPlan(session.role, navPlan);
+  const searchActions = buildWorkspaceSearchActions(session.role, navPlan);
   const [unreadNotificationCount, branding, notificationsEnabled] = await Promise.all([
     getUnreadNotificationCount(session),
     getOrganizationBranding(session),
@@ -73,6 +75,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
               unreadNotificationCount={notificationsEnabled ? unreadNotificationCount : 0}
               showNotifications={notificationsEnabled}
               branding={branding}
+              searchActions={searchActions}
             >
               {children}
             </DashboardShell>

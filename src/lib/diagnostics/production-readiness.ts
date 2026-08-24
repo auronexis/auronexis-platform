@@ -2,6 +2,7 @@ import "server-only";
 
 import type { WorkspaceDiagnostics } from "@/lib/diagnostics/types";
 import type { ProductionReadinessSnapshot } from "@/lib/jobs/types";
+import { GO_LIVE_OAUTH_CONNECTOR_COUNT } from "@/lib/diagnostics/go-live-readiness";
 import { getDeploymentReadinessSnapshot } from "@/lib/diagnostics/deployment-readiness";
 import { getLaunchPolishSnapshot } from "@/lib/diagnostics/launch-polish";
 import { getGoLiveReadinessSnapshot } from "@/lib/diagnostics/go-live-readiness";
@@ -86,8 +87,9 @@ export function computeProductionReadiness(
     base: 88,
   });
 
+  // Platform OAuth capability — optional provider env credentials must not block launch.
   const oauthReadiness =
-    data.connectors.oauthConfiguredConnectors > 0
+    data.connectors.registeredConnectors >= GO_LIVE_OAUTH_CONNECTOR_COUNT
       ? 90
       : data.connectors.registeredConnectors > 0
         ? 82

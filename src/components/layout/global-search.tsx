@@ -13,22 +13,30 @@ import {
   type ReactNode,
 } from "react";
 import {
+  Activity,
+  AlertTriangle,
   BarChart3,
   Bell,
   BookOpen,
   CreditCard,
-  FileText,
+  Gauge,
+  LayoutDashboard,
+  LineChart,
   Search,
   Settings,
+  Shield,
   ShieldAlert,
+  Sparkles,
+  TrendingUp,
   UserPlus,
   Users,
-  AlertTriangle,
+  Workflow,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
 import { MutedText } from "@/components/ui/typography";
 import { restoreFocus, trapFocus } from "@/lib/a11y/focus";
+import type { WorkspaceSearchAction } from "@/lib/layout/workspace-search";
 import { cn } from "@/lib/utils/cn";
 import {
   auroraInputFocus,
@@ -43,94 +51,65 @@ type QuickAction = {
   href: string;
   label: string;
   description: string;
+  keywords: string;
   icon: LucideIcon;
-  keywords?: string;
 };
 
-const QUICK_ACTIONS: QuickAction[] = [
+const SEARCH_ICON_MAP: Record<WorkspaceSearchAction["icon"], LucideIcon> = {
+  dashboard: LayoutDashboard,
+  adoption: Sparkles,
+  intelligence: LineChart,
+  clients: Users,
+  "customer-success": TrendingUp,
+  reports: BarChart3,
+  automation: Workflow,
+  knowledge: BookOpen,
+  activity: Activity,
+  risks: ShieldAlert,
+  incidents: AlertTriangle,
+  monitoring: Gauge,
+  profitability: TrendingUp,
+  team: Users,
+  pricing: CreditCard,
+  sales: BarChart3,
+  settings: Settings,
+  compliance: Shield,
+  notifications: Bell,
+  billing: CreditCard,
+  create: UserPlus,
+};
+
+function mapSearchActions(actions: WorkspaceSearchAction[]): QuickAction[] {
+  return actions.map((action) => ({
+    href: action.href,
+    label: action.label,
+    description: action.description,
+    keywords: action.keywords,
+    icon: SEARCH_ICON_MAP[action.icon],
+  }));
+}
+
+const FALLBACK_SEARCH_ACTIONS: WorkspaceSearchAction[] = [
   {
     href: "/clients",
-    label: "Open clients",
+    label: "Clients",
     description: "Browse and manage your client portfolio",
-    icon: Users,
     keywords: "clients portfolio list",
-  },
-  {
-    href: "/clients/new",
-    label: "Create client",
-    description: "Add a new client to your workspace",
-    icon: UserPlus,
-    keywords: "client new create",
+    icon: "clients",
   },
   {
     href: "/reports",
-    label: "Open reports",
+    label: "Reports",
     description: "Browse reports and templates",
-    icon: BarChart3,
     keywords: "reports list templates",
-  },
-  {
-    href: "/reports/new",
-    label: "Create report",
-    description: "Draft a new client report",
-    icon: FileText,
-    keywords: "report new create",
-  },
-  {
-    href: "/risks?tab=open",
-    label: "Open risks",
-    description: "Review and mitigate open client risks",
-    icon: ShieldAlert,
-    keywords: "risks open mitigate",
-  },
-  {
-    href: "/incidents",
-    label: "Open incidents",
-    description: "Triage operational failures and response queues",
-    icon: AlertTriangle,
-    keywords: "incidents command triage",
-  },
-  {
-    href: "/knowledge",
-    label: "Knowledge hub",
-    description: "Articles, playbooks, and organizational learnings",
-    icon: BookOpen,
-    keywords: "knowledge hub playbooks articles",
-  },
-  {
-    href: "/settings/billing",
-    label: "Open billing",
-    description: "Plans, invoices, and subscription management",
-    icon: CreditCard,
-    keywords: "billing subscription invoices payment",
-  },
-  {
-    href: "/settings/plans",
-    label: "Go to pricing",
-    description: "Compare plans and manage subscription",
-    icon: CreditCard,
-    keywords: "pricing plans billing subscription",
-  },
-  {
-    href: "/notifications",
-    label: "Open notifications",
-    description: "View recent alerts and updates",
-    icon: Bell,
-    keywords: "notifications alerts inbox",
+    icon: "reports",
   },
   {
     href: "/settings",
-    label: "Open settings",
+    label: "Settings",
     description: "Organization and platform configuration",
-    icon: Settings,
     keywords: "settings preferences organization",
-  },
-  {
-    href: "/settings/team",
-    label: "Open team",
-    description: "Manage members, roles, and invitations",
-    icon: Users,
-    keywords: "team members invite users",
+    icon: "settings",
   },
 ];
 
@@ -164,9 +143,11 @@ function useIsMac(): boolean {
 
 type GlobalSearchProviderProps = {
   children: ReactNode;
+  actions?: WorkspaceSearchAction[];
 };
 
-export function GlobalSearchProvider({ children }: GlobalSearchProviderProps) {
+export function GlobalSearchProvider({ children, actions }: GlobalSearchProviderProps) {
+  const quickActions = mapSearchActions(actions ?? FALLBACK_SEARCH_ACTIONS);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -253,11 +234,11 @@ export function GlobalSearchProvider({ children }: GlobalSearchProviderProps) {
 
   const normalizedQuery = query.trim().toLowerCase();
   const filteredActions = normalizedQuery
-    ? QUICK_ACTIONS.filter((action) => {
-        const haystack = `${action.label} ${action.description} ${action.keywords ?? ""}`.toLowerCase();
+    ? quickActions.filter((action) => {
+        const haystack = `${action.label} ${action.description} ${action.keywords}`.toLowerCase();
         return haystack.includes(normalizedQuery);
       })
-    : QUICK_ACTIONS;
+    : quickActions;
 
   useEffect(() => {
     setActiveIndex(0);
@@ -339,7 +320,7 @@ export function GlobalSearchProvider({ children }: GlobalSearchProviderProps) {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={handleInputKeyDown}
-                  placeholder="Search clients, reports, risks..."
+                  placeholder="Search dashboard, compliance, clients..."
                   className="h-10 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted/80"
                 />
                 <kbd className="hidden rounded border border-border bg-muted/5 px-1.5 py-0.5 text-[10px] font-medium text-muted sm:inline-block">
@@ -469,7 +450,7 @@ export function GlobalSearchTrigger({ compact = false, className }: GlobalSearch
       aria-label="Open search"
     >
       <Icon icon={Search} size="sm" className="text-muted" />
-      <span className="flex-1 truncate text-sm text-muted">Search clients, reports, risks...</span>
+      <span className="flex-1 truncate text-sm text-muted">Search dashboard, compliance, clients...</span>
       <kbd className="hidden rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-medium text-muted lg:inline-block">
         {shortcutLabel}
       </kbd>

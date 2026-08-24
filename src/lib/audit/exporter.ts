@@ -1,6 +1,7 @@
 import "server-only";
 
 import { auditFilterSummary } from "@/lib/audit/filters";
+import { toAuditCsv } from "@/lib/audit/csv-export";
 import { searchAuditEvents } from "@/lib/audit/search";
 import { recordAuditEvent } from "@/lib/audit/events";
 import { safeJsonStringify, sanitizeExportMetadata } from "@/lib/audit/export-sanitize";
@@ -8,27 +9,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { AuditExportFormat, AuditSearchFilters } from "@/lib/compliance/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 
-function toCsv(items: Array<Record<string, unknown>>): string {
-  const headers = ["id", "event_type", "entity_type", "entity_id", "severity", "source", "created_at"];
-  if (items.length === 0) {
-    return `${headers.join(",")}\n`;
-  }
-
-  const lines = [headers.join(",")];
-
-  for (const item of items) {
-    lines.push(
-      headers
-        .map((key) => {
-          const value = String(item[key] ?? "");
-          return `"${value.replace(/"/g, '""')}"`;
-        })
-        .join(","),
-    );
-  }
-
-  return lines.join("\n");
-}
+const AUDIT_CSV_HEADERS = [
+  "id",
+  "event_type",
+  "entity_type",
+  "entity_id",
+  "severity",
+  "source",
+  "created_at",
+] as const;
 
 export async function createAuditExport(input: {
   session: SessionContext;
@@ -54,7 +43,7 @@ export async function createAuditExport(input: {
 
   const payload =
     input.format === "csv"
-      ? toCsv(rows)
+      ? toAuditCsv(rows, AUDIT_CSV_HEADERS)
       : safeJsonStringify({
           generatedAt: new Date().toISOString(),
           filters: input.filters,

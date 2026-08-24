@@ -130,7 +130,56 @@ test("retired Stripe/FastSpring/Paddle do not drive go-live billing checks", () 
   const goLive = readSource("src/lib/diagnostics/go-live-readiness.ts");
   assert.match(goLive, /getMollieApiKeyPresence/);
   assert.match(goLive, /FastSpring retired/);
+  assert.match(goLive, /countOAuthCapableConnectors/);
+  assert.doesNotMatch(goLive, /c\.oauth === "oauth2"/);
   assert.doesNotMatch(goLive, /PADDLE_|FASTSPRING_API|STRIPE_SECRET/);
+});
+
+test("production OAuth readiness scores platform capability not optional provider env", () => {
+  const readiness = readSource("src/lib/diagnostics/production-readiness.ts");
+  assert.match(readiness, /Platform OAuth capability/);
+  assert.match(readiness, /registeredConnectors >= GO_LIVE_OAUTH_CONNECTOR_COUNT/);
+  assert.doesNotMatch(readiness, /oauthConfiguredConnectors > 0/);
+});
+
+test("public API tables grant service_role for diagnostics probes", () => {
+  assert.equal(
+    pathExists("supabase/migrations/20250824140000_public_api_service_role_grants.sql"),
+    true,
+  );
+  const migration = readSource(
+    "supabase/migrations/20250824140000_public_api_service_role_grants.sql",
+  );
+  assert.match(migration, /GRANT ALL ON TABLE public\.api_keys TO service_role/);
+  assert.match(migration, /GRANT ALL ON TABLE public\.api_request_logs TO service_role/);
+});
+
+test("audit CSV export uses UTF-8 BOM, semicolon delimiter, and formula guards", () => {
+  const csv = readSource("src/lib/audit/csv-export.ts");
+  assert.match(csv, /\\uFEFF/);
+  assert.match(csv, /CSV_DELIMITER = ";/);
+  assert.match(csv, /sanitizeCsvCell/);
+  assert.match(csv, /formula-injection guards/);
+  const exporter = readSource("src/lib/audit/exporter.ts");
+  assert.match(exporter, /toAuditCsv/);
+});
+
+test("workspace search registry includes Compliance with RBAC filtering", () => {
+  const registry = readSource("src/lib/layout/workspace-search.ts");
+  assert.match(registry, /\/dashboard\/compliance/);
+  assert.match(registry, /Compliance/);
+  assert.match(registry, /buildWorkspaceSearchActions/);
+  const search = readSource("src/components/layout/global-search.tsx");
+  assert.match(search, /WorkspaceSearchAction/);
+  const topbar = readSource("src/components/layout/topbar.tsx");
+  assert.match(topbar, /actions={searchActions}/);
+  const layout = readSource("src/app/(dashboard)/layout.tsx");
+  assert.match(layout, /buildWorkspaceSearchActions/);
+});
+
+test("Inter font preload disabled to avoid harmless console preload warnings", () => {
+  const layout = readSource("src/app/layout.tsx");
+  assert.match(layout, /preload: false/);
 });
 
 test("MOLLIE_LIVE_CHARGING_ENABLED remains fail-closed and untouched by closeout", () => {

@@ -24,6 +24,11 @@ export { GO_LIVE_SECURITY_HEADERS } from "@/lib/security/headers";
 
 export const GO_LIVE_OAUTH_CONNECTOR_COUNT = 13;
 
+/** OAuth-capable connectors include oauth2 and oauth2_pkce variants. */
+export function countOAuthCapableConnectors(): number {
+  return ALL_CONNECTOR_CONFIGS.filter((connector) => connector.oauth !== "none").length;
+}
+
 export type GoLiveReadinessSnapshot = {
   deploymentScore: number;
   monitoringScore: number;
@@ -87,7 +92,7 @@ export function getGoLiveReadinessSnapshot(): GoLiveReadinessSnapshot {
   const posthogConfigured = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
   const mollieCredentialPresence = getMollieApiKeyPresence();
   const mollieRolloutEnabled = isMollieBillingRolloutEnabled();
-  const oauthConnectorsRegistered = ALL_CONNECTOR_CONFIGS.filter((c) => c.oauth === "oauth2").length;
+  const oauthConnectorsRegistered = countOAuthCapableConnectors();
 
   const deploymentChecks = [
     deployment.score >= 90,
