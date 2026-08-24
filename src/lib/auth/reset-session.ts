@@ -9,23 +9,17 @@ export type ResetPasswordSessionResult = {
 };
 
 /**
- * Exchange a password-reset code for a session and resolve whether the user may reset.
- * Presentation pages must not construct Supabase clients directly.
+ * Resolve whether the user may reset their password after middleware/callback established the session.
+ * Code exchange runs in `/auth/callback` — not during Server Component render.
  */
 export async function resolveResetPasswordSession(params: {
-  code?: string;
   error?: string;
 }): Promise<ResetPasswordSessionResult> {
   const supabase = await createClient();
 
   let sessionError: string | undefined;
 
-  if (params.code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(params.code);
-    if (error) {
-      sessionError = AUTH_MESSAGES.RESET_TOKEN_INVALID;
-    }
-  } else if (params.error) {
+  if (params.error) {
     sessionError = AUTH_MESSAGES.RESET_TOKEN_INVALID;
   }
 

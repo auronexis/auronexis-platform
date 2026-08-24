@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createPageMetadataForPath } from "@/lib/seo";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
@@ -16,10 +17,16 @@ type ResetPasswordPageProps = {
 
 export default async function ResetPasswordPage({ searchParams }: ResetPasswordPageProps) {
   const params = await searchParams;
+
+  if (params.code) {
+    redirect(
+      `/auth/callback?code=${encodeURIComponent(params.code)}&next=${encodeURIComponent("/reset-password")}`,
+    );
+  }
+
   const host = (await headers()).get("host") ?? "";
   const branding = await resolveAuthBranding(host);
   const { canReset, sessionError } = await resolveResetPasswordSession({
-    code: params.code,
     error: params.error,
   });
 

@@ -57,6 +57,7 @@
     "test:build-bible-ch15": "node --test scripts/build-bible-ch15.test.mjs",
     "test:enterprise-regression": "node scripts/run-enterprise-regression.mjs",
     "test:production-readiness": "node --test scripts/production-readiness.test.mjs scripts/build-bible-ch14.test.mjs",
+    "test:auth-session-cookies": "node --test scripts/auth-session-cookie-rsc.test.mjs",
     "test:code-quality": "node --test scripts/code-quality.test.mjs scripts/build-bible-ch15.test.mjs",
     "test:build-bible-ch16": "node --test scripts/build-bible-ch16.test.mjs",
     "test:build-bible-ch17": "node --test scripts/build-bible-ch17.test.mjs",

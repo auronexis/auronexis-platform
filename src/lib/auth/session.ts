@@ -113,18 +113,11 @@ async function loadSessionContext(
   };
 }
 
-/** Load session from Supabase cookies — safe for route handlers and server components. */
+/** Load session from Supabase cookies — read-only; refresh runs in middleware. */
 export async function readSessionContext(): Promise<SessionContext | null> {
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
-  return loadSessionContext(
-    () => cookieStore.getAll(),
-    (cookiesToSet) => {
-      cookiesToSet.forEach(({ name, value, options }) => {
-        cookieStore.set(name, value, options);
-      });
-    },
-  );
+  return loadSessionContext(() => cookieStore.getAll());
 }
 
 /** Load session directly from an incoming request — used by `/api/docs` HTML route. */
@@ -136,7 +129,7 @@ export async function readSessionContextFromRequest(
 
 /**
  * Load the authenticated user, application profile, and organization.
- * Cached per request — safe to call from layouts and Server Components.
+ * Cached per request — read-only cookies; session refresh runs in middleware.
  */
 export const getSession = cache(readSessionContext);
 

@@ -23,7 +23,7 @@ import {
 import { buildInviteUrl } from "@/lib/team/types";
 import { assertCanInviteTeamMember, canAcceptTeamInvite } from "@/lib/seats/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createWritableClient } from "@/lib/supabase/server";
 import type { Database, InviteRole } from "@/types/database";
 
 type TeamInvitationInsert = Database["public"]["Tables"]["team_invitations"]["Insert"];
@@ -370,7 +370,7 @@ export async function acceptInvitationAction(
     metadata: { email: invitation.email, role: invitation.role },
   });
 
-  const supabase = await createClient();
+  const supabase = await createWritableClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: invitation.email,
     password: parsed.data.password,

@@ -9,7 +9,7 @@ import { requireSession } from "@/lib/auth/session";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManagePortalUsers } from "@/lib/client-portal/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createWritableClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
 type ClientPortalUserInsert = Database["public"]["Tables"]["client_portal_users"]["Insert"];
@@ -50,7 +50,7 @@ export async function signInPortal(
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
   }
 
-  const supabase = await createClient();
+  const supabase = await createWritableClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -95,7 +95,7 @@ export async function signInPortal(
 
 /** Sign out from the client portal. */
 export async function signOutPortal(): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await createWritableClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/client-portal/login");

@@ -7,7 +7,7 @@ import { validatePasswordPolicy } from "@/lib/auth/password-policy";
 import { checkPasswordResetThrottle } from "@/lib/security/login-throttle";
 import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import { createWritableClient } from "@/lib/supabase/server";
 
 const emailSchema = z.object({
   email: z.string().trim().email(AUTH_MESSAGES.INVALID_EMAIL),
@@ -88,7 +88,7 @@ export async function requestPasswordResetAction(
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = await createWritableClient();
     const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
       redirectTo: getPasswordResetRedirectUrl(),
     });
@@ -137,7 +137,7 @@ export async function updatePasswordAfterResetAction(
     };
   }
 
-  const supabase = await createClient();
+  const supabase = await createWritableClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

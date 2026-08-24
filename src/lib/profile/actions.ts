@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
 import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createWritableClient } from "@/lib/supabase/server";
 
 const updateAccountSchema = z.object({
   fullName: z.string().trim().min(2, "Full name must be at least 2 characters."),
@@ -86,7 +86,7 @@ export async function updateAccountEmailAction(
     return { error: "This is already your email address." };
   }
 
-  const supabase = await createClient();
+  const supabase = await createWritableClient();
   const { error } = await supabase.auth.updateUser({ email: parsed.data.email });
 
   if (error) {
@@ -116,7 +116,7 @@ export async function changeAccountPasswordAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid password." };
   }
 
-  const supabase = await createClient();
+  const supabase = await createWritableClient();
   const hasPasswordProvider = await userHasPasswordProvider(supabase);
 
   if (!hasPasswordProvider) {

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
 import { sendWelcomeEmailAfterSignup } from "@/lib/email/welcome";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { createWritableClient } from "@/lib/supabase/server";
 import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { slugifyOrganizationName } from "@/lib/tenancy/context";
 import {
@@ -58,7 +58,7 @@ export async function signIn(
     };
   }
 
-  const supabase = await createClient();
+  const supabase = await createWritableClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
@@ -204,7 +204,7 @@ export async function signUp(
 }
 /** End the current session. */
 export async function signOut(): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await createWritableClient();
   await supabase.auth.signOut();
   redirect("/login");
 }
