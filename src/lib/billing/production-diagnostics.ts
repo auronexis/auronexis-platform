@@ -23,7 +23,7 @@ import {
   type CheckoutBlockState,
 } from "@/lib/billing/checkout-block";
 import {
-  hasVerifiedFastSpringSubscription,
+  hasVerifiedMollieSubscription,
   hasVerifiedPaddleCustomer,
   hasVerifiedPaddleSubscription,
   isStaleStripeAbandonedCheckout,
@@ -54,8 +54,7 @@ export type BillingInvoiceDiagnosticView = CustomerInvoiceView & {
 };
 
 /**
- * Historical-archive-only view. FastSpring is the active billing provider —
- * `paddle_webhook_events` rows are legacy Paddle webhook deliveries retained
+ * Historical-archive-only view. Legacy Paddle webhook deliveries are retained
  * for audit and never drive current checkout, portal, or entitlement logic.
  */
 export type PaddleWebhookDiagnosticView = {
@@ -75,13 +74,13 @@ export type BillingProductionDiagnostics = {
   allSubscriptions: OrganizationSubscription[];
   resolvedPlanKey: PlanKey | null;
   resolvedPlanLabel: string | null;
-  hasStripeCustomerId: boolean;
-  hasStripeSubscriptionId: boolean;
-  /** Active FastSpring subscription verification. */
-  hasFastSpringSubscriptionId: boolean;
-  fastspringCheckoutBlocked: boolean;
-  fastspringCheckoutBlockReason: string | null;
-  /** Legacy/historical Paddle fields — FastSpring is the active provider. */
+  hasLegacyCustomerReference: boolean;
+  hasLegacySubscriptionReference: boolean;
+  /** Active Mollie subscription verification. */
+  hasMollieSubscriptionId: boolean;
+  mollieCheckoutBlocked: boolean;
+  mollieCheckoutBlockReason: string | null;
+  /** Legacy/historical Paddle fields — read-only archive. */
   hasPaddleCustomerId: boolean;
   hasPaddleSubscriptionId: boolean;
   invoices: BillingInvoiceDiagnosticView[];
@@ -94,8 +93,8 @@ export type BillingProductionDiagnostics = {
   checkoutBlock: CheckoutBlockState;
   productionHealth: BillingProductionHealth;
   cleanupRecommendations: CleanupRecommendation[];
-  ignoredStripeInvoiceIds: string[];
-  staleStripeRemnantCount: number;
+  ignoredLegacyInvoiceIds: string[];
+  staleLegacyCheckoutRemnantCount: number;
 };
 
 async function listBillingEventsForOrganization(
@@ -227,21 +226,27 @@ export async function getBillingProductionDiagnostics(
 
   const subscription = overview.subscription;
   const resolvedPlanKey =
-    activeProvider === "fastspring"
+    activeProvider === "mollie"
       ? safeGetPlanKeyFromSubscriptionPrice({
-          billingProvider: subscription?.billing_provider ?? "fastspring",
+          billingProvider: "mollie",
           stripePriceId: null,
           providerPriceId: subscription?.provider_price_id,
         }) ?? overview.currentPlanKey
-      : activeProvider === "paddle"
+      : activeProvider === "fastspring"
         ? safeGetPlanKeyFromSubscriptionPrice({
-            billingProvider: "paddle",
+            billingProvider: subscription?.billing_provider ?? "fastspring",
             stripePriceId: null,
             providerPriceId: subscription?.provider_price_id,
-          })
-        : subscription?.stripe_price_id
-          ? safeGetPlanKeyByStripePriceId(subscription.stripe_price_id)
-          : overview.currentPlanKey;
+          }) ?? overview.currentPlanKey
+        : activeProvider === "paddle"
+          ? safeGetPlanKeyFromSubscriptionPrice({
+              billingProvider: "paddle",
+              stripePriceId: null,
+              providerPriceId: subscription?.provider_price_id,
+            })
+          : subscription?.stripe_price_id
+            ? safeGetPlanKeyByStripePriceId(subscription.stripe_price_id)
+            : overview.currentPlanKey;
   const resolvedPlanLabel = resolvedPlanKey
     ? (safeGetPlanByKey(resolvedPlanKey)?.name ?? null)
     : null;
@@ -296,12 +301,12 @@ export async function getBillingProductionDiagnostics(
     dangerRecommendationCount: severityCounts.danger,
   });
 
-  const fastspringCheckoutBlocked =
+  const mollieCheckoutBlocked =
     checkoutBlock.blocked || providerSubscriptionBlocksCheckout(subscription);
-  const fastspringCheckoutBlockReason = checkoutBlock.blocked
+  const mollieCheckoutBlockReason = checkoutBlock.blocked
     ? (checkoutBlock.message ?? checkoutBlock.bannerMessage)
     : providerSubscriptionBlocksCheckout(subscription)
-      ? "Verified FastSpring subscription state blocks checkout."
+      ? "Verified subscription state blocks checkout."
       : null;
 
   return {
@@ -312,11 +317,11 @@ export async function getBillingProductionDiagnostics(
     allSubscriptions,
     resolvedPlanKey,
     resolvedPlanLabel,
-    hasStripeCustomerId: Boolean(subscription?.stripe_customer_id),
-    hasStripeSubscriptionId: Boolean(subscription?.stripe_subscription_id),
-    hasFastSpringSubscriptionId: hasVerifiedFastSpringSubscription(subscription),
-    fastspringCheckoutBlocked,
-    fastspringCheckoutBlockReason,
+    hasLegacyCustomerReference: Boolean(subscription?.stripe_customer_id),
+    hasLegacySubscriptionReference: Boolean(subscription?.stripe_subscription_id),
+    hasMollieSubscriptionId: hasVerifiedMollieSubscription(subscription),
+    mollieCheckoutBlocked,
+    mollieCheckoutBlockReason,
     hasPaddleCustomerId: hasVerifiedPaddleCustomer(subscription),
     hasPaddleSubscriptionId: hasVerifiedPaddleSubscription(subscription),
     invoices: invoiceDiagnostics,
@@ -328,8 +333,8 @@ export async function getBillingProductionDiagnostics(
     checkoutBlock,
     productionHealth,
     cleanupRecommendations,
-    ignoredStripeInvoiceIds: Array.from(ignoredSet),
-    staleStripeRemnantCount: allSubscriptions.filter((row) => isStaleStripeAbandonedCheckout(row))
+    ignoredLegacyInvoiceIds: Array.from(ignoredSet),
+    staleLegacyCheckoutRemnantCount: allSubscriptions.filter((row) => isStaleStripeAbandonedCheckout(row))
       .length,
   };
 }

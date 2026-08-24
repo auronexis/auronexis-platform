@@ -1,11 +1,11 @@
 /**
  * Active-billing helpers for the configured checkout provider.
- * Historical Stripe and Paddle rows may remain in the database but must
- * never drive checkout, portal, entitlements, or preferred-row selection.
+ * Historical legacy rows may remain in the database but must never drive
+ * checkout, portal, entitlements, or preferred-row selection.
  *
- * FastSpring is the sole active billing provider. Paddle detection helpers
- * below exist only for historical labeling/diagnostics — they must never be
- * used to grant portal access, checkout eligibility, or entitlements.
+ * Mollie is the sole active billing provider. Legacy provider detection
+ * helpers exist only for historical labeling/diagnostics — they must never
+ * be used to grant portal access, checkout eligibility, or entitlements.
  */
 
 import type { BillingProvider } from "@/lib/billing/provider-types";

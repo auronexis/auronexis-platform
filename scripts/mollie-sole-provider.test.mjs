@@ -56,6 +56,7 @@ test("FastSpring webhook and connectivity routes return 410 Gone", () => {
   const connectivity = readSource("src/app/api/fastspring/connectivity/route.ts");
   assert.match(webhook, /status:\s*410/);
   assert.match(connectivity, /status:\s*410/);
+  assert.match(webhook, /Legacy provider webhooks are retired/);
   assert.doesNotMatch(webhook, /handleFastSpringWebhookEvent|verifyFastSpring/);
   assert.doesNotMatch(connectivity, /probeFastSpringApiConnectivity/);
 });

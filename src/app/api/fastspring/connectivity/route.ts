@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
 /**
- * FastSpring connectivity probes are retired with the FastSpring provider.
+ * Legacy provider connectivity probes are retired.
  */
 export async function GET() {
   return NextResponse.json(
     {
       error: "gone",
-      message: "FastSpring API connectivity is retired. Use /api/mollie/connectivity.",
+      message: "Legacy provider API connectivity is retired. Use /api/mollie/connectivity.",
     },
     { status: 410 },
   );

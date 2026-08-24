@@ -233,9 +233,12 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
         <dl>
           <Row label="Row exists" value={<BoolBadge value={data.subscription.exists} />} />
           <Row label="Status" value={subscription?.status ?? "—"} />
-          <Row label="Provider customer ID (legacy Stripe col)" value={subscription?.stripe_customer_id ?? "—"} />
-          <Row label="Provider subscription ID (legacy Stripe col)" value={subscription?.stripe_subscription_id ?? "—"} />
-          <Row label="Provider price ID (legacy Stripe col)" value={subscription?.stripe_price_id ?? "—"} />
+          <Row label="Provider customer reference" value={subscription?.provider_customer_id ?? "—"} />
+          <Row label="Provider subscription reference" value={subscription?.provider_subscription_id ?? "—"} />
+          <Row label="Provider price reference" value={subscription?.provider_price_id ?? subscription?.stripe_price_id ?? "—"} />
+          <Row label="Legacy customer reference (archive column)" value={subscription?.stripe_customer_id ?? "—"} />
+          <Row label="Legacy subscription reference (archive column)" value={subscription?.stripe_subscription_id ?? "—"} />
+          <Row label="Legacy price reference (archive column)" value={subscription?.stripe_price_id ?? "—"} />
           <Row
             label="Matched plan from price ID"
             value={getMatchedPlanLabel(data.matchedPlanFromSubscriptionPriceId)}
@@ -316,7 +319,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
 
       {data.isDevelopment ? (
         <DiagnosticsSection
-          title="Legacy Stripe webhooks (archive)"
+          title="Legacy billing webhooks (archive)"
           description="Read-only history from before the Mollie migration. Not used for active billing."
         >
         <dl>
@@ -476,7 +479,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
           </dl>
           <p className="mt-4 text-sm text-muted">
             Set <code className="font-mono text-xs">DEV_FORCE_PLAN=starter|professional|business|enterprise</code>{" "}
-            in your local environment to override plan resolution without changing Stripe rows.
+            in your local environment to override plan resolution without changing subscription rows.
           </p>
         </DiagnosticsSection>
       ) : null}

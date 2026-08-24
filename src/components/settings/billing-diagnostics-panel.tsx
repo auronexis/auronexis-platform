@@ -208,15 +208,15 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
             <>
               <Row
                 label="Mollie checkout blocked"
-                value={data.fastspringCheckoutBlocked ? "Yes" : "No"}
+                value={data.mollieCheckoutBlocked ? "Yes" : "No"}
               />
               <Row
                 label="Mollie blocking reason"
-                value={data.fastspringCheckoutBlockReason ?? "None"}
+                value={data.mollieCheckoutBlockReason ?? "None"}
               />
               <Row
-                label="Stale Stripe remnants"
-                value={String(data.staleStripeRemnantCount)}
+                label="Stale legacy checkout remnants"
+                value={String(data.staleLegacyCheckoutRemnantCount)}
               />
             </>
           ) : (
@@ -232,8 +232,8 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
               <Row
                 label="Ignored invoices (diagnostic)"
                 value={
-                  data.ignoredStripeInvoiceIds.length > 0
-                    ? data.ignoredStripeInvoiceIds.map((id) => maskStripeId(id)).join(", ")
+                  data.ignoredLegacyInvoiceIds.length > 0
+                    ? data.ignoredLegacyInvoiceIds.map((id) => maskStripeId(id)).join(", ")
                     : "None"
                 }
               />
@@ -289,7 +289,7 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
         description={
           isMollieMode
             ? `Preferred Mollie-backed subscription for active billing. ${data.allSubscriptions.length} row(s) found for this workspace.`
-            : `Preferred subscription row synced from Stripe. ${data.allSubscriptions.length} row(s) found for this workspace.`
+            : `Preferred subscription row for active billing. ${data.allSubscriptions.length} row(s) found for this workspace.`
         }
       >
         {subscription ? (
@@ -312,7 +312,7 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
                   label="Mollie subscription ID"
                   value={
                     <span className="inline-flex flex-wrap items-center gap-2">
-                      <PresenceBadge present={data.hasFastSpringSubscriptionId} />
+                      <PresenceBadge present={data.hasMollieSubscriptionId} />
                       <code className="font-mono text-xs">
                         {maskStripeId(subscription.provider_subscription_id)}
                       </code>
@@ -333,10 +333,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
             ) : (
               <>
                 <Row
-                  label="Stripe customer ID"
+                  label="Legacy customer reference (archive column)"
                   value={
                     <span className="inline-flex flex-wrap items-center gap-2">
-                      <PresenceBadge present={data.hasStripeCustomerId} />
+                      <PresenceBadge present={data.hasLegacyCustomerReference} />
                       <code className="font-mono text-xs">
                         {maskStripeId(subscription.stripe_customer_id)}
                       </code>
@@ -344,10 +344,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
                   }
                 />
                 <Row
-                  label="Stripe subscription ID"
+                  label="Legacy subscription reference (archive column)"
                   value={
                     <span className="inline-flex flex-wrap items-center gap-2">
-                      <PresenceBadge present={data.hasStripeSubscriptionId} />
+                      <PresenceBadge present={data.hasLegacySubscriptionReference} />
                       <code className="font-mono text-xs">
                         {maskStripeId(subscription.stripe_subscription_id)}
                       </code>
@@ -355,7 +355,7 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
                   }
                 />
                 <Row
-                  label="Stripe price ID"
+                  label="Legacy price reference (archive column)"
                   value={
                     <code className="font-mono text-xs">
                       {maskStripeId(subscription.stripe_price_id)}
@@ -390,11 +390,11 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
 
       {data.paddleWebhookEvents.length > 0 ? (
         <DiagnosticsSection
-          title="Legacy paddle_webhook_events (historical archive)"
-          description={`Latest ${data.paddleWebhookEvents.length} historical Paddle webhook rows — retained for audit, never drives active billing.`}
+          title="Legacy provider webhook archive"
+          description={`Latest ${data.paddleWebhookEvents.length} historical webhook rows — retained for audit, never drives active billing.`}
         >
           {data.paddleWebhookEvents.length === 0 ? (
-            <p className="text-sm text-muted">No paddle_webhook_events rows for this organization yet.</p>
+            <p className="text-sm text-muted">No legacy provider webhook rows for this organization yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
@@ -431,12 +431,12 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
       <DiagnosticsSection
         title={
           isMollieMode
-            ? "Legacy Stripe history — not used for active billing"
+            ? "Legacy billing history — not used for active billing"
             : "Latest customer_invoices"
         }
         description={
           isMollieMode
-            ? "Historical Stripe invoice and webhook rows are preserved for audit and never drive checkout or entitlements."
+            ? "Historical billing invoice and webhook rows are preserved for audit and never drive checkout or entitlements."
             : `Latest ${data.invoices.length} invoice rows — stale/demo rows are labeled, never deleted.`
         }
       >
@@ -479,12 +479,12 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
       </DiagnosticsSection>
 
       <DiagnosticsSection
-        title="Latest stripe_webhook_events"
+        title="Legacy billing webhook events (archive)"
         description={`Latest ${data.webhookEvents.length} webhook rows linked to this workspace.`}
       >
         {data.webhookEvents.length === 0 ? (
           <p className="text-sm text-muted">
-            No stripe_webhook_events rows with this organization_id or linked billing_events yet.
+            No legacy billing webhook rows with this organization_id or linked billing_events yet.
           </p>
         ) : (
           <div className="overflow-x-auto">
@@ -528,7 +528,7 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
               <thead>
                 <tr className="border-b border-border/70 text-left text-muted">
                   <th className="py-2 pr-4 font-medium">Event type</th>
-                  <th className="py-2 pr-4 font-medium">Stripe event</th>
+                  <th className="py-2 pr-4 font-medium">Legacy event reference</th>
                   <th className="py-2 pr-4 font-medium">Created</th>
                   <th className="py-2 pr-4 font-medium">Payload</th>
                 </tr>

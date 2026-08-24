@@ -51,7 +51,7 @@ export function BillingMaintenanceActions({
   if (activeProvider !== "mollie") {
     return (
       <p className="text-sm text-muted">
-        Stripe sync actions are disabled. Mollie is the sole active billing provider.
+        Legacy billing sync actions are disabled. Mollie is the sole active billing provider.
       </p>
     );
   }
@@ -59,7 +59,7 @@ export function BillingMaintenanceActions({
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted">
-        Mollie is the active billing provider. Use neutralization only for abandoned Stripe checkout
+        Mollie is the active billing provider. Use neutralization only for abandoned legacy checkout
         remnants that must not block Mollie.
       </p>
 
@@ -73,15 +73,14 @@ export function BillingMaintenanceActions({
           loading={isPending}
           onClick={() => run(neutralizeStaleStripeCheckoutAction)}
         >
-          Neutralize stale Stripe checkout remnants
+          Neutralize stale legacy checkout remnants
         </Button>
       </div>
 
       <p className="text-xs text-muted">
-        Neutralization marks abandoned incomplete Stripe rows inactive, clears{" "}
-        <code className="font-mono">sync_pending</code>, and preserves{" "}
-        <code className="font-mono">stripe_customer_id</code> for audit. It never deletes invoices
-        or calls Stripe APIs.
+        Neutralization marks abandoned incomplete legacy rows inactive, clears{" "}
+        <code className="font-mono">sync_pending</code>, and preserves archive customer references
+        for audit. It never deletes invoices or calls retired provider APIs.
       </p>
     </div>
   );

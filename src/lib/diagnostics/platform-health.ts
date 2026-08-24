@@ -128,28 +128,25 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
 }
 
 /**
- * Legacy Paddle billing configuration health — the Paddle SDK/runtime has
- * been fully removed; FastSpring is the sole active billing provider.
- * Always reports not-configured. Retained (function name + field) only for
- * backward compatibility with existing dashboards reading `stripeHealth` /
+ * Legacy Paddle billing configuration health — runtime removed.
+ * Mollie is the sole active billing provider. Retained (function name + field)
+ * only for backward compatibility with existing dashboards reading `stripeHealth` /
  * `stripeConnected` on diagnostics snapshots.
  */
 export function checkPaddleHealth(): HealthCheckResult {
   return {
     ok: false,
     level: "degraded",
-    message: "Paddle runtime removed — Mollie is the sole active billing provider",
+    message: "Legacy billing runtime removed — Mollie is the sole active provider",
   };
 }
 
-/**
- * FastSpring is retired — presence checks only (no network). Historical rows may remain.
- */
+/** Retired legacy provider webhooks — historical rows only. */
 export function checkFastSpringWebhookHealth(): HealthCheckResult {
   return {
     ok: true,
     level: "healthy",
-    message: "FastSpring webhooks retired — Mollie is the sole active billing provider",
+    message: "Legacy provider webhooks retired — Mollie is the sole active provider",
   };
 }
 
@@ -157,7 +154,7 @@ export function checkFastSpringApiConfigHealth(): HealthCheckResult {
   return {
     ok: true,
     level: "healthy",
-    message: "FastSpring API retired — Mollie is the sole active billing provider",
+    message: "Legacy provider API retired — Mollie is the sole active provider",
   };
 }
 
@@ -169,7 +166,7 @@ export function checkFastSpringStorefrontHealth(): HealthCheckResult {
   return {
     ok: true,
     level: "healthy",
-    message: "FastSpring storefront retired — Mollie is the sole active billing provider",
+    message: "Legacy provider storefront retired — Mollie is the sole active provider",
   };
 }
 

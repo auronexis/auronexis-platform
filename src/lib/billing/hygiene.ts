@@ -1,3 +1,8 @@
+import {
+  isFastSpringBackedSubscription,
+  isMollieBackedSubscription,
+  isPaddleBackedSubscription,
+} from "@/lib/billing/active-billing";
 import type { PlanKey } from "@/lib/billing/plans";
 import {
   getBillingStatusLabel,
@@ -27,6 +32,39 @@ export type BillingRowKind = "production" | "stale" | "demo" | "internal" | "inc
 const STALE_SUBSCRIPTION_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
 const BILLABLE_STATUSES = new Set(["active", "trialing", "past_due", "unpaid", "incomplete"]);
+
+function usesProviderReferenceColumns(subscription: OrganizationSubscription): boolean {
+  return (
+    isMollieBackedSubscription(subscription) ||
+    isPaddleBackedSubscription(subscription) ||
+    isFastSpringBackedSubscription(subscription)
+  );
+}
+
+function subscriptionHasCustomerReference(subscription: OrganizationSubscription): boolean {
+  if (usesProviderReferenceColumns(subscription)) {
+    return Boolean(subscription.provider_customer_id?.trim());
+  }
+
+  return Boolean(subscription.stripe_customer_id?.trim());
+}
+
+function subscriptionHasSubscriptionReference(subscription: OrganizationSubscription): boolean {
+  if (usesProviderReferenceColumns(subscription)) {
+    return Boolean(subscription.provider_subscription_id?.trim());
+  }
+
+  return Boolean(subscription.stripe_subscription_id?.trim());
+}
+
+function subscriptionHasAnyBillingReference(subscription: OrganizationSubscription): boolean {
+  return (
+    subscriptionHasCustomerReference(subscription) ||
+    subscriptionHasSubscriptionReference(subscription) ||
+    Boolean(subscription.stripe_price_id?.trim()) ||
+    Boolean(subscription.provider_price_id?.trim())
+  );
+}
 
 /** Customer-safe webhook processing label for diagnostics UI. */
 export function getWebhookEventStatusLabel(
@@ -63,16 +101,13 @@ export function classifySubscriptionRow(
 
   if (
     BILLABLE_STATUSES.has(status) &&
-    (!subscription.stripe_customer_id || !subscription.stripe_subscription_id)
+    (!subscriptionHasCustomerReference(subscription) ||
+      !subscriptionHasSubscriptionReference(subscription))
   ) {
     return "inconsistent";
   }
 
-  if (
-    isSubscriptionInactive(status) &&
-    !subscription.stripe_subscription_id &&
-    !subscription.stripe_customer_id
-  ) {
+  if (isSubscriptionInactive(status) && !subscriptionHasAnyBillingReference(subscription)) {
     return "internal";
   }
 
@@ -84,7 +119,7 @@ export function classifySubscriptionRow(
     return "inconsistent";
   }
 
-  if (subscription.stripe_customer_id || subscription.stripe_subscription_id) {
+  if (subscriptionHasAnyBillingReference(subscription)) {
     return "production";
   }
 
@@ -98,7 +133,7 @@ export function isStaleSubscriptionRow(subscription: OrganizationSubscription): 
     return false;
   }
 
-  if (subscription.stripe_subscription_id) {
+  if (subscriptionHasSubscriptionReference(subscription)) {
     return false;
   }
 
@@ -186,7 +221,7 @@ export function collectSubscriptionHygieneFlags(
     flags.push({
       code: "dev_plan_override",
       severity: "info",
-      message: "Development plan override is active — Stripe rows may not reflect live billing.",
+      message: "Development plan override is active — subscription rows may not reflect live billing.",
       entityType: "subscription",
       entityId: subscription.id,
     });
@@ -197,7 +232,7 @@ export function collectSubscriptionHygieneFlags(
       code: "stale_subscription_row",
       severity: "info",
       message:
-        "Subscription row appears stale (inactive/canceled with no Stripe subscription id for 90+ days).",
+        "Subscription row appears stale (inactive/canceled with no provider subscription reference for 90+ days).",
       entityType: "subscription",
       entityId: subscription.id,
     });
@@ -207,7 +242,7 @@ export function collectSubscriptionHygieneFlags(
     flags.push({
       code: "internal_placeholder_row",
       severity: "info",
-      message: "Placeholder subscription row with no Stripe customer or subscription identifiers.",
+      message: "Placeholder subscription row with no provider customer or subscription references.",
       entityType: "subscription",
       entityId: subscription.id,
     });
@@ -217,7 +252,7 @@ export function collectSubscriptionHygieneFlags(
     flags.push({
       code: "unmapped_price_id",
       severity: "warning",
-      message: "stripe_price_id does not map to a known self-serve plan definition.",
+      message: "Legacy price reference does not map to a known self-serve plan definition.",
       entityType: "subscription",
       entityId: subscription.id,
     });
@@ -236,21 +271,21 @@ export function collectBillingSanityWarnings(input: {
   const status = normalizeSubscriptionStatus(subscription?.status);
 
   if (status === "active" && subscription) {
-    if (!subscription.stripe_customer_id) {
+    if (!subscriptionHasCustomerReference(subscription)) {
       warnings.push({
         code: "active_missing_customer",
         severity: "danger",
-        message: "Subscription status is active but stripe_customer_id is missing.",
+        message: "Subscription status is active but provider customer reference is missing.",
         entityType: "subscription",
         entityId: subscription.id,
       });
     }
 
-    if (!subscription.stripe_subscription_id) {
+    if (!subscriptionHasSubscriptionReference(subscription)) {
       warnings.push({
         code: "active_missing_subscription",
         severity: "danger",
-        message: "Subscription status is active but stripe_subscription_id is missing.",
+        message: "Subscription status is active but provider subscription reference is missing.",
         entityType: "subscription",
         entityId: subscription.id,
       });

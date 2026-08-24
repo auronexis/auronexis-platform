@@ -14,7 +14,7 @@ type CheckoutBlockBannerProps = {
   onOpenPortal?: () => void;
   isPortalPending?: boolean;
   showBackToBilling?: boolean;
-  /** When false, hide portal CTA (e.g. no verified FastSpring customer yet). */
+  /** When false, hide portal CTA (e.g. no verified Mollie customer yet). */
   showPortalAction?: boolean;
 };
 

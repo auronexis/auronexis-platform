@@ -3,9 +3,7 @@ import "server-only";
 import {
   checkActiveBillingProviderHealth,
   checkDatabaseHealth,
-  checkFastSpringApiConfigHealth,
-  checkFastSpringStorefrontHealth,
-  checkFastSpringWebhookHealth,
+  checkMollieApiConfigHealth,
 } from "@/lib/diagnostics/platform-health";
 import {
   buildHealthProbeOk,
@@ -40,15 +38,13 @@ export type PlatformStatusSnapshot = {
 
 /** Aggregated platform status for dashboard widget — owner/admin only. */
 export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapshot> {
-  const [database, stripeWebhook, cron, queue] = await Promise.all([
+  const [database, legacyWebhookArchive, cron, queue] = await Promise.all([
     checkDatabaseHealth(),
     getStripeWebhookDiagnostics(),
     getCronDiagnosticsSnapshot(),
     getQueueDiagnosticsSnapshot(),
   ]);
-  const fastspringWebhook = checkFastSpringWebhookHealth();
-  const fastspringApi = checkFastSpringApiConfigHealth();
-  const fastspringStorefront = checkFastSpringStorefrontHealth();
+  const mollieApi = checkMollieApiConfigHealth();
   const activeBillingProvider = checkActiveBillingProviderHealth();
 
   const environment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
@@ -57,15 +53,10 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
   const queueOk = queue.tableReachable && queue.status !== "unavailable";
   const cronSecretConfigured = Boolean(getCronSecret());
   /**
-   * Paddle SDK/runtime has been fully removed — legacy/historical display
-   * only; always false and never gates readiness.
+   * Legacy field name kept for platform-readiness scoring — reflects Mollie
+   * configuration health, not retired Stripe/Paddle/FastSpring runtimes.
    */
-  const paddleConfigured = false;
-  /**
-   * Field name kept for compat with platform-readiness scoring — now reflects
-   * FastSpring (the active billing provider), not Paddle or Stripe.
-   */
-  const stripeConfigured = fastspringApi.ok && fastspringWebhook.ok;
+  const stripeConfigured = mollieApi.ok;
   const sentryConfigured = Boolean(process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN);
   const posthogConfigured = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
 
@@ -77,13 +68,13 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
     authOk: database.level !== "unavailable",
     healthProbeOk: false,
     stripeConfigured,
-    stripeWebhookReachable: stripeWebhook.tableReachable,
+    stripeWebhookReachable: legacyWebhookArchive.tableReachable,
     cronSecretConfigured,
     cronOk,
     queueOk,
     sentryConfigured,
     posthogConfigured,
-    stripeWebhookFailures: stripeWebhook.failedEvents,
+    stripeWebhookFailures: legacyWebhookArchive.failedEvents,
   };
 
   readinessInput.healthProbeOk = buildHealthProbeOk(readinessInput);
@@ -103,32 +94,17 @@ export async function getPlatformStatusSnapshot(): Promise<PlatformStatusSnapsho
       detail: activeBillingProvider.message,
     },
     {
-      key: "stripe",
-      label: "Legacy billing (Paddle)",
-      status: paddleConfigured ? "healthy" : "degraded",
-      detail: "Paddle runtime removed (legacy-only, does not block active billing)",
+      key: "mollie_api",
+      label: "Mollie API",
+      status: mollieApi.ok ? "healthy" : "degraded",
+      detail: mollieApi.message,
     },
     {
-      key: "fastspring_webhook",
-      label: "FastSpring webhook",
-      status: fastspringWebhook.ok
-        ? "healthy"
-        : nodeEnv === "development"
-          ? "degraded"
-          : "degraded",
-      detail: fastspringWebhook.message,
-    },
-    {
-      key: "fastspring_api",
-      label: "FastSpring API",
-      status: fastspringApi.ok ? "healthy" : "degraded",
-      detail: fastspringApi.message,
-    },
-    {
-      key: "fastspring_storefront",
-      label: "FastSpring storefront",
-      status: fastspringStorefront.ok ? "healthy" : "degraded",
-      detail: fastspringStorefront.message,
+      key: "legacy_billing_archive",
+      label: "Legacy billing archive",
+      status: "healthy",
+      detail:
+        "Historical billing webhook tables retained read-only; never drive active checkout or entitlements",
     },
     {
       key: "cron",

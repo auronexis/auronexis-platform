@@ -41,6 +41,18 @@ import type { EnterpriseStatus } from "@/lib/enterprise/types";
 import type { BillingContactCardContent } from "@/lib/billing/billing-contact";
 import { cn } from "@/lib/utils/cn";
 
+function formatBillingProviderLabel(provider: string | null | undefined): string {
+  if (provider === "mollie") {
+    return "Mollie";
+  }
+
+  if (!provider) {
+    return "—";
+  }
+
+  return "Legacy billing (archived)";
+}
+
 type BillingSettingsPanelProps = {
   dashboard: BillingDashboardData;
   seatUsage: OrganizationSeatUsage;
@@ -321,13 +333,7 @@ export function BillingSettingsPanel({
             <p className="text-muted">
               Provider:{" "}
               <span className="font-medium text-foreground">
-                {overview.subscription.billing_provider === "fastspring"
-                  ? "FastSpring"
-                  : overview.subscription.billing_provider === "mollie"
-                    ? "Mollie"
-                    : overview.subscription.billing_provider === "paddle"
-                      ? "Paddle (legacy)"
-                      : "Stripe"}
+                {formatBillingProviderLabel(overview.subscription.billing_provider)}
               </span>
               {overview.subscription.provider_status
                 ? ` · provider status: ${overview.subscription.provider_status}`
@@ -408,9 +414,7 @@ export function BillingSettingsPanel({
             description={
               activeProvider === "mollie"
                 ? "Manage cancellation, keep subscription, and plan changes in Settings → Billing."
-                : overview.subscription?.billing_provider === "fastspring"
-                  ? "This workspace has a historical FastSpring subscription. Contact support for billing changes."
-                  : "Manage your subscription in Settings → Billing, or contact support."
+                : "This workspace has a historical legacy subscription. Contact support for billing changes."
             }
           />
           {actionError ? <FormAlert variant="warning">{actionError}</FormAlert> : null}
