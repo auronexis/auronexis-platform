@@ -126,3 +126,26 @@ test("package.json exposes analytics conversion test script", () => {
 test("dead duplicate PostHog provider is removed", () => {
   assert.ok(!existsSync(join(rootDir, "src/components/observability/posthog-provider.tsx")));
 });
+
+test("PostHog uses manual App Router $pageview without automatic capture", () => {
+  const provider = readSource("src/components/analytics/analytics-provider.tsx");
+  const events = readSource("src/lib/analytics/events.ts");
+  const pageTracker = readSource("src/components/analytics/page-view-tracker.tsx");
+
+  assert.match(provider, /capture_pageview:\s*false/);
+  assert.match(provider, /capture_pageleave:\s*true/);
+  assert.match(provider, /capturePostHogPageview/);
+  assert.match(provider, /posthog\.init/);
+  assert.equal((provider.match(/posthog\.init/g) || []).length, 1);
+
+  assert.match(events, /capturePostHogPageview/);
+  assert.match(events, /\$pageview/);
+  assert.match(events, /\$current_url/);
+  assert.match(events, /name === "page_view"/);
+  assert.match(events, /DEDUPE_WINDOW_MS/);
+
+  assert.match(pageTracker, /usePathname/);
+  assert.match(pageTracker, /trackAnalyticsEvent\("page_view"/);
+  assert.doesNotMatch(pageTracker, /capture_pageview:\s*true/);
+  assert.doesNotMatch(provider, /capture_pageview:\s*true/);
+});

@@ -8,6 +8,7 @@ import {
   posthogSink,
   registerAnalyticsSink,
   trackAnalyticsEvent,
+  capturePostHogPageview,
 } from "@/lib/analytics/events";
 import { claritySink } from "@/lib/analytics/clarity-events";
 import { hasAnalyticsConsent, hasMarketingConsent, subscribeToConsentChanges } from "@/lib/consent/storage";
@@ -39,15 +40,22 @@ function initPostHog(): void {
   if (!key) return;
 
   void import("posthog-js").then(({ default: posthog }) => {
+    // Guard against overlapping dynamic imports before the first init settles.
+    if (posthogInitialized) return;
+
     posthog.init(key, {
       api_host: host,
       asset_host: assetHost,
       person_profiles: "identified_only",
+      // Option B: manual App Router pageviews via PageViewTracker + posthogSink → $pageview.
       capture_pageview: false,
       capture_pageleave: true,
     });
     (window as Window & { posthog?: typeof posthog }).posthog = posthog;
     posthogInitialized = true;
+
+    // PageViewTracker often runs before this async import resolves; capture the current URL once.
+    capturePostHogPageview();
   });
 }
 

@@ -61,3 +61,12 @@ test("PostHog key env var is referenced without hard-coded secrets", () => {
   assert.match(config, /NEXT_PUBLIC_POSTHOG_KEY/);
   assert.doesNotMatch(config, /phc_[a-zA-Z0-9]+/);
 });
+
+test("PostHog pageview strategy is manual $pageview only", () => {
+  const provider = readSource("src/components/analytics/analytics-provider.tsx");
+  const events = readSource("src/lib/analytics/events.ts");
+  assert.match(provider, /capture_pageview:\s*false/);
+  assert.doesNotMatch(provider, /capture_pageview:\s*true/);
+  assert.match(events, /capture\("\$pageview"/);
+  assert.match(events, /capturePostHogPageview/);
+});

@@ -267,9 +267,46 @@ export function plausibleSink(name: string, props?: AnalyticsEventProps): void {
 
 /** PostHog capture sink — only active when PostHog is initialized. */
 export function posthogSink(name: string, props?: AnalyticsEventProps): void {
-  const posthog = (window as Window & { posthog?: { capture: (event: string, props?: AnalyticsEventProps) => void } }).posthog;
+  if (name === "page_view") {
+    capturePostHogPageview();
+    return;
+  }
+
+  const posthog = (
+    window as Window & {
+      posthog?: { capture: (event: string, props?: AnalyticsEventProps) => void };
+    }
+  ).posthog;
   if (!posthog?.capture) return;
   posthog.capture(name, props);
+}
+
+type PostHogClient = {
+  capture: (event: string, props?: Record<string, string | number | boolean>) => void;
+};
+
+let lastPosthogPageviewUrl = "";
+let lastPosthogPageviewAt = 0;
+
+/**
+ * Emit a single PostHog `$pageview` for the current URL.
+ * Used after async init and by posthogSink for App Router navigations.
+ */
+export function capturePostHogPageview(): void {
+  if (typeof window === "undefined") return;
+
+  const posthog = (window as Window & { posthog?: PostHogClient }).posthog;
+  if (!posthog?.capture) return;
+
+  const url = window.location.href;
+  const now = Date.now();
+  if (url === lastPosthogPageviewUrl && now - lastPosthogPageviewAt < DEDUPE_WINDOW_MS) {
+    return;
+  }
+
+  lastPosthogPageviewUrl = url;
+  lastPosthogPageviewAt = now;
+  posthog.capture("$pageview", { $current_url: url });
 }
 
 /** GA4 gtag sink — manual page views to avoid duplicate automatic page_view. */

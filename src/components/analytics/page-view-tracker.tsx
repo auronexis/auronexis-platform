@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import { resolvePageViewSurface } from "@/lib/analytics/surfaces";
 
-/** Fires page_view events on route changes — respects consent via trackAnalyticsEvent. */
+/** Fires page_view on App Router pathname changes — PostHog receives `$pageview` via posthogSink. */
 export function PageViewTracker() {
   const pathname = usePathname();
 
