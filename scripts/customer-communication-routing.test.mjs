@@ -131,31 +131,29 @@ test("enterprise request fail matrix matches persistence policy without exposing
   assert.match(card, /result\.data/);
 });
 
-test("authenticated minimal footer uses canonical PRODUCT / LEGAL / COMPANY columns", () => {
+test("authenticated minimal footer stays compact without a surface panel megabar", () => {
   const footer = readSource("src/components/layout/site-footer.tsx");
   const links = readSource("src/lib/company/company-links.ts");
   const shell = readSource("src/components/layout/dashboard-shell.tsx");
 
   assert.match(shell, /SiteFooter variant="minimal"/);
-  assert.match(links, /product:\s*\[/);
-  assert.match(links, /legal:\s*\[/);
-  assert.match(links, /company:\s*\[/);
-  assert.match(links, /label: "Features"/);
-  assert.match(links, /label: "Privacy"/);
-  assert.match(links, /label: "About"/);
+  assert.match(links, /export const FOOTER_LINKS/);
   assert.match(links, /FOOTER_SECTIONS\.legal/);
   assert.match(links, /FOOTER_SECTIONS\.company/);
-  assert.match(links, /export const FOOTER_LINKS/);
+  assert.match(links, /FOOTER_BRAND_DESCRIPTION/);
 
   const minimal = footer.match(/if \(variant === "minimal"\) \{[\s\S]*?(?=if \(variant === "marketing"\))/)?.[0] ?? "";
   assert.ok(minimal.length > 0, "minimal footer variant must exist");
-  assert.match(links, /FOOTER_BRAND_DESCRIPTION/);
   assert.match(minimal, /FOOTER_BRAND_DESCRIPTION/);
-  assert.match(minimal, /FooterLinkColumn title="Product" links=\{FOOTER_SECTIONS\.product\}/);
-  assert.match(minimal, /FooterLinkColumn title="Legal" links=\{FOOTER_SECTIONS\.legal\}/);
-  assert.match(minimal, /FooterLinkColumn title="Company" links=\{FOOTER_SECTIONS\.company\}/);
-  assert.doesNotMatch(minimal, /FOOTER_LINKS\.map/);
-  assert.doesNotMatch(minimal, /flex-wrap gap-x-/);
+  assert.match(minimal, /FOOTER_LINKS\.map/);
+  assert.match(minimal, /mailto:\$\{SUPPORT_EMAIL\}/);
+  assert.match(minimal, /Sales:/);
+  assert.match(minimal, /mailto:\$\{SALES_EMAIL\}/);
+  assert.doesNotMatch(minimal, /bg-surface\/40/);
+  assert.doesNotMatch(minimal, /grid gap-8/);
+  assert.doesNotMatch(minimal, /FooterLinkColumn title="Product"/);
+  assert.doesNotMatch(minimal, /FooterLinkColumn title="Legal"/);
+  assert.doesNotMatch(minimal, /FooterLinkColumn title="Company"/);
 
   assert.match(
     footer,

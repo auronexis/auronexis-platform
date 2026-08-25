@@ -111,80 +111,57 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
 
   if (variant === "minimal") {
-
+    // Compact authenticated shell footer — must not paint a large surface panel that
+    // consumes the bottom of the viewport (marketing megabar belongs on public pages).
     return (
+      <footer className={cn("border-t border-border/70 px-0 py-4", className)}>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <AdaptiveBrandLogo
+              branding={platformBranding}
+              layout="horizontal"
+              className="h-6 w-auto max-w-[180px] object-contain"
+            />
+            <p className="text-xs leading-relaxed text-muted">{FOOTER_BRAND_DESCRIPTION}</p>
+          </div>
 
-      <footer className={cn("border-t border-border/70 bg-surface/40 px-6 py-6", className)}>
+          <nav aria-label="Legal and company" className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            {FOOTER_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn("rounded text-muted hover:text-foreground hover:underline", focusRing)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
-        <div className="mx-auto w-full">
-
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-
-            <div>
-
-              <AdaptiveBrandLogo
-                branding={platformBranding}
-                layout="horizontal"
-                className="h-7 w-auto max-w-[200px] object-contain"
-              />
-
-              <p className="mt-3 text-xs leading-relaxed text-muted">
-                {FOOTER_BRAND_DESCRIPTION}
-              </p>
-
+          <div className="flex flex-col gap-1 text-xs text-muted sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4">
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
-                className={cn(
-                  "mt-3 inline-block rounded text-xs text-muted hover:text-foreground hover:underline",
-                  focusRing,
-                )}
+                className={cn("rounded hover:text-foreground hover:underline", focusRing)}
               >
-
                 {SUPPORT_EMAIL}
-
               </a>
-
-              <p className="mt-2 text-xs text-muted">
-
+              <span>
                 Sales:{" "}
-
                 <a
                   href={`mailto:${SALES_EMAIL}`}
                   className={cn("rounded hover:text-foreground hover:underline", focusRing)}
                 >
-
                   {SALES_EMAIL}
-
                 </a>
-
-              </p>
-
-            </div>
-
-            <FooterLinkColumn title="Product" links={FOOTER_SECTIONS.product} />
-
-            <FooterLinkColumn title="Legal" links={FOOTER_SECTIONS.legal} />
-
-            <FooterLinkColumn title="Company" links={FOOTER_SECTIONS.company} />
-
-          </div>
-
-          <div className="mt-6 flex flex-col gap-1 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-
-            <p>
-
-              © {year} {COMPANY_NAME} · Version {APP_VERSION}
-
+              </span>
             </p>
-
+            <p>
+              © {year} {COMPANY_NAME} · Version {APP_VERSION}
+            </p>
           </div>
-
         </div>
-
       </footer>
-
     );
-
   }
 
 

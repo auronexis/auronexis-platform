@@ -155,24 +155,31 @@ test("11 authenticated footer includes Sales: sales@", () => {
   assert.match(minimal, /\{SALES_EMAIL\}/);
 });
 
-test("12 authenticated Product links remain vertical columns", () => {
+test("12 authenticated footer stays compact (no megabar surface panel)", () => {
   const footer = readSource("src/components/layout/site-footer.tsx");
   const minimal = footer.match(/if \(variant === "minimal"\) \{[\s\S]*?(?=if \(variant === "marketing"\))/)?.[0] ?? "";
-  assert.match(minimal, /FooterLinkColumn title="Product" links=\{FOOTER_SECTIONS\.product\}/);
-  assert.match(footer, /<ul className="mt-3 space-y-2">/);
+  assert.match(minimal, /FOOTER_LINKS\.map/);
+  assert.doesNotMatch(minimal, /bg-surface\/40/);
+  assert.doesNotMatch(minimal, /grid gap-8/);
+  assert.doesNotMatch(minimal, /FooterLinkColumn title="Product"/);
 });
 
-test("13 authenticated Legal links remain vertical columns", () => {
+test("13 authenticated footer retains legal destinations via FOOTER_LINKS", () => {
   const footer = readSource("src/components/layout/site-footer.tsx");
+  const links = readSource("src/lib/company/company-links.ts");
   const minimal = footer.match(/if \(variant === "minimal"\) \{[\s\S]*?(?=if \(variant === "marketing"\))/)?.[0] ?? "";
-  assert.match(minimal, /FooterLinkColumn title="Legal" links=\{FOOTER_SECTIONS\.legal\}/);
+  assert.match(minimal, /FOOTER_LINKS\.map/);
+  assert.match(links, /FOOTER_SECTIONS\.legal/);
+  assert.match(links, /label: "Privacy"/);
 });
 
-test("14 authenticated Company links remain vertical columns", () => {
+test("14 authenticated footer retains company destinations via FOOTER_LINKS", () => {
   const footer = readSource("src/components/layout/site-footer.tsx");
+  const links = readSource("src/lib/company/company-links.ts");
   const minimal = footer.match(/if \(variant === "minimal"\) \{[\s\S]*?(?=if \(variant === "marketing"\))/)?.[0] ?? "";
-  assert.match(minimal, /FooterLinkColumn title="Company" links=\{FOOTER_SECTIONS\.company\}/);
-  assert.doesNotMatch(minimal, /FOOTER_LINKS\.map/);
+  assert.match(minimal, /FOOTER_LINKS\.map/);
+  assert.match(links, /FOOTER_SECTIONS\.company/);
+  assert.match(links, /label: "About"/);
 });
 
 test("15 public marketing footer IA is unchanged", () => {
