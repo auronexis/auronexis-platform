@@ -1,70 +1,56 @@
-# Billing Integration (FastSpring — sole active provider)
+# Billing Integration (HISTORICAL — FastSpring / Paddle era)
 
-Auroranexis uses **FastSpring as the sole active billing provider** (Merchant of Record). Paddle and Stripe schema/diagnostic rows remain as historical archive only — neither ever drives checkout, portal, or entitlements.
+> **STATUS: HISTORICAL / SUPERSEDED**
+> **CURRENT BILLING PROVIDER: MOLLIE**
+> **DO NOT USE THIS DOCUMENT FOR CURRENT PRODUCTION OPERATIONS**
+> Canonical ops: [billing.md](./billing.md) · [enterprise-deployment.md](./enterprise-deployment.md) · [enterprise-production-golive-playbook.md](./enterprise-production-golive-playbook.md)
 
-## Status
+This file is retained as **audit evidence** of the pre-Mollie FastSpring/Paddle billing era. Runtime code now returns `getActiveBillingProvider() → "mollie"`. FastSpring API routes return **410 Gone**. Stripe/Paddle runtimes are removed.
 
-- **Active provider:** FastSpring (always — `getActiveBillingProvider()` returns `"fastspring"`)
-- **Archive:** Paddle and Stripe columns/tables may exist for diagnostics and historical entitlement lookups; never selected for new commerce
-- `BILLING_PROVIDER` env is ignored for provider selection
-- Production has 0 usable Paddle subscriptions — the Paddle runtime (SDKs, `/api/paddle/webhook`, `src/lib/paddle/**`) has been fully removed
+---
 
-## Environment variables (names only)
+## Historical status (do not follow)
+
+The following statements were true during the FastSpring sole-provider cutover and are **no longer operational guidance**:
+
+- FastSpring was briefly treated as sole active provider and Merchant of Record
+- Paddle and Stripe schema/diagnostic rows remained as historical archive
+- `BILLING_PROVIDER` env was ignored for provider selection
+- Paddle runtime (SDKs, `/api/paddle/webhook`, `src/lib/paddle/**`) was removed
+
+## Historical environment variables (retired — remove from Vercel)
 
 | Name | Scope | Notes |
 |------|-------|-------|
-| `FASTSPRING_WEBHOOK_SECRET` | server-only | HMAC-SHA256 signature verification |
-| `FASTSPRING_API_USERNAME` | server-only | FastSpring REST API |
-| `FASTSPRING_API_PASSWORD` | server-only | FastSpring REST API |
-| `FASTSPRING_STOREFRONT` | server-only | Live production `data-storefront` value |
-| `FASTSPRING_STORE_ID` | server-only | Test-only fallback storefront builder |
-| `GA4_API_SECRET` | server-only | Optional server commercial analytics (Measurement Protocol) |
+| `FASTSPRING_WEBHOOK_SECRET` | server-only | Retired |
+| `FASTSPRING_API_USERNAME` | server-only | Retired |
+| `FASTSPRING_API_PASSWORD` | server-only | Retired |
+| `FASTSPRING_STOREFRONT` | server-only | Retired |
+| `FASTSPRING_STORE_ID` | server-only | Retired |
 
-## Authoritative modules
+## Historical modules (dead / 410)
 
-| Concern | Location |
-|---------|----------|
-| Checkout payload | `src/lib/fastspring/checkout.ts` |
-| Webhooks + commercial events | `src/lib/fastspring/webhooks.ts`, `src/app/api/fastspring/webhook/route.ts` |
-| Idempotency | `src/lib/fastspring/idempotency.ts` |
-| Sync / upsert | `src/lib/fastspring/sync.ts` |
-| Customer portal | `src/lib/billing/customer-portal.ts` (fails closed — FastSpring has no hosted portal) |
-| Entitlements | `src/lib/entitlements/resolver.ts` |
-| Plan catalog | `src/lib/billing/catalog.ts`, `src/lib/billing/plans.ts` |
-| Commercial event names | `src/lib/billing/commercial-events.ts` |
+| Concern | Historical location | Current state |
+|---------|---------------------|---------------|
+| Checkout payload | `src/lib/fastspring/checkout.ts` | Dead code — not mounted |
+| Webhooks | `src/app/api/fastspring/webhook/route.ts` | **410 Gone** |
+| Connectivity | `src/app/api/fastspring/connectivity/route.ts` | **410 Gone** |
+| Sync / upsert | `src/lib/fastspring/sync.ts` | Archive read-only |
+| Active checkout / webhooks | — | `src/lib/billing/providers/mollie/**`, `/api/mollie/webhook` |
+| Entitlements | `src/lib/entitlements/resolver.ts` | Mollie-aware (unchanged authority) |
 
-## Database migrations
+## Database migrations (historical — do not rewrite)
 
-1. `20250717000000_paddle_billing.sql` — historical Paddle columns, `paddle_webhook_events`, `billing_provider_transactions`
-2. `20250718160000_paddle_billing_v2_stripe_archive.sql` — archive views for historical Stripe data
-3. `20250726120000_fastspring_webhook_foundation.sql` — `fastspring_webhook_events`, FastSpring provider columns
+1. `20250717000000_paddle_billing.sql` — historical Paddle columns
+2. `20250718160000_paddle_billing_v2_stripe_archive.sql` — Stripe archive views
+3. `20250726120000_fastspring_webhook_foundation.sql` — FastSpring webhook foundation
 
-Do not drop archive Stripe or Paddle columns used by diagnostics.
+Do not drop archive Stripe/Paddle/FastSpring columns used by diagnostics.
 
-## Checkout rules
+## Current validation
 
-- Public pricing: `/pricing`
-- Authenticated checkout: `/settings/plans` (FastSpring Store Builder popup)
-- Access is **never** granted from browser success alone — webhook/server reconciliation required
-- Duplicate self-serve subscriptions blocked via checkout guards + single subscription row per org
-
-## Customer portal
-
-- FastSpring does not expose a hosted customer portal in this integration
-- `/settings/billing` shows a customer-safe message; subscription changes go through FastSpring purchase emails or support
-- Historical Paddle rows may still show a legacy Paddle portal link (`ctm_` customer required) for archive/reference only
-
-## Webhooks
-
-- Endpoint: `/api/fastspring/webhook`
-- Signature required (`X-FS-Signature`, HMAC-SHA256 base64 of the raw body)
-- Idempotent via `fastspring_webhook_events` (including stale `processing` retry after 5 minutes)
-- Commercial analytics emitted after successful process (privacy-safe, no org IDs)
-
-## Entitlements
-
-Single authoritative resolve: `resolveOrganizationEntitlements` — FastSpring subscription → product path → `PLAN_ENTITLEMENTS`. Usable legacy Paddle subscriptions remain entitled but never receive new checkout or portal access.
-
-## Validation
-
-`npm run test:fastspring-billing`, `npm run test:build-bible-ch12`, `npm run lint`, `npm run typecheck`, `npm run build`.
+```bash
+npm run test:mollie-billing
+npm run test:legacy-billing-removal
+npm run test:build-bible-ch12
+```

@@ -134,3 +134,53 @@ test("no Paddle SDK packages or active paddle API routes", () => {
   assert.equal(pathExists("src/app/api/paddle"), false);
   assert.equal(pathExists("src/lib/paddle"), false);
 });
+
+const ACTIVE_OPERATOR_DOCS = [
+  "docs/enterprise-production-golive-playbook.md",
+  "docs/enterprise-deployment.md",
+  "docs/enterprise-release-checklist.md",
+  "docs/operations-runbook.md",
+  "docs/rollback-plan.md",
+  "docs/disaster-recovery.md",
+  "docs/billing.md",
+  "docs/abuse-protection.md",
+  "docs/vercel-checklist.md",
+];
+
+/** Affirmative ops instructions that would treat legacy providers as current. */
+const ACTIVE_LEGACY_OPS_PATTERNS = [
+  /(?:^|[^\w])Register FastSpring webhook:/im,
+  /(?:^|[^\w])Register Paddle webhook:/im,
+  /(?:^|[^\w])Register Stripe webhook:/im,
+  /PADDLE_ENVIRONMENT\s*=\s*production/i,
+  /\/api\/paddle\/webhook/,
+  /\/api\/stripe\/webhook/,
+  /Billing validation \(FastSpring\)/,
+  /Webhook rollback \(FastSpring\)/,
+  /getActiveBillingProvider\(\)\s*returns\s*[`"]fastspring[`"]/i,
+  /uses \*\*FastSpring as the sole active billing provider\*\*/i,
+  /Billing:\*\* FastSpring only/i,
+];
+
+test("canonical operator/go-live docs do not instruct active Stripe/Paddle/FastSpring ops", () => {
+  for (const file of ACTIVE_OPERATOR_DOCS) {
+    const source = readSource(file);
+    for (const pattern of ACTIVE_LEGACY_OPS_PATTERNS) {
+      assert.doesNotMatch(
+        source,
+        pattern,
+        `${file} contains active legacy billing ops guidance matching ${pattern}`,
+      );
+    }
+    assert.match(source, /Mollie/i, `${file} should name Mollie as current billing`);
+  }
+
+  const playbook = readSource("docs/enterprise-production-golive-playbook.md");
+  assert.match(playbook, /\/api\/mollie\/webhook/);
+  assert.match(playbook, /MOLLIE_LIVE_CHARGING_ENABLED=false/);
+  assert.doesNotMatch(playbook, /Paddle Live configuration|Paddle live keys|\/api\/paddle\/webhook/);
+
+  const historical = readSource("docs/paddle-billing.md");
+  assert.match(historical, /STATUS:\s*HISTORICAL\s*\/\s*SUPERSEDED/i);
+  assert.match(historical, /CURRENT BILLING PROVIDER:\s*MOLLIE/i);
+});

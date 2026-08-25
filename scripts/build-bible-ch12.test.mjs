@@ -66,11 +66,15 @@ test("customer portal emits billing_portal_opened commercial event", () => {
 
 test("commercial event catalog and ops doc describe sole active billing provider", () => {
   const commercial = readSource("src/lib/billing/commercial-events.ts");
-  const docs = readSource("docs/paddle-billing.md");
+  const billing = readSource("docs/billing.md");
+  const historical = readSource("docs/paddle-billing.md");
   assert.match(commercial, /COMMERCIAL_EVENT_NAMES/);
   assert.doesNotMatch(commercial, /PADDLE_WEBHOOK_EVENT_TYPES/);
-  assert.match(docs, /sole active billing provider/i);
-  assert.doesNotMatch(docs, /Set `BILLING_PROVIDER=stripe`/);
+  assert.match(billing, /Mollie-only|sole.*Mollie|Mollie sole/i);
+  assert.doesNotMatch(billing, /Set `BILLING_PROVIDER=stripe`/);
+  assert.match(historical, /STATUS:\s*HISTORICAL\s*\/\s*SUPERSEDED/i);
+  assert.match(historical, /CURRENT BILLING PROVIDER:\s*MOLLIE/i);
+  assert.match(historical, /DO NOT USE THIS DOCUMENT FOR CURRENT PRODUCTION OPERATIONS/i);
 });
 
 test("cleanup recommendations no longer instruct Stripe re-sync as active path", () => {

@@ -1,7 +1,7 @@
 # Operations Runbook
 
-**Audience:** On-call engineers, platform operators  
-**Related:** [enterprise-deployment.md](./enterprise-deployment.md) · [enterprise-release-checklist.md](./enterprise-release-checklist.md) · [disaster-recovery.md](./disaster-recovery.md) · [rollback-plan.md](./rollback-plan.md) · [paddle-billing.md](./paddle-billing.md)
+**Audience:** On-call engineers, platform operators
+**Related:** [enterprise-deployment.md](./enterprise-deployment.md) · [enterprise-release-checklist.md](./enterprise-release-checklist.md) · [disaster-recovery.md](./disaster-recovery.md) · [rollback-plan.md](./rollback-plan.md) · [billing.md](./billing.md)
 
 ---
 
@@ -9,11 +9,13 @@
 
 Production operations span:
 
-1. **Paddle webhooks** — signature verification + idempotent commercial event processing (`/api/paddle/webhook`)
+1. **Mollie webhooks** — classic payment notification, API re-fetch, idempotent reconcile (`/api/mollie/webhook`)
 2. **Cron job dispatcher** — `/api/cron/run` executes registered background jobs
 3. **Background queue** — durable jobs with retries, dead letters, and `queue_worker`
 
 Diagnostics: Settings → Diagnostics and Billing → Diagnostics (owner/admin).
+
+Legacy Stripe/Paddle/FastSpring are **not** active operations paths. `/api/fastspring/*` returns **410 Gone**.
 
 ---
 
@@ -21,13 +23,15 @@ Diagnostics: Settings → Diagnostics and Billing → Diagnostics (owner/admin).
 
 | Endpoint | Method | Auth | Purpose |
 |----------|--------|------|---------|
-| `/api/paddle/webhook` | POST | Paddle signature | Subscription and billing sync |
+| `/api/mollie/webhook` | POST | Mollie classic payment id + API re-fetch | Subscription and billing sync |
+| `/api/mollie/connectivity` | GET | Session / operator | Mollie API connectivity probe |
 | `/api/cron/run` | GET | `Bearer CRON_SECRET` | Execute due cron jobs (Vercel Cron entrypoint) |
 | `/api/cron/run` | POST | `Bearer CRON_SECRET` | Execute due cron jobs (manual ops) |
 | `/api/cron/run?probe=1` | GET/POST | `Bearer CRON_SECRET` | List registered jobs (no execution) |
 | `/api/cron/run?job=<id>` | GET/POST | `Bearer CRON_SECRET` | Force single job |
 | `/api/health` | GET | Public (rate-limited) | Platform health snapshot |
 | `/api/ready` | GET | Public | Readiness probe |
+| `/api/fastspring/webhook` | POST | N/A | **410 Gone** — retired |
 
 **Development note:** When `CRON_SECRET` is unset and `NODE_ENV=development`, cron auth is bypassed. Production must set `CRON_SECRET` (fail closed).
 
@@ -38,10 +42,10 @@ Diagnostics: Settings → Diagnostics and Billing → Diagnostics (owner/admin).
 | Variable | Required | Notes |
 |----------|----------|-------|
 | `CRON_SECRET` | Production | Bearer for cron |
-| `PADDLE_API_KEY` | Yes | Server-only |
-| `PADDLE_WEBHOOK_SECRET` | Yes | Signature verification |
-| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Yes | Checkout |
-| `PADDLE_ENVIRONMENT` | Yes | `sandbox` \| `production` |
+| `MOLLIE_API_KEY` | Yes | Server-only (`test_` or `live_`) |
+| `MOLLIE_BILLING_ROLLOUT` | Production | Master switch for NEW Mollie checkout |
+| `MOLLIE_LIVE_CHARGING_ENABLED` | Production | Must be `false` in SAFE CONTROLLED PRODUCTION MODE |
+| `MOLLIE_BILLING_ORG_ALLOWLIST` | Optional | Comma-separated org UUIDs |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Jobs, queue, admin paths |
 | `NEXT_PUBLIC_APP_URL` | Yes | No localhost in production |
 
@@ -49,13 +53,14 @@ Diagnostics: Settings → Diagnostics and Billing → Diagnostics (owner/admin).
 
 ## Incident playbooks
 
-### Paddle webhook failures
+### Mollie webhook failures
 
-1. Check Vercel logs for `/api/paddle/webhook`.
-2. Confirm secret matches Paddle notification destination.
-3. Confirm idempotency store healthy (no fail-open on store errors).
-4. Replay events from Paddle after fix.
-5. If poison deploy → [rollback-plan.md](./rollback-plan.md) §5.
+1. Check Vercel logs for `/api/mollie/webhook`.
+2. Confirm Mollie Dashboard points at classic `/api/mollie/webhook` (not Next-Gen).
+3. Confirm API key mode matches intent (`test_` vs `live_`).
+4. If `live_` key and LIVE charging disabled → expect **503** (fail-closed by design).
+5. Confirm idempotency store healthy (`mollie_webhook_events`).
+6. If poison deploy → [rollback-plan.md](./rollback-plan.md) §5.
 
 ### Cron / queue stalled
 
@@ -81,10 +86,10 @@ Diagnostics: Settings → Diagnostics and Billing → Diagnostics (owner/admin).
 
 - Uptime: `/api/ready` and `/api/health`
 - Errors: Sentry (`SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN`)
-- Product analytics: consent-gated sinks only
+- Product analytics: consent-gated sinks only (PostHog EU)
 - Billing: Settings → Billing → Diagnostics
 
-Health JSON includes `configuration.paddle` (Paddle configured). Legacy `configuration.stripe` mirrors the same boolean for older monitors.
+Health JSON includes `configuration.mollie` (Mollie configured). Legacy `configuration.fastspring` / `configuration.paddle` / `configuration.stripe` mirror the same boolean for older monitors — they do **not** mean those providers are active.
 
 ---
 

@@ -1,9 +1,10 @@
 # Legacy Billing Provider Removal — Final Report
 
-**Date:** 2026-08-24  
-**Verdict:** READY FOR OPERATOR REVIEW  
-**Active provider:** Mollie (sole)  
-**LIVE charging:** Unchanged — `MOLLIE_LIVE_CHARGING_ENABLED` not modified  
+**Date:** 2026-08-24
+**Closeout sync:** 2026-08-25 — ACTIVE_OPERATOR_DOCUMENTATION for Stripe/Paddle/FastSpring cleared in canonical go-live/deploy/runbook docs; Mollie remains sole active provider.
+**Verdict:** READY FOR OPERATOR REVIEW (controlled production)
+**Active provider:** Mollie (sole)
+**LIVE charging:** Unchanged — `MOLLIE_LIVE_CHARGING_ENABLED=false` (SAFE CONTROLLED PRODUCTION MODE)
 
 ---
 

@@ -235,8 +235,10 @@ test("N: enterprise contact preserved; FastSpring webhook retired to 410", () =>
 // O — UI no redesign; Mollie label only
 test("O: billing panel shows Mollie provider label without redesign", () => {
   const panel = readSource("src/components/settings/billing-settings-panel.tsx");
-  assert.match(panel, /billing_provider === "mollie"/);
+  assert.match(panel, /formatBillingProviderLabel|provider === "mollie"/);
+  assert.match(panel, /activeProvider === "mollie"/);
   assert.match(panel, /"Mollie"/);
+  assert.match(panel, /BillingMollieManagementPanel/);
 });
 
 // P — UI status Mollie-capable when org provider resolves to mollie (ownership survives rollout rollback)

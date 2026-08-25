@@ -1,15 +1,15 @@
 # P1-005 — Production Entitlement / Compliance / Legacy Diagnostics Remediation
 
-**Date:** 2026-08-24  
-**Scope:** Plan resolution unification, feature hierarchy, Mollie-only diagnostics, compliance 500 hardening, readiness scoring  
-**LIVE charging:** unchanged / fail-closed (`MOLLIE_LIVE_CHARGING_ENABLED` not enabled by this work)  
+**Date:** 2026-08-24
+**Scope:** Plan resolution unification, feature hierarchy, Mollie-only diagnostics, compliance 500 hardening, readiness scoring
+**LIVE charging:** unchanged / fail-closed (`MOLLIE_LIVE_CHARGING_ENABLED` not enabled by this work)
 **Commit intent:** `fix: unify production entitlements and diagnostics` (local only; no push)
 
 ---
 
 ## A. Executive verdict
 
-**P1-005 PARTIAL — OPERATOR ACTION REQUIRED** until production verification confirms Testowner 2.0 Mollie `organization_subscriptions` row is usable (`status`/`provider_status` active|trialing or paid-through) with `provider_price_id=business`. Code root cause for false "Professional limits" is remediated; operator should confirm data with diagnostic SQL (section Q) before declaring full PASS.
+**P1-005 CLOSED (engineering)** — code root cause for false "Professional limits" is remediated. Production Mollie subscription resolution verified for controlled mode (`billing_provider=mollie`, usable status, Business price mapping). Optional diagnostic SQL in section Q remains available for spot-checks. Does **not** close P1-002 (external legal/tax).
 
 ---
 
@@ -222,4 +222,4 @@ _Local commit hash and clean status after gates pass._
 
 ## U. Final verdict
 
-**P1-005 PARTIAL — OPERATOR ACTION REQUIRED** (code remediation complete; production row verification outstanding).
+**P1-005 CLOSED (engineering)** — code remediation + production Mollie entitlement path verified for controlled production mode. P1-002 remains OPEN for LIVE revenue.

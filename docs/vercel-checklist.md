@@ -2,7 +2,7 @@
 
 > Prefer the canonical [enterprise-release-checklist.md](./enterprise-release-checklist.md) and [enterprise-deployment.md](./enterprise-deployment.md).
 
-**Use for:** Staging and production Vercel projects (Paddle-only billing).
+**Use for:** Staging and production Vercel projects (Mollie-only billing · SAFE CONTROLLED PRODUCTION MODE).
 
 ---
 
@@ -25,25 +25,27 @@
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` — encrypted, server only
 - [ ] `NEXT_PUBLIC_APP_URL` — HTTPS production/staging host (**no localhost** on Production)
-- [ ] `PADDLE_API_KEY`
-- [ ] `PADDLE_WEBHOOK_SECRET`
-- [ ] `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`
-- [ ] `PADDLE_ENVIRONMENT` — `sandbox` on Preview/Staging; `production` on Production
+- [ ] `MOLLIE_API_KEY` — server only (`test_` for controlled mode)
+- [ ] `MOLLIE_BILLING_ROLLOUT=true`
+- [ ] `MOLLIE_LIVE_CHARGING_ENABLED=false` until LIVE approval
 - [ ] `CRON_SECRET`
 
 ### Recommended
 
-- [ ] Email provider (`RESEND_API_KEY` or configured alternative)
+- [ ] Email provider (SMTP production path)
 - [ ] `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY`
-- [ ] Paddle price ID mappings for sold plans
+- [ ] Optional `MOLLIE_BILLING_ORG_ALLOWLIST`
 - [ ] `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN`
+- [ ] `NEXT_PUBLIC_POSTHOG_KEY`
+- [ ] `INTEGRATION_SECRET_KEY`
 
 ### Forbidden on Production
 
 - [ ] `TURNSTILE_DISABLE`
 - [ ] `E2E_DISABLE_RATE_LIMIT`
 - [ ] `DEV_FORCE_PLAN`
-- [ ] Stripe live keys as active billing configuration — **forbidden** (Paddle-only)
+- [ ] Stripe / Paddle / FastSpring live keys as active billing configuration — **forbidden** (Mollie-only)
+- [ ] `MOLLIE_LIVE_CHARGING_ENABLED=true` without P1-002 + explicit LIVE approval
 
 ---
 
@@ -51,13 +53,13 @@
 
 - [ ] Apex → www redirects exclude `/api/*` (see `vercel.json`)
 - [ ] Cron path `/api/cron/run` every **5 minutes**
-- [ ] Paddle webhook points at `/api/paddle/webhook`
+- [ ] Mollie classic webhook points at `/api/mollie/webhook` (not Next-Gen)
 
 ---
 
 ## Post-promote
 
 - [ ] `GET /api/ready` → 200
-- [ ] `GET /api/health` not `unavailable`
+- [ ] `GET /api/health` not `unavailable`; `configuration.mollie` when key set
 - [ ] Auth login smoke
-- [ ] Paddle checkout/portal smoke on staging before production cutover
+- [ ] Mollie TEST checkout smoke on staging before any LIVE cutover

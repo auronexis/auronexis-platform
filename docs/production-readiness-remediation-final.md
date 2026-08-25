@@ -1,17 +1,23 @@
 # Production Readiness Remediation — Final Report
 
-**Date:** 2026-08-24  
+**Date:** 2026-08-24
 **Scope:** Phases 1–13 — truthful readiness remediation (no score inflation)
 
 ---
 
 ## 1. Executive verdict
 
-### **GO WITH OPERATOR ACTION**
+### **TECHNICALLY VERIFIED FOR CURRENT CONTROLLED PRODUCTION MODE**
 
-Engineering defects that falsely blocked or depressed readiness scores are fixed in this commit. Production promote remains gated on **operator observability configuration** (Sentry + PostHog) and **applying the new API `service_role` grants migration** in Supabase production.
+Engineering defects that falsely blocked or depressed readiness scores were fixed in the original remediation commit. **Operator P0 actions from this report are now CLOSED** (verified 2026-08-25):
 
-Do **not** enable `MOLLIE_LIVE_CHARGING_ENABLED` until explicit billing cutover approval.
+- Supabase migration `20250824140000_public_api_service_role_grants.sql` — **applied**
+- Vercel `SENTRY_DSN` — **configured**
+- Vercel `NEXT_PUBLIC_POSTHOG_KEY` — **configured**; `$pageview` LIVE with consent gating
+- `INTEGRATION_SECRET_KEY` — **configured**
+- White-label `production_ok=true`
+
+Do **not** enable `MOLLIE_LIVE_CHARGING_ENABLED` until explicit LIVE approval. **P1-002** (external legal/tax/MoR) remains **OPEN** and blocks unrestricted live commercial charging — not controlled TEST mode.
 
 ---
 
@@ -97,36 +103,29 @@ Do **not** enable `MOLLIE_LIVE_CHARGING_ENABLED` until explicit billing cutover 
 
 ## 4. Remaining operator actions
 
-### P0 — before production promote
+### P0 from this report — CLOSED (verified 2026-08-25)
 
-1. **Apply Supabase migration**  
-   - **Where:** Supabase production → SQL migrations  
-   - **What:** Run `20250824140000_public_api_service_role_grants.sql`  
-   - **Why:** Admin diagnostics cannot probe API tables without `service_role` grants  
-   - **Expected:** API readiness **≥ 84/100** (was 40); `publicApi.tableReachable=true`
+| Action | Status |
+|--------|--------|
+| Apply `20250824140000_public_api_service_role_grants.sql` | **CLOSED** |
+| Configure `SENTRY_DSN` | **CLOSED** |
+| Configure `NEXT_PUBLIC_POSTHOG_KEY` | **CLOSED** (`$pageview` LIVE + consent gating) |
+| `INTEGRATION_SECRET_KEY` | **CLOSED** |
 
-2. **Configure Sentry**  
-   - **Where:** Vercel production env  
-   - **What:** Set `SENTRY_DSN` (server) — do not log or commit the value  
-   - **Why:** Go-live monitoring check (required in production)  
-   - **Expected:** Monitoring score **≥ 80/100** (with PostHog → **≥ 95**, `monitoringReady=Yes`)
+### Still open (external / LIVE revenue)
 
-3. **Configure PostHog**  
-   - **Where:** Vercel production env  
-   - **What:** Set `NEXT_PUBLIC_POSTHOG_KEY`  
-   - **Why:** Product analytics monitoring check  
-   - **Expected:** Monitoring **≥ 95/100** when combined with Sentry + health/status/headers
+1. **P1-002** — external legal/tax/MoR counsel sign-off before unrestricted LIVE charging.
+2. Keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until that approval.
 
-### P1 — optional provider credentials (do not block launch)
+### P1 — optional provider credentials (do not block controlled production)
 
 Configure OAuth client IDs/secrets per connector only when tenants need that integration (Google, Microsoft, Slack, Salesforce, etc.). Platform registers 13 OAuth-capable connectors without operator credentials.
 
-### Explicitly not required for launch
+### Explicitly not required for controlled production
 
-- `MOLLIE_LIVE_CHARGING_ENABLED=true` (remain `false` until billing cutover)
+- `MOLLIE_LIVE_CHARGING_ENABLED=true` (remain `false` until LIVE cutover)
 - Predictive forecast generation (optional maturity)
 - High compliance framework % (tenant operational maturity)
-- Populating integration secrets vault (INTEGRATION_SECRET_KEY already configured)
 
 ---
 

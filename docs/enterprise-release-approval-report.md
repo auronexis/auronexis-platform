@@ -1,9 +1,15 @@
 # Enterprise Release Approval Report — Build Bible V2 Chapter 19
 
-**Role:** Independent Enterprise Release Board  
-**Date:** 2026-07-19  
-**Product:** Auroranexis (Next.js 15 / Supabase / FastSpring)  
-**Inputs:** Chapters 1–18 (DoD GO WITH CONDITIONS; Certification CERTIFIED WITH OBSERVATIONS)  
+> **STATUS: HISTORICAL AUDIT EVIDENCE (2026-07-19)**
+> **CURRENT BILLING PROVIDER: MOLLIE**
+> **DO NOT USE THIS DOCUMENT FOR CURRENT PRODUCTION BILLING OPERATIONS**
+> Present-state ops: [enterprise-production-golive-playbook.md](./enterprise-production-golive-playbook.md) · [final-production-closeout.md](./final-production-closeout.md)
+> **P1-002** (external legal/tax/MoR) remains OPEN for unrestricted LIVE charging.
+
+**Role:** Independent Enterprise Release Board
+**Date:** 2026-07-19
+**Product:** Auroranexis (Next.js 15 / Supabase / billing language below is FastSpring-era)
+**Inputs:** Chapters 1–18 (DoD GO WITH CONDITIONS; Certification CERTIFIED WITH OBSERVATIONS)
 **Constraints:** No implementation, no features, no architecture/refactor/dependency changes, no commit / push / deploy
 
 ---

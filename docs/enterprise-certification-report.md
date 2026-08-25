@@ -1,10 +1,15 @@
 # Enterprise Certification Report — Build Bible V2 Chapter 18
 
-**Role:** Independent external Enterprise Software Auditor  
-**Date:** 2026-07-19  
-**Product:** Auroranexis (Next.js 15 / Supabase / Paddle)  
-**Scope:** Full application audit prior to Release Approval  
-**Method:** Architecture & module review, documentation cross-check, security & commercial readiness review, automated gate execution  
+> **STATUS: HISTORICAL AUDIT EVIDENCE (2026-07-19)**
+> **CURRENT BILLING PROVIDER: MOLLIE**
+> **DO NOT USE THIS DOCUMENT FOR CURRENT PRODUCTION BILLING OPERATIONS**
+> Present-state ops: [enterprise-production-golive-playbook.md](./enterprise-production-golive-playbook.md) · [final-production-closeout.md](./final-production-closeout.md)
+
+**Role:** Independent external Enterprise Software Auditor
+**Date:** 2026-07-19
+**Product:** Auroranexis (Next.js 15 / Supabase / billing provider as of audit: Paddle-era language below)
+**Scope:** Full application audit prior to Release Approval
+**Method:** Architecture & module review, documentation cross-check, security & commercial readiness review, automated gate execution
 **Constraints honored:** No new features, no architecture redesign, no speculative refactoring, no commit / push / deploy
 
 ---
@@ -113,7 +118,7 @@ This decision aligns with Chapter 17 **GO WITH CONDITIONS** and elevates it to f
 | Privacy readiness | Pass — consent/analytics patterns |
 | Compliance documentation | Pass — legal/compliance docs in tree |
 
-**Critical security findings:** none unresolved.  
+**Critical security findings:** none unresolved.
 **High (operational):** mis-set E2E/rate-limit bypass in production — mitigated by Ch14 contracts + release checklist (operator-owned).
 
 ---
@@ -262,11 +267,11 @@ No **open** critical security defects requiring remediation before RC.
 
 ### Deferred improvements / Recommended Version 2 work
 
-1. Eliminate Critical `as never` typed writes with typed helpers  
-2. Rename Stripe archive fields after dual-read window  
-3. Unify locale formatters  
-4. Auth route-group error/loading/not-found parity  
-5. Optional: deepen AI/automation/knowledge beyond stubs when product prioritizes  
+1. Eliminate Critical `as never` typed writes with typed helpers
+2. Rename Stripe archive fields after dual-read window
+3. Unify locale formatters
+4. Auth route-group error/loading/not-found parity
+5. Optional: deepen AI/automation/knowledge beyond stubs when product prioritizes
 
 ---
 

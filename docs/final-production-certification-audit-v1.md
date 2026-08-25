@@ -1,11 +1,21 @@
 # Final Pre-Live Production Certification Audit v1.0
 
-**Platform:** Auroranexis SaaS  
-**Repository:** `D:\Projekt.01\Auroranexis`  
-**Audit date:** 2026-08-23 (UTC+2)  
-**Auditor mode:** Chapter 18 — audit only (no code fixes, no deploy, no config changes)  
-**Branch HEAD:** `ba406b2` — `fix: align production readiness and CI gates with Mollie-only billing`  
+**Platform:** Auroranexis SaaS
+**Repository:** `D:\Projekt.01\Auroranexis`
+**Audit date:** 2026-08-23 (UTC+2)
+**Auditor mode:** Chapter 18 — audit only (no code fixes, no deploy, no config changes)
+**Branch HEAD:** `ba406b2` — `fix: align production readiness and CI gates with Mollie-only billing`
 **Working tree:** clean (`git status --short` empty at audit time)
+
+> ## CLOSEOUT ADDENDUM (2026-08-25) — do not erase historical findings below
+>
+> **Present-state baseline (operator-verified):** **TECHNICALLY VERIFIED FOR CURRENT CONTROLLED PRODUCTION MODE**
+> **Active billing provider:** Mollie only · `MOLLIE_LIVE_CHARGING_ENABLED=false` · `MOLLIE_BILLING_ROLLOUT=true` · operator/test org allowlisted
+> **P1-001:** CLOSED · **P1-003:** CLOSED · **P1-005 eng:** CLOSED · **P1-006:** CLOSED
+> **P1-002:** remains **OPEN** (EXTERNAL LEGAL/TAX/MoR) — do **not** claim closed or legally approved for unrestricted LIVE commercial charging
+> **Vercel:** `SENTRY_DSN`, `INTEGRATION_SECRET_KEY`, `NEXT_PUBLIC_POSTHOG_KEY` configured · PostHog `$pageview` LIVE + consent gating verified
+> **Supabase:** `20250824140000` grants applied · white-label `production_ok=true`
+> Historical P1 open/NOT VERIFIED language below is **audit-time evidence** from 2026-08-23. Prefer this addendum + `docs/final-production-closeout.md` for current operations.
 
 ---
 

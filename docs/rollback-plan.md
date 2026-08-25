@@ -1,6 +1,6 @@
 # Rollback Plan
 
-**Canonical** deterministic rollback for Auroranexis production releases.  
+**Canonical** deterministic rollback for Auroranexis production releases.
 **Related:** [enterprise-deployment.md](./enterprise-deployment.md) · [disaster-recovery.md](./disaster-recovery.md)
 
 Never invent ad-hoc rollback steps during an incident — follow this order.
@@ -26,7 +26,7 @@ Never invent ad-hoc rollback steps during an incident — follow this order.
 2. Instant Rollback / Redeploy previous artifact — **do not** push untested hotfixes as first response.
 3. Confirm `GET /api/ready` → 200 and `GET /api/health` not `unavailable`.
 4. Spot-check login + dashboard + billing settings page.
-5. Announce status; keep webhook endpoint online unless §5 applies.
+5. Announce status; keep Mollie webhook endpoint online unless §5 applies.
 
 **Deterministic exit:** Ready probe green + auth smoke pass.
 
@@ -51,9 +51,10 @@ Migrations are **forward-only**. There are no guaranteed down scripts.
 ## 3. Environment rollback
 
 1. Diff Vercel Production env against last known good export / password manager snapshot.
-2. Revert accidental localhost URLs, a test FastSpring storefront on live, missing `CRON_SECRET`, or E2E bypass flags.
-3. Redeploy or restart serverless so cold starts pick up secrets.
-4. Re-run environment section of [enterprise-release-checklist.md](./enterprise-release-checklist.md).
+2. Revert accidental localhost URLs, a `live_` Mollie key without LIVE approval, missing `CRON_SECRET`, or E2E bypass flags.
+3. Keep `MOLLIE_LIVE_CHARGING_ENABLED=false` unless an approved LIVE cutover is in progress.
+4. Redeploy or restart serverless so cold starts pick up secrets.
+5. Re-run environment section of [enterprise-release-checklist.md](./enterprise-release-checklist.md).
 
 **Deterministic exit:** `auditProductionEnvironment().readyForCustomers === true` on diagnostics.
 
@@ -64,22 +65,25 @@ Migrations are **forward-only**. There are no guaranteed down scripts.
 | Lever | Action |
 |-------|--------|
 | AI outage / cost spike | Set `AI_PROVIDER=disabled` and redeploy/restart |
-| Plan confusion | Ensure `DEV_FORCE_PLAN` unset; entitlements resolve from FastSpring subscriptions (usable legacy Paddle rows remain entitled) |
-| Abandoned `BILLING_PROVIDER` | Ignore — code path is FastSpring-only |
+| Plan confusion | Ensure `DEV_FORCE_PLAN` unset; entitlements resolve from Mollie subscriptions via `resolveOrganizationEntitlements` |
+| NEW Mollie checkout blast | Set `MOLLIE_BILLING_ROLLOUT=false` (allowlist still works for partial enable) |
+| LIVE charging | Ensure `MOLLIE_LIVE_CHARGING_ENABLED=false` |
+| Abandoned `BILLING_PROVIDER` | Ignore — code path is Mollie-only |
 
 **Deterministic exit:** Affected surface returns safe empty/degraded state without 500 loops.
 
 ---
 
-## 5. Webhook rollback (FastSpring)
+## 5. Webhook rollback (Mollie)
 
-1. In the FastSpring dashboard, pause or disable the production notification destination if the handler is poison.
+1. In the Mollie dashboard, pause or disable the production classic webhook destination if the handler is poison.
 2. Application-rollback the release that broke verification / processing.
-3. Confirm idempotency store still accepts replays (`provider` + event id).
-4. Re-enable webhook; replay failed events from FastSpring (or rely on retry + `webhook_retries` job for outbound).
-5. Rotate `FASTSPRING_WEBHOOK_SECRET` only if secret leakage is suspected — update Vercel then FastSpring in the same window.
+3. Confirm idempotency store still accepts replays (`mollie_webhook_events`).
+4. Re-enable webhook; rely on Mollie retries + `webhook_retries` job where applicable.
+5. Rotate `MOLLIE_API_KEY` only if key leakage is suspected — update Vercel in the same window.
+6. Do **not** re-enable Stripe/Paddle/FastSpring webhooks for active billing. `/api/fastspring/*` stays **410**.
 
-**Deterministic exit:** Test notification verifies; no duplicate entitlement grants.
+**Deterministic exit:** Test payment notification reconciles; no duplicate entitlement grants.
 
 ---
 

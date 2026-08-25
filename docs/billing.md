@@ -1,7 +1,8 @@
 # Billing, Usage & Subscription Platform
 
-> **Canonical billing:** Mollie sole PSP (`src/lib/billing/providers/mollie/**`)  
-> **Ops:** [enterprise-deployment.md](./enterprise-deployment.md) · Build Bible Chapter 12 (historical Paddle title; content superseded)
+> **Canonical billing:** Mollie sole PSP (`src/lib/billing/providers/mollie/**`)
+> **Ops:** [enterprise-deployment.md](./enterprise-deployment.md) · [enterprise-production-golive-playbook.md](./enterprise-production-golive-playbook.md)
+> **Historical:** [paddle-billing.md](./paddle-billing.md) (SUPERSEDED — do not use for production ops)
 
 Auroranexis billing is **Mollie-only** for active checkout, portal, webhooks, and entitlements. Auroranexis is the seller (not Mollie Merchant of Record). Historical Stripe, Paddle, and FastSpring tables/columns may remain for archive/diagnostics; they do not drive active customer billing.
 

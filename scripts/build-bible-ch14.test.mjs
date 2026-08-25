@@ -34,26 +34,30 @@ test("canonical enterprise ops docs exist", () => {
     assertFileExists(relative);
   }
   const deploy = readSource("docs/enterprise-deployment.md");
-  assert.match(deploy, /FastSpring/);
+  assert.match(deploy, /Mollie/);
   assert.match(deploy, /test:production-readiness/);
-  assert.match(deploy, /\/api\/fastspring\/webhook/);
+  assert.match(deploy, /\/api\/mollie\/webhook/);
   assert.doesNotMatch(deploy, /\/api\/stripe\/webhook/);
   assert.doesNotMatch(deploy, /\/api\/paddle\/webhook/);
+  assert.doesNotMatch(deploy, /Register FastSpring webhook/);
 
   const checklist = readSource("docs/enterprise-release-checklist.md");
-  assert.match(checklist, /Billing validation \(FastSpring\)/);
+  assert.match(checklist, /Billing validation \(Mollie\)/);
   assert.match(checklist, /Rollback readiness/);
   assert.match(checklist, /Migration validation/);
+  assert.doesNotMatch(checklist, /Billing validation \(FastSpring\)/);
 
   const rollback = readSource("docs/rollback-plan.md");
   assert.match(rollback, /Application rollback/);
-  assert.match(rollback, /Webhook rollback \(FastSpring\)/);
+  assert.match(rollback, /Webhook rollback \(Mollie\)/);
   assert.match(rollback, /forward-only/i);
+  assert.doesNotMatch(rollback, /Webhook rollback \(FastSpring\)/);
 
   const dr = readSource("docs/disaster-recovery.md");
-  assert.match(dr, /FastSpring/);
+  assert.match(dr, /Mollie/);
   assert.match(dr, /Queue recovery/);
   assert.doesNotMatch(dr, /Re-register Stripe webhook/);
+  assert.doesNotMatch(dr, /Re-register FastSpring webhook/);
 });
 
 test("package.json exposes chapter 14 and production readiness scripts", () => {

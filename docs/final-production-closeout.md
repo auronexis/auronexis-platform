@@ -1,27 +1,44 @@
 # Final Production Closeout / Go-Live Remediation
 
-**Date:** 2026-08-24  
-**Billing source of truth:** Mollie  
-**LIVE charging:** unchanged / fail-closed (`MOLLIE_LIVE_CHARGING_ENABLED` not modified)  
-**Commit intent:** `fix: complete production readiness and go-live remediation` (local only; no push)
+**Date:** 2026-08-24 (engineering) · **Closeout sync:** 2026-08-25
+**Billing source of truth:** Mollie
+**LIVE charging:** fail-closed (`MOLLIE_LIVE_CHARGING_ENABLED=false`) · rollout on (`MOLLIE_BILLING_ROLLOUT=true`)
+**Mode:** **SAFE CONTROLLED PRODUCTION MODE** (NOT full LIVE revenue)
+**Commit intent:** documentation synchronization only unless noted (local only; no push)
 
 ---
 
 ## A. Executive verdict
 
-**OPERATOR ACTION REQUIRED** until production operator sets `INTEGRATION_SECRET_KEY` (vault writes) and applies the additive white-label DELETE RLS migration if not yet applied. Code remediation for entitlements, compliance/exports, white-label semantics, and readiness scoring is complete. No real Mollie charges were created.
+### **TECHNICALLY VERIFIED FOR CURRENT CONTROLLED PRODUCTION MODE**
+
+Prior operator blockers from this closeout are **CLOSED** in verified production state:
+
+| Item | Status |
+|------|--------|
+| `INTEGRATION_SECRET_KEY` (Vercel) | **CLOSED** — configured |
+| White-label migrations / `production_ok` | **CLOSED** — `production_ok=true` |
+| Supabase `20250824140000` API grants | **CLOSED** — applied |
+| Sentry / PostHog | **CLOSED** — configured; `$pageview` LIVE with consent gating |
+| P1-001 | **CLOSED** |
+| P1-003 | **CLOSED** |
+| P1-005 (engineering) | **CLOSED** |
+| P1-006 | **CLOSED** |
+| P1-002 (external legal/tax/MoR) | **OPEN** — does **not** block controlled TEST mode; blocks unrestricted LIVE commercial charging |
+
+Code remediation for entitlements, compliance/exports, white-label semantics, and readiness scoring is complete. No real Mollie LIVE charges were created. Do **not** claim legally approved for unrestricted live commercial charging.
 
 ---
 
 ## B. Initial observed failures
 
-1. Entitlement inconsistency (starter_fallback / FastSpring defaults) — addressed in P1-005; closeout verified + analytics planTier fixed  
-2. Business White Label: feature yes vs settings unreachable / unconfigured — semantics collapsed  
-3. `/dashboard/compliance` HTTP 500  
-4. Evidence bundle download failure  
-5. Audit Explorer CSV/JSON export 500  
-6. `INTEGRATION_SECRET_KEY` detection / vault messaging  
-7. False-negative Supabase/Vercel production readiness while `NODE_ENV=production`  
+1. Entitlement inconsistency (starter_fallback / FastSpring defaults) — addressed in P1-005; closeout verified + analytics planTier fixed
+2. Business White Label: feature yes vs settings unreachable / unconfigured — semantics collapsed
+3. `/dashboard/compliance` HTTP 500
+4. Evidence bundle download failure
+5. Audit Explorer CSV/JSON export 500
+6. `INTEGRATION_SECRET_KEY` detection / vault messaging
+7. False-negative Supabase/Vercel production readiness while `NODE_ENV=production`
 8. Optional booking links and disconnected OAuth treated as hard blockers / ~40 API & compliance scores
 
 ---
@@ -42,126 +59,126 @@
 
 ## D. Entitlement architecture
 
-- Canonical: `resolveEffectivePlanFromSubscriptionRows` → `getOrganizationPlanContext` / `getCurrentPlan`  
-- Entitlements: `resolveOrganizationEntitlements` (Mollie usable subscription; never `organizations.plan`)  
-- Hierarchy: starter < professional < business < enterprise (`planMeetsMinimum` / `>=`)  
+- Canonical: `resolveEffectivePlanFromSubscriptionRows` → `getOrganizationPlanContext` / `getCurrentPlan`
+- Entitlements: `resolveOrganizationEntitlements` (Mollie usable subscription; never `organizations.plan`)
+- Hierarchy: starter < professional < business < enterprise (`planMeetsMinimum` / `>=`)
 - Dashboard analytics `planTier` now uses effective `navPlan`
 
 ---
 
 ## E. Mollie source-of-truth verification
 
-Production SQL (operator-verified): `billing_provider=mollie`, `status=active`, `provider_price_id=business`, `sync_pending=false`.  
-EUR catalog retained: Professional €179 / Business €599 / Enterprise €1,799.  
+Production SQL (operator-verified): `billing_provider=mollie`, `status=active`, `provider_price_id=business`, `sync_pending=false`.
+EUR catalog retained: Professional €179 / Business €599 / Enterprise €1,799.
 Do not manually set `organizations.plan`.
 
 ---
 
 ## F. White Label remediation
 
-- Admin schema probe for `tableReachable`  
-- `configurationStatus`: `platform_unavailable` | `not_configured` | `draft` | `published`  
-- Diagnostics copy separates entitlement vs optional config vs platform failure  
+- Admin schema probe for `tableReachable`
+- `configurationStatus`: `platform_unavailable` | `not_configured` | `draft` | `published`
+- Diagnostics copy separates entitlement vs optional config vs platform failure
 - Migration: `20250824120000_white_label_settings_delete_policy.sql` (DELETE for owner/admin)
 
 ---
 
 ## G. Compliance remediation
 
-- Workspace load remains fail-soft (no secret leakage in client message)  
-- Diagnostics snapshot fail-soft so Settings → Diagnostics cannot 500 the whole page  
+- Workspace load remains fail-soft (no secret leakage in client message)
+- Diagnostics snapshot fail-soft so Settings → Diagnostics cannot 500 the whole page
 - Multi-table reachability probe (`audit_events`, `audit_exports`, `compliance_policies`)
 
 ---
 
 ## H. Evidence bundle remediation
 
-- Snapshot generation returns counts only (no secrets)  
-- Download succeeds even if `audit_exports` persistence fails  
+- Snapshot generation returns counts only (no secrets)
+- Download succeeds even if `audit_exports` persistence fails
 - Action returns structured error instead of unhandled 500
 
 ---
 
 ## I. Audit export remediation
 
-- CSV/JSON both generated in-memory before optional DB persist  
-- Metadata sanitized via `sanitizeExportMetadata` (`[REDACTED]` for secret-like keys)  
-- Empty result sets return valid CSV header / JSON envelope  
+- CSV/JSON both generated in-memory before optional DB persist
+- Metadata sanitized via `sanitizeExportMetadata` (`[REDACTED]` for secret-like keys)
+- Empty result sets return valid CSV header / JSON envelope
 - Persist failure logged server-side; download still returned
 
 ---
 
 ## J. Secret vault status
 
-- Writes remain **fail-closed** without `INTEGRATION_SECRET_KEY`  
-- Detection uses `isProductionRuntime()` (Vercel production + NODE_ENV)  
-- Readiness scoring treats key as optional for pilot; vault creation still blocked without key  
+- Writes remain **fail-closed** without `INTEGRATION_SECRET_KEY`
+- Detection uses `isProductionRuntime()` (Vercel production + NODE_ENV)
+- Readiness scoring treats key as optional for pilot; vault creation still blocked without key
 - **Operator must set the key** before storing integration credentials
 
 ---
 
 ## K. Production environment detection
 
-- Shared helper: `src/lib/diagnostics/runtime-environment.ts`  
-- Vercel readiness no longer requires preview+development+production all “active” at once  
+- Shared helper: `src/lib/diagnostics/runtime-environment.ts`
+- Vercel readiness no longer requires preview+development+production all “active” at once
 - OAuth env removed from Vercel core score blockers (still reported)
 
 ---
 
 ## L. Monitoring status
 
-- Go-live monitoring still requires Sentry/PostHog in production (or marks incomplete honestly)  
+- Go-live monitoring still requires Sentry/PostHog in production (or marks incomplete honestly)
 - Health endpoint + security headers remain scored
 
 ---
 
 ## M. OAuth/connectors status
 
-- Registered connectors count toward readiness even when not connected  
-- Connected+unhealthy ≠ “Available / Not Connected”  
+- Registered connectors count toward readiness even when not connected
+- Connected+unhealthy ≠ “Available / Not Connected”
 - Disconnected connectors are customer configuration, not platform broken
 
 ---
 
 ## N. API readiness
 
-- Schema probe independent of org traffic  
-- Empty request logs no longer force score 40 when tables exist  
+- Schema probe independent of org traffic
+- Empty request logs no longer force score 40 when tables exist
 - High failure rate degrades score without marking infrastructure missing
 
 ---
 
 ## O. Compliance readiness
 
-- Platform module scoring: tables reachable → base score; low maturity → partial, not 40  
+- Platform module scoring: tables reachable → base score; low maturity → partial, not 40
 - Missing tables still score 40 (real platform gap)
 
 ---
 
 ## P. Revenue readiness
 
-- Booking links tracked as `bookingLinksOptional: true` — not scored blockers  
+- Booking links tracked as `bookingLinksOptional: true` — not scored blockers
 - CRM table probe + pipeline/assets remain scored
 
 ---
 
 ## Q. Acquisition readiness
 
-- Booking links removed from scored sales checks  
+- Booking links removed from scored sales checks
 - Tables/docs/templates remain scored
 
 ---
 
 ## R. First customer readiness
 
-- Booking links not scored  
+- Booking links not scored
 - Proposal/onboarding/tables/docs remain scored
 
 ---
 
 ## S. Launch candidate readiness
 
-- Booking links removed from revenueChecks  
+- Booking links removed from revenueChecks
 - Uses shared `isDevelopmentRuntime()` for local bypasses only
 
 ---
@@ -179,19 +196,19 @@ No destructive changes. No fabricated subscriptions. No `organizations.plan` wri
 
 ## U. Security review
 
-- Vault fail-closed preserved  
-- Export redaction for secret-like metadata keys  
-- Evidence bundle contains counts/table names only  
-- No secrets in diagnostics docs or this file  
-- RLS/RBAC not weakened  
+- Vault fail-closed preserved
+- Export redaction for secret-like metadata keys
+- Evidence bundle contains counts/table names only
+- No secrets in diagnostics docs or this file
+- RLS/RBAC not weakened
 
 ---
 
 ## V. Regression coverage
 
-- `scripts/final-production-closeout.test.mjs`  
-- npm: `test:final-production-closeout`  
-- Included in `test:mollie-billing`  
+- `scripts/final-production-closeout.test.mjs`
+- npm: `test:final-production-closeout`
+- Included in `test:mollie-billing`
 - Existing `scripts/p1-005-entitlement-compliance.test.mjs` retained
 
 ---
@@ -224,18 +241,13 @@ See section X for gate results (recorded after local runs).
 
 ## Y. Remaining operator actions
 
-1. **Vercel → Project → Settings → Environment Variables (Production)**  
-   Add: `INTEGRATION_SECRET_KEY=<cryptographically random production secret>`  
-   Then redeploy.  
-   Verify: Diagnostics → Secrets → “Encryption key configured = Yes”; create a test vault secret safely.
+**Closed (verified 2026-08-25):** `INTEGRATION_SECRET_KEY`, white-label migrations/`production_ok`, API `service_role` grants, Sentry, PostHog consent-gated analytics.
 
-2. **Supabase:** apply migrations in order:
-   - `20250824115000_white_label_settings_schema_prerequisite.sql`
-   - `20250824120000_white_label_settings_delete_policy.sql`
+**Still open before unrestricted LIVE revenue:**
 
-3. Confirm White Label settings table exists in production (`white_label_settings`) and Diagnostics → White label shows **Table reachable = Yes**.
-
-4. Do **not** enable `MOLLIE_LIVE_CHARGING_ENABLED` without separate go-live approval.
+1. **P1-002** — external legal/tax/MoR counsel sign-off ([p1-002-de-eu-legal-tax-certification.md](./p1-002-de-eu-legal-tax-certification.md)).
+2. Explicit LIVE charging approval — keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until then.
+3. Complete [enterprise-release-checklist.md](./enterprise-release-checklist.md) sign-off for any promote ritual.
 
 ---
 
@@ -272,4 +284,4 @@ See section X for gate results (recorded after local runs).
 
 ---
 
-**Verdict label for operators:** `OPERATOR ACTION REQUIRED` (`INTEGRATION_SECRET_KEY` + migration apply) until those two external steps are done; engineering closeout otherwise complete.
+**Verdict label for operators:** `TECHNICALLY VERIFIED FOR CURRENT CONTROLLED PRODUCTION MODE` — Mollie sole provider; LIVE charging disabled; P1-002 remains the external gate for unrestricted LIVE commercial charging.

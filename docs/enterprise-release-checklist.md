@@ -1,7 +1,8 @@
 # Enterprise Release Checklist
 
-**Canonical** go-live checklist. Use before promoting staging → production.  
-Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content.
+**Canonical** go-live checklist. Use before promoting staging → production.
+Supersedes Stripe/Paddle/FastSpring-era checklist content for **active** operations.
+**Billing:** Mollie sole active provider · **Mode:** SAFE CONTROLLED PRODUCTION MODE (`MOLLIE_LIVE_CHARGING_ENABLED=false`) until P1-002 + LIVE approval.
 
 **Do not mark complete without owners and timestamps.**
 
@@ -12,21 +13,25 @@ Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content
 - [ ] `.env.example` reviewed against Vercel Production secrets
 - [ ] `NEXT_PUBLIC_APP_URL` is HTTPS production host (no localhost)
 - [ ] Supabase URL / anon / service role set (service role server-only)
-- [ ] `FASTSPRING_STOREFRONT` set to the live production storefront (not a test storefront)
-- [ ] `FASTSPRING_API_USERNAME` / `FASTSPRING_API_PASSWORD` / `FASTSPRING_WEBHOOK_SECRET` set
-- [ ] FastSpring product paths mapped for sold plans
+- [ ] `MOLLIE_API_KEY` set (prefer `test_` for controlled mode)
+- [ ] `MOLLIE_BILLING_ROLLOUT=true`
+- [ ] `MOLLIE_LIVE_CHARGING_ENABLED=false` (required until LIVE approval)
+- [ ] Optional `MOLLIE_BILLING_ORG_ALLOWLIST` reviewed
+- [ ] Legacy FastSpring/Paddle/Stripe checkout keys **removed** from Production
 - [ ] `CRON_SECRET` set; cron Authorization works
 - [ ] Email provider configured and domain verified
+- [ ] `SENTRY_DSN` / `NEXT_PUBLIC_POSTHOG_KEY` / `INTEGRATION_SECRET_KEY` set
 - [ ] Turnstile keys set; `TURNSTILE_DISABLE` **unset**
 - [ ] `E2E_DISABLE_RATE_LIMIT` **unset**
 - [ ] `DEV_FORCE_PLAN` **unset**
-- [ ] Analytics keys optional and consent-gated
+- [ ] Analytics keys consent-gated
 - [ ] `auditProductionEnvironment()` reports `readyForCustomers: true`
 
 ## B. Migration validation
 
-- [ ] Migration list reviewed (67 timestamp-ordered SQL files)
+- [ ] Migration list reviewed (timestamp-ordered SQL files)
 - [ ] Staging migrations applied successfully before production
+- [ ] White-label + `20250824140000_public_api_service_role_grants.sql` applied if required
 - [ ] No experimental / incomplete migrations in the release train
 - [ ] Backup / PITR available on Supabase project
 - [ ] Rollback plan understood (forward-only; restore if needed)
@@ -40,15 +45,17 @@ Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content
 - [ ] `npm run build` pass
 - [ ] CI workflow green on release commit (`.github/workflows/ci.yml`)
 
-## D. Billing validation (FastSpring)
+## D. Billing validation (Mollie)
 
-- [ ] Webhook URL `/api/fastspring/webhook` registered in the FastSpring dashboard
-- [ ] Signature verification + idempotency confirmed on staging
-- [ ] Checkout creates/updates subscription entitlements
-- [ ] No hosted customer portal is promised (FastSpring purchase emails / support only)
+- [ ] Webhook URL `/api/mollie/webhook` registered in the Mollie dashboard (classic payment notifications)
+- [ ] Next-Gen / signed Mollie webhooks are **not** configured for this app
+- [ ] Idempotency confirmed on staging (`mollie_webhook_events`)
+- [ ] Checkout creates/updates subscription entitlements via webhook reconcile (not browser callback)
 - [ ] Invoice / transaction history org-scoped
 - [ ] Payment failure path degrade-safe (no entitlement from client callback alone)
-- [ ] Historical Paddle/Stripe rows remain read-only archive and never drive checkout
+- [ ] `MOLLIE_LIVE_CHARGING_ENABLED` remains false for controlled mode
+- [ ] Historical Stripe/Paddle/FastSpring rows remain read-only archive and never drive checkout
+- [ ] `/api/fastspring/*` remains 410 Gone
 
 ## E. Portal validation
 
@@ -75,6 +82,7 @@ Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content
 - [ ] Consent banner gates marketing/analytics sinks
 - [ ] No PII / secrets in event props
 - [ ] Conversion events fire on pricing / signup / billing (staging)
+- [ ] PostHog `$pageview` only after analytics consent
 
 ## I. SEO validation
 
@@ -110,14 +118,15 @@ Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content
 - [ ] `/api/health` and `/api/ready` monitored
 - [ ] Error reporting (Sentry) receiving events from staging/prod
 - [ ] Queue / webhook diagnostics reviewed
-- [ ] Health payload billing flag reflects FastSpring (`configuration.fastspring`)
+- [ ] Health payload billing flag reflects Mollie (`configuration.mollie`)
 
 ## O. Rollback readiness
 
 - [ ] Previous Vercel deployment identified for instant rollback
 - [ ] [rollback-plan.md](./rollback-plan.md) reviewed by on-call
-- [ ] FastSpring webhook disable / secret rotate steps known
+- [ ] Mollie webhook pause / API key rotate steps known
 - [ ] Supabase PITR / backup restore owner assigned
+- [ ] P1-002 legal/tax gate understood before any LIVE charging enablement
 
 ## Sign-off
 
@@ -126,3 +135,4 @@ Supersedes Stripe-era `release-checklist.md` / `production-checklist.md` content
 | Engineering | | |
 | Founder / Product | | |
 | On-call | | |
+| Legal/tax (LIVE revenue only) | | |
