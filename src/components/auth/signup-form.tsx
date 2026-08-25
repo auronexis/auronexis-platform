@@ -99,8 +99,8 @@ export function SignUpForm() {
           className="mt-1 h-4 w-4 rounded border-slate-300"
         />
         <span>
-          I confirm that I am registering as an entrepreneur (§14 BGB) for business use, not as a
-          consumer.
+          I confirm that I am registering Auroranexis for business or professional purposes on behalf
+          of my organization.
         </span>
       </label>
 

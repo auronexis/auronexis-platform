@@ -78,11 +78,19 @@ export type CheckoutContractSummary = {
   currency: string;
   amountMinor: number;
   billingInterval: "month";
+  /** Explicit recurring disclosure for pre-payment review. */
+  recurringLabel: string;
   priceVersion: string;
   sellerName: string;
+  /** Authenticated organization display / legal contracting name. */
+  organizationName: string;
   pspName: "Mollie";
   termsVersion: string;
   dpaVersion: string;
+  /**
+   * Neutral tax status for display. Must not invent reverse-charge / 0% / VAT-included
+   * outcomes until determination has run server-side.
+   */
   taxOutcomeLabel: string;
 };
 
@@ -93,7 +101,8 @@ export function buildCheckoutContractSummary(input: {
   amountMinor: number;
   priceVersion: string;
   sellerName: string;
-  taxOutcomeLabel: string;
+  organizationName: string;
+  taxOutcomeLabel?: string;
 }): CheckoutContractSummary {
   return {
     planKey: input.planKey,
@@ -101,11 +110,42 @@ export function buildCheckoutContractSummary(input: {
     currency: input.currency,
     amountMinor: input.amountMinor,
     billingInterval: "month",
+    recurringLabel: "Recurring monthly subscription (renews until cancelled)",
     priceVersion: input.priceVersion,
     sellerName: input.sellerName,
+    organizationName: input.organizationName.trim() || "Organization",
     pspName: "Mollie",
     termsVersion: TERMS_DOCUMENT_VERSION,
     dpaVersion: DPA_DOCUMENT_VERSION,
-    taxOutcomeLabel: input.taxOutcomeLabel,
+    taxOutcomeLabel:
+      input.taxOutcomeLabel ??
+      "Tax treatment is confirmed at checkout from billing country and VAT details (when provided)",
   };
 }
+
+/**
+ * Snapshot plan/price into document_version for audit (no extra PII columns).
+ * Format: termsVersion:priceVersion:planKey:amountMinor:currency
+ */
+export function buildCheckoutContractSummaryAcceptanceEvidence(input: {
+  acceptedAt?: string;
+  source: ContractAcceptanceEvidence["source"];
+  userAgent?: string | null;
+  planKey: string;
+  priceVersion: string;
+  amountMinor: number;
+  currency: string;
+}): ContractAcceptanceEvidence {
+  return {
+    kind: "checkout_contract_summary",
+    documentVersion: `${TERMS_DOCUMENT_VERSION}:${input.priceVersion}:${input.planKey}:${input.amountMinor}:${input.currency}`,
+    accepted: true,
+    acceptedAt: input.acceptedAt ?? new Date().toISOString(),
+    source: input.source,
+    userAgent: input.userAgent ?? null,
+  };
+}
+
+/** Neutral B2B purchase acknowledgement — factual, no consumer-rights waiver claim. */
+export const B2B_PURCHASE_ACKNOWLEDGEMENT_LABEL =
+  "I confirm that I am purchasing Auroranexis for business or professional purposes on behalf of the organization shown above." as const;

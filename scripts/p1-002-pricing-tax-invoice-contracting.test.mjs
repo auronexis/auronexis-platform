@@ -71,6 +71,7 @@ test("B2B contracting + DPA acceptance versions exist", () => {
   assert.match(contracting, /DPA_DOCUMENT_VERSION/);
   assert.match(contracting, /LEGAL_TEXT_PENDING_COUNSEL/);
   assert.match(contracting, /buildCheckoutContractSummary/);
+  assert.match(contracting, /organizationName/);
   const signup = readSource("src/components/auth/signup-form.tsx");
   assert.match(signup, /b2bEntrepreneurConfirmed/);
   assert.match(signup, /termsAccepted/);

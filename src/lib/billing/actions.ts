@@ -54,16 +54,22 @@ import { getPlanByKey } from "@/lib/billing/plans";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import {
   buildCheckoutContractSummary,
+  buildCheckoutContractSummaryAcceptanceEvidence,
   buildB2bEntrepreneurAcceptanceEvidence,
   buildDpaAcceptanceEvidence,
   buildTermsAcceptanceEvidence,
   type CheckoutContractSummary,
 } from "@/lib/billing/contracting";
 import { persistContractAcceptance } from "@/lib/billing/contract-acceptance";
-import { upsertOrganizationBillingIdentity } from "@/lib/billing/billing-identity";
+import {
+  getOrganizationBillingIdentity,
+  upsertOrganizationBillingIdentity,
+} from "@/lib/billing/billing-identity";
 import { determineTaxPolicy } from "@/lib/billing/tax-policy";
-import { validateVatIdWithVies } from "@/lib/billing/vies";
+import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
+import { normalizeVatId, validateVatIdWithVies } from "@/lib/billing/vies";
 import { LEGAL_COMPANY_NAME } from "@/lib/company/company-information";
+import { recordActivityEvent } from "@/lib/activity/record";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type BillingActionState = {
@@ -94,7 +100,7 @@ const checkoutContractSchema = z.object({
     message: "You must accept the Terms to continue.",
   }),
   b2bEntrepreneurConfirmed: z.boolean().refine((value) => value === true, {
-    message: "Entrepreneur confirmation is required for B2B checkout.",
+    message: "Business / professional purchase confirmation is required for B2B checkout.",
   }),
   countryCode: z.string().min(2).max(8),
   vatId: z.string().optional(),
@@ -103,7 +109,12 @@ const checkoutContractSchema = z.object({
 /** Build checkout contract summary before Mollie redirect. */
 export async function prepareCheckoutContractSummaryAction(
   planKey: string,
-): Promise<{ error?: string; summary?: CheckoutContractSummary }> {
+): Promise<{
+  error?: string;
+  summary?: CheckoutContractSummary;
+  /** Prefill from persisted org billing identity — never from browser locale. */
+  identityDefaults?: { countryCode: string; vatId: string };
+}> {
   const session = await requireSession();
   if (!canManageOrganizationSettings(session)) {
     return { error: ACTION_DENIED_MESSAGE };
@@ -113,6 +124,8 @@ export async function prepareCheckoutContractSummaryAction(
     return { error: "Invalid subscription plan selected." };
   }
   const plan = getPlanByKey(parsed.data);
+  const identity = await getOrganizationBillingIdentity(session.organization.id);
+  const countryCode = identity?.countryCode?.trim().toUpperCase() || "DE";
   return {
     summary: buildCheckoutContractSummary({
       planKey: plan.key,
@@ -121,14 +134,24 @@ export async function prepareCheckoutContractSummaryAction(
       amountMinor: plan.amountMinor,
       priceVersion: plan.priceVersion,
       sellerName: LEGAL_COMPANY_NAME,
-      taxOutcomeLabel: "Confirmed at checkout after billing country and VAT checks",
+      organizationName: session.organization.name,
     }),
+    identityDefaults: {
+      countryCode: ["DE", "AT", "NL", "FR", "BE"].includes(countryCode) ? countryCode : "OTHER",
+      vatId: identity?.vatId ?? "",
+    },
   };
 }
 
 async function enforceCheckoutContractAndTax(input: {
   organizationId: string;
+  organizationName: string;
+  billingEmail: string;
   userId: string;
+  planKey: string;
+  amountMinor: number;
+  currency: string;
+  priceVersion: string;
   contract: CheckoutContractInput;
 }): Promise<{ error?: string }> {
   const parsed = checkoutContractSchema.safeParse(input.contract);
@@ -138,13 +161,28 @@ async function enforceCheckoutContractAndTax(input: {
 
   const countryCode =
     parsed.data.countryCode === "OTHER" ? null : parsed.data.countryCode.trim().toUpperCase();
-  const vies = countryCode && countryCode !== "DE" && parsed.data.vatId
-    ? await validateVatIdWithVies(parsed.data.vatId)
-    : { status: "not_checked" as const, checkedAt: new Date().toISOString() };
+
+  const vatRaw = parsed.data.vatId?.trim() || null;
+  if (vatRaw && !normalizeVatId(vatRaw)) {
+    return { error: "VAT ID format is invalid. Use a country prefix plus number (e.g. DE123456789)." };
+  }
+
+  const vies =
+    countryCode && countryCode !== "DE" && vatRaw
+      ? await validateVatIdWithVies(vatRaw)
+      : { status: "not_checked" as const, checkedAt: new Date().toISOString() };
+
+  const vatTechnicalState = resolveVatIdTechnicalState({
+    vatId: vatRaw,
+    viesStatus: vies.status,
+  });
+  if (vatTechnicalState === "INVALID" && vatRaw) {
+    return { error: "VAT ID could not be accepted. Check the format or contact sales." };
+  }
 
   const determination = determineTaxPolicy({
     customerCountryCode: countryCode,
-    vatId: parsed.data.vatId ?? null,
+    vatId: vatRaw,
     viesStatus: vies.status,
     isB2bEntrepreneurConfirmed: true,
   });
@@ -158,10 +196,17 @@ async function enforceCheckoutContractAndTax(input: {
     };
   }
 
+  const existing = await getOrganizationBillingIdentity(input.organizationId);
   await upsertOrganizationBillingIdentity({
     organizationId: input.organizationId,
+    legalName: existing?.legalName?.trim() || input.organizationName.trim() || null,
+    billingEmail: existing?.billingEmail?.trim() || input.billingEmail.trim() || null,
     countryCode,
-    vatId: parsed.data.vatId ?? null,
+    addressLine1: existing?.addressLine1 ?? null,
+    addressLine2: existing?.addressLine2 ?? null,
+    postalCode: existing?.postalCode ?? null,
+    city: existing?.city ?? null,
+    vatId: vatRaw,
     viesStatus: vies.status,
     viesCheckedAt: vies.checkedAt,
   });
@@ -181,6 +226,37 @@ async function enforceCheckoutContractAndTax(input: {
     organizationId: input.organizationId,
     userId: input.userId,
     evidence: buildDpaAcceptanceEvidence({ acceptedAt: now, source: "checkout" }),
+  });
+  await persistContractAcceptance({
+    organizationId: input.organizationId,
+    userId: input.userId,
+    evidence: buildCheckoutContractSummaryAcceptanceEvidence({
+      acceptedAt: now,
+      source: "checkout",
+      planKey: input.planKey,
+      priceVersion: input.priceVersion,
+      amountMinor: input.amountMinor,
+      currency: input.currency,
+    }),
+  });
+
+  void recordActivityEvent({
+    organizationId: input.organizationId,
+    actorUserId: input.userId,
+    entityType: "organization",
+    entityId: input.organizationId,
+    action: "billing_identity_updated",
+    title: "Billing identity updated",
+    metadata: { source: "checkout" },
+  });
+  void recordActivityEvent({
+    organizationId: input.organizationId,
+    actorUserId: input.userId,
+    entityType: "organization",
+    entityId: input.organizationId,
+    action: "checkout_b2b_acknowledgement_captured",
+    title: "Checkout B2B acknowledgement captured",
+    metadata: { source: "checkout", planKey: input.planKey },
   });
 
   return {};
@@ -253,16 +329,22 @@ export async function createCheckoutSessionAction(
         return { error: "Contract acceptance is required before Mollie checkout." };
       }
 
+      const plan = getPlanByKey(parsed.data);
+
       const contractGate = await enforceCheckoutContractAndTax({
         organizationId: session.organization.id,
+        organizationName: session.organization.name,
+        billingEmail: session.email,
         userId: session.user.id,
+        planKey: plan.key,
+        amountMinor: plan.amountMinor,
+        currency: plan.currency,
+        priceVersion: plan.priceVersion,
         contract,
       });
       if (contractGate.error) {
         return { error: contractGate.error };
       }
-
-      const plan = getPlanByKey(parsed.data);
       const admin = createAdminClient();
       await admin
         .from("organization_subscriptions")

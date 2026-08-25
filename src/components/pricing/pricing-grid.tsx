@@ -115,6 +115,11 @@ export function PricingGrid({
         return;
       }
       setContractSummary(prepared.summary);
+      setAcceptance({
+        ...INITIAL_ACCEPTANCE,
+        countryCode: prepared.identityDefaults?.countryCode ?? INITIAL_ACCEPTANCE.countryCode,
+        vatId: prepared.identityDefaults?.vatId ?? "",
+      });
       setContractOpen(true);
     });
   };

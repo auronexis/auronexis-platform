@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useId } from "react";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
-import type { CheckoutContractSummary } from "@/lib/billing/contracting";
+import {
+  B2B_PURCHASE_ACKNOWLEDGEMENT_LABEL,
+  type CheckoutContractSummary,
+} from "@/lib/billing/contracting";
 import { LEGAL_ROUTES } from "@/lib/company/company-links";
 import { focusRing } from "@/lib/ui/tokens";
 import { cn } from "@/lib/utils/cn";
@@ -52,55 +55,67 @@ export function CheckoutContractSummaryDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-background/70 p-4 sm:items-center"
       role="presentation"
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-slate-200 bg-white p-5 shadow-lg"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-lg text-foreground"
       >
-        <h2 id={titleId} className="text-lg font-semibold text-slate-950">
+        <h2 id={titleId} className="text-lg font-semibold text-foreground">
           Confirm subscription contract
         </h2>
-        <p className="mt-2 text-sm text-slate-700">
+        <p className="mt-2 text-sm text-muted-foreground">
           Review the commercial terms before continuing to Mollie payment. Auroranexis is the
-          seller; Mollie processes the payment.
+          seller; Mollie processes the payment as payment service provider.
         </p>
 
-        <dl className="mt-4 space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
+        <dl className="mt-4 space-y-2 rounded-md border border-border bg-surface-1 p-3 text-sm">
           <div className="flex justify-between gap-3">
-            <dt className="text-slate-600">Plan</dt>
-            <dd className="font-medium text-slate-950">{summary.planName}</dd>
+            <dt className="text-muted-foreground">Organization</dt>
+            <dd className="font-medium text-foreground text-right">{summary.organizationName}</dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt className="text-slate-600">Price (VAT-inclusive list)</dt>
-            <dd className="font-medium text-slate-950">
+            <dt className="text-muted-foreground">Plan</dt>
+            <dd className="font-medium text-foreground">{summary.planName}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Catalog price</dt>
+            <dd className="font-medium text-foreground">
               {formattedPrice} / {summary.billingInterval}
             </dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt className="text-slate-600">Billing currency</dt>
-            <dd className="font-medium text-slate-950">{summary.currency}</dd>
+            <dt className="text-muted-foreground">Billing currency</dt>
+            <dd className="font-medium text-foreground">{summary.currency}</dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt className="text-slate-600">Seller</dt>
-            <dd className="font-medium text-slate-950">{summary.sellerName}</dd>
+            <dt className="text-muted-foreground">Billing</dt>
+            <dd className="font-medium text-foreground text-right">{summary.recurringLabel}</dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt className="text-slate-600">Payment provider</dt>
-            <dd className="font-medium text-slate-950">{summary.pspName}</dd>
+            <dt className="text-muted-foreground">Seller</dt>
+            <dd className="font-medium text-foreground">{summary.sellerName}</dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt className="text-slate-600">Terms version</dt>
-            <dd className="font-medium text-slate-950">{summary.termsVersion}</dd>
+            <dt className="text-muted-foreground">Payment provider</dt>
+            <dd className="font-medium text-foreground">{summary.pspName}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Tax status</dt>
+            <dd className="font-medium text-foreground text-right">{summary.taxOutcomeLabel}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Terms version</dt>
+            <dd className="font-medium text-foreground">{summary.termsVersion}</dd>
           </div>
         </dl>
 
         <div className="mt-4 space-y-3">
           <div className="space-y-1">
-            <label htmlFor={countryId} className="block text-sm font-medium text-slate-900">
+            <label htmlFor={countryId} className="block text-sm font-medium text-foreground">
               Billing country
             </label>
             <select
@@ -110,7 +125,7 @@ export function CheckoutContractSummaryDialog({
                 onAcceptanceChange({ ...acceptance, countryCode: event.target.value })
               }
               className={cn(
-                "h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 [color-scheme:light] [&>option]:bg-white [&>option]:text-slate-950",
+                "h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground [&>option]:bg-background [&>option]:text-foreground",
                 focusRing,
               )}
             >
@@ -121,14 +136,15 @@ export function CheckoutContractSummaryDialog({
               <option value="BE">Belgium (BE)</option>
               <option value="OTHER">Other / outside listed EU</option>
             </select>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-muted-foreground">
               Self-serve checkout currently completes for Germany domestic B2B. Other countries may
-              require manual review.
+              require manual review. Country must match organization billing identity — not browser
+              locale.
             </p>
           </div>
 
           <div className="space-y-1">
-            <label htmlFor={vatId} className="block text-sm font-medium text-slate-900">
+            <label htmlFor={vatId} className="block text-sm font-medium text-foreground">
               VAT ID (optional for DE; required for other EU)
             </label>
             <input
@@ -141,13 +157,17 @@ export function CheckoutContractSummaryDialog({
               }
               placeholder="DE123456789"
               className={cn(
-                "h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950",
+                "h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground",
                 focusRing,
               )}
             />
+            <p className="text-xs text-muted-foreground">
+              Format is checked server-side. Official VIES validation may still be required before
+              cross-border self-serve checkout is allowed.
+            </p>
           </div>
 
-          <label htmlFor={b2bId} className="flex items-start gap-3 text-sm text-slate-800">
+          <label htmlFor={b2bId} className="flex items-start gap-3 text-sm text-foreground">
             <input
               id={b2bId}
               type="checkbox"
@@ -158,14 +178,12 @@ export function CheckoutContractSummaryDialog({
                   b2bEntrepreneurConfirmed: event.target.checked,
                 })
               }
-              className={cn("mt-1 h-4 w-4 rounded border-slate-300", focusRing)}
+              className={cn("mt-1 h-4 w-4 rounded border-border", focusRing)}
             />
-            <span>
-              I confirm that I am acting as an entrepreneur (§14 BGB) and not as a consumer.
-            </span>
+            <span>{B2B_PURCHASE_ACKNOWLEDGEMENT_LABEL}</span>
           </label>
 
-          <label htmlFor={termsId} className="flex items-start gap-3 text-sm text-slate-800">
+          <label htmlFor={termsId} className="flex items-start gap-3 text-sm text-foreground">
             <input
               id={termsId}
               type="checkbox"
@@ -173,19 +191,27 @@ export function CheckoutContractSummaryDialog({
               onChange={(event) =>
                 onAcceptanceChange({ ...acceptance, termsAccepted: event.target.checked })
               }
-              className={cn("mt-1 h-4 w-4 rounded border-slate-300", focusRing)}
+              className={cn("mt-1 h-4 w-4 rounded border-border", focusRing)}
             />
             <span>
               I accept the{" "}
-              <Link href={LEGAL_ROUTES.terms} className="font-medium text-blue-700 underline">
+              <Link href={LEGAL_ROUTES.terms} className="font-medium text-primary underline">
                 Terms
-              </Link>{" "}
-              and acknowledge the{" "}
+              </Link>
+              , acknowledge the{" "}
+              <Link href={LEGAL_ROUTES.privacy} className="font-medium text-primary underline">
+                Privacy Policy
+              </Link>
+              , and the{" "}
               <Link
                 href={LEGAL_ROUTES.dataProcessingAgreement}
-                className="font-medium text-blue-700 underline"
+                className="font-medium text-primary underline"
               >
                 Data Processing Agreement summary
+              </Link>
+              . See also{" "}
+              <Link href={LEGAL_ROUTES.refundPolicy} className="font-medium text-primary underline">
+                Refund and Cancellation
               </Link>
               .
             </span>
@@ -193,7 +219,7 @@ export function CheckoutContractSummaryDialog({
         </div>
 
         {error ? (
-          <p className="mt-3 text-sm text-red-700" role="alert">
+          <p className="mt-3 text-sm text-danger" role="alert">
             {error}
           </p>
         ) : null}
@@ -204,7 +230,7 @@ export function CheckoutContractSummaryDialog({
             onClick={onCancel}
             disabled={pending}
             className={cn(
-              "inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800",
+              "inline-flex h-10 items-center justify-center rounded-md border border-border px-4 text-sm font-medium text-foreground",
               focusRing,
             )}
           >
@@ -216,7 +242,7 @@ export function CheckoutContractSummaryDialog({
             disabled={pending}
             aria-busy={pending}
             className={cn(
-              "inline-flex h-10 items-center justify-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50",
+              "inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50",
               focusRing,
             )}
           >
