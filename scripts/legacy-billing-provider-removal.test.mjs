@@ -184,3 +184,62 @@ test("canonical operator/go-live docs do not instruct active Stripe/Paddle/FastS
   assert.match(historical, /STATUS:\s*HISTORICAL\s*\/\s*SUPERSEDED/i);
   assert.match(historical, /CURRENT BILLING PROVIDER:\s*MOLLIE/i);
 });
+
+/** Public legal + in-product docs that render on www (not historical operator archives). */
+const PUBLIC_BILLING_CONTENT_FILES = [
+  "src/lib/company/legal-content.ts",
+  "src/lib/company/company-schema.ts",
+  "src/lib/docs/pages/account.ts",
+  "src/lib/docs/pages/operations.ts",
+  "src/lib/marketing/content.ts",
+];
+
+const PUBLIC_ACTIVE_LEGACY_PROVIDER_PATTERN =
+  /\b(Stripe|Paddle|FastSpring)\b|Merchant of Record|\bMoR\b/;
+
+test("public legal and docs sources name Mollie — no active Stripe/Paddle/FastSpring/MoR claims", () => {
+  for (const file of PUBLIC_BILLING_CONTENT_FILES) {
+    const source = readSource(file);
+    assert.doesNotMatch(
+      source,
+      PUBLIC_ACTIVE_LEGACY_PROVIDER_PATTERN,
+      `${file} must not present Stripe/Paddle/FastSpring or MoR as current public billing facts`,
+    );
+  }
+
+  const legal = readSource("src/lib/company/legal-content.ts");
+  assert.match(legal, /payment service provider, Mollie/);
+  assert.match(legal, /Mollie — payment processing for subscription billing/);
+  assert.doesNotMatch(legal, /Merchant of Record/i);
+
+  const billingDoc = readSource("src/lib/docs/pages/account.ts");
+  assert.match(billingDoc, /billed through Mollie/);
+  assert.match(billingDoc, /Mollie does not provide a hosted billing portal/);
+  assert.doesNotMatch(billingDoc, /customer portal/i);
+  assert.doesNotMatch(billingDoc, /account management link/i);
+
+  const gettingStarted = readSource("src/lib/docs/pages/operations.ts");
+  assert.match(gettingStarted, /Mollie as payment service provider/);
+  assert.match(gettingStarted, /Auroranexis remains the seller/);
+
+  const marketing = readSource("src/lib/marketing/content.ts");
+  assert.match(marketing, /Mollie subscriptions and invoices/);
+});
+
+test("public legal routes render from LEGAL_PAGES — not duplicate hardcoded Stripe/Paddle copy", () => {
+  const legalPageView = readSource("src/components/marketing/legal-page-view.tsx");
+  assert.match(legalPageView, /LEGAL_PAGES/);
+  assert.match(legalPageView, /LegalPageView/);
+
+  for (const route of [
+    "src/app/(marketing)/terms/page.tsx",
+    "src/app/(marketing)/privacy/page.tsx",
+    "src/app/(marketing)/refund-policy/page.tsx",
+    "src/app/(marketing)/imprint/page.tsx",
+    "src/app/(marketing)/subprocessors/page.tsx",
+  ]) {
+    const page = readSource(route);
+    assert.match(page, /LegalPageView/);
+    assert.doesNotMatch(page, PUBLIC_ACTIVE_LEGACY_PROVIDER_PATTERN);
+  }
+});

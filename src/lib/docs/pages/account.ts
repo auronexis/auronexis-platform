@@ -12,7 +12,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       variant: "info",
       title: "Who can manage billing",
-      body: "Only workspace owners and admins with billing permissions can change plans, apply discount codes, or open the customer portal. Staff and viewer roles cannot modify payment details or subscription settings.",
+      body: "Only workspace owners and admins with billing permissions can change plans, apply discount codes, or manage subscriptions in Settings → Billing. Staff and viewer roles cannot modify payment details or subscription settings.",
     },
     {
       variant: "info",
@@ -33,7 +33,7 @@ export const BILLING_DOC: DocPageInput = {
       title: "Purpose",
       paragraphs: [
         "The billing module gives agency operators a self-serve way to subscribe, pay, and manage their Auroranexis workspace without manual invoicing or back-and-forth with sales for standard plans. Mollie handles payment collection and settlement; Auroranexis surfaces plan status, usage against limits, and invoice history.",
-        "For agencies on Professional or Business tiers, billing is fully automated. You choose a plan, complete checkout, and manage renewals in Settings ? Billing. Enterprise customers may have custom arrangements negotiated separately, but day-to-day invoice access and payment method management still flow through the same billing interface where applicable.",
+        "For agencies on Professional or Business tiers, billing is fully automated. You choose a plan, complete Mollie checkout, and manage renewals in Settings → Billing. Enterprise customers may have custom arrangements negotiated separately, but day-to-day invoice access and subscription management still flow through the same billing interface where applicable.",
         "The billing page also serves as the starting point for understanding what your plan includes. Before upgrading, compare tier summaries against your current consumption in Settings → Usage so you select a plan that covers client count, seats, API volume, and feature requirements without unnecessary overspend.",
       ],
     },
@@ -43,7 +43,7 @@ export const BILLING_DOC: DocPageInput = {
         "Workspace plan — the subscription tier (Professional, Business, or Enterprise) that governs features and limits.",
         "Billing cycle — monthly or annual period during which your subscription is active and renewed.",
         "Proration — a partial charge or credit applied when you change plans mid-cycle.",
-        "Account management — in-app subscription management in Settings ? Billing.",
+        "Subscription management — in-app cancel, keep, and plan-change actions in Settings → Billing (Mollie does not provide a hosted billing portal).",
         "Usage limits — caps on clients, seats, API calls, monitoring targets, and other resources defined by your plan.",
         "Past due — a subscription status indicating a failed or overdue payment that requires attention.",
         "Invoice — an Auroranexis sales invoice (Net, VAT, Total) issued for each paid charge where tax determination allows; Mollie payment links are receipts, not sales invoices.",
@@ -58,7 +58,7 @@ export const BILLING_DOC: DocPageInput = {
         "Plan comparison — view Professional, Business, and Enterprise tiers with feature and limit summaries.",
         "Mollie checkout — secure, hosted payment flow for new subscriptions and upgrades.",
         "Invoice history — access recent invoices with payment status and PDF downloads where available.",
-        "Account management — update payment methods, view billing history, and manage subscription details via Mollie.",
+        "Subscription management — cancel renewals, withdraw cancellation, and change plans in Settings → Billing; contact support for payment-method updates when needed.",
         "Discount codes — apply promotional codes during checkout when eligible.",
         "Usage visibility — cross-reference your plan limits with current consumption in Settings → Usage.",
         "Enterprise requests — submit custom plan inquiries from Settings → Billing or Settings → Enterprise.",
@@ -75,7 +75,7 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "Payment methods and invoices",
           paragraphs: [
-            "Payment methods are managed through Mollie / Settings ? Billing. You can add credit or debit cards, set a default method, and remove expired cards without exposing card numbers in the Auroranexis dashboard. Invoices for each billing period appear in Settings → Billing with payment status, and full history including PDF downloads is available in Settings ? Billing.",
+            "Payment card and bank details are entered on Mollie checkout and are not stored in Auroranexis application databases. Mollie does not provide a hosted billing portal in this integration — update payment methods by contacting support when needed. Invoices for each billing period appear in Settings → Billing with payment status and PDF downloads where available.",
           ],
         },
       ],
@@ -102,26 +102,25 @@ export const BILLING_DOC: DocPageInput = {
             "Scroll to the invoice history section.",
             "Locate the invoice by date or amount.",
             "Download the PDF or view payment status as shown.",
-            "For older invoices, use the account management link from Settings ? Billing or support for the full billing history.",
+            "If an invoice is missing, refresh Settings → Billing or contact support with the approximate payment time.",
           ],
         },
         {
           title: "Update payment methods",
           ordered: [
-            "Open Settings → Billing.",
-            "Open the account management link from Settings ? Billing.",
-            "Add a new card or replace an existing payment method there.",
-            "Set the new method as default if prompted.",
-            "Return to Auroranexis and confirm billing status shows as active.",
+            "Open Settings → Billing to confirm your current subscription status.",
+            "Contact support to update or replace the payment method used for Mollie renewals.",
+            "Never send full payment-card details by email.",
+            "After support confirms the update, refresh Settings → Billing and verify the subscription remains active.",
           ],
         },
         {
           title: "Change or cancel a subscription",
           ordered: [
-            "Open Settings → Billing, then use the account management link from Settings ? Billing or support, or contact support.",
+            "Open Settings → Billing (and Settings → Plans for upgrades or downgrades).",
             "To upgrade or downgrade, select the desired plan change and confirm.",
-            "Review proration details shown before confirming mid-cycle changes.",
-            "To cancel, choose cancel subscription and follow the prompts.",
+            "Review any proration or effective-date details shown before confirming mid-cycle changes.",
+            "To cancel future renewals, choose Cancel subscription and follow the prompts — paid access continues until the end of the current billing period.",
             "Export any critical data before access ends if cancelling.",
             "Enterprise customers should coordinate changes with their account contact.",
           ],
@@ -165,7 +164,7 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "Consultancy",
           paragraphs: [
-            "A three-person consultancy winding down client operations opens Settings → Billing and launches the customer portal to cancel at period end. Before the final billing date, they export client reports, incident histories, and risk registers from each module. The subscription remains active until the paid period ends, giving the team time to archive records for their internal compliance requirements.",
+            "A three-person consultancy winding down client operations opens Settings → Billing and cancels future renewals at period end. Before the final billing date, they export client reports, incident histories, and risk registers from each module. The subscription remains active until the paid period ends, giving the team time to archive records for their internal compliance requirements.",
           ],
         },
         {
@@ -195,27 +194,27 @@ export const BILLING_DOC: DocPageInput = {
           [
             "Workspace shows past due or limited access",
             "Payment failed due to expired card, insufficient funds, or bank decline",
-            "Use the account management link from Settings ? Billing or support to update your default payment method immediately.",
+            "Contact support to update your default payment method, then refresh Settings → Billing.",
           ],
           [
-            "Cannot open the customer portal",
+            "Cannot change plan or cancel subscription",
             "Your role lacks billing permissions",
-            "Ask a workspace owner or admin with billing access to update payment methods or make subscription changes.",
+            "Ask a workspace owner or admin with billing access to manage subscription changes in Settings → Billing.",
           ],
           [
             "Invoice PDF not available in billing history",
             "Invoice generation may still be in progress",
-            "Check the customer portal for the full invoice history; PDFs typically appear within minutes of payment.",
+            "Refresh Settings → Billing; PDFs typically appear within minutes of payment. Contact support if still missing.",
           ],
           [
             "Downgrade not reflected in feature access",
             "Downgrades may apply at the next billing period",
-            "Check the customer portal for the effective date. Export data if features will be removed at period end.",
+            "Check the scheduled effective date in Settings → Billing. Export data if features will be removed at period end.",
           ],
           [
             "Unexpected charge amount after plan change",
             "Mid-cycle proration for upgrades or partial credits for downgrades",
-            "Review invoice line items in the customer portal; proration explains partial-period charges.",
+            "Review invoice line items in Settings → Billing; proration explains partial-period charges.",
           ],
         ],
       },
@@ -225,7 +224,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       question: "Who can manage billing in my workspace?",
       answer:
-        "Workspace owners and admins with billing permissions can change plans, apply discount codes, and manage billing in Settings ? Billing. Other roles cannot modify subscription or payment settings.",
+        "Workspace owners and admins with billing permissions can change plans, apply discount codes, and manage billing in Settings → Billing. Other roles cannot modify subscription or payment settings.",
     },
     {
       question: "Where are my payment details stored?",
@@ -240,12 +239,12 @@ export const BILLING_DOC: DocPageInput = {
     {
       question: "Can I switch between monthly and annual billing?",
       answer:
-        "Billing interval options depend on the plan and checkout configuration available at the time of subscription. Use the customer portal or contact support for interval change requests.",
+        "Billing interval options depend on the plan and checkout configuration available at the time of subscription. Contact support for interval change requests when self-serve options are not shown in Settings → Billing.",
     },
     {
       question: "How do I get a copy of an invoice for accounting?",
       answer:
-        "Open Settings → Billing to view recent invoices and download PDFs. The billing history in Settings ? Billing provides the full invoice history.",
+        "Open Settings → Billing to view recent invoices and download PDFs. Contact support if an older invoice is missing from the history.",
     },
     {
       question: "What is the difference between Business and Enterprise?",
@@ -356,7 +355,7 @@ export const SECURITY_DOC: DocPageInput = {
           bullets: [
             "Payment card and bank details are processed by Mollie — not in Auroranexis databases.",
             "Billing pages display subscription status without exposing card numbers or CVV data.",
-            "Only authorized roles can initiate checkout or manage billing in Settings ? Billing.",
+            "Only authorized roles can initiate checkout or manage billing in Settings → Billing.",
           ],
         },
       ],
@@ -519,7 +518,7 @@ export const SECURITY_DOC: DocPageInput = {
       {
         question: "Can staff members access billing settings?",
         answer:
-          "Only workspace owners and admins with billing permissions can manage subscriptions and manage billing in Settings ? Billing. Staff and viewer roles cannot modify billing settings.",
+          "Only workspace owners and admins with billing permissions can manage subscriptions and manage billing in Settings → Billing. Staff and viewer roles cannot modify billing settings.",
       },
     {
       question: "How do I report a security vulnerability?",
@@ -1018,7 +1017,7 @@ export const ENTERPRISE_DOC: DocPageInput = {
         "Approved plan overrides and effective limits are displayed in Settings → Enterprise. Cross-reference current consumption in Settings → Usage.",
     },
     {
-      question: "Can I cancel an enterprise subscription through the customer portal?",
+      question: "Can I cancel an enterprise subscription in Settings → Billing?",
       answer:
         "Enterprise billing may follow a negotiated agreement. Coordinate cancellation or plan changes with your account contact to ensure contractual terms are respected.",
     },
