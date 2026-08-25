@@ -41,12 +41,17 @@ test("marketing footer retains full-column IA separately from app shell", () => 
   );
 });
 
-test("only cookie consent uses fixed full-width bottom chrome (not shell footer)", () => {
+test("cookie consent uses fixed chrome; authenticated shell is not a full-width megabar", () => {
   const banner = readSource("src/components/consent/cookie-consent-banner.tsx");
   const shell = readSource("src/components/layout/dashboard-shell.tsx");
   const footer = readSource("src/components/layout/site-footer.tsx");
 
-  assert.match(banner, /fixed inset-x-0 bottom-0/);
+  assert.match(banner, /dashboard-root/);
+  assert.match(banner, /sm:max-w-sm/);
   assert.doesNotMatch(shell, /fixed inset-x-0 bottom-0/);
   assert.doesNotMatch(footer, /fixed inset-x-0 bottom-0/);
+
+  const authBranch =
+    banner.match(/authenticatedSurface\s*\?\s*\[([\s\S]*?)\]\s*:\s*\[/)?.[1] ?? "";
+  assert.doesNotMatch(authBranch, /inset-x-0/);
 });

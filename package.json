@@ -40,6 +40,7 @@
     "test:p1-006-compliance-readiness": "node --test scripts/p1-006-compliance-framework-readiness.test.mjs",
     "test:global-ui-system": "node --test scripts/global-ui-system-remediation.test.mjs",
     "test:dashboard-bottom-layout": "node --test scripts/dashboard-bottom-layout.test.mjs",
+    "test:authenticated-consent-ux": "node --test scripts/authenticated-consent-ux.test.mjs",
     "test:final-production-closeout": "node --test scripts/final-production-closeout.test.mjs scripts/white-label-schema.test.mjs",
     "test:white-label-schema": "node --test scripts/white-label-schema.test.mjs",
     "test:p1-002-pricing-tax": "node --test scripts/p1-002-pricing-tax-invoice-contracting.test.mjs scripts/p1-005-entitlement-compliance.test.mjs",

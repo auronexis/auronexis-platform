@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { acceptAllConsent, hasConsentDecision, rejectNonEssentialConsent } from "@/lib/consent/storage";
 import { LEGAL_ROUTES } from "@/lib/company";
 import { cn } from "@/lib/utils/cn";
@@ -9,9 +10,16 @@ import { focusRing } from "@/lib/ui/tokens";
 import { focusFirstElement, restoreFocus, trapFocus } from "@/lib/a11y/focus";
 import { CookiePreferencesModal } from "@/components/consent/cookie-preferences-modal";
 
+function isAuthenticatedShellMounted(): boolean {
+  if (typeof document === "undefined") return false;
+  return Boolean(document.getElementById("dashboard-root") || document.getElementById("portal-root"));
+}
+
 export function CookieConsentBanner() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
+  const [authenticatedSurface, setAuthenticatedSurface] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<Element | null>(null);
   const titleId = useId();
@@ -19,6 +27,10 @@ export function CookieConsentBanner() {
   useEffect(() => {
     setVisible(!hasConsentDecision());
   }, []);
+
+  useEffect(() => {
+    setAuthenticatedSurface(isAuthenticatedShellMounted());
+  }, [pathname]);
 
   useEffect(() => {
     if (!visible || showPreferences) return;
@@ -57,10 +69,33 @@ export function CookieConsentBanner() {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-surface/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg backdrop-blur sm:p-5"
+        data-consent-surface={authenticatedSurface ? "authenticated" : "public"}
+        className={cn(
+          authenticatedSurface
+            ? [
+                "fixed z-50 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 shadow-xl",
+                "bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4",
+                "sm:bottom-6 sm:left-auto sm:right-6 sm:w-full sm:max-w-sm",
+              ]
+            : [
+                "fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-surface/95 p-4",
+                "pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg backdrop-blur sm:p-5",
+              ],
+        )}
       >
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-2xl text-sm leading-relaxed text-muted">
+        <div
+          className={cn(
+            authenticatedSurface
+              ? "flex flex-col gap-4"
+              : "mx-auto flex max-w-5xl flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+          )}
+        >
+          <div
+            className={cn(
+              "text-sm leading-relaxed text-muted",
+              authenticatedSurface ? "max-w-none" : "max-w-2xl",
+            )}
+          >
             <p id={titleId} className="font-medium text-foreground">
               Privacy preferences
             </p>
@@ -77,7 +112,7 @@ export function CookieConsentBanner() {
               .
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className={cn("flex flex-wrap gap-2", authenticatedSurface && "flex-col sm:flex-row")}>
             <button
               type="button"
               onClick={() => {
@@ -86,6 +121,7 @@ export function CookieConsentBanner() {
               }}
               className={cn(
                 "rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2",
+                authenticatedSurface && "w-full sm:w-auto",
                 focusRing,
               )}
             >
@@ -96,6 +132,7 @@ export function CookieConsentBanner() {
               onClick={() => setShowPreferences(true)}
               className={cn(
                 "rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2",
+                authenticatedSurface && "w-full sm:w-auto",
                 focusRing,
               )}
             >
@@ -109,6 +146,7 @@ export function CookieConsentBanner() {
               }}
               className={cn(
                 "rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90",
+                authenticatedSurface && "w-full sm:w-auto",
                 focusRing,
               )}
             >
