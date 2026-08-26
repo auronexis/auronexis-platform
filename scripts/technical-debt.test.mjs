@@ -68,7 +68,7 @@ test("billing docs no longer describe active Stripe or Paddle checkout", () => {
   assert.match(website, /FastSpring Checkout/);
   assert.doesNotMatch(website, /Link to Stripe Checkout/);
   const domain = readSource("docs/domain-setup.md");
-  assert.match(domain, /\/api\/fastspring\/webhook/);
+  assert.match(domain, /\/api\/mollie\/webhook/);
   assert.doesNotMatch(domain, /\/api\/stripe\/webhook/);
 });
 
