@@ -16,6 +16,8 @@ export async function processBillingSnapshotsJob(): Promise<Record<string, unkno
   const { data: subscriptions, error } = await admin
     .from("organization_subscriptions")
     .select("organization_id, status")
+    .eq("billing_provider", "mollie")
+    .eq("legacy_archived", false)
     .in("status", ["active", "trialing"]);
 
   if (error) {

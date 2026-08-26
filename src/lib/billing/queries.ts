@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
 import { getDefaultPlanKey } from "@/lib/plans/features";
+import { pickSubscriptionProviderHintRow } from "@/lib/billing/legacy-quarantine";
 import { getOrganizationBillingProvider } from "@/lib/billing/provider-selection";
 import { resolveActiveBillingStatusFlags } from "@/lib/billing/active-billing";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
@@ -22,7 +23,7 @@ export { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selec
 
 /** Canonical PostgREST select for organization_subscriptions rows. */
 export const ORGANIZATION_SUBSCRIPTION_SELECT =
-  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, pending_plan, pending_plan_effective_at, pending_plan_change_type, provider_change_reference, upgrade_payment_id, upgrade_target_plan, trial_ends_at, created_at, updated_at";
+  "id, organization_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, billing_provider, provider_customer_id, provider_subscription_id, provider_price_id, provider_status, sync_pending, status, current_period_start, current_period_end, cancel_at_period_end, pending_plan, pending_plan_effective_at, pending_plan_change_type, provider_change_reference, upgrade_payment_id, upgrade_target_plan, trial_ends_at, legacy_archived, legacy_archived_at, created_at, updated_at";
 
 /** Load the current organization's subscription record for the org billing provider. */
 export async function getOrganizationSubscription(
@@ -43,7 +44,7 @@ export async function getOrganizationSubscription(
   const rows = (data ?? []) as OrganizationSubscription[];
   const activeProvider = getOrganizationBillingProvider({
     organizationId: session.organization.id,
-    subscription: rows[0] ?? null,
+    subscription: pickSubscriptionProviderHintRow(rows),
   });
 
   return selectPreferredSubscriptionRow(rows, activeProvider);

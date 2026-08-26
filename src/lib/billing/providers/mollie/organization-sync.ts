@@ -1,12 +1,11 @@
 import "server-only";
 
 import {
-  hasVerifiedFastSpringSubscription,
   isFastSpringBackedSubscription,
   isMollieBackedSubscription,
 } from "@/lib/billing/active-billing";
+import { isLegacyQuarantinedSubscriptionRow } from "@/lib/billing/legacy-quarantine";
 import { isSubscriptionPaidThroughPeriodEnd } from "@/lib/billing/subscription-management";
-import { isSubscriptionUsable } from "@/lib/billing/status";
 import {
   isMollieSelfServePlanKey,
   type MollieSelfServePlanKey,
@@ -65,7 +64,8 @@ async function readOrganizationSubscriptionRow(
 }
 
 /**
- * Refuse FastSpring / legacy overwrite. Never steal a paid FastSpring org.
+ * Refuse legacy overwrite unless the row is quarantined (audit-only).
+ * Mollie upsert may replace a quarantined legacy row on new checkout.
  */
 export function assertCanWriteMollieOrganizationSubscription(
   existing: OrganizationSubscription | null,
@@ -78,15 +78,11 @@ export function assertCanWriteMollieOrganizationSubscription(
     return;
   }
 
+  if (isLegacyQuarantinedSubscriptionRow(existing)) {
+    return;
+  }
+
   if (isFastSpringBackedSubscription(existing)) {
-    if (
-      hasVerifiedFastSpringSubscription(existing) ||
-      isSubscriptionUsable(existing.provider_status ?? existing.status)
-    ) {
-      throw new Error(
-        "Refusing Mollie write — organization already has a FastSpring subscription. No silent migration.",
-      );
-    }
     throw new Error(
       "Refusing Mollie write — organization_subscriptions row is FastSpring-backed. Clear or migrate deliberately.",
     );

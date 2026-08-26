@@ -9,6 +9,7 @@ import {
   getOrganizationSubscription,
   ORGANIZATION_SUBSCRIPTION_SELECT,
 } from "@/lib/billing/queries";
+import { pickSubscriptionProviderHintRow } from "@/lib/billing/legacy-quarantine";
 import { getOrganizationBillingProvider } from "@/lib/billing/provider-selection";
 import { selectPreferredSubscriptionRow } from "@/lib/billing/subscription-selection";
 import {
@@ -56,7 +57,7 @@ async function loadOrganizationSubscription(
   }
 
   const rows = (data ?? []) as OrganizationSubscription[];
-  const preferredHint = rows[0] ?? null;
+  const preferredHint = pickSubscriptionProviderHintRow(rows);
   const activeProvider = getOrganizationBillingProvider({
     organizationId,
     subscription: preferredHint,
@@ -122,9 +123,9 @@ function resolveMappedPlanKey(
  * Authoritative entitlement resolution for a workspace.
  *
  * Mollie is the sole active billing provider. Paid access requires either:
- * - a usable subscription for the resolved org provider (Mollie or historical FastSpring), or
+ * - a usable authoritative Mollie subscription row, or
  * - an active platform-admin plan override / explicit dev force-plan (pilot / enterprise manual).
- * Legacy Paddle rows never grant access. organizations.plan is never an entitlement source.
+ * Legacy stripe/paddle/fastspring rows never grant access. organizations.plan is never an entitlement source.
  * Return-page callbacks never activate entitlements.
  * Must stay aligned with resolveEffectivePlanFromSubscriptionRows isPaidAccess rules.
  */

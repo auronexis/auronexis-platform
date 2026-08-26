@@ -8,6 +8,7 @@
  * be used to grant portal access, checkout eligibility, or entitlements.
  */
 
+import { isLegacyQuarantinedSubscriptionRow } from "@/lib/billing/legacy-quarantine";
 import type { BillingProvider } from "@/lib/billing/provider-types";
 import {
   isPaymentPending,
@@ -151,6 +152,10 @@ export function isActiveBillingSubscriptionRow(
   activeProvider: BillingProvider,
 ): boolean {
   if (!row) {
+    return false;
+  }
+
+  if (isLegacyQuarantinedSubscriptionRow(row)) {
     return false;
   }
 

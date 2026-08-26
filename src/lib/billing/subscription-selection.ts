@@ -8,6 +8,7 @@ import {
   isPaddleBackedSubscription,
   isStaleStripeAbandonedCheckout,
 } from "@/lib/billing/active-billing";
+import { isLegacyQuarantinedSubscriptionRow } from "@/lib/billing/legacy-quarantine";
 import type { BillingProvider } from "@/lib/billing/provider-types";
 import { isSubscriptionUsable } from "@/lib/billing/status";
 import type { OrganizationSubscription } from "@/types/database";
@@ -28,11 +29,13 @@ export function selectPreferredSubscriptionRow(
   rows: OrganizationSubscription[],
   activeProvider: BillingProvider = "mollie",
 ): OrganizationSubscription | null {
-  if (rows.length === 0) {
+  const authoritativeRows = rows.filter((row) => !isLegacyQuarantinedSubscriptionRow(row));
+
+  if (authoritativeRows.length === 0) {
     return null;
   }
 
-  const candidates = rows
+  const candidates = authoritativeRows
     .filter((row) => isActiveBillingSubscriptionRow(row, activeProvider))
     .sort(sortByUpdatedAtDesc);
 
@@ -112,12 +115,14 @@ export function selectPreferredSubscriptionSummaryRow<
     provider_subscription_id?: string | null;
   },
 >(rows: T[], activeProvider: BillingProvider = "mollie"): T | null {
-  if (rows.length === 0) {
+  const authoritativeRows = rows.filter((row) => !isLegacyQuarantinedSubscriptionRow(row));
+
+  if (authoritativeRows.length === 0) {
     return null;
   }
 
   if (activeProvider === "fastspring") {
-    const fastspringRows = rows.filter((row) => row.billing_provider === "fastspring");
+    const fastspringRows = authoritativeRows.filter((row) => row.billing_provider === "fastspring");
 
     const usableFs = fastspringRows.find((row) => isSubscriptionUsable(row.status));
     if (usableFs) return usableFs;
@@ -129,7 +134,7 @@ export function selectPreferredSubscriptionSummaryRow<
   }
 
   if (activeProvider === "mollie") {
-    const mollieRows = rows.filter((row) => row.billing_provider === "mollie");
+    const mollieRows = authoritativeRows.filter((row) => row.billing_provider === "mollie");
 
     const usable = mollieRows.find((row) => isSubscriptionUsable(row.status));
     if (usable) return usable;
@@ -143,7 +148,7 @@ export function selectPreferredSubscriptionSummaryRow<
   }
 
   if (activeProvider === "paddle") {
-    const paddleRows = rows.filter((row) => row.billing_provider === "paddle");
+    const paddleRows = authoritativeRows.filter((row) => row.billing_provider === "paddle");
     const candidates = paddleRows.length > 0 ? paddleRows : [];
     const usable = candidates.find((row) => isSubscriptionUsable(row.status));
     if (usable) {
@@ -158,10 +163,10 @@ export function selectPreferredSubscriptionSummaryRow<
     return candidates[0] ?? null;
   }
 
-  const usable = rows.find((row) => isSubscriptionUsable(row.status));
+  const usable = authoritativeRows.find((row) => isSubscriptionUsable(row.status));
   if (usable) {
     return usable;
   }
 
-  return rows[0] ?? null;
+  return authoritativeRows[0] ?? null;
 }

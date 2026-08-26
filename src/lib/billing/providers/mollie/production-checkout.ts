@@ -4,10 +4,9 @@ import { randomUUID } from "node:crypto";
 
 import { SequenceType } from "@mollie/api-client";
 
+import { isLegacyQuarantinedSubscriptionRow } from "@/lib/billing/legacy-quarantine";
 import {
-  hasVerifiedFastSpringSubscription,
   hasVerifiedMollieSubscription,
-  isFastSpringBackedSubscription,
   isMollieBackedSubscription,
 } from "@/lib/billing/active-billing";
 import { getPlanByKey } from "@/lib/billing/plans";
@@ -71,19 +70,14 @@ async function readOrganizationSubscriptionRow(
 }
 
 /**
- * Server-side coexistence: refuse Mollie first payment when FastSpring owns the org.
+ * Legacy FastSpring rows are quarantined — Mollie checkout proceeds when row is audit-only.
  */
 function assertNoFastSpringConflict(row: OrganizationSubscription | null): void {
-  if (!row || !isFastSpringBackedSubscription(row)) {
+  if (!row || isLegacyQuarantinedSubscriptionRow(row)) {
     return;
   }
-  if (hasVerifiedFastSpringSubscription(row) || isSubscriptionUsable(row.provider_status ?? row.status)) {
-    throw new Error(
-      "Refusing Mollie checkout — organization already has a FastSpring subscription (provider_conflict).",
-    );
-  }
   throw new Error(
-    "Refusing Mollie checkout — organization_subscriptions row is FastSpring-backed (existing_subscription).",
+    "Refusing Mollie checkout — organization_subscriptions row belongs to a legacy provider (existing_subscription).",
   );
 }
 

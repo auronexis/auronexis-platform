@@ -17,7 +17,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 const SUBSCRIPTION_SELECT =
-  "stripe_price_id, provider_price_id, provider_subscription_id, billing_provider, provider_status, status, cancel_at_period_end, current_period_end, sync_pending, updated_at";
+  "stripe_price_id, provider_price_id, provider_subscription_id, billing_provider, provider_status, status, cancel_at_period_end, current_period_end, sync_pending, legacy_archived, updated_at";
 
 /** Resolve the effective plan key for an organization. */
 export async function getCurrentPlan(organizationId: string): Promise<PlanKey> {

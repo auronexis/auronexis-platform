@@ -3,6 +3,7 @@ import "server-only";
 import { safeGetPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import { safeGetPlanKeyFromSubscriptionPrice } from "@/lib/billing/plans.server";
 import { resolveActiveBillingStatusFlags } from "@/lib/billing/active-billing";
+import { pickSubscriptionProviderHintRow } from "@/lib/billing/legacy-quarantine";
 import { getOrganizationBillingProvider } from "@/lib/billing/provider-selection";
 import { selectPreferredSubscriptionSummaryRow } from "@/lib/billing/subscription-selection";
 import type { BillingProvider } from "@/lib/billing/provider-types";
@@ -23,6 +24,7 @@ export type EffectivePlanSubscriptionRow = {
   current_period_end?: string | null;
   sync_pending?: boolean | null;
   updated_at?: string;
+  legacy_archived?: boolean | null;
 };
 
 export type EffectivePlanResolution = {
@@ -69,7 +71,7 @@ export function resolveEffectivePlanFromSubscriptionRows(input: {
   rows: EffectivePlanSubscriptionRow[];
   planOverride: { status: string; plan: PlanKey } | null;
 }): EffectivePlanResolution {
-  const preferredHint = input.rows[0] ?? null;
+  const preferredHint = pickSubscriptionProviderHintRow(input.rows);
   const activeProvider = getOrganizationBillingProvider({
     organizationId: input.organizationId,
     subscription: preferredHint as OrganizationSubscription | null,

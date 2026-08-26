@@ -1197,6 +1197,8 @@ export type Database = {
           billing_currency: string | null;
           catalog_price_version: string | null;
           catalog_amount_minor: number | null;
+          legacy_archived: boolean;
+          legacy_archived_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -1226,6 +1228,8 @@ export type Database = {
           billing_currency?: string | null;
           catalog_price_version?: string | null;
           catalog_amount_minor?: number | null;
+          legacy_archived?: boolean;
+          legacy_archived_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1255,6 +1259,8 @@ export type Database = {
           billing_currency?: string | null;
           catalog_price_version?: string | null;
           catalog_amount_minor?: number | null;
+          legacy_archived?: boolean;
+          legacy_archived_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

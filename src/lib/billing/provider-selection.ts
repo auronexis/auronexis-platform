@@ -1,17 +1,13 @@
 import "server-only";
 
-import {
-  hasVerifiedFastSpringSubscription,
-  isFastSpringBackedSubscription,
-  isMollieBackedSubscription,
-} from "@/lib/billing/active-billing";
+import { isMollieBackedSubscription } from "@/lib/billing/active-billing";
+import { isLegacyQuarantinedSubscriptionRow } from "@/lib/billing/legacy-quarantine";
 import type { BillingProvider } from "@/lib/billing/provider-types";
 import { getActiveBillingProvider } from "@/lib/billing/provider";
 import {
   isMollieDefaultForNewSubscriptions,
   isMollieProductionCheckoutEligible,
 } from "@/lib/billing/providers/mollie/rollout";
-import { isSubscriptionUsable } from "@/lib/billing/status";
 import type { OrganizationSubscription } from "@/types/database";
 
 /**
@@ -23,11 +19,6 @@ export type BillingProviderOwnership =
       kind: "owned";
       provider: "mollie";
       reason: "existing_mollie_subscription";
-    }
-  | {
-      kind: "owned";
-      provider: "fastspring";
-      reason: "existing_fastspring_subscription";
     }
   | {
       kind: "none";
@@ -45,55 +36,29 @@ export type OrganizationBillingProviderResolution = {
   reason:
     | "global_default_mollie"
     | "existing_mollie_subscription"
-    | "existing_fastspring_subscription"
     | "mollie_allowlist_eligible"
-    | "mollie_default_for_new"
-    | "fastspring_blocks_mollie";
+    | "mollie_default_for_new";
   /** True when an existing external subscription owns the org (not merely rollout-eligible). */
-  ownership: "mollie" | "fastspring" | "none";
+  ownership: "mollie" | "none";
 };
-
-function isUsableFastSpringRow(row: OrganizationSubscription | null | undefined): boolean {
-  if (!isFastSpringBackedSubscription(row)) {
-    return false;
-  }
-  if (hasVerifiedFastSpringSubscription(row) && isSubscriptionUsable(row?.provider_status ?? row?.status)) {
-    return true;
-  }
-  return false;
-}
 
 /**
  * Resolve existing provider ownership only — ignores rollout / allowlist / default-for-new.
- * Used so rollback can disable NEW Mollie without rewriting Mollie-owned orgs.
- * Historical FastSpring rows remain owned so Mollie never silently double-bills them.
+ * Mollie is the sole authority. Legacy stripe/paddle/fastspring rows never own an org.
  */
 export function resolveBillingProviderOwnership(input: {
   subscription?: OrganizationSubscription | null;
 }): BillingProviderOwnership {
   const subscription = input.subscription ?? null;
 
-  if (isMollieBackedSubscription(subscription)) {
+  if (
+    isMollieBackedSubscription(subscription) &&
+    !isLegacyQuarantinedSubscriptionRow(subscription)
+  ) {
     return {
       kind: "owned",
       provider: "mollie",
       reason: "existing_mollie_subscription",
-    };
-  }
-
-  if (isUsableFastSpringRow(subscription)) {
-    return {
-      kind: "owned",
-      provider: "fastspring",
-      reason: "existing_fastspring_subscription",
-    };
-  }
-
-  if (isFastSpringBackedSubscription(subscription) && hasVerifiedFastSpringSubscription(subscription)) {
-    return {
-      kind: "owned",
-      provider: "fastspring",
-      reason: "existing_fastspring_subscription",
     };
   }
 
@@ -108,13 +73,11 @@ export function resolveBillingProviderOwnership(input: {
  * Resolve which billing provider owns / should serve this organization.
  *
  * Decision order (Mollie sole-provider):
- * 1. Existing Mollie ownership
- * 2. Existing FastSpring ownership (historical) — blocks Mollie new checkout
- * 3. New-checkout eligibility → Mollie
- * 4. Global getActiveBillingProvider() → Mollie
+ * 1. Existing authoritative Mollie ownership
+ * 2. New-checkout eligibility → Mollie
+ * 3. Global getActiveBillingProvider() → Mollie
  *
- * FastSpring checkout is retired — ownership detection is for safety/entitlements only.
- * No silent migration of paid FastSpring orgs.
+ * Legacy stripe/paddle/fastspring rows are quarantined — never ownership.
  */
 export function resolveOrganizationBillingProvider(input: {
   organizationId: string;
@@ -127,14 +90,6 @@ export function resolveOrganizationBillingProvider(input: {
       provider: "mollie",
       reason: "existing_mollie_subscription",
       ownership: "mollie",
-    };
-  }
-
-  if (ownership.kind === "owned" && ownership.provider === "fastspring") {
-    return {
-      provider: "fastspring",
-      reason: "fastspring_blocks_mollie",
-      ownership: "fastspring",
     };
   }
 

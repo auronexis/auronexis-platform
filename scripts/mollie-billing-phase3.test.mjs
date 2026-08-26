@@ -13,13 +13,14 @@ test("A: getActiveBillingProvider returns mollie — sole active provider", () =
   assert.doesNotMatch(provider, /return "fastspring"/);
 });
 
-test("A: per-org provider resolution exists with FastSpring coexistence guards", () => {
+test("A: per-org provider resolution is Mollie-only with legacy quarantine", () => {
   const selection = readSource("src/lib/billing/provider-selection.ts");
   assert.match(selection, /resolveOrganizationBillingProvider/);
-  assert.match(selection, /fastspring_blocks_mollie/);
+  assert.match(selection, /isLegacyQuarantinedSubscriptionRow/);
   assert.match(selection, /mollie_allowlist_eligible/);
   assert.match(selection, /existing_mollie_subscription/);
-  assert.match(selection, /No silent migration/);
+  assert.match(selection, /Legacy stripe\/paddle\/fastspring rows never own an org/);
+  assert.doesNotMatch(selection, /fastspring_blocks_mollie/);
 });
 
 test("A: rollout flags — allowlist + master switch + live charging gate", () => {
@@ -53,7 +54,8 @@ test("B: organization_subscriptions is Mollie production persistence target", ()
   assert.match(orgSync, /organization_subscriptions/);
   assert.match(orgSync, /billing_provider: "mollie"/);
   assert.match(orgSync, /assertCanWriteMollieOrganizationSubscription/);
-  assert.match(orgSync, /No silent migration/);
+  assert.match(orgSync, /isLegacyQuarantinedSubscriptionRow/);
+  assert.match(orgSync, /Mollie upsert may replace a quarantined legacy row/);
 });
 
 // C — Entitlements
@@ -116,12 +118,12 @@ test("E: classic webhook dual-path by billing surface; no Next-Gen webhooks", ()
   assert.match(route, /export async function POST/);
 });
 
-test("E: Mollie org sync refuses FastSpring/legacy overwrite (no FastSpring runtime)", () => {
+test("E: Mollie org sync allows quarantined legacy overwrite (no FastSpring runtime)", () => {
   assert.equal(pathExists("src/lib/fastspring"), false);
   const orgSync = readSource("src/lib/billing/providers/mollie/organization-sync.ts");
-  assert.match(orgSync, /isFastSpringBackedSubscription/);
+  assert.match(orgSync, /isLegacyQuarantinedSubscriptionRow/);
   assert.match(orgSync, /Refusing Mollie write/);
-  assert.match(orgSync, /No silent migration/);
+  assert.match(orgSync, /quarantined legacy row/);
 });
 
 // F — Return page informational only

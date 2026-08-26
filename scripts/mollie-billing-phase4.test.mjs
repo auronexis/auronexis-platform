@@ -17,11 +17,12 @@ test("A: resolveBillingProviderForOrganization distinguishes ownership vs eligib
   const selection = readSource("src/lib/billing/provider-selection.ts");
   assert.match(selection, /resolveBillingProviderForOrganization/);
   assert.match(selection, /resolveBillingProviderOwnership/);
-  assert.match(selection, /ownership: "mollie" \| "fastspring" \| "none"/);
+  assert.match(selection, /ownership: "mollie" \| "none"/);
   assert.match(selection, /mollie_default_for_new/);
-  assert.match(selection, /Rollout ≠ overwrite ownership|never overwrite ownership/i);
+  assert.match(selection, /Rollout \/ allowlist \/ default-for-new never overwrite ownership/);
   assert.match(selection, /existing_mollie_subscription/);
-  assert.match(selection, /fastspring_blocks_mollie/);
+  assert.match(selection, /isLegacyQuarantinedSubscriptionRow/);
+  assert.doesNotMatch(selection, /fastspring_blocks_mollie/);
 });
 
 // B — LIVE kill switch independent from ROLLOUT
@@ -47,8 +48,8 @@ test("C: checkout eligibility centralizes provider_conflict and existing_subscri
   assert.match(eligibility, /existing_subscription/);
   assert.match(eligibility, /duplicate_mollie/);
   assert.match(eligibility, /allowed_mollie_plan_change/);
-  assert.match(eligibility, /Historical FastSpring ownership/i);
-  assert.match(eligibility, /never offer a second provider/i);
+  assert.match(eligibility, /Legacy stripe\/paddle\/fastspring rows are quarantined/);
+  assert.match(eligibility, /isLegacyQuarantinedSubscriptionRow/);
   const actions = readSource("src/lib/billing/actions.ts");
   assert.match(actions, /resolveCheckoutEligibility/);
   assert.match(actions, /Checkout is only available via Mollie/);
@@ -149,7 +150,7 @@ test("K: plan change updates amount in place — no cancel+create double bill", 
 test("L: rollout rollback leaves Mollie ownership intact", () => {
   const selection = readSource("src/lib/billing/provider-selection.ts");
   assert.match(selection, /resolveBillingProviderOwnership/);
-  assert.match(selection, /disable NEW Mollie without rewriting/i);
+  assert.match(selection, /Legacy stripe\/paddle\/fastspring rows never own an org/);
   const rollout = readSource("src/lib/billing/providers/mollie/rollout.ts");
   assert.match(rollout, /Rollback NEW Mollie/i);
   assert.match(rollout, /Existing Mollie-owned/i);
@@ -163,10 +164,11 @@ test("L: rollout rollback leaves Mollie ownership intact", () => {
 test("M: DEFAULT_FOR_NEW prepares cutover without mass migration", () => {
   const rollout = readSource("src/lib/billing/providers/mollie/rollout.ts");
   assert.match(rollout, /isMollieDefaultForNewSubscriptions/);
-  assert.match(rollout, /Historical FastSpring ownership is never overwritten/i);
   const selection = readSource("src/lib/billing/provider-selection.ts");
   assert.match(selection, /mollie_default_for_new/);
-  assert.match(selection, /never overwritten|FastSpring checkout is retired/i);
+  assert.match(selection, /Legacy stripe\/paddle\/fastspring rows never own an org/);
+  const quarantine = readSource("src/lib/billing/legacy-quarantine.ts");
+  assert.match(quarantine, /must never drive entitlements/);
 });
 
 // N — Security: no NEXT_PUBLIC secrets; LIVE remains false in docs/tests
