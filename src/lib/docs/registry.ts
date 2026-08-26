@@ -159,7 +159,7 @@ export const DOC_HUB_CARDS: DocHubCard[] = [
   },
   {
     slug: "integrations",
-    title: "Integrations",
+    title: "Integrations documentation",
     description: INTEGRATIONS_DOC.description,
     module: "workflows",
   },
@@ -201,7 +201,7 @@ export const DOC_HUB_CARDS: DocHubCard[] = [
   },
   {
     slug: "security",
-    title: "Security",
+    title: "Security documentation",
     description: SECURITY_DOC.description,
     module: "settings",
   },
@@ -219,7 +219,7 @@ export const DOC_HUB_CARDS: DocHubCard[] = [
   },
   {
     slug: "compliance",
-    title: "Compliance",
+    title: "Compliance documentation",
     description: COMPLIANCE_DOC.description,
     module: "settings",
   },

@@ -109,7 +109,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
       "Enterprise-grade client operations for MSPs and agencies — security, scale, AI copilot, and dedicated support.",
   },
   [MARKETING_ROUTES.security]: {
-    title: "Security",
+    title: "Platform Security for Agency Operations",
     description:
       "Security practices, encryption, access controls, and responsible disclosure for the Auroranexis B2B SaaS platform.",
   },
@@ -119,12 +119,12 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
       "How to report security vulnerabilities to Auroranexis in good faith, including scope, prohibited testing, and response targets.",
   },
   [MARKETING_ROUTES.compliance]: {
-    title: "Compliance",
+    title: "Compliance Workflows for Client Operations",
     description:
       "Compliance workflows, audit trails, and governance capabilities for agencies managing regulated client operations.",
   },
   [MARKETING_ROUTES.integrations]: {
-    title: "Integrations",
+    title: "Integrations for Agency Operations Platforms",
     description:
       "Connect Auroranexis with Slack, email, REST API, webhooks, and AI providers for agency operations.",
   },

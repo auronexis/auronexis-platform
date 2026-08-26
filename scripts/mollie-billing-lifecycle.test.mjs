@@ -175,11 +175,11 @@ test("No duplicate subscription create when provider_subscription_id already pre
   assert.ok(earlyGuardIdx > 0 && createIdx > earlyGuardIdx);
 });
 
-test("FastSpring runtime preserved — Mollie does not call FastSpring modules", () => {
+test("FastSpring runtime eradicated — Mollie does not call FastSpring modules", () => {
   const webhooks = readSource("src/lib/billing/providers/mollie/webhooks.ts");
   assert.doesNotMatch(webhooks, /resolveOrganizationEntitlements/);
   assert.doesNotMatch(webhooks, /from ["']@\/lib\/fastspring/);
-  assert.ok(pathExists("src/lib/fastspring/sync.ts"));
+  assert.equal(pathExists("src/lib/fastspring"), false);
 });
 
 test("Parallel test state in mollie_test_subscriptions remains TEST-isolated", () => {
@@ -236,9 +236,9 @@ test("Internal diagnostics — sanitized state, no secrets", () => {
   assert.doesNotMatch(panel, /console\.(log|info|debug)/);
 });
 
-test("FastSpring and Stripe runtime preserved", () => {
+test("Legacy FastSpring runtime eradicated; 410 tombstones retained", () => {
   assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
-  assert.ok(pathExists("src/lib/fastspring/sync.ts"));
+  assert.equal(pathExists("src/lib/fastspring"), false);
   assert.ok(pathExists("src/lib/billing/active-billing.ts"));
 });
 

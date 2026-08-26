@@ -43,7 +43,9 @@ The Operations Command Center for AI Automation Agencies.
 | `npm run test:production-readiness` | Chapter 14 deploy readiness contracts |
 | `npm run test:enterprise-regression` | Chapter 13+ regression catalog |
 | `npm run verify:domain-routing` | Domain redirect safety checks |
-| `npm run test:fastspring-billing` | FastSpring sole-provider suites (legacy Paddle regression checks) |
+| `npm run test:mollie-billing` | Mollie sole-provider + billing lifecycle suites |
+| `npm run test:legacy-billing-removal` | Legacy Stripe/Paddle/FastSpring active-surface eradication guards |
+| `npm run test:technical-seo` | Technical SEO integrity guards |
 
 ## Production readiness
 
@@ -75,6 +77,6 @@ Production deploy / commit / push are owned by Release chapters — not local Ch
 | PostgreSQL RLS | Organization isolation |
 | Server Actions | Role-based authorization |
 | Middleware | Session refresh + route protection |
-| FastSpring webhooks | Signature verify + idempotency (legacy Paddle webhooks retained for historical customers) |
+| Mollie webhooks | Classic payment webhook + idempotency (`/api/mollie/webhook`); legacy `/api/fastspring/*` returns 410 |
 
 Legal: `/terms`, `/refund-policy`, `/privacy`, `/imprint`.

@@ -90,7 +90,7 @@ test("PAGE_SEO registry has unique titles for critical pages", () => {
     "B2B SaaS Pricing for Agency Operations",
     "Client Operations Features for Agencies & MSPs",
     "Enterprise Client Operations for MSPs & Agencies",
-    "Integrations",
+    "Integrations for Agency Operations Platforms",
     "Platform Status",
     "Resources for AI Agency & MSP Operations",
   ];
@@ -455,4 +455,50 @@ test("operator SEO checklist documents GSC Bing and IndexNow without fabricated 
   assert.match(doc, /SEARCH_VOLUME_DATA_NOT_AVAILABLE/);
   assert.match(doc, /FIELD_CWV_DATA_NOT_AVAILABLE/);
   assert.doesNotMatch(doc, /rank #1|guaranteed ranking/i);
+});
+
+test("marketing and docs SEO titles do not cannibalize Security/Compliance/Integrations", () => {
+  const routes = readSource("src/lib/seo/routes.ts");
+  const registry = readSource("src/lib/docs/registry.ts");
+  assert.match(routes, /Platform Security for Agency Operations/);
+  assert.match(routes, /Compliance Workflows for Client Operations/);
+  assert.match(routes, /Integrations for Agency Operations Platforms/);
+  assert.match(registry, /Security documentation/);
+  assert.match(registry, /Compliance documentation/);
+  assert.match(registry, /Integrations documentation/);
+  assert.doesNotMatch(routes, /title:\s*"Security"/);
+  assert.doesNotMatch(routes, /title:\s*"Compliance"/);
+  assert.doesNotMatch(routes, /title:\s*"Integrations"/);
+});
+
+test("feature vs solution incident pages use differentiated titles", () => {
+  const feature = readSource("src/lib/seo/feature-content.ts");
+  const solution = readSource("src/lib/seo/landing-content.ts");
+  assert.match(feature, /title: "Incident management with SLA awareness"/);
+  assert.match(solution, /title: "Client portfolio incident response with SLA tracking"/);
+});
+
+test("canonical docs and status URLs stay on www — no separate docs host", () => {
+  const links = readSource("src/lib/company/company-links.ts");
+  assert.match(links, /docs: "https:\/\/www\.auroranexis\.com\/docs"/);
+  assert.match(links, /status: "https:\/\/www\.auroranexis\.com\/status"/);
+  assert.doesNotMatch(links, /docs\.auroranexis\.com/);
+  assert.doesNotMatch(links, /status\.auroranexis\.com/);
+});
+
+test("app host redirects robots.txt and sitemap.xml to www via middleware matcher", () => {
+  const middleware = readSource("src/middleware.ts");
+  const routing = readSource("src/lib/deployment/middleware-routing.ts");
+  assert.doesNotMatch(middleware, /robots\.txt\|sitemap\.xml/);
+  assert.match(routing, /shouldRedirectAppMarketingToWww/);
+  assert.match(routing, /robots\.txt and sitemap\.xml/);
+});
+
+test("pricing schema remains SoftwareApplication SaaS with EUR — no Product merchant nodes", () => {
+  const schema = readSource("src/lib/company/company-schema.ts");
+  assert.match(schema, /SoftwareApplication/);
+  assert.match(schema, /priceCurrency: plan\.currency/);
+  assert.doesNotMatch(schema, /"@type":\s*"Product"/);
+  assert.doesNotMatch(schema, /priceCurrency:\s*"USD"/);
+  assert.doesNotMatch(schema, /OfferShippingDetails|shippingDetails\s*:/);
 });

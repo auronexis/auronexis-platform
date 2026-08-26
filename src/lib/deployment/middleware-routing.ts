@@ -31,7 +31,7 @@ export function shouldBypassSessionMiddleware(pathname: string): boolean {
 
 /**
  * Marketing apex → www redirect for HTML/marketing traffic only.
- * API routes stay on the requested host so FastSpring and other POST webhooks never get 308.
+ * API routes stay on the requested host so Mollie webhook POSTs never get 308.
  *
  * Requires removing the blanket apex redirect in Vercel Domains — use vercel.json redirects instead.
  */
@@ -67,6 +67,7 @@ export function isAppServablePath(pathname: string): boolean {
 /**
  * Production app host only — marketing/public paths must never be served from app.*.
  * Staging is excluded so it never redirects users into production www.
+ * Includes robots.txt and sitemap.xml so crawl endpoints never compete on app.*.
  */
 export function shouldRedirectAppMarketingToWww(hostname: string, pathname: string): boolean {
   if (isApiRoute(pathname)) {

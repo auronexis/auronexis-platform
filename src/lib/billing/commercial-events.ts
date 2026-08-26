@@ -2,8 +2,8 @@
  * Standardized commercial / billing event catalog — maps to analytics + webhook outcomes.
  * Never attach org/customer/secret identifiers to third-party analytics payloads.
  *
- * FastSpring webhook event names live in `src/lib/fastspring/events.ts` —
- * the historical Paddle event-type catalog was removed with the Paddle runtime.
+ * Mollie is the sole active billing provider. Historical provider webhook catalogs
+ * were removed with their runtimes.
  */
 
 export const COMMERCIAL_EVENT_NAMES = [

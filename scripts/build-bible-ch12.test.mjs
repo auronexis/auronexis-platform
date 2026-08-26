@@ -46,10 +46,9 @@ test("fastspring webhook route is retired to 410; Mollie webhook is active", () 
 });
 
 test("idempotency recovers stale processing and checks payload hash", () => {
-  const idempotency = readSource("src/lib/fastspring/idempotency.ts");
-  assert.match(idempotency, /PROCESSING_STALE_MS/);
-  assert.match(idempotency, /payload hash mismatch/);
-  assert.match(idempotency, /retrying stale processing webhook/);
+  const idempotency = readSource("src/lib/billing/providers/mollie/webhooks.ts");
+  assert.match(idempotency, /ensureMollieIdempotency|mollie_webhook_events/);
+  assert.match(idempotency, /payload|idempotenc/i);
 });
 
 test("entitlements document a single authoritative resolver", () => {

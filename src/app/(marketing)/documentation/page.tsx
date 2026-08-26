@@ -6,7 +6,7 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
 import { HELP_TOPICS } from "@/lib/marketing/content";
-import { DOCS_URL, MARKETING_ROUTES } from "@/lib/company/contact";
+import { MARKETING_ROUTES } from "@/lib/company/contact";
 import { cn } from "@/lib/utils/cn";
 import { getAuroraModule, auroraSurfaceInteractive } from "@/lib/ui/aurora";
 import { focusRing } from "@/lib/ui/tokens";
@@ -63,14 +63,12 @@ export default function DocumentationPage() {
           })}
         </div>
         <p className="mt-6 text-sm text-muted">
-          The documentation hub at <Link href="/docs" className="font-medium text-primary hover:underline">/docs</Link> contains
-          the complete product guides. This page is the marketing entry point for evaluation and onboarding.
-          {" "}
-          Full documentation is also published at{" "}
-          <a href={DOCS_URL} className="font-medium text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-            {DOCS_URL.replace("https://", "")}
-          </a>
-          .
+          The documentation hub at{" "}
+          <Link href="/docs" className="font-medium text-primary hover:underline">
+            /docs
+          </Link>{" "}
+          contains the complete product guides. This page is the marketing entry point for evaluation
+          and onboarding.
         </p>
       </MarketingSection>
       <MarketingSection title="Help topics" className="border-t border-border/70 bg-surface-2/30">

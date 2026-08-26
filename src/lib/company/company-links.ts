@@ -8,8 +8,10 @@ export const APP_VERSION = "1.0.3";
 
 export const EXTERNAL_LINKS = {
   website: COMPANY_INFORMATION.website,
-  docs: "https://docs.auroranexis.com",
-  status: "https://status.auroranexis.com",
+  /** Canonical product docs live on www — do not invent a separate docs host. */
+  docs: "https://www.auroranexis.com/docs",
+  /** Canonical status page lives on www. */
+  status: "https://www.auroranexis.com/status",
 } as const;
 
 /** Backward-compatible aliases. */

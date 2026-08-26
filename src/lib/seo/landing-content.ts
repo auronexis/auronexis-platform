@@ -118,7 +118,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     slug: "incident-management",
     path: SOLUTION_ROUTES.incidentManagement,
     eyebrow: "Solution",
-    title: "Incident management with SLA awareness",
+    title: "Client portfolio incident response with SLA tracking",
     description: "Track incidents, timelines, ownership, and SLA impact across your client portfolio.",
     metaDescription:
       "Agency incident management — timelines, SLA tracking, client transparency, and audit logs in Auroranexis.",

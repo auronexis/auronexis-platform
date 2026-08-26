@@ -1,6 +1,6 @@
 /**
  * Legacy billing provider eradication — active-surface guards and Mollie-first contracts.
- * Excludes historical migrations, archival docs, and retired src/lib/fastspring modules.
+ * Excludes historical migrations and archival docs. Active FastSpring runtime must stay deleted.
  */
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -242,4 +242,39 @@ test("public legal routes render from LEGAL_PAGES — not duplicate hardcoded St
     assert.match(page, /LegalPageView/);
     assert.doesNotMatch(page, PUBLIC_ACTIVE_LEGACY_PROVIDER_PATTERN);
   }
+});
+
+test("ACTIVE FastSpring runtime modules and test UI are eradicated (410 tombstones only)", () => {
+  assert.equal(pathExists("src/lib/fastspring"), false);
+  assert.equal(pathExists("src/components/settings/fastspring-test-checkout-panel.tsx"), false);
+  assert.equal(pathExists("src/lib/stripe"), false);
+  assert.equal(pathExists("src/lib/paddle"), false);
+  assert.equal(pathExists("src/app/api/stripe"), false);
+  assert.equal(pathExists("src/app/api/paddle"), false);
+  assert.ok(pathExists("src/app/api/fastspring/webhook/route.ts"));
+  assert.ok(pathExists("src/app/api/fastspring/connectivity/route.ts"));
+  assert.ok(pathExists("src/app/api/mollie/webhook/route.ts"));
+
+  const pkg = readSource("package.json");
+  assert.doesNotMatch(pkg, /"test:fastspring-/);
+  assert.doesNotMatch(pkg, /"@paddle\//);
+  assert.doesNotMatch(pkg, /"stripe"/);
+  assert.match(pkg, /"@mollie\/api-client"/);
+
+  const envExample = readSource(".env.example");
+  assert.doesNotMatch(envExample, /^[#\s]*FASTSPRING_[A-Z0-9_]+=/m);
+  assert.doesNotMatch(envExample, /^[#\s]*PADDLE_[A-Z0-9_]+=/m);
+  assert.doesNotMatch(envExample, /^[#\s]*STRIPE_[A-Z0-9_]+=/m);
+  assert.doesNotMatch(envExample, /^[#\s]*NEXT_PUBLIC_STRIPE_/m);
+  assert.doesNotMatch(envExample, /^[#\s]*NEXT_PUBLIC_PADDLE_/m);
+  assert.match(envExample, /MOLLIE_LIVE_CHARGING_ENABLED=false/);
+});
+
+test("getActiveBillingProvider is Mollie-only — ACTIVE_* legacy providers = 0", () => {
+  const provider = readSource("src/lib/billing/provider.ts");
+  assert.match(provider, /return "mollie"/);
+  assert.doesNotMatch(provider, /return "fastspring"/);
+  assert.doesNotMatch(provider, /return "paddle"/);
+  assert.doesNotMatch(provider, /return "stripe"/);
+  assert.match(provider, /isFastSpringActiveBillingProvider[\s\S]*return false/);
 });

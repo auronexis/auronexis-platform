@@ -116,10 +116,12 @@ test("E: classic webhook dual-path by billing surface; no Next-Gen webhooks", ()
   assert.match(route, /export async function POST/);
 });
 
-test("E: FastSpring sync archive still refuses Mollie overwrite", () => {
-  const sync = readSource("src/lib/fastspring/sync.ts");
-  assert.match(sync, /billing_provider === "mollie"/);
-  assert.match(sync, /mollie_subscription_present_refusing_fastspring_overwrite/);
+test("E: Mollie org sync refuses FastSpring/legacy overwrite (no FastSpring runtime)", () => {
+  assert.equal(pathExists("src/lib/fastspring"), false);
+  const orgSync = readSource("src/lib/billing/providers/mollie/organization-sync.ts");
+  assert.match(orgSync, /isFastSpringBackedSubscription/);
+  assert.match(orgSync, /Refusing Mollie write/);
+  assert.match(orgSync, /No silent migration/);
 });
 
 // F — Return page informational only

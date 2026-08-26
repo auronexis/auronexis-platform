@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
-import { readSource, rootDir } from "./_test-helpers/read-source.mjs";
+import { readSource, rootDir, pathExists } from "./_test-helpers/read-source.mjs";
 
 test("Build Bible V2 Chapter 6 API doc and rule exist", () => {
   assert.ok(existsSync(join(rootDir, "docs/08_BUILD_BIBLE_V2_CHAPTER_06_API.md")));
@@ -52,14 +52,13 @@ test("cron job actions require session authorization", () => {
   assert.match(jobs, /canManageOrganizationSettings/);
 });
 
-test("fastspring webhook is retired to 410; historical idempotency helpers remain", () => {
-  const idem = readSource("src/lib/fastspring/idempotency.ts");
+test("fastspring webhook is retired to 410; no active FastSpring runtime modules", () => {
   const route = readSource("src/app/api/fastspring/webhook/route.ts");
-  assert.match(idem, /unavailable/);
   assert.match(route, /status:\s*410/);
-  assert.match(route, /FastSpring webhooks are retired|gone/i);
+  assert.match(route, /Legacy provider webhooks are retired|gone/i);
   assert.doesNotMatch(route, /verifyFastSpringSignature|handleFastSpringWebhookEvent/);
   assert.doesNotMatch(route, /error: message/);
+  assert.equal(pathExists("src/lib/fastspring"), false);
 });
 
 test("domain AI providers share resolveDomainAIProvider", () => {

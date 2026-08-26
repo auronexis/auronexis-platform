@@ -88,12 +88,15 @@ test("LIVE charging remains gated off by default in rollout module", () => {
   assert.match(rollout, /MOLLIE_LIVE_CHARGING_ENABLED/);
 });
 
-test(".env.example documents Mollie sole provider and FastSpring as LEGACY", () => {
+test(".env.example documents Mollie sole provider without legacy env keys", () => {
   const envExample = readSource(".env.example");
   assert.match(envExample, /MOLLIE_API_KEY/);
-  assert.match(envExample, /LEGACY — FastSpring retired|MANUAL VERCEL REMOVAL/i);
-  assert.doesNotMatch(envExample, /^FASTSPRING_STOREFRONT=/m);
-  assert.doesNotMatch(envExample, /^FASTSPRING_WEBHOOK_SECRET=/m);
+  assert.match(envExample, /sole active billing/i);
+  assert.doesNotMatch(envExample, /^FASTSPRING_/m);
+  assert.doesNotMatch(envExample, /^#\s*FASTSPRING_/m);
+  assert.doesNotMatch(envExample, /^PADDLE_/m);
+  assert.doesNotMatch(envExample, /^STRIPE_/m);
+  assert.equal(pathExists("src/lib/fastspring"), false);
 });
 
 test("no Paddle SDK imports remain in src/", () => {

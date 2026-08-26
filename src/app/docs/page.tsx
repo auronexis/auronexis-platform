@@ -5,7 +5,7 @@ import { BookOpen, ScrollText } from "lucide-react";
 import { DocsViewTracker } from "@/components/analytics/docs-view-tracker";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { PublicAppLink } from "@/components/marketing/public-app-link";
-import { COMPANY_NAME, DOCS_URL, SUPPORT_EMAIL } from "@/lib/company/contact";
+import { COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/company/contact";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { DOCS_HUB_DOC, DOC_HUB_CARDS } from "@/lib/docs/registry";
 import { JsonLdScript } from "@/lib/marketing/seo";
@@ -137,11 +137,6 @@ export default function DocsHubPage() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <a href={DOCS_URL} className="hover:text-white hover:underline" target="_blank" rel="noopener noreferrer">
-                  External docs site
-                </a>
-              </li>
               <li>
                 <Link href="/docs/api" className="hover:text-white hover:underline">
                   OpenAPI reference
