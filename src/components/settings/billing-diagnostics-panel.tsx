@@ -183,6 +183,10 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
         <Link href="/settings/billing/mollie-test" className="font-medium underline">
           Mollie Test Checkout
         </Link>
+        . Sales invoice preview (no payment, no DB):{" "}
+        <Link href="/settings/billing/invoice-preview" className="font-medium underline">
+          Invoice preview
+        </Link>
         .
       </FormAlert>
 
