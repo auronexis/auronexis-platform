@@ -1,6 +1,7 @@
 /**
  * Best-effort sales invoice issuance after Mollie payment sync.
  * Never blocks entitlement reconciliation — failures are logged only.
+ * Fail-closed: no silent DE country default; no Reverse Charge auto-issue without counsel legend.
  */
 
 import "server-only";
@@ -9,6 +10,10 @@ import { getOrganizationBillingIdentity } from "@/lib/billing/billing-identity";
 import { issueSalesInvoice } from "@/lib/billing/sales-invoice";
 import { determineTaxPolicy, LEGAL_TEXT_PENDING_COUNSEL } from "@/lib/billing/tax-policy";
 import { calculateVatInclusiveBreakdown } from "@/lib/billing/taxes";
+import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
+import { normalizeVatId } from "@/lib/billing/vies";
+import { buildSellerInvoiceSnapshot, getSellerTaxConfiguration } from "@/lib/billing/seller-tax-config";
+import { buildTaxDecisionEvidenceSnapshot } from "@/lib/billing/tax-decision-evidence";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
@@ -19,6 +24,8 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
   productName: string;
   billingPeriodStart?: string | null;
   billingPeriodEnd?: string | null;
+  planKey?: string | null;
+  priceVersion?: string | null;
 }): Promise<void> {
   if (input.amountTotalMinor === null || input.amountTotalMinor < 0 || !input.currency) {
     return;
@@ -35,11 +42,34 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     return;
   }
 
+  const sellerConfig = getSellerTaxConfiguration();
+  if (sellerConfig.status === "OPERATOR_INPUT_REQUIRED") {
+    console.warn("[billing][sales-invoice] skipped — seller tax configuration incomplete", {
+      missingFields: sellerConfig.missingFields,
+    });
+    return;
+  }
+
   const identity = await getOrganizationBillingIdentity(input.organizationId);
+  const countryCode = identity?.countryCode?.trim().toUpperCase() || null;
+  if (!countryCode) {
+    console.warn("[billing][sales-invoice] skipped — buyer billing country missing (fail-closed)");
+    return;
+  }
+
+  const viesStatus =
+    (identity?.viesStatus as
+      | "valid"
+      | "invalid"
+      | "unavailable"
+      | "not_checked"
+      | "skipped"
+      | null) ?? "not_checked";
+
   const determination = determineTaxPolicy({
-    customerCountryCode: identity?.countryCode ?? "DE",
+    customerCountryCode: countryCode,
     vatId: identity?.vatId ?? null,
-    viesStatus: (identity?.viesStatus as "valid" | "invalid" | "unavailable" | "not_checked" | "skipped" | null) ?? "not_checked",
+    viesStatus,
     isB2bEntrepreneurConfirmed: true,
   });
 
@@ -53,6 +83,29 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     determination,
   });
 
+  const sellerSnapshot = buildSellerInvoiceSnapshot();
+  const vatTechnicalState = resolveVatIdTechnicalState({
+    vatId: identity?.vatId,
+    viesStatus,
+  });
+
+  const taxDecisionEvidence = buildTaxDecisionEvidenceSnapshot({
+    organizationId: input.organizationId,
+    buyerLegalName: identity?.legalName ?? null,
+    buyerCountryCode: countryCode,
+    buyerVatIdNormalized: normalizeVatId(identity?.vatId ?? null),
+    vatTechnicalState,
+    viesStatus,
+    viesCheckedAt: identity?.viesCheckedAt ?? null,
+    businessClassification: determination.businessClassification,
+    determination,
+    sellerSnapshot,
+    planKey: input.planKey ?? null,
+    catalogAmountMinor: input.amountTotalMinor,
+    currency: input.currency,
+    priceVersion: input.priceVersion ?? null,
+  });
+
   const invoice = await issueSalesInvoice({
     organizationId: input.organizationId,
     currency: input.currency,
@@ -61,19 +114,21 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     vatMinor: breakdown.vatMinor,
     grossMinor: breakdown.grossMinor,
     taxPolicyOutcome: breakdown.outcome,
+    businessClassification: determination.businessClassification,
     billingPeriodStart: input.billingPeriodStart ?? null,
     billingPeriodEnd: input.billingPeriodEnd ?? null,
     molliePaymentId: input.paymentId,
     providerTransactionId: input.paymentId,
     buyerLegalName: identity?.legalName ?? null,
     buyerVatId: identity?.vatId ?? null,
-    buyerCountryCode: identity?.countryCode ?? null,
+    buyerCountryCode: countryCode,
     productName: input.productName,
+    sellerSnapshot,
+    taxDecisionEvidence,
     reverseChargeLegendStatus: LEGAL_TEXT_PENDING_COUNSEL,
   });
 
-  const adminForUpdate = createAdminClient();
-  await adminForUpdate
+  await admin
     .from("billing_provider_transactions")
     .update({
       invoice_number: invoice.invoiceNumber,

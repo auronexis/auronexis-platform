@@ -57,9 +57,9 @@ test("Sales invoice domain owns Net/VAT/Total invariant", () => {
   assert.doesNotMatch(invoice, /reverse charge applies under Article/);
 });
 
-test("E-Invoice generator is deferred — no fake XML", () => {
+test("E-Invoice domain ready — XML generator deferred (no fake XML)", () => {
   const einv = readSource("src/lib/billing/e-invoice.ts");
-  assert.match(einv, /generator_deferred/);
+  assert.match(einv, /domain_model_ready/);
   assert.match(einv, /xmlGenerationEnabled:\s*false/);
   assert.match(einv, /GENERATOR_DEFERRED/);
   assert.doesNotMatch(einv, /<rsm:CrossIndustryInvoice/);
@@ -100,7 +100,8 @@ test("Marketing and legal catalog prices are EUR", () => {
   assert.match(marketing, /€179/);
   assert.match(marketing, /€599/);
   assert.match(marketing, /€1,799/);
-  assert.match(marketing, /VAT-inclusive list prices in EUR/);
+  assert.match(marketing, /Catalog list prices in EUR/);
+  assert.match(marketing, /Tax treatment is determined from organization billing identity/);
   const legal = readSource("src/lib/company/legal-content.ts");
   assert.match(legal, /€179\/month/);
   assert.doesNotMatch(legal, /base USD catalog/);

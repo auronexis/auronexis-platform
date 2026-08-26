@@ -58,11 +58,11 @@ export type EInvoiceCapabilityReport = {
 /** Capability report — generator intentionally deferred (no unsafe/unmaintained library wired). */
 export function getEInvoiceCapabilityReport(): EInvoiceCapabilityReport {
   return {
-    status: "generator_deferred",
+    status: "domain_model_ready",
     profilesTargeted: E_INVOICE_TARGET_PROFILES,
     xmlGenerationEnabled: false,
     reason:
-      "Domain model ready; XRechnung/ZUGFeRD XML generator deferred pending maintained library approval. No fake compliant XML is emitted.",
+      "Structured seller/buyer/tax/totals domain is ready for future XRechnung/ZUGFeRD. XML generator remains deferred (generator_deferred) — no fake compliant XML is emitted.",
   };
 }
 

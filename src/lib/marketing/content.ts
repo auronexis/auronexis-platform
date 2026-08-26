@@ -194,7 +194,7 @@ export const PUBLIC_PRICING_PLANS = [
 
 /** Copy-only footnote for public pricing pages — invite-only programs are not listed here. */
 export const PUBLIC_PRICING_NOTE =
-  "Prices shown are VAT-inclusive list prices in EUR from our catalog where the applicable tax model permits. Final tax treatment is confirmed at checkout. Contact sales for custom enterprise agreements when needed.";
+  "Catalog list prices in EUR. Tax treatment is determined from organization billing identity at checkout — not from browser locale. Contact sales for custom enterprise agreements when needed.";
 export const INVITE_ONLY_PROGRAMS_NOTE = "Pilot and Founding programs are invite-only.";
 
 export const SECURITY_HIGHLIGHTS = [

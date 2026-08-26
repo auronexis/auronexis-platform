@@ -92,13 +92,14 @@ export function calculateVatInclusiveBreakdown(input: {
   };
 }
 
-/** @deprecated Use determineTaxPolicy + calculateVatInclusiveBreakdown. */
+/** @deprecated Use determineTaxPolicy + calculateVatInclusiveBreakdown. Never invent non-DE rates. */
 export function getTaxRateForPlan(_planKey: PlanKey, countryCode = "DE"): number {
   if (countryCode.toUpperCase() === "DE") {
     return DE_STANDARD_VAT_RATE_BPS / 10_000;
   }
-  // Non-DE must not silently receive a guessed rate — callers should use determination.
-  return DE_STANDARD_VAT_RATE_BPS / 10_000;
+  throw new Error(
+    "getTaxRateForPlan refused non-DE country — use determineTaxPolicy (no silent rate invent)",
+  );
 }
 
 /** @deprecated Prefer calculateVatInclusiveBreakdown with determination. */

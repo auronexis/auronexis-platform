@@ -1,6 +1,7 @@
 /**
  * Auroranexis sales invoice domain — distinct from Mollie payment receipts.
  * Mollie payment ≠ sales invoice. Gross must equal paid catalog amount.
+ * Issued invoices snapshot seller + tax evidence and must not re-read mutable org fields.
  */
 
 import "server-only";
@@ -9,6 +10,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { TaxPolicyOutcome } from "@/lib/billing/tax-policy";
 import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
 import { LEGAL_TEXT_PENDING_COUNSEL } from "@/lib/billing/tax-policy";
+import { resolveReverseChargeLegend } from "@/lib/billing/reverse-charge-legend";
+import {
+  buildSellerInvoiceSnapshot,
+  type SellerInvoiceSnapshot,
+} from "@/lib/billing/seller-tax-config";
+import type { TaxDecisionEvidenceSnapshot } from "@/lib/billing/tax-decision-evidence";
+import type { B2bTaxRelationshipClass } from "@/lib/billing/tax-classification";
 
 export type SalesInvoiceStatus = "draft" | "issued" | "void";
 
@@ -32,6 +40,8 @@ export type SalesInvoiceRecord = {
   vatMinor: number;
   grossMinor: number;
   taxPolicyOutcome: TaxPolicyOutcome;
+  businessClassification: B2bTaxRelationshipClass | null;
+  reverseChargeApplied: boolean;
   billingPeriodStart: string | null;
   billingPeriodEnd: string | null;
   molliePaymentId: string | null;
@@ -39,6 +49,8 @@ export type SalesInvoiceRecord = {
   buyerLegalName: string | null;
   buyerVatId: string | null;
   buyerCountryCode: string | null;
+  sellerSnapshot: SellerInvoiceSnapshot | null;
+  taxDecisionEvidence: TaxDecisionEvidenceSnapshot | null;
   issuedAt: string | null;
   lines: SalesInvoiceLine[];
   /** Customer-safe tax note — never includes LEGAL_TEXT_PENDING_COUNSEL. */
@@ -54,6 +66,7 @@ export type IssueSalesInvoiceInput = {
   vatMinor: number;
   grossMinor: number;
   taxPolicyOutcome: TaxPolicyOutcome;
+  businessClassification?: B2bTaxRelationshipClass | null;
   billingPeriodStart?: string | null;
   billingPeriodEnd?: string | null;
   molliePaymentId?: string | null;
@@ -62,6 +75,8 @@ export type IssueSalesInvoiceInput = {
   buyerVatId?: string | null;
   buyerCountryCode?: string | null;
   productName: string;
+  taxDecisionEvidence?: TaxDecisionEvidenceSnapshot | null;
+  sellerSnapshot?: SellerInvoiceSnapshot | null;
   /** When reverse-charge legend is pending counsel, omit customer-facing RC wording. */
   reverseChargeLegendStatus?: typeof LEGAL_TEXT_PENDING_COUNSEL | "approved" | "n/a";
 };
@@ -80,12 +95,11 @@ function buildTaxNote(input: IssueSalesInvoiceInput): string | null {
     return formatVatRateBpsLabel(input.vatRateBps);
   }
   if (input.taxPolicyOutcome === "REVERSE_CHARGE") {
-    if (input.reverseChargeLegendStatus === "approved") {
-      // Approved counsel text would be injected here — none present yet.
-      return null;
-    }
-    // Do not invent reverse-charge wording for customers.
-    return null;
+    const legend = resolveReverseChargeLegend({
+      taxPolicyOutcome: input.taxPolicyOutcome,
+      reverseChargeLegendStatus: input.reverseChargeLegendStatus ?? LEGAL_TEXT_PENDING_COUNSEL,
+    });
+    return legend.showOnInvoice ? legend.legendText : null;
   }
   return null;
 }
@@ -113,6 +127,12 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
   const now = new Date().toISOString();
   const invoiceNumber = await allocateInvoiceNumber(input.organizationId);
   const taxNote = buildTaxNote(input);
+  const sellerSnapshot = input.sellerSnapshot ?? buildSellerInvoiceSnapshot();
+  const reverseChargeApplied = input.taxPolicyOutcome === "REVERSE_CHARGE";
+  const businessClassification =
+    input.businessClassification ??
+    input.taxDecisionEvidence?.businessClassification ??
+    null;
 
   const lines: SalesInvoiceLine[] = [
     {
@@ -143,6 +163,10 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
     buyer_legal_name: input.buyerLegalName ?? null,
     buyer_vat_id: input.buyerVatId ?? null,
     buyer_country_code: input.buyerCountryCode ?? null,
+    seller_snapshot: sellerSnapshot,
+    tax_decision_evidence: input.taxDecisionEvidence ?? null,
+    reverse_charge_applied: reverseChargeApplied,
+    business_classification: businessClassification,
     lines_json: lines,
     issued_at: now,
     created_at: now,
@@ -174,6 +198,8 @@ function mapInvoiceRow(row: Record<string, unknown>): SalesInvoiceRecord {
     vatMinor: Number(row.vat_minor),
     grossMinor: Number(row.gross_minor),
     taxPolicyOutcome: row.tax_policy_outcome as TaxPolicyOutcome,
+    businessClassification: (row.business_classification as B2bTaxRelationshipClass | null) ?? null,
+    reverseChargeApplied: Boolean(row.reverse_charge_applied),
     billingPeriodStart: (row.billing_period_start as string | null) ?? null,
     billingPeriodEnd: (row.billing_period_end as string | null) ?? null,
     molliePaymentId: (row.mollie_payment_id as string | null) ?? null,
@@ -181,6 +207,8 @@ function mapInvoiceRow(row: Record<string, unknown>): SalesInvoiceRecord {
     buyerLegalName: (row.buyer_legal_name as string | null) ?? null,
     buyerVatId: (row.buyer_vat_id as string | null) ?? null,
     buyerCountryCode: (row.buyer_country_code as string | null) ?? null,
+    sellerSnapshot: (row.seller_snapshot as SellerInvoiceSnapshot | null) ?? null,
+    taxDecisionEvidence: (row.tax_decision_evidence as TaxDecisionEvidenceSnapshot | null) ?? null,
     issuedAt: (row.issued_at as string | null) ?? null,
     lines: Array.isArray(row.lines_json) ? (row.lines_json as SalesInvoiceLine[]) : [],
     taxNote: (row.tax_note as string | null) ?? null,
@@ -224,7 +252,10 @@ export async function getSalesInvoiceForOrganization(input: {
   return mapInvoiceRow(data as Record<string, unknown>);
 }
 
-/** Presentation DTO for customer UI — Net, VAT %, VAT amount, Total. */
+/**
+ * Presentation DTO for customer UI — Net, VAT %, VAT amount, Total.
+ * Uses stored invoice facts only (immutable after issue).
+ */
 export function toCustomerInvoiceView(invoice: SalesInvoiceRecord): {
   invoiceNumber: string;
   currency: string;
@@ -233,7 +264,11 @@ export function toCustomerInvoiceView(invoice: SalesInvoiceRecord): {
   vatMinor: number;
   grossMinor: number;
   taxNote: string | null;
+  reverseChargeApplied: boolean;
   issuedAt: string | null;
+  buyerLegalName: string | null;
+  buyerCountryCode: string | null;
+  sellerLegalName: string | null;
   lines: SalesInvoiceLine[];
 } {
   return {
@@ -244,7 +279,18 @@ export function toCustomerInvoiceView(invoice: SalesInvoiceRecord): {
     vatMinor: invoice.vatMinor,
     grossMinor: invoice.grossMinor,
     taxNote: invoice.taxNote,
+    reverseChargeApplied: invoice.reverseChargeApplied,
     issuedAt: invoice.issuedAt,
+    buyerLegalName: invoice.buyerLegalName,
+    buyerCountryCode: invoice.buyerCountryCode,
+    sellerLegalName: invoice.sellerSnapshot?.legalName ?? null,
     lines: invoice.lines,
   };
 }
+
+/** Credit-note capability — structural gap documented for external accounting design. */
+export const SALES_INVOICE_CREDIT_NOTE_STATUS = {
+  supported: false as const,
+  code: "CREDIT_NOTE_NOT_IMPLEMENTED" as const,
+  note: "Refunds must not mutate issued sales invoice totals. Credit-note issuance is deferred.",
+};
