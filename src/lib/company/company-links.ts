@@ -151,6 +151,7 @@ export const FOOTER_SECTIONS = {
   product: [
     { label: "Features", href: MARKETING_ROUTES.features },
     { label: "Solutions", href: MARKETING_ROUTES.solutions },
+    { label: "Use cases", href: MARKETING_ROUTES.useCases },
     { label: "Templates", href: MARKETING_ROUTES.templates },
     { label: "Resources", href: MARKETING_ROUTES.resources },
     { label: "Industries", href: MARKETING_ROUTES.industries },
@@ -182,7 +183,6 @@ export const FOOTER_SECTIONS = {
     { label: "Contact", href: MARKETING_ROUTES.contact },
     { label: "Help", href: MARKETING_ROUTES.help },
     { label: "FAQ", href: MARKETING_ROUTES.faq },
-    { label: "Use cases", href: MARKETING_ROUTES.useCases },
   ],
 } as const;
 

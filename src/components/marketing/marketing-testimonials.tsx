@@ -8,6 +8,7 @@ export type MarketingTestimonial = {
 };
 
 type MarketingTestimonialsProps = {
+  /** When omitted or empty, heading is suppressed (parent section owns the H2). */
   title?: string;
   items: readonly MarketingTestimonial[];
   className?: string;
@@ -15,13 +16,19 @@ type MarketingTestimonialsProps = {
 
 /** Representative buyer priorities — not customer testimonials. */
 export function MarketingTestimonials({
-  title = "What operations leaders look for",
+  title,
   items,
   className,
 }: MarketingTestimonialsProps) {
+  const heading = title?.trim() ?? "";
   return (
-    <section aria-label={title} className={cn("space-y-8", className)}>
-      <h3 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{title}</h3>
+    <section
+      aria-label={heading || "Operations leader priorities"}
+      className={cn("space-y-8", className)}
+    >
+      {heading ? (
+        <h3 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{heading}</h3>
+      ) : null}
       <p className="max-w-3xl text-sm text-primary-foreground/70">
         Representative buyer priorities — not customer testimonials or reviews.
       </p>

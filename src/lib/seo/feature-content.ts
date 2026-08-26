@@ -436,11 +436,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Executive dashboards for operations leadership",
+    title: "Portfolio KPI dashboards for operations teams",
     description:
-      "Give leadership a portfolio-level view of delivery performance, open exceptions, and client status without manual reporting.",
+      "Give operations teams a portfolio-level view of delivery performance, open exceptions, and client status without manual reporting.",
     metaDescription:
-      "Executive dashboards for MSPs — portfolio KPIs, delivery exceptions, and leadership visibility in Auroranexis.",
+      "Portfolio KPI dashboards for MSPs — delivery exceptions, operational metrics, and team visibility in Auroranexis.",
     problem:
       "Executives rely on slide decks that take days to compile and are outdated on arrival. Without live dashboards, leadership decisions lag behind operational reality.",
     solution:

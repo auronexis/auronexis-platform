@@ -478,6 +478,68 @@ test("feature vs solution incident pages use differentiated titles", () => {
   assert.match(solution, /title: "Client portfolio incident response with SLA tracking"/);
 });
 
+test("phase 2 authority: homepage logo/testimonials do not reintroduce duplicate H3 defaults", () => {
+  const logo = readSource("src/components/marketing/marketing-logo-cloud.tsx");
+  const testimonials = readSource("src/components/marketing/marketing-testimonials.tsx");
+  const home = readSource("src/app/(marketing)/page.tsx");
+  assert.match(logo, /title\?\.trim/);
+  assert.match(testimonials, /title\?\.trim/);
+  assert.doesNotMatch(logo, /title\s*=\s*"Built for service-led/);
+  assert.doesNotMatch(testimonials, /title\s*=\s*"What operations leaders/);
+  assert.match(home, /title="Service-led organizations"/);
+  assert.match(home, /title="What operations leaders look for"/);
+  assert.match(home, /<MarketingLogoCloud items=\{MARKETING_LOGO_CLOUD\} \/>/);
+  assert.match(home, /<MarketingTestimonials items=\{MARKETING_TESTIMONIALS\} \/>/);
+});
+
+test("phase 2 authority: industry vs use-case titles are differentiated for overlapping ICPs", () => {
+  const industry = readSource("src/lib/seo/industry-content.ts");
+  const audience = readSource("src/lib/seo/audience-content.ts");
+  assert.match(industry, /Marketing sector delivery operations for agencies and brand teams/);
+  assert.match(audience, /Client operations for marketing agencies/);
+  assert.match(industry, /IT services industry portfolio governance and SLA operations/);
+  assert.match(audience, /Operational command center for IT service providers/);
+  assert.match(industry, /Professional services industry engagement governance/);
+  assert.match(audience, /Delivery operations for consultancies/);
+  assert.match(industry, /USE_CASE_ROUTES\.marketingAgencies/);
+  assert.match(industry, /USE_CASE_ROUTES\.msps/);
+  assert.match(audience, /INDUSTRY_ROUTES\.marketing/);
+  assert.match(audience, /INDUSTRY_ROUTES\.it/);
+});
+
+test("phase 2 authority: executive dashboard feature vs solution titles do not collide", () => {
+  const feature = readSource("src/lib/seo/feature-content.ts");
+  const solution = readSource("src/lib/seo/landing-content.ts");
+  assert.match(feature, /title: "Portfolio KPI dashboards for operations teams"/);
+  assert.match(solution, /title: "Executive dashboard for agency operations"/);
+  assert.match(feature, /href: SOLUTION_ROUTES\.executiveDashboard/);
+});
+
+test("phase 2 authority: intent map owns persona and dashboard clusters with unique primaries", () => {
+  const intent = readSource("src/lib/seo/intent-ownership.ts");
+  assert.match(intent, /id: "msp-operations-persona"/);
+  assert.match(intent, /id: "marketing-agency-persona"/);
+  assert.match(intent, /id: "executive-portfolio-dashboard"/);
+  assert.match(intent, /id: "resources-authority-hub"/);
+  assert.match(intent, /primaryPath: USE_CASE_ROUTES\.msps/);
+  assert.match(intent, /primaryPath: SOLUTION_ROUTES\.executiveDashboard/);
+  const primaries = [...intent.matchAll(/primaryPath:\s*([A-Z][A-Z0-9_]*\.[a-zA-Z0-9_]+)/g)].map(
+    (m) => m[1],
+  );
+  assert.ok(primaries.length >= 14, `expected >=14 primaryPath entries, got ${primaries.length}`);
+  assert.equal(new Set(primaries).size, primaries.length, "duplicate primaryPath owners in intent map");
+});
+
+test("phase 2 authority: nav and footer expose Use cases without company-section duplication", () => {
+  const nav = readSource("src/lib/marketing/content.ts");
+  const links = readSource("src/lib/company/company-links.ts");
+  assert.match(nav, /label: "Use cases"/);
+  assert.match(links, /label: "Use cases", href: MARKETING_ROUTES\.useCases/);
+  const companyMatch = links.match(/company:\s*\[([\s\S]*?)\],\s*\n\} as const/);
+  assert.ok(companyMatch, "FOOTER_SECTIONS.company block not found");
+  assert.doesNotMatch(companyMatch[1], /Use cases/);
+});
+
 test("canonical docs and status URLs stay on www — no separate docs host", () => {
   const links = readSource("src/lib/company/company-links.ts");
   assert.match(links, /docs: "https:\/\/www\.auroranexis\.com\/docs"/);

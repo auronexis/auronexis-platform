@@ -1,8 +1,9 @@
 import {
-  MARKETING_ROUTES,
-  USE_CASE_ROUTES,
   FEATURE_ROUTES,
+  INDUSTRY_ROUTES,
+  MARKETING_ROUTES,
   SOLUTION_ROUTES,
+  USE_CASE_ROUTES,
 } from "@/lib/company/company-links";
 import {
   buildLandingPage,
@@ -96,9 +97,9 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Marketing industry", href: INDUSTRY_ROUTES.marketing },
       { label: "Digital agencies", href: USE_CASE_ROUTES.digitalAgencies },
       { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
-      { label: "Executive reports", href: FEATURE_ROUTES.reports },
       { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
@@ -189,10 +190,10 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "IT industry", href: INDUSTRY_ROUTES.it },
       { label: "MSPs", href: USE_CASE_ROUTES.msps },
       { label: "Incident management", href: SOLUTION_ROUTES.incidentManagement },
       { label: "SLA management", href: SOLUTION_ROUTES.slaManagement },
-      { label: "Integrations", href: FEATURE_ROUTES.integrations },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "seePricing",
@@ -282,9 +283,9 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "IT industry", href: INDUSTRY_ROUTES.it },
       { label: "IT service providers", href: USE_CASE_ROUTES.itServiceProviders },
       { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
-      { label: "Monitoring", href: FEATURE_ROUTES.monitoring },
       { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     ],
     primaryCta: "startFreeTrial",
@@ -375,9 +376,9 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Consulting industry", href: INDUSTRY_ROUTES.consulting },
       { label: "Enterprise teams", href: USE_CASE_ROUTES.enterpriseTeams },
       { label: "Executive dashboard", href: SOLUTION_ROUTES.executiveDashboard },
-      { label: "Knowledge base", href: FEATURE_ROUTES.knowledgeBase },
       { label: "Pilot program", href: MARKETING_ROUTES.pilotProgram },
     ],
     primaryCta: "startFreeTrial",
@@ -468,9 +469,9 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Cybersecurity industry", href: INDUSTRY_ROUTES.cybersecurity },
       { label: "MSPs", href: USE_CASE_ROUTES.msps },
       { label: "Risk management", href: SOLUTION_ROUTES.riskManagement },
-      { label: "Risk intelligence", href: FEATURE_ROUTES.riskIntelligence },
       { label: "Security", href: MARKETING_ROUTES.security },
     ],
     primaryCta: "startFreeTrial",

@@ -6,6 +6,7 @@ export type MarketingLogoItem = {
 };
 
 type MarketingLogoCloudProps = {
+  /** When omitted or empty, heading is suppressed (parent section owns the H2). */
   title?: string;
   description?: string;
   items: readonly MarketingLogoItem[];
@@ -14,17 +15,32 @@ type MarketingLogoCloudProps = {
 
 /** Industry trust band — category labels, not fabricated client logos. */
 export function MarketingLogoCloud({
-  title = "Built for service-led organizations",
+  title,
   description = "MSPs, IT consultancies, and automation agencies running multi-client operations.",
   items,
   className,
 }: MarketingLogoCloudProps) {
+  const heading = title?.trim() ?? "";
   return (
-    <section aria-label={title} className={cn("space-y-6", className)}>
-      <div className="max-w-2xl">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">{description}</p>
-      </div>
+    <section
+      aria-label={heading || "Service-led organization categories"}
+      className={cn("space-y-6", className)}
+    >
+      {heading || description ? (
+        <div className="max-w-2xl">
+          {heading ? <h3 className="text-lg font-semibold text-white">{heading}</h3> : null}
+          {description ? (
+            <p
+              className={cn(
+                "text-sm leading-relaxed text-primary-foreground/75",
+                heading ? "mt-2" : undefined,
+              )}
+            >
+              {description}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <ul className="flex flex-wrap gap-3" role="list">
         {items.map((item) => (
           <li

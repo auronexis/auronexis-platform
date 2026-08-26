@@ -3,6 +3,7 @@ import {
   INDUSTRY_ROUTES,
   MARKETING_ROUTES,
   SOLUTION_ROUTES,
+  USE_CASE_ROUTES,
 } from "@/lib/company/company-links";
 import {
   buildLandingPage,
@@ -17,11 +18,11 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/industries",
     category: "industry",
     eyebrow: "Industry",
-    title: "Client operations for marketing agencies and in-house teams",
+    title: "Marketing sector delivery operations for agencies and brand teams",
     description:
-      "Unify campaign delivery, client reporting, and account health across your marketing portfolio in one operations command center.",
+      "Govern campaign delivery, client reporting, and account health across marketing portfolios — agencies and in-house brand teams alike.",
     metaDescription:
-      "Operations platform for marketing agencies — client health, executive reporting, incident tracking, and portfolio visibility with Auroranexis.",
+      "Marketing sector operations platform — portfolio governance for agencies and in-house brand teams with Auroranexis.",
     problem:
       "Marketing teams juggle multiple clients, campaign timelines, and performance data across disconnected tools. Account managers lack a single view of delivery health, open issues, and executive-ready status. QBR preparation becomes a manual scramble across spreadsheets, ad platforms, and project trackers.",
     solution:
@@ -34,7 +35,7 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
       "Portfolio dashboards for account health across all clients",
       "Role-based access for account, delivery, and leadership teams",
       "Audit trails for operational changes and client-facing updates",
-      "Unlimited AI copilot for portfolio and client context on Enterprise",
+      "AI copilot for portfolio and client context on entitled plans",
       "Client portal for transparent campaign and delivery status",
     ],
     benefits: [
@@ -101,8 +102,8 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Marketing agencies use case", href: USE_CASE_ROUTES.marketingAgencies },
       { label: "Consulting", href: INDUSTRY_ROUTES.consulting },
-      { label: "Technology", href: INDUSTRY_ROUTES.technology },
       { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
       { label: "AI executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
     ],
@@ -115,11 +116,11 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/industries",
     category: "industry",
     eyebrow: "Industry",
-    title: "Operations command center for IT service providers and MSPs",
+    title: "IT services industry portfolio governance and SLA operations",
     description:
-      "Manage multi-client IT delivery with incident tracking, SLA governance, risk registers, and executive portfolio visibility.",
+      "Govern multi-client IT delivery with incident tracking, SLA policies, risk registers, and executive portfolio visibility.",
     metaDescription:
-      "IT operations platform for MSPs and service providers — incident management, SLA tracking, client health, and executive reporting in Auroranexis.",
+      "IT services industry operations — SLA governance, incident records, and portfolio oversight for service providers in Auroranexis.",
     problem:
       "IT service providers operate across dozens of client environments with tickets, alerts, and commitments spread across PSA tools, RMM platforms, and email. Leadership cannot easily see portfolio health, SLA exposure, or which accounts are trending toward escalation without manual roll-ups.",
     solution:
@@ -199,8 +200,8 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Cybersecurity", href: INDUSTRY_ROUTES.cybersecurity },
-      { label: "Technology", href: INDUSTRY_ROUTES.technology },
+      { label: "MSP use case", href: USE_CASE_ROUTES.msps },
+      { label: "IT service providers use case", href: USE_CASE_ROUTES.itServiceProviders },
       { label: "Incident management", href: SOLUTION_ROUTES.incidentManagement },
       { label: "SLA management", href: SOLUTION_ROUTES.slaManagement },
     ],
@@ -297,8 +298,8 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Cybersecurity firms use case", href: USE_CASE_ROUTES.cybersecurityCompanies },
       { label: "IT services", href: INDUSTRY_ROUTES.it },
-      { label: "Finance", href: INDUSTRY_ROUTES.finance },
       { label: "Risk management", href: SOLUTION_ROUTES.riskManagement },
       { label: "Security", href: MARKETING_ROUTES.security },
     ],
@@ -311,11 +312,11 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/industries",
     category: "industry",
     eyebrow: "Industry",
-    title: "Delivery operations for consulting and professional services firms",
+    title: "Professional services industry engagement governance",
     description:
-      "Standardize client governance, engagement reporting, and portfolio oversight across your consulting practice.",
+      "Standardize client governance, engagement reporting, and practice-wide portfolio oversight across professional services firms.",
     metaDescription:
-      "Consulting operations platform — client health, executive reporting, risk tracking, and engagement governance for professional services firms in Auroranexis.",
+      "Professional services industry operations — engagement governance, client health, and executive reporting in Auroranexis.",
     problem:
       "Consulting firms deliver high-touch engagements where partner attention, issue resolution, and client confidence determine renewal and expansion. Engagement status lives in partner inboxes, project tools, and slide decks with no consistent operational record across the practice.",
     solution:
@@ -395,7 +396,7 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Marketing", href: INDUSTRY_ROUTES.marketing },
+      { label: "Consultancies use case", href: USE_CASE_ROUTES.consultancies },
       { label: "Legal", href: INDUSTRY_ROUTES.legal },
       { label: "Executive dashboard", href: SOLUTION_ROUTES.executiveDashboard },
       { label: "AI reporting", href: SOLUTION_ROUTES.aiReporting },
@@ -817,7 +818,7 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
     enterpriseAdvantages: [
       "Portfolio health dashboards for customer success and leadership",
       "SLA governance aligned to enterprise contract tiers",
-      "Unlimited AI copilot for portfolio intelligence on Enterprise",
+      "AI copilot for portfolio intelligence on entitled Enterprise plans",
       "Integration-ready API and webhook architecture",
       "Client portal for transparent customer status sharing",
     ],
