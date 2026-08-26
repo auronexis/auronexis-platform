@@ -16,7 +16,7 @@ import {
 } from "@/lib/marketing/content";
 import { loadPublicPricingPlanViews } from "@/lib/marketing/public-pricing";
 import { MARKETING_ROUTES, SALES_EMAIL } from "@/lib/company/contact";
-import { JsonLdScript, merchantReturnPolicyJsonLd, pricingPageJsonLd, pricingPlanProductsJsonLd } from "@/lib/marketing/seo";
+import { JsonLdScript, pricingPageJsonLd } from "@/lib/marketing/seo";
 import { pricingGraphJsonLd } from "@/lib/seo/geo-schema";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
@@ -28,13 +28,7 @@ export default async function PublicPricingPage() {
 
   return (
     <MarketingShell>
-      <JsonLdScript
-        data={pricingGraphJsonLd(
-          pricingPageJsonLd(),
-          pricingPlanProductsJsonLd(),
-          merchantReturnPolicyJsonLd(),
-        )}
-      />
+      <JsonLdScript data={pricingGraphJsonLd(pricingPageJsonLd())} />
       <ConversionTracker event="pricing_view" />
       <MarketingHero
         eyebrow="Pricing"

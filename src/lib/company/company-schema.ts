@@ -65,42 +65,6 @@ export function merchantReturnPolicyJsonLd() {
   };
 }
 
-/**
- * Digital SaaS access has no physical shipment.
- * shippingRate 0 and 0-hour handling/transit represent immediate software access provisioning —
- * not invented carrier transit for physical goods.
- * Destination DE is the seller's country of establishment (organization address).
- */
-export function digitalAccessShippingDetails(currency: string) {
-  return {
-    "@type": "OfferShippingDetails",
-    shippingRate: {
-      "@type": "MonetaryAmount",
-      value: 0,
-      currency,
-    },
-    deliveryTime: {
-      "@type": "ShippingDeliveryTime",
-      handlingTime: {
-        "@type": "QuantitativeValue",
-        minValue: 0,
-        maxValue: 0,
-        unitCode: "HUR",
-      },
-      transitTime: {
-        "@type": "QuantitativeValue",
-        minValue: 0,
-        maxValue: 0,
-        unitCode: "HUR",
-      },
-    },
-    shippingDestination: {
-      "@type": "DefinedRegion",
-      addressCountry: "DE",
-    },
-  };
-}
-
 function contactPoints() {
   return [
     {
@@ -161,7 +125,6 @@ export function organizationJsonLd() {
       name: COMPANY_INFORMATION.owner,
     },
     contactPoint: contactPoints(),
-    hasMerchantReturnPolicy: { "@id": MERCHANT_RETURN_POLICY_ID },
   };
 }
 
@@ -183,8 +146,15 @@ export function websiteJsonLd() {
   };
 }
 
+/**
+ * Catalog-backed Offer for public SaaS plans.
+ * - priceCurrency / price come from the same plan registry as the pricing UI (EUR catalog).
+ * - No shipping markup (digital SaaS — not physical commerce).
+ * - No Offer-level merchant-return attachment (avoids Google Merchant Listing eligibility theatre).
+ * - Enterprise is sales-assisted (Contact sales CTA) → LimitedAvailability + /contact URL.
+ */
 function buildOfferForPlan(plan: SubscriptionPlanDefinition) {
-  const pricingUrl = PRICING_URL();
+  const isEnterprise = plan.key === "enterprise";
   return {
     "@type": "Offer",
     "@id": entityId(`#offer-${plan.key}`),
@@ -192,13 +162,14 @@ function buildOfferForPlan(plan: SubscriptionPlanDefinition) {
     description: plan.description,
     price: String(plan.priceMonthly),
     priceCurrency: plan.currency,
-    availability: "https://schema.org/InStock",
-    itemCondition: "https://schema.org/NewCondition",
-    url: pricingUrl,
+    availability: isEnterprise
+      ? "https://schema.org/LimitedAvailability"
+      : "https://schema.org/InStock",
+    url: isEnterprise
+      ? getCanonicalUrl(MARKETING_ROUTES.contact).toString()
+      : PRICING_URL(),
     category: "DigitalSubscription",
     seller: { "@id": GRAPH_ENTITY_IDS.organization },
-    hasMerchantReturnPolicy: { "@id": MERCHANT_RETURN_POLICY_ID },
-    shippingDetails: digitalAccessShippingDetails(plan.currency),
   };
 }
 
@@ -233,55 +204,23 @@ export function softwareApplicationJsonLd() {
   };
 }
 
-/** One Product node per public self-serve plan (Professional / Business / Enterprise). */
+/**
+ * Intentionally empty: per-plan Product nodes invited Google Merchant Listings for SaaS.
+ * Public plan Offers live on SoftwareApplication via pricingPageJsonLd / softwareApplicationJsonLd.
+ */
 export function pricingPlanProductsJsonLd(): Record<string, unknown>[] {
-  const pricingUrl = PRICING_URL();
-
-  return PUBLIC_SELF_SERVE_PLAN_KEYS.map((planKey: (typeof PUBLIC_SELF_SERVE_PLAN_KEYS)[number]) => {
-    const plan = getPlanByKey(planKey);
-    return {
-      "@type": "Product",
-      "@id": entityId(`#product-${plan.key}`),
-      name: `${COMPANY_INFORMATION.productName} ${plan.name}`,
-      description: plan.description,
-      category: "BusinessApplication",
-      url: pricingUrl,
-      image: absoluteAsset(BRANDING_ASSETS.openGraph),
-      brand: {
-        "@type": "Brand",
-        name: COMPANY_INFORMATION.productName,
-      },
-      audience: {
-        "@type": "BusinessAudience",
-        audienceType: "MSPs, IT agencies, consultancies, and automation firms",
-      },
-      offers: buildOfferForPlan(plan),
-      isRelatedTo: { "@id": GRAPH_ENTITY_IDS.softwareApplication },
-      manufacturer: { "@id": GRAPH_ENTITY_IDS.organization },
-    };
-  });
+  return [];
 }
 
 /**
- * Aggregate Product for the pricing page graph (Offer catalog of public self-serve plans).
+ * Pricing page primary entity — SoftwareApplication with catalog Offers (SaaS truth).
+ * Prefer SoftwareApplication over Product so Merchant Listing commerce fields are not required.
  * Private invite-only programs remain excluded from public offer generation.
  */
 export function pricingPageJsonLd() {
   return {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "@id": GRAPH_ENTITY_IDS.product,
-    name: COMPANY_INFORMATION.productName,
-    description: COMPANY_INFORMATION.shortDescription,
-    category: "BusinessApplication",
+    ...softwareApplicationJsonLd(),
     url: PRICING_URL(),
-    image: absoluteAsset(BRANDING_ASSETS.openGraph),
-    brand: {
-      "@type": "Brand",
-      name: COMPANY_INFORMATION.productName,
-    },
-    offers: buildPlanOffers(),
-    isRelatedTo: { "@id": GRAPH_ENTITY_IDS.softwareApplication },
   };
 }
 
@@ -322,7 +261,6 @@ export function pilotProgramJsonLd() {
     availability: "https://schema.org/LimitedAvailability",
     eligibleCustomerType: "Business",
     seller: { "@id": GRAPH_ENTITY_IDS.organization },
-    hasMerchantReturnPolicy: { "@id": MERCHANT_RETURN_POLICY_ID },
   };
 }
 

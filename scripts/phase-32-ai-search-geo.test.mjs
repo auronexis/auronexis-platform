@@ -22,14 +22,14 @@ test("entity graph defines nine canonical capabilities with stable @id fragments
   assert.ok(capabilityCount >= 15, "expected capabilities and solutions in entity graph");
 });
 
-test("company schema links organization product and software application by @id", () => {
+test("company schema links organization and software application by @id", () => {
   const schema = readSource("src/lib/company/company-schema.ts");
   assert.match(schema, /GRAPH_ENTITY_IDS\.organization/);
   assert.match(schema, /GRAPH_ENTITY_IDS\.softwareApplication/);
-  assert.match(schema, /GRAPH_ENTITY_IDS\.product/);
   assert.match(schema, /knowsAbout: capabilityKnowsAbout/);
   assert.match(schema, /featureList: capabilityKnowsAbout/);
-  assert.match(schema, /isRelatedTo: \{ "@id": GRAPH_ENTITY_IDS\.softwareApplication \}/);
+  assert.match(schema, /"@type": "SoftwareApplication"/);
+  assert.doesNotMatch(schema, /isRelatedTo: \{ "@id": GRAPH_ENTITY_IDS\.softwareApplication \}/);
 });
 
 test("geo schema builders use linked @graph pattern", () => {

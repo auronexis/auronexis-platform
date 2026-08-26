@@ -172,12 +172,21 @@ test("pricing structured data matches canonical billing plan prices", () => {
 
   assert.doesNotMatch(schema, /aggregateRating/);
   assert.doesNotMatch(schema, /reviewCount/);
+  assert.doesNotMatch(schema, /OfferShippingDetails/);
+  assert.doesNotMatch(schema, /shippingDetails\s*:/);
+  assert.doesNotMatch(schema, /shippingRate/);
+  assert.doesNotMatch(schema, /digitalAccessShippingDetails/);
+  assert.doesNotMatch(schema, /itemCondition/);
+  assert.doesNotMatch(schema, /NewCondition/);
+  assert.doesNotMatch(schema, /"@type":\s*"Product"/);
   assert.match(schema, /MerchantReturnNotPermitted/);
-  assert.match(schema, /hasMerchantReturnPolicy/);
-  assert.match(schema, /OfferShippingDetails/);
-  assert.match(schema, /shippingRate/);
   assert.match(schema, /merchantReturnPolicyJsonLd/);
   assert.match(schema, /pricingPlanProductsJsonLd/);
+  assert.match(schema, /SoftwareApplication/);
+  assert.match(schema, /LimitedAvailability/);
+  assert.match(schema, /BRANDING_ASSETS\.openGraph/);
+  assert.match(schema, /priceCurrency: plan\.currency/);
+  assert.doesNotMatch(schema, /hasMerchantReturnPolicy\s*:/);
   assert.match(schema, /contactPoint/);
   assert.match(schema, /softwareVersion/);
   // No fabricated public site-search markup without a real search endpoint.

@@ -229,36 +229,22 @@ export function homePageGraphJsonLd(
   };
 }
 
-export function pricingGraphJsonLd(
-  product: Record<string, unknown>,
-  planProducts: readonly Record<string, unknown>[] = [],
-  returnPolicy?: Record<string, unknown>,
-) {
-  const graph: Record<string, unknown>[] = [
-    stripContext(product),
-    ...planProducts.map((item) => stripContext(item)),
-  ];
-
-  if (returnPolicy) {
-    graph.push(stripContext(returnPolicy));
-  }
-
-  graph.push({
-    "@type": ["WebPage", "CollectionPage"],
-    "@id": pageEntityId("/pricing"),
-    name: "Pricing",
-    description: "Professional, Business, and Enterprise subscription plans for Auroranexis.",
-    url: getCanonicalUrl("/pricing").toString(),
-    isPartOf: { "@id": GRAPH_ENTITY_IDS.website },
-    about: { "@id": GRAPH_ENTITY_IDS.product },
-    mainEntity: planProducts.map((item) => ({
-      "@id": typeof item["@id"] === "string" ? item["@id"] : GRAPH_ENTITY_IDS.product,
-    })),
-  });
-
+export function pricingGraphJsonLd(softwareApplication: Record<string, unknown>) {
   return {
     "@context": "https://schema.org",
-    "@graph": graph,
+    "@graph": [
+      stripContext(softwareApplication),
+      {
+        "@type": ["WebPage", "CollectionPage"],
+        "@id": pageEntityId("/pricing"),
+        name: "Pricing",
+        description: "Professional, Business, and Enterprise subscription plans for Auroranexis.",
+        url: getCanonicalUrl("/pricing").toString(),
+        isPartOf: { "@id": GRAPH_ENTITY_IDS.website },
+        about: { "@id": GRAPH_ENTITY_IDS.softwareApplication },
+        mainEntity: { "@id": GRAPH_ENTITY_IDS.softwareApplication },
+      },
+    ],
   };
 }
 
