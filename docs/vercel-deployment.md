@@ -145,7 +145,7 @@ After each deploy:
 
 1. Vercel â†’ Deployments â†’ select deployment â†’ **Building** tab
 2. Confirm: `Compiled successfully`, no TypeScript errors
-3. **Functions** tab: verify `/api/health`, `/api/cron/run`, `/api/fastspring/webhook` (Stripe and legacy Paddle webhook paths retired — see enterprise-deployment.md)
+3. **Functions** tab: verify `/api/health`, `/api/cron/run`, `/api/mollie/webhook` (legacy FastSpring/Stripe/Paddle webhook paths retired — see enterprise-deployment.md)
 4. **Runtime Logs**: smoke test login + health endpoint
 
 Common failures:
@@ -154,7 +154,7 @@ Common failures:
 |-------|-----|
 | Missing env var | Add in Vercel, redeploy |
 | Supabase connection | Check `NEXT_PUBLIC_SUPABASE_URL`, service role key |
-| Stripe webhook 401 | Verify `STRIPE_WEBHOOK_SECRET` matches Dashboard |
+| Mollie webhook failures | Verify `MOLLIE_API_KEY` + classic webhook URL; keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until LIVE gate |
 | Cron 401 | Set `CRON_SECRET`, use Bearer header |
 
 ---
