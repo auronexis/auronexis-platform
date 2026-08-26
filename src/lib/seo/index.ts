@@ -73,3 +73,13 @@ export {
   type AnalyticsEventName,
   type AnalyticsEventProps,
 } from "@/lib/seo/analytics-events";
+export {
+  listPrimaryIntentPaths,
+  SEARCH_INTENT_CLUSTERS,
+  type SearchIntentCluster,
+} from "@/lib/seo/intent-ownership";
+export {
+  ORIGINAL_FRAMEWORK_NOTES,
+  RESOURCE_PILLARS,
+  type ResourcePillar,
+} from "@/lib/seo/resource-pillars";

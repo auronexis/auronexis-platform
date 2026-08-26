@@ -33,6 +33,7 @@ ${COMPANY_INFORMATION.productName} is an AI Operations Platform for MSPs, IT age
 - Compliance: ${base}${MARKETING_ROUTES.compliance}
 - Documentation: ${base}/docs
 - FAQ: ${base}${MARKETING_ROUTES.faq}
+- Resources: ${base}${MARKETING_ROUTES.resources}
 - Support: ${base}${MARKETING_ROUTES.support}
 - Status: ${base}${MARKETING_ROUTES.status}
 - Contact: ${base}${MARKETING_ROUTES.contact}

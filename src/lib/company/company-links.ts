@@ -38,6 +38,7 @@ export const MARKETING_ROUTES = {
   help: "/help",
   support: "/support",
   faq: "/faq",
+  resources: "/resources",
 } as const;
 
 export const FEATURE_ROUTES = {
@@ -149,6 +150,7 @@ export const FOOTER_SECTIONS = {
     { label: "Features", href: MARKETING_ROUTES.features },
     { label: "Solutions", href: MARKETING_ROUTES.solutions },
     { label: "Templates", href: MARKETING_ROUTES.templates },
+    { label: "Resources", href: MARKETING_ROUTES.resources },
     { label: "Industries", href: MARKETING_ROUTES.industries },
     { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     { label: "Pricing", href: MARKETING_ROUTES.pricing },

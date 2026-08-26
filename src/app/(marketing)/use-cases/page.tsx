@@ -10,14 +10,14 @@ export default function UseCasesPage() {
   return (
     <LandingHubView
       eyebrow="Use cases"
-      title="Built for multi-client operators"
-      description="Dedicated pages for MSPs, agencies, consultancies, and enterprise teams that manage client portfolios at scale."
+      title="Persona workflows for multi-client operators"
+      description="Dedicated pages for MSPs, automation agencies, consultancies, and enterprise teams — persona intent, separate from industry sector pages."
       entries={AUDIENCE_HUB_ENTRIES}
       hubPath={MARKETING_ROUTES.useCases}
       primaryHref={MARKETING_ROUTES.pilotProgram}
       primaryLabel="Request invitation"
-      secondaryHref={MARKETING_ROUTES.pricing}
-      secondaryLabel="Compare plans"
+      secondaryHref={MARKETING_ROUTES.industries}
+      secondaryLabel="Browse industries"
     />
   );
 }

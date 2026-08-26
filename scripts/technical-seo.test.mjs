@@ -86,7 +86,14 @@ test("robots references sitemap and does not block assets", () => {
 test("PAGE_SEO registry has unique titles for critical pages", () => {
   const routes = readSource("src/lib/seo/routes.ts");
   const titles = [...routes.matchAll(/title:\s*"([^"]+)"/g)].map((match) => match[1]);
-  const critical = ["Pricing", "Features", "Enterprise", "Integrations", "Platform Status"];
+  const critical = [
+    "B2B SaaS Pricing for Agency Operations",
+    "Client Operations Features for Agencies & MSPs",
+    "Enterprise Client Operations for MSPs & Agencies",
+    "Integrations",
+    "Platform Status",
+    "Resources for AI Agency & MSP Operations",
+  ];
   for (const title of critical) {
     assert.ok(titles.includes(title), `missing PAGE_SEO title: ${title}`);
   }
@@ -105,7 +112,7 @@ test("pricing structured data matches canonical billing plan prices", () => {
   const plans = readSource("src/lib/billing/plans.ts");
   const catalog = readSource("src/lib/billing/catalog.ts");
 
-  // JSON-LD offers are built from public self-serve keys via getPlanByKey (deterministic USD fallback).
+  // JSON-LD offers are built from public self-serve keys via getPlanByKey (EUR catalog amounts).
   assert.match(schema, /pricingPageJsonLd/);
   assert.match(schema, /function buildPlanOffers/);
   assert.match(schema, /PUBLIC_SELF_SERVE_PLAN_KEYS/);
@@ -116,7 +123,7 @@ test("pricing structured data matches canonical billing plan prices", () => {
   );
 
   // Canonical public EUR minor-unit prices — structured data must stay aligned.
-  const publicUsdFallbacks = {
+  const publicEurMajors = {
     professional: 179,
     business: 599,
     enterprise: 1799,
@@ -128,13 +135,13 @@ test("pricing structured data matches canonical billing plan prices", () => {
     enterprise: "179_900",
   };
 
-  for (const [planKey, usd] of Object.entries(publicUsdFallbacks)) {
+  for (const [planKey, major] of Object.entries(publicEurMajors)) {
     assert.match(
       catalog,
       new RegExp(
         `productPath: "${planKey}"[\\s\\S]*?visibility: "public"[\\s\\S]*?amountMinor: ${publicEurMinors[planKey]}`,
       ),
-      `catalog missing public ${planKey} amountMinor=${publicEurMinors[planKey]} (major ${usd})`,
+      `catalog missing public ${planKey} amountMinor=${publicEurMinors[planKey]} (major ${major})`,
     );
     assert.match(
       plans,
@@ -373,4 +380,70 @@ test("staging hosts are treated as non-indexable preview deployments", () => {
 test("root layout sets document language to English", () => {
   const layout = readSource("src/app/layout.tsx");
   assert.match(layout, /lang="en"/);
+});
+
+test("resources hub is indexable, sitemap-listed, and footer-linked", () => {
+  const page = readSource("src/app/(marketing)/resources/page.tsx");
+  const links = readSource("src/lib/company/company-links.ts");
+  const routes = readSource("src/lib/seo/routes.ts");
+  const pillars = readSource("src/lib/seo/resource-pillars.ts");
+  assert.match(page, /createPageMetadataForPath/);
+  assert.match(page, /RESOURCE_PILLARS/);
+  assert.match(links, /resources:\s*"\/resources"/);
+  assert.match(links, /label:\s*"Resources"/);
+  assert.match(routes, /MARKETING_ROUTES\.resources/);
+  assert.match(pillars, /RESOURCE_PILLARS/);
+  assert.doesNotMatch(pillars, /AggregateRating/);
+  assert.doesNotMatch(pillars, /fake case study/i);
+  assert.match(pillars, /not invented metrics/);
+});
+
+test("search intent ownership map has unique primary paths", () => {
+  const intent = readSource("src/lib/seo/intent-ownership.ts");
+  assert.match(intent, /SEARCH_INTENT_CLUSTERS/);
+  assert.match(intent, /SEARCH_VOLUME_DATA_NOT_AVAILABLE/);
+  assert.match(intent, /primaryPath:\s*MARKETING_ROUTES\.home/);
+  assert.match(intent, /primaryPath:\s*SOLUTION_ROUTES\.customerHealthScore/);
+  assert.match(intent, /listPrimaryIntentPaths/);
+});
+
+test("public SEO and marketing sources have no active legacy billing providers", () => {
+  const files = [
+    "src/lib/seo/routes.ts",
+    "src/lib/seo/structured-data.ts",
+    "src/lib/seo/llms-txt.ts",
+    "src/lib/seo/entity-graph.ts",
+    "src/lib/seo/resource-pillars.ts",
+    "src/lib/company/company-schema.ts",
+    "src/lib/marketing/content.ts",
+  ];
+  for (const file of files) {
+    const source = readSource(file);
+    assert.doesNotMatch(source, /\bStripe\b/, `${file} must not mention Stripe`);
+    assert.doesNotMatch(source, /\bPaddle\b/, `${file} must not mention Paddle`);
+    assert.doesNotMatch(source, /\bFastSpring\b/, `${file} must not mention FastSpring`);
+    assert.doesNotMatch(source, /Merchant of Record|\bMoR\b/, `${file} must not claim MoR`);
+  }
+});
+
+test("structured data and marketing avoid fake AggregateRating and review markup", () => {
+  const schema = readSource("src/lib/company/company-schema.ts");
+  const structured = readSource("src/lib/seo/structured-data.ts");
+  const geo = readSource("src/lib/seo/geo-schema.ts");
+  for (const source of [schema, structured, geo]) {
+    assert.doesNotMatch(source, /AggregateRating/);
+    assert.doesNotMatch(source, /ratingValue/);
+  }
+  const testimonials = readSource("src/components/marketing/marketing-testimonials.tsx");
+  assert.match(testimonials, /not customer testimonials/);
+});
+
+test("operator SEO checklist documents GSC Bing and IndexNow without fabricated metrics", () => {
+  const doc = readSource("docs/enterprise-seo-operator-checklist.md");
+  assert.match(doc, /www\.auroranexis\.com/);
+  assert.match(doc, /sitemap\.xml/);
+  assert.match(doc, /INDEXNOW_KEY/);
+  assert.match(doc, /SEARCH_VOLUME_DATA_NOT_AVAILABLE/);
+  assert.match(doc, /FIELD_CWV_DATA_NOT_AVAILABLE/);
+  assert.doesNotMatch(doc, /rank #1|guaranteed ranking/i);
 });

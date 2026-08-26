@@ -31,9 +31,9 @@ export default function FeaturesPage() {
     <MarketingShell>
       <JsonLdScript
         data={collectionPageGraphJsonLd({
-          title: "Platform features",
+          title: "Client operations features for agencies and MSPs",
           description:
-            "Reporting, automation, risk management, integrations, and executive intelligence in one workspace.",
+            "Reporting, automation, monitoring, risk, incidents, client portal, and executive intelligence for multi-client delivery teams.",
           path: "/features",
           items: FEATURE_HUB_ENTRIES.map((entry) => ({
             name: entry.title,
@@ -45,8 +45,8 @@ export default function FeaturesPage() {
       <ConversionTracker event="features_page_viewed" props={{ surface: "features", module: "marketing" }} />
       <MarketingHero
         eyebrow="Features"
-        title="Everything your operations team needs"
-        description="Reporting, automation, risk management, integrations, and executive intelligence in one workspace."
+        title="Client operations features for agencies and MSPs"
+        description="Reporting, automation, monitoring, risk, incidents, client portal, and executive intelligence — mapped to real multi-client delivery workflows."
         primaryHref="/signup"
         primaryLabel="Create workspace"
         secondaryHref="/pricing"

@@ -59,47 +59,52 @@ function buildLandingPageSeo(): Record<string, { title: string; description: str
 
 const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = {
   [MARKETING_ROUTES.home]: {
-    title: "Operations Command Center",
+    title: "Operations Command Center for AI Agencies & MSPs",
     description:
-      "Auroranexis is an AI-powered B2B SaaS platform for client intelligence, risk monitoring, reports, incidents, and executive operational insights.",
+      "Auroranexis is a B2B operations platform for AI automation agencies and MSPs — client health, risk, incidents, monitoring, reporting, and delivery transparency in one workspace.",
   },
   [MARKETING_ROUTES.features]: {
-    title: "Features",
+    title: "Client Operations Features for Agencies & MSPs",
     description:
-      "Explore Auroranexis features for agency operations — reporting, automation, risk management, integrations, and executive intelligence.",
+      "Explore Auroranexis capabilities for multi-client delivery — reporting, automation, monitoring, risk, incidents, client portal, and executive intelligence.",
   },
   [MARKETING_ROUTES.solutions]: {
-    title: "Solutions",
+    title: "Operational Solutions for Multi-Client Delivery",
     description:
-      "Operational solutions for agencies — customer health, risk management, incidents, SLA tracking, executive dashboards, and AI reporting.",
+      "Solution pages for customer health, risk management, incidents, SLA tracking, executive dashboards, and AI reporting for service teams.",
   },
   [MARKETING_ROUTES.templates]: {
-    title: "Operational Templates",
+    title: "Operational Templates for Service Delivery Teams",
     description:
       "Free agency templates for customer health scores, risk registers, incident response, SLA policies, and executive reporting frameworks.",
   },
   [MARKETING_ROUTES.useCases]: {
-    title: "Use Cases",
+    title: "Use Cases for Agencies, MSPs & Automation Firms",
     description:
-      "See how MSPs, agencies, and enterprise teams use Auroranexis for client health, risk registers, incident response, and executive reporting.",
+      "Persona-focused workflows for MSPs, automation agencies, consultancies, and multi-client teams using Auroranexis for health, risk, incidents, and reporting.",
   },
   [MARKETING_ROUTES.industries]: {
-    title: "Industries",
+    title: "Industry Client Operations for Service Providers",
     description:
-      "Industry-focused client operations for marketing, IT, finance, healthcare, legal, and technology service providers.",
+      "Sector-specific client operations guidance for marketing, IT, finance, healthcare, legal, and technology service providers.",
+  },
+  [MARKETING_ROUTES.resources]: {
+    title: "Resources for AI Agency & MSP Operations",
+    description:
+      "Topical resource pillars connecting Auroranexis features, solutions, and templates for client health, incidents, SLA, monitoring, and reporting.",
   },
   [MARKETING_ROUTES.faq]: {
-    title: "FAQ",
+    title: "FAQ for Auroranexis Buyers & Operators",
     description:
       "Frequently asked questions about Auroranexis — billing, security, AI, client portal, reports, integrations, and enterprise plans.",
   },
   [MARKETING_ROUTES.pricing]: {
-    title: "Pricing",
+    title: "B2B SaaS Pricing for Agency Operations",
     description:
-      "Transparent B2B SaaS pricing for agencies — Professional, Business, and Enterprise plans for client operations.",
+      "Transparent EUR catalog pricing for Professional, Business, and Enterprise plans — tax confirmed from billing context at checkout.",
   },
   [MARKETING_ROUTES.enterprise]: {
-    title: "Enterprise",
+    title: "Enterprise Client Operations for MSPs & Agencies",
     description:
       "Enterprise-grade client operations for MSPs and agencies — security, scale, AI copilot, and dedicated support.",
   },
