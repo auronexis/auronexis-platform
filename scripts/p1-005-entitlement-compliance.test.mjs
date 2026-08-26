@@ -117,6 +117,16 @@ test("LIVE Mollie charging remains fail-closed", () => {
   assert.match(joined, /MOLLIE_LIVE_CHARGING_ENABLED/);
 });
 
+test("entitlement resolver aligns with effective-plan for plan_override paid access", () => {
+  const resolver = readSource("src/lib/entitlements/resolver.ts");
+  const effective = readSource("src/lib/plans/effective-plan.ts");
+  assert.match(effective, /planSource === "plan_override"/);
+  assert.match(resolver, /overrideAccess/);
+  assert.match(resolver, /planOverride\?\.status === "active"/);
+  assert.match(resolver, /subscriptionAccess \|\| overrideAccess/);
+  assert.match(resolver, /resolveEffectivePlanFromSubscriptionRows/);
+});
+
 test("no active FastSpring checkout restoration in provider", () => {
   const provider = readSource("src/lib/billing/provider.ts");
   assert.match(provider, /return "mollie"/);

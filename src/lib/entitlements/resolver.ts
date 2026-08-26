@@ -121,10 +121,12 @@ function resolveMappedPlanKey(
 /**
  * Authoritative entitlement resolution for a workspace.
  *
- * Mollie is the sole active billing provider. Entitlements require a usable
- * subscription for the resolved org provider (Mollie or historical FastSpring). The
- * verified status must be usable. Legacy Paddle rows never grant access. organizations.plan is never an entitlement source.
+ * Mollie is the sole active billing provider. Paid access requires either:
+ * - a usable subscription for the resolved org provider (Mollie or historical FastSpring), or
+ * - an active platform-admin plan override / explicit dev force-plan (pilot / enterprise manual).
+ * Legacy Paddle rows never grant access. organizations.plan is never an entitlement source.
  * Return-page callbacks never activate entitlements.
+ * Must stay aligned with resolveEffectivePlanFromSubscriptionRows isPaidAccess rules.
  */
 export async function resolveOrganizationEntitlements(
   organizationId: string,
@@ -142,7 +144,10 @@ export async function resolveOrganizationEntitlements(
 
   const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
   const status = flags.rawStatus;
-  const activeAccess = flags.isUsable;
+  const subscriptionAccess = flags.isUsable;
+  const overrideAccess =
+    Boolean(getDevForcePlanOverride()) || planOverride?.status === "active";
+  const activeAccess = subscriptionAccess || overrideAccess;
   const mappedPlanKey = resolveMappedPlanKey(subscription, planOverride, activeProvider);
 
   let fallbackPath: EntitlementFallbackPath = "minimal_access";
