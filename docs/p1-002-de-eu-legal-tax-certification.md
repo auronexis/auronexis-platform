@@ -108,7 +108,7 @@ All routes verified from repository source (`src/lib/company/company-links.ts`, 
 | Phone | +49 7183 4285291 | **DOCUMENT VERIFIED** |
 | Emails | support@, legal@, security@, noreply@ | **DOCUMENT VERIFIED** |
 | Content responsible | §18(2) MStV line present | **DOCUMENT VERIFIED** |
-| EU ODR | Linked; B2B exclusion stated | **DOCUMENT VERIFIED** |
+| EU ODR | Obsolete EC ODR platform claim removed (Reg. 2024/3228); B2B consumer-arbitration non-participation retained | **DOCUMENT VERIFIED** |
 | Handelsregister / HRB | Not published | **EXTERNAL LEGAL REVIEW REQUIRED** — Einzelunternehmen may omit HRB; counsel to confirm sufficiency under §5 DDG for this entity type |
 | Last updated | August 23, 2026 | **DOCUMENT VERIFIED** |
 

@@ -54,9 +54,9 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
         body: `Responsible for content under § 18 para. 2 MStV (Medienstaatsvertrag):\n${formatContentResponsibleLine()}`,
       },
       {
-        heading: "EU dispute resolution",
+        heading: "Dispute resolution",
         body:
-          "The European Commission provides an online dispute resolution platform: https://ec.europa.eu/consumers/odr. We are not obliged and generally not willing to participate in dispute resolution proceedings before a consumer arbitration board because our services are directed exclusively at business customers.",
+          "We are not obliged and generally not willing to participate in dispute resolution proceedings before a consumer arbitration board because our services are directed exclusively at business customers.",
       },
       {
         heading: "Liability for content and links",

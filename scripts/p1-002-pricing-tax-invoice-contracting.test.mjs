@@ -107,6 +107,17 @@ test("Marketing and legal catalog prices are EUR", () => {
   assert.doesNotMatch(legal, /base USD catalog/);
 });
 
+test("Legal content does not reference discontinued EU ODR platform", () => {
+  const legal = readSource("src/lib/company/legal-content.ts");
+  assert.doesNotMatch(legal, /ec\.europa\.eu\/consumers\/odr/i);
+  assert.doesNotMatch(legal, /European Commission provides an online dispute resolution platform/i);
+  assert.doesNotMatch(legal, /524\/2013/);
+  assert.match(
+    legal,
+    /not obliged and generally not willing to participate in dispute resolution proceedings before a consumer arbitration board/,
+  );
+});
+
 test("Transaction currency refuses silent EUR default without catalog fallback path", () => {
   const currency = readSource("src/lib/billing/currency-model.ts");
   assert.match(currency, /refusing silent EUR default/);
