@@ -38,3 +38,44 @@ test("public contact form surfaces action errors and only celebrates success sta
   assert.match(form, /FormAlert variant="error"/);
   assert.match(form, /FormAlert variant="success"/);
 });
+
+test("pilot lead notification email carries CaptureInput rich fields from sendLeadNotificationEmail", () => {
+  const capture = readSource("src/lib/sales/capture-actions.ts");
+  const notify = readSource("src/lib/sales/notify.ts");
+
+  const notifyCall = capture.match(
+    /sendLeadNotificationEmail\(\{([\s\S]*?)\}\)/,
+  );
+  assert.ok(notifyCall, "persistInboundLead must call sendLeadNotificationEmail");
+  const notifyArgs = notifyCall[1];
+  for (const field of [
+    "contactName:",
+    "contactEmail:",
+    "companyName:",
+    "companySize:",
+    "website:",
+    "industry:",
+    "employeeCount:",
+    "painPoints:",
+    "message:",
+    "source:",
+  ]) {
+    assert.match(notifyArgs, new RegExp(field.replace(":", "\\s*:")));
+  }
+
+  assert.match(notify, /companySize\?:/);
+  assert.match(notify, /website\?:/);
+  assert.match(notify, /industry\?:/);
+  assert.match(notify, /employeeCount\?:/);
+  assert.match(notify, /painPoints\?:/);
+  assert.match(notify, /Source type:/);
+  assert.match(notify, /Company size:/);
+  assert.match(notify, /Industry:/);
+  assert.match(notify, /Employees:/);
+  assert.match(notify, /Website:/);
+  assert.match(notify, /Pain points:/);
+  assert.match(notify, /Additional notes:/);
+  assert.match(notify, /Name:/);
+  assert.match(notify, /Email:/);
+  assert.match(notify, /Company:/);
+});

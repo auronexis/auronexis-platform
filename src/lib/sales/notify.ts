@@ -13,6 +13,11 @@ type LeadNotificationInput = {
   contactName: string;
   contactEmail: string;
   companyName?: string | null;
+  companySize?: string | null;
+  website?: string | null;
+  industry?: string | null;
+  employeeCount?: number | null;
+  painPoints?: string | null;
   message?: string | null;
   /** When true, DB persist failed — email is the sole delivery path. */
   persistFailed?: boolean;
@@ -42,11 +47,17 @@ export async function sendLeadNotificationEmail(input: LeadNotificationInput): P
         `New inbound lead (${sourceLabel})`,
         persistNote,
         `Correlation: ${correlationId}`,
+        `Source type: ${input.source}`,
         "",
         `Name: ${input.contactName}`,
         `Email: ${input.contactEmail}`,
         input.companyName ? `Company: ${input.companyName}` : null,
-        input.message ? `\nMessage:\n${input.message}` : null,
+        input.companySize ? `Company size: ${input.companySize}` : null,
+        input.industry ? `Industry: ${input.industry}` : null,
+        input.employeeCount != null ? `Employees: ${input.employeeCount}` : null,
+        input.website ? `Website: ${input.website}` : null,
+        input.painPoints ? `\nPain points:\n${input.painPoints}` : null,
+        input.message ? `\nAdditional notes:\n${input.message}` : null,
       ]
         .filter(Boolean)
         .join("\n"),
