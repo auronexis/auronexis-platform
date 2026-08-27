@@ -137,6 +137,11 @@ function buildTaxNote(input: IssueSalesInvoiceInput): string | null {
   return null;
 }
 
+/**
+ * Production invoice numbers are allocated only via DB RPC
+ * `allocate_sales_invoice_number` (central year counter → ANX-YYYY-######).
+ * No client/PDF/email generation; no country-derived series; no UUID fallback.
+ */
 async function allocateInvoiceNumber(organizationId: string): Promise<string> {
   const year = new Date().getUTCFullYear();
   const admin = createAdminClient();
@@ -145,13 +150,17 @@ async function allocateInvoiceNumber(organizationId: string): Promise<string> {
     p_year: year,
   } as never);
 
-  if (!error && data) {
-    return String(data);
+  if (error || data == null || data === "") {
+    throw new Error(
+      `Failed to allocate sales invoice number: ${error?.message ?? "empty allocator response"}`,
+    );
   }
 
-  // Fallback when RPC not yet applied in local env — still unique enough for draft issue.
-  const suffix = crypto.randomUUID().slice(0, 8).toUpperCase();
-  return `ANX-${year}-${suffix}`;
+  const invoiceNumber = String(data);
+  if (!/^ANX-\d{4}-\d{6}$/.test(invoiceNumber)) {
+    throw new Error(`Invalid sales invoice number from allocator: ${invoiceNumber}`);
+  }
+  return invoiceNumber;
 }
 
 export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<SalesInvoiceRecord> {

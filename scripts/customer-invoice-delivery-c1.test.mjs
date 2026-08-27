@@ -319,7 +319,8 @@ test("historical pre-snapshot invoices render safely without fabricated address"
   const pdf = await productionPdf(legacy);
   const text = extractPdfText(pdf);
   assert.match(text, /Legacy Buyer GmbH/);
-  assert.match(text, /Country: DE/);
+  assert.match(text, /Germany/);
+  assert.doesNotMatch(text, /Country: DE/);
 
   // HTML path is authoritative for absent optional fields (PDF hex decode can false-positive).
   const html = render.renderSalesInvoiceHtml(legacy, { preview: false });

@@ -22,6 +22,7 @@ import {
 import { formatBuyerInvoiceAddressLines } from "@/lib/billing/buyer-invoice-snapshot";
 import { toCustomerVisibleInvoiceLineDescription } from "@/lib/billing/sales-invoice-customer-copy";
 import { reverseChargeLegendTextForLocale } from "@/lib/billing/reverse-charge-legend";
+import { formatInvoiceCountryName } from "@/lib/i18n/country";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
 import { OPERATOR_TEST_DOCUMENT_INDICATOR } from "@/lib/billing/sales-invoice-test-marker";
@@ -311,10 +312,11 @@ export function renderSalesInvoiceHtml(
   const sellerLines = seller?.addressLines ?? [];
   const buyer = getBuyerSnapshotFromInvoice(invoice);
   const buyerAddressLines = formatBuyerInvoiceAddressLines(buyer);
+  const buyerCountryLabel = formatInvoiceCountryName(buyer.countryCode, locale);
   const buyerLines = [
     buyer.legalName,
     ...buyerAddressLines,
-    buyer.countryCode ? `Country: ${buyer.countryCode}` : null,
+    buyerCountryLabel,
     buyer.vatId ? `${LEGAL_UI_LABELS.vatId}: ${buyer.vatId}` : null,
   ].filter(Boolean);
 
@@ -380,7 +382,6 @@ export function renderSalesInvoiceHtml(
         <p><strong>${escapeHtml(seller?.legalName ?? "—")}</strong></p>
         ${sellerLines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
         ${seller?.vatId ? `<p>${escapeHtml(`${LEGAL_UI_LABELS.vatId}: ${seller.vatId}`)}</p>` : `<p>${LEGAL_UI_LABELS.vatId}: —</p>`}
-        <p>Country: ${escapeHtml(seller?.countryCode ?? "—")}</p>
       </div>
       <div class="block">
         <h2>Buyer</h2>
@@ -434,7 +435,6 @@ export function renderSalesInvoiceHtml(
 
     <footer>
       <p>${escapeHtml(formatInvoiceCustomerFooterLine())}</p>
-      <p>Auroranexis sales invoices are distinct from Mollie payment receipts.</p>
       ${options.preview ? "<p>This TEST DOCUMENT was generated in memory for operator visual acceptance only.</p>" : ""}
     </footer>
   </div>
@@ -557,10 +557,6 @@ export async function generateSalesInvoicePdf(
       { width: colWidth },
     );
     sellerY = doc.y;
-    if (seller?.countryCode) {
-      doc.text(`Country: ${seller.countryCode}`, sellerX, sellerY, { width: colWidth });
-      sellerY = doc.y;
-    }
 
     let buyerY = partiesTop + 14;
     doc.fillColor(INVOICE_COLORS.ink).font("Helvetica-Bold").fontSize(10);
@@ -571,8 +567,9 @@ export async function generateSalesInvoicePdf(
       doc.text(line, buyerX, buyerY, { width: colWidth });
       buyerY = doc.y;
     }
-    if (buyer.countryCode) {
-      doc.text(`Country: ${buyer.countryCode}`, buyerX, buyerY, { width: colWidth });
+    const buyerCountryLabel = formatInvoiceCountryName(buyer.countryCode, locale);
+    if (buyerCountryLabel) {
+      doc.text(buyerCountryLabel, buyerX, buyerY, { width: colWidth });
       buyerY = doc.y;
     }
     if (buyer.vatId) {
@@ -714,12 +711,6 @@ export async function generateSalesInvoicePdf(
         width: pageWidth,
         align: "left",
       });
-    doc.text(
-      "Auroranexis sales invoices are distinct from Mollie payment receipts.",
-      left,
-      doc.y + 2,
-      { width: pageWidth },
-    );
     if (options.preview) {
       doc.text("Ephemeral operator test — no database record created.", left, doc.y + 2, {
         width: pageWidth,
