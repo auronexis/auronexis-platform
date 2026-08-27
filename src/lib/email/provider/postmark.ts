@@ -28,6 +28,13 @@ export async function sendViaPostmark(message: EmailMessage): Promise<EmailSendR
         HtmlBody: message.html,
         TextBody: message.text,
         ReplyTo: message.replyTo,
+        Attachments: message.attachments?.map((attachment) => ({
+          Name: attachment.filename,
+          Content: Buffer.isBuffer(attachment.content)
+            ? attachment.content.toString("base64")
+            : Buffer.from(attachment.content).toString("base64"),
+          ContentType: attachment.contentType ?? "application/octet-stream",
+        })),
       }),
     });
 

@@ -133,9 +133,10 @@ describe("transactional email system", () => {
   });
 
   it("12. delivery architecture uses claim → sendEmail facade → finalize (no second queue)", () => {
-    assert.match(transactional(), /claimDelivery/);
+    assert.match(transactional(), /claimTransactionalDelivery/);
     assert.match(transactional(), /sendEmail\(/);
-    assert.match(transactional(), /finalizeDelivery/);
+    assert.match(transactional(), /finalizeTransactionalDelivery/);
+    assert.match(transactional(), /sendClaimedTransactionalEmail/);
     assert.match(provider(), /export async function sendEmail/);
     assert.doesNotMatch(welcome(), /nodemailer/i);
     assert.doesNotMatch(auth(), /nodemailer/i);

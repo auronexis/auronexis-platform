@@ -5,7 +5,7 @@ import { extractEmailAddress, getPlatformNoReplySender } from "@/lib/email/addre
 import type { EmailCategory } from "@/lib/email/categories";
 import { isTransactionalRequiredCategory } from "@/lib/email/categories";
 import { sendEmail } from "@/lib/email/provider";
-import type { EmailMessage, EmailSendResult } from "@/lib/email/types";
+import type { EmailAttachment, EmailMessage, EmailSendResult } from "@/lib/email/types";
 import { getDefaultFromEmail } from "@/lib/env/email";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -21,6 +21,7 @@ export type SendTransactionalEmailInput = {
   html: string;
   text: string;
   replyTo?: string;
+  attachments?: EmailAttachment[];
 };
 
 /**
@@ -85,7 +86,7 @@ async function reclaimFailedOrStaleDelivery(input: {
   return { claimed: false, deliveryId: null };
 }
 
-async function claimDelivery(input: {
+export async function claimTransactionalDelivery(input: {
   organizationId: string;
   userId: string;
   category: EmailCategory;
@@ -124,7 +125,7 @@ async function claimDelivery(input: {
   return { claimed: Boolean(data?.id), deliveryId: data?.id ?? null };
 }
 
-async function finalizeDelivery(input: {
+export async function finalizeTransactionalDelivery(input: {
   deliveryId: string | null;
   status: Exclude<TransactionalDeliveryStatus, "claimed">;
   messageId?: string;
@@ -153,6 +154,71 @@ async function finalizeDelivery(input: {
   }
 }
 
+export type SendClaimedTransactionalEmailInput = {
+  deliveryId: string | null;
+  category: EmailCategory;
+  templateKey: string;
+  from?: string;
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+  attachments?: EmailAttachment[];
+};
+
+/**
+ * Provider send + ledger finalize for an already-claimed transactional delivery.
+ * Used when callers must prepare attachments (e.g. invoice PDF) before send.
+ */
+export async function sendClaimedTransactionalEmail(
+  input: SendClaimedTransactionalEmailInput,
+): Promise<EmailSendResult> {
+  const message: EmailMessage = {
+    from: input.from ?? getTransactionalFromEmail(),
+    to: input.to,
+    subject: input.subject,
+    html: input.html,
+    text: input.text,
+    replyTo: input.replyTo ?? COMPANY_CONTACT.supportEmail,
+    attachments: input.attachments,
+  };
+
+  try {
+    const result = await sendEmail(message);
+    if (result.success) {
+      await finalizeTransactionalDelivery({
+        deliveryId: input.deliveryId,
+        status: "sent",
+        messageId: result.messageId,
+      });
+      return result;
+    }
+
+    await finalizeTransactionalDelivery({
+      deliveryId: input.deliveryId,
+      status: "failed",
+      errorCode: "provider_send_failed",
+    });
+    console.error("[email] transactional send failed", {
+      template: input.templateKey,
+      category: input.category,
+    });
+    return result;
+  } catch {
+    await finalizeTransactionalDelivery({
+      deliveryId: input.deliveryId,
+      status: "failed",
+      errorCode: "provider_exception",
+    });
+    console.error("[email] transactional send threw", {
+      template: input.templateKey,
+      category: input.category,
+    });
+    return { success: false, error: "Unable to send transactional email." };
+  }
+}
+
 /**
  * Business-event → template → provider path for required transactional mail.
  * Marketing opt-out never applies. Idempotent per (user_id, template_key).
@@ -164,7 +230,7 @@ export async function sendTransactionalEmail(
     return { success: false, error: "Category is not transactional.", skipped: true };
   }
 
-  const claim = await claimDelivery({
+  const claim = await claimTransactionalDelivery({
     organizationId: input.organizationId,
     userId: input.userId,
     category: input.category,
@@ -175,46 +241,15 @@ export async function sendTransactionalEmail(
     return { success: true, skipped: true };
   }
 
-  const message: EmailMessage = {
-    from: getTransactionalFromEmail(),
+  return sendClaimedTransactionalEmail({
+    deliveryId: claim.deliveryId,
+    category: input.category,
+    templateKey: input.templateKey,
     to: input.to,
     subject: input.subject,
     html: input.html,
     text: input.text,
-    replyTo: input.replyTo ?? COMPANY_CONTACT.supportEmail,
-  };
-
-  try {
-    const result = await sendEmail(message);
-    if (result.success) {
-      await finalizeDelivery({
-        deliveryId: claim.deliveryId,
-        status: "sent",
-        messageId: result.messageId,
-      });
-      return result;
-    }
-
-    await finalizeDelivery({
-      deliveryId: claim.deliveryId,
-      status: "failed",
-      errorCode: "provider_send_failed",
-    });
-    console.error("[email] transactional send failed", {
-      template: input.templateKey,
-      category: input.category,
-    });
-    return result;
-  } catch {
-    await finalizeDelivery({
-      deliveryId: claim.deliveryId,
-      status: "failed",
-      errorCode: "provider_exception",
-    });
-    console.error("[email] transactional send threw", {
-      template: input.templateKey,
-      category: input.category,
-    });
-    return { success: false, error: "Unable to send transactional email." };
-  }
+    replyTo: input.replyTo,
+    attachments: input.attachments,
+  });
 }

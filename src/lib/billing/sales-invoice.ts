@@ -221,7 +221,22 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
     throw new Error(`Failed to issue sales invoice: ${error?.message ?? "unknown"}`);
   }
 
-  return mapInvoiceRow(data as Record<string, unknown>);
+  const invoice = mapInvoiceRow(data as Record<string, unknown>);
+
+  // C2: after ISSUED persist — email failure must never roll back the invoice.
+  // Dynamic import avoids a static cycle with sales-invoice-render.
+  try {
+    const { deliverIssuedSalesInvoiceEmail } = await import("@/lib/billing/sales-invoice-email");
+    await deliverIssuedSalesInvoiceEmail(invoice);
+  } catch {
+    console.error("[billing][sales-invoice-email] unexpected failure (invoice retained)", {
+      invoiceId: invoice.id,
+      organizationId: invoice.organizationId,
+      invoiceNumber: invoice.invoiceNumber,
+    });
+  }
+
+  return invoice;
 }
 
 function mapInvoiceRow(row: Record<string, unknown>): SalesInvoiceRecord {
