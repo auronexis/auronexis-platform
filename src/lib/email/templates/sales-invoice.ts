@@ -57,7 +57,7 @@ export function buildSalesInvoiceIssuedPlainText(input: SalesInvoiceIssuedEmailI
     "View billing:",
     resolveBillingSettingsUrl(),
     "",
-    `If you have questions regarding your subscription or invoice, contact ${COMPANY_CONTACT.supportEmail}.`,
+    `If you have questions regarding your subscription or invoice, contact ${COMPANY_CONTACT.supportEmail} or ${COMPANY_CONTACT.salesEmail}.`,
     "",
     `— ${PLATFORM_NAME}`,
   ].join("\n");
@@ -81,7 +81,7 @@ export function buildSalesInvoiceIssuedHtml(input: SalesInvoiceIssuedEmailInput)
     <p style="margin:4px 0;"><strong>Total:</strong> ${total} (${currency})</p>
     <p>The invoice PDF is attached to this email and remains available from your Auroranexis Billing area.</p>
     ${buildEmailCtaButton("View billing", resolveBillingSettingsUrl())}
-    <p style="margin-top:24px;color:#64748b;font-size:13px;">If you have questions regarding your subscription or invoice, contact ${escapeHtml(COMPANY_CONTACT.supportEmail)}.</p>
+    <p style="margin-top:24px;color:#64748b;font-size:13px;">If you have questions regarding your subscription or invoice, contact ${escapeHtml(COMPANY_CONTACT.supportEmail)} or ${escapeHtml(COMPANY_CONTACT.salesEmail)}.</p>
     <p style="margin-top:16px;color:#64748b;font-size:13px;">— ${escapeHtml(PLATFORM_NAME)}</p>
   `;
 }

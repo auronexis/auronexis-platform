@@ -291,11 +291,14 @@ test("C2 CASE 8: customer-visible email contains no intentional noreply", () => 
   assert.doesNotMatch(text, /no-reply@/i);
   assert.match(html, /support@auroranexis\.com/);
   assert.match(text, /support@auroranexis\.com/);
+  assert.match(html, /sales@auroranexis\.com/);
+  assert.match(text, /sales@auroranexis\.com/);
 
   const emailSource = readSource("src/lib/billing/sales-invoice-email.ts");
   const templateSource = readSource("src/lib/email/templates/sales-invoice.ts");
   assert.doesNotMatch(templateSource, /noreply@auroranexis\.com/);
   assert.doesNotMatch(templateSource, /no-reply@/);
+  assert.doesNotMatch(templateSource, /legal@auroranexis\.com/);
   assert.match(emailSource, /COMPANY_CONTACT\.supportEmail/);
   assert.match(emailSource, /preview:\s*false/);
 });

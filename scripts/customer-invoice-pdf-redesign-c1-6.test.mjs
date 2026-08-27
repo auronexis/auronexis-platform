@@ -149,16 +149,19 @@ test("C1.6: production PDF succeeds with seller/buyer/number/totals and no norep
   assert.match(text, /Snapshot Buyer GmbH/);
   assert.match(text, /Musterstra/);
   assert.match(text, /80331/);
-  assert.match(text, /billing@snapshot-buyer\.example/);
   assert.match(text, /tr_fixture_initial/);
   assert.match(text, /150[,.]?42|15[,.]042/);
   assert.match(text, /28[,.]?58|2[,.]858/);
   assert.match(text, /179[,.]?00|17[,.]900/);
   assert.match(text, /support@auroranexis\.com/);
-  assert.match(text, /legal@auroranexis\.com/);
+  assert.match(text, /sales@auroranexis\.com/);
+  assert.match(text, /auroranexis\.com/);
 
   assert.doesNotMatch(text, /noreply@auroranexis\.com/);
   assert.doesNotMatch(raw, /noreply@auroranexis\.com/);
+  assert.doesNotMatch(text, /legal@auroranexis\.com/);
+  assert.doesNotMatch(text, /billing@snapshot-buyer\.example/);
+  assert.doesNotMatch(text, /Billing email:/);
   assert.doesNotMatch(text, /TEST DOCUMENT/);
   assert.doesNotMatch(text, /11111111-1111-4111-8111-111111111111/);
   assert.doesNotMatch(text, /aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/);
@@ -195,8 +198,9 @@ test("C1.6: HTML + PDF renderer source never embeds noreply mailbox", () => {
   assert.doesNotMatch(source, /noReplyEmail|NO_REPLY_EMAIL/);
   assert.match(source, /logoHorizontalOnLight|logo-horizontal-on-light\.png/);
   assert.match(source, /preview:\s*false|options\.preview/);
-  assert.match(source, /support@|formatSupportContactLine/);
-  assert.match(source, /legal@|formatLegalContactLine/);
+  assert.match(source, /support@|supportEmail/);
+  assert.match(source, /sales@|salesEmail/);
+  assert.doesNotMatch(source, /formatLegalContactLine|legalEmail/);
   assert.equal(COMPANY_CONTACT.noReplyEmail, "noreply@auroranexis.com");
 });
 

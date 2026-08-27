@@ -11,10 +11,14 @@ import type { SalesInvoiceRecord } from "@/lib/billing/sales-invoice";
 import { buildSellerInvoiceSnapshot, getSellerTaxConfiguration } from "@/lib/billing/seller-tax-config";
 import { buildTaxDecisionEvidenceSnapshot } from "@/lib/billing/tax-decision-evidence";
 import { determineTaxPolicy, LEGAL_TEXT_PENDING_COUNSEL } from "@/lib/billing/tax-policy";
-import { calculateVatInclusiveBreakdown, formatVatRateBpsLabel } from "@/lib/billing/taxes";
+import { calculateVatInclusiveBreakdown } from "@/lib/billing/taxes";
 import { resolveReverseChargeLegend } from "@/lib/billing/reverse-charge-legend";
 import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
 import { OPERATOR_TEST_DOCUMENT_INDICATOR } from "@/lib/billing/sales-invoice-test-marker";
+import {
+  buildCustomerSalesInvoiceLineDescription,
+  buildGermanDomesticVatTaxNote,
+} from "@/lib/billing/sales-invoice-customer-copy";
 
 /** Synthetic org id — never persisted; must not appear in Billing history queries. */
 export const PREVIEW_ORGANIZATION_ID = "00000000-0000-4000-8000-000000PREVIEW";
@@ -49,8 +53,9 @@ function buildPreviewTaxNote(input: {
   taxPolicyOutcome: SalesInvoiceRecord["taxPolicyOutcome"];
   vatRateBps: number;
 }): string | null {
-  if (input.taxPolicyOutcome === "STANDARD_DOMESTIC_VAT") {
-    return formatVatRateBpsLabel(input.vatRateBps);
+  const germanDomestic = buildGermanDomesticVatTaxNote(input);
+  if (germanDomestic) {
+    return germanDomestic;
   }
   if (input.taxPolicyOutcome === "REVERSE_CHARGE") {
     const legend = resolveReverseChargeLegend({
@@ -134,7 +139,7 @@ export function buildPreviewSalesInvoice(
     vatRateBps: breakdown.vatRateBps,
   });
 
-  const productName = `${plan.name} — Monthly subscription (${plan.priceVersion})`;
+  const productName = buildCustomerSalesInvoiceLineDescription(plan.name);
 
   const invoice: SalesInvoiceRecord = {
     id: "preview-ephemeral-visual-acceptance",

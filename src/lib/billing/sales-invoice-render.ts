@@ -11,18 +11,16 @@ import path from "node:path";
 import PDFDocument from "pdfkit";
 import sharp from "sharp";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
+import { COMPANY_CONTACT } from "@/lib/company/company-contact";
 import { COMPANY_INFORMATION } from "@/lib/company/company-information";
-import {
-  formatLegalContactLine,
-  formatSupportContactLine,
-  LEGAL_UI_LABELS,
-} from "@/lib/company/company-legal";
+import { LEGAL_UI_LABELS } from "@/lib/company/company-legal";
 import type { SalesInvoiceRecord } from "@/lib/billing/sales-invoice";
 import {
   getBuyerSnapshotFromInvoice,
   toCustomerInvoiceView,
 } from "@/lib/billing/sales-invoice";
 import { formatBuyerInvoiceAddressLines } from "@/lib/billing/buyer-invoice-snapshot";
+import { toCustomerVisibleInvoiceLineDescription } from "@/lib/billing/sales-invoice-customer-copy";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
 import { OPERATOR_TEST_DOCUMENT_INDICATOR } from "@/lib/billing/sales-invoice-test-marker";
@@ -79,6 +77,12 @@ function formatDateIso(value: string | null | undefined, locale: "en" | "de"): s
 
 function paymentReference(invoice: SalesInvoiceRecord): string {
   return invoice.providerTransactionId ?? invoice.molliePaymentId ?? "—";
+}
+
+/** Invoice footer contacts — support + sales + website only (never noreply / legal@). */
+function formatInvoiceCustomerFooterLine(): string {
+  const website = COMPANY_INFORMATION.website.replace(/^https?:\/\//, "");
+  return `${website} · Support: ${COMPANY_CONTACT.supportEmail} · Sales: ${COMPANY_CONTACT.salesEmail}`;
 }
 
 function billingPeriodLabel(
@@ -299,7 +303,6 @@ export function renderSalesInvoiceHtml(
     ...buyerAddressLines,
     buyer.countryCode ? `Country: ${buyer.countryCode}` : null,
     buyer.vatId ? `${LEGAL_UI_LABELS.vatId}: ${buyer.vatId}` : null,
-    buyer.billingEmail ? `Billing email: ${buyer.billingEmail}` : null,
   ].filter(Boolean);
 
   const period = billingPeriodLabel(invoice, locale);
@@ -307,7 +310,7 @@ export function renderSalesInvoiceHtml(
     .map(
       (line) => `
       <tr>
-        <td>${escapeHtml(line.description)}</td>
+        <td>${escapeHtml(toCustomerVisibleInvoiceLineDescription(line.description))}</td>
         <td class="num">${line.quantity}</td>
         <td class="num">${escapeHtml(formatMinor(line.lineNetMinor, invoice.currency, locale))}</td>
         <td class="num">${escapeHtml(formatMinor(line.lineVatMinor, invoice.currency, locale))}</td>
@@ -416,7 +419,7 @@ export function renderSalesInvoiceHtml(
     ${reverseChargeNote}
 
     <footer>
-      <p>${escapeHtml(COMPANY_INFORMATION.website.replace(/^https?:\/\//, ""))} · ${escapeHtml(formatSupportContactLine())} · ${escapeHtml(formatLegalContactLine())}</p>
+      <p>${escapeHtml(formatInvoiceCustomerFooterLine())}</p>
       <p>Auroranexis sales invoices are distinct from Mollie payment receipts.</p>
       ${options.preview ? "<p>This TEST DOCUMENT was generated in memory for operator visual acceptance only.</p>" : ""}
     </footer>
@@ -562,10 +565,6 @@ export async function generateSalesInvoicePdf(
       doc.text(`${LEGAL_UI_LABELS.vatId}: ${buyer.vatId}`, buyerX, buyerY, { width: colWidth });
       buyerY = doc.y;
     }
-    if (buyer.billingEmail) {
-      doc.text(`Billing email: ${buyer.billingEmail}`, buyerX, buyerY, { width: colWidth });
-      buyerY = doc.y;
-    }
 
     y = Math.max(sellerY, buyerY) + 18;
 
@@ -622,8 +621,9 @@ export async function generateSalesInvoicePdf(
 
     for (const line of invoice.lines) {
       const rowTop = y;
+      const lineDescription = toCustomerVisibleInvoiceLineDescription(line.description);
       doc.fillColor(INVOICE_COLORS.ink).font("Helvetica").fontSize(9);
-      doc.text(line.description, columns[0].x, rowTop, {
+      doc.text(lineDescription, columns[0].x, rowTop, {
         width: columns[0].width,
         align: "left",
       });
@@ -695,12 +695,10 @@ export async function generateSalesInvoicePdf(
       .fillColor(INVOICE_COLORS.muted)
       .font("Helvetica")
       .fontSize(8)
-      .text(
-        `${COMPANY_INFORMATION.website.replace(/^https?:\/\//, "")} · ${formatSupportContactLine()} · ${formatLegalContactLine()}`,
-        left,
-        footerY + 10,
-        { width: pageWidth, align: "left" },
-      );
+      .text(formatInvoiceCustomerFooterLine(), left, footerY + 10, {
+        width: pageWidth,
+        align: "left",
+      });
     doc.text(
       "Auroranexis sales invoices are distinct from Mollie payment receipts.",
       left,

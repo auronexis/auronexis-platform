@@ -139,7 +139,9 @@ test("TEST 1–7: issued invoice produces valid production PDF with correct fact
   assert.match(text, /Snapshot Buyer GmbH/, "TEST 4: buyer legal name");
   assert.match(text, /Musterstra/, "TEST 4: buyer street");
   assert.match(text, /80331/, "TEST 4: buyer postal");
-  assert.match(text, /billing@snapshot-buyer\.example/, "TEST 4: buyer email");
+  assert.equal(invoice.buyerBillingEmail, "billing@snapshot-buyer.example", "TEST 4: buyer email retained on record");
+  assert.doesNotMatch(text, /billing@snapshot-buyer\.example/, "TEST 4: buyer email hidden from Buyer block");
+  assert.doesNotMatch(text, /Billing email:/, "TEST 4: no billing email label");
   assert.match(text, /Auroranexis Seller Snapshot SE/, "TEST 5: seller");
   assert.match(text, /DE998877665/, "TEST 5: seller VAT");
   assert.match(text, /150[,.]?42|15[,.]042/, "TEST 6: net");
@@ -247,6 +249,7 @@ test("TEST 13: post-issue identity change does not alter PDF snapshot", async ()
 
   const fromInvoice = getBuyerSnapshotFromInvoice(invoice);
   assert.equal(fromInvoice.legalName, "Frozen Buyer AG");
+  assert.equal(fromInvoice.billingEmail, "frozen@example.com");
   assert.notEqual(fromInvoice.legalName, liveIdentity.legalName);
 
   const pdf = await productionPdf(invoice);
@@ -254,7 +257,7 @@ test("TEST 13: post-issue identity change does not alter PDF snapshot", async ()
   assert.match(text, /Frozen Buyer AG/);
   assert.match(text, /Frozen Street 1/);
   assert.match(text, /Hamburg/);
-  assert.match(text, /frozen@example\.com/);
+  assert.doesNotMatch(text, /frozen@example\.com/, "buyer email retained on snapshot only");
   assert.doesNotMatch(text, /MUTATED LIVE NAME/);
   assert.doesNotMatch(text, /Mutated Ave/);
   assert.doesNotMatch(text, /mutated@example\.com/);

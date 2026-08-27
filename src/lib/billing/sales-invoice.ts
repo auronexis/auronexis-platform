@@ -19,6 +19,11 @@ import type { TaxDecisionEvidenceSnapshot } from "@/lib/billing/tax-decision-evi
 import type { B2bTaxRelationshipClass } from "@/lib/billing/tax-classification";
 import type { BuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
 import { buildBuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
+import {
+  buildGermanDomesticVatTaxNote,
+  resolveCustomerInvoiceTaxNote,
+  toCustomerVisibleInvoiceLineDescription,
+} from "@/lib/billing/sales-invoice-customer-copy";
 
 export type SalesInvoiceStatus = "draft" | "issued" | "void";
 
@@ -107,8 +112,12 @@ function assertMoneyInvariant(input: IssueSalesInvoiceInput): void {
 }
 
 function buildTaxNote(input: IssueSalesInvoiceInput): string | null {
-  if (input.taxPolicyOutcome === "STANDARD_DOMESTIC_VAT") {
-    return formatVatRateBpsLabel(input.vatRateBps);
+  const germanDomestic = buildGermanDomesticVatTaxNote({
+    taxPolicyOutcome: input.taxPolicyOutcome,
+    vatRateBps: input.vatRateBps,
+  });
+  if (germanDomestic) {
+    return germanDomestic;
   }
   if (input.taxPolicyOutcome === "REVERSE_CHARGE") {
     const legend = resolveReverseChargeLegend({
@@ -169,7 +178,7 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
 
   const lines: SalesInvoiceLine[] = [
     {
-      description: input.productName,
+      description: toCustomerVisibleInvoiceLineDescription(input.productName),
       quantity: 1,
       unitGrossMinor: input.grossMinor,
       lineGrossMinor: input.grossMinor,
@@ -421,7 +430,11 @@ export function toCustomerInvoiceView(invoice: SalesInvoiceRecord): {
     vatRateLabel: formatVatRateBpsLabel(invoice.vatRateBps),
     vatMinor: invoice.vatMinor,
     grossMinor: invoice.grossMinor,
-    taxNote: invoice.taxNote,
+    taxNote: resolveCustomerInvoiceTaxNote({
+      taxPolicyOutcome: invoice.taxPolicyOutcome,
+      vatRateBps: invoice.vatRateBps,
+      taxNote: invoice.taxNote,
+    }),
     reverseChargeApplied: invoice.reverseChargeApplied,
     issuedAt: invoice.issuedAt,
     buyerLegalName: invoice.buyerLegalName,

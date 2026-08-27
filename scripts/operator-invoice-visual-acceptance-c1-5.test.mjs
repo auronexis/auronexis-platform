@@ -92,7 +92,16 @@ test("C1.5: Business visual-acceptance model uses catalog price + DE domestic VA
   assert.equal(invoice.taxPolicyOutcome, "STANDARD_DOMESTIC_VAT");
   assert.equal(invoice.organizationId, PREVIEW_ORGANIZATION_ID);
   assert.equal(invoice.molliePaymentId, PREVIEW_PAYMENT_REFERENCE);
-  assert.match(invoice.lines[0].description, /Business/);
+  assert.equal(invoice.grossMinor, 59_900);
+  assert.equal(invoice.netMinor, 50_336);
+  assert.equal(invoice.vatMinor, 9_564);
+  assert.equal(
+    invoice.lines[0].description,
+    "Auroranexis Business — Monthly SaaS subscription",
+  );
+  assert.doesNotMatch(invoice.lines[0].description, /eur-v1/);
+  assert.equal(invoice.taxNote, "German VAT (19%)");
+  assert.equal(invoice.buyerBillingEmail, OPERATOR_VISUAL_ACCEPTANCE_BUYER.billingEmail);
 });
 
 test("C1.5: operator can generate valid PDF via production generateSalesInvoicePdf", async () => {
