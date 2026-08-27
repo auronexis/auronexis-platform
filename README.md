@@ -77,6 +77,6 @@ Production deploy / commit / push are owned by Release chapters — not local Ch
 | PostgreSQL RLS | Organization isolation |
 | Server Actions | Role-based authorization |
 | Middleware | Session refresh + route protection |
-| Mollie webhooks | Classic payment webhook + idempotency (`/api/mollie/webhook`); legacy `/api/fastspring/*` returns 410 |
+| Mollie webhooks | Classic payment webhook + per-resource `webhookUrl` + idempotency (`/api/mollie/webhook`); Dashboard registration not required; legacy `/api/fastspring/*` returns 410 |
 
 Legal: `/terms`, `/refund-policy`, `/privacy`, `/imprint`.

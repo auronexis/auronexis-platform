@@ -7,7 +7,7 @@
 ## Current staging gates (summary)
 
 - [ ] Migrations applied in timestamp order
-- [ ] Mollie TEST API key + classic webhook `/api/mollie/webhook` registered (`MOLLIE_LIVE_CHARGING_ENABLED=false`)
+- [ ] Mollie TEST API key; per-resource `webhookUrl` → `/api/mollie/webhook` (`MOLLIE_LIVE_CHARGING_ENABLED=false`; Dashboard webhook **not** required)
 - [ ] `CRON_SECRET` set; `/api/cron/run` authorized
 - [ ] Queue worker / webhook retries healthy
 - [ ] `/api/ready` and `/api/health` green

@@ -15,7 +15,7 @@ This document prepares and describes release steps. **Chapter 14 does not execut
 |-------------|--------|
 | Node.js 22+ / npm 10+ | Match CI |
 | Supabase project | Migrations applied in timestamp order under `supabase/migrations/` |
-| Mollie Billing | API key + classic webhook endpoint `/api/mollie/webhook` |
+| Mollie Billing | API key + classic handler `/api/mollie/webhook` (per-resource `webhookUrl`; Dashboard registration **not** required) |
 | Email provider | SMTP (production path) or configured provider |
 | Optional AI | `OPENAI_API_KEY` + `AI_PROVIDER` — degrade gracefully if unset |
 | Hosting | Vercel (see `vercel.json`) |
@@ -27,7 +27,7 @@ This document prepares and describes release steps. **Chapter 14 does not execut
 1. Copy `.env.example` → environment secrets store (never commit real values).
 2. Confirm **required** keys from `auditProductionEnvironment()`:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-   - `NEXT_PUBLIC_APP_URL` — production HTTPS host (**no localhost**)
+   - `NEXT_PUBLIC_APP_URL` — **must** be `https://app.auroranexis.com` in production (**no localhost**; not www for app/billing)
    - `MOLLIE_API_KEY` (server-only; `test_` for controlled mode)
 3. Confirm **Mollie safety flags**:
    - `MOLLIE_BILLING_ROLLOUT=true` for NEW Mollie checkout eligibility
@@ -87,7 +87,7 @@ CI workflow: `.github/workflows/ci.yml`.
 
 1. Confirm staging green (same gates as §3).
 2. Set production env vars in Vercel (Mollie API key + rollout/LIVE flags per §2).
-3. Register Mollie classic webhook: `https://www.auroranexis.com/api/mollie/webhook` (or app host matching DNS). Do **not** use Next-Gen signed webhooks for this app.
+3. Confirm Mollie webhook architecture: payment/subscription creates send per-resource `webhookUrl` → `https://app.auroranexis.com/api/mollie/webhook` (`NEXT_PUBLIC_APP_URL` must match). **DASHBOARD_WEBHOOK_REQUIRED = NO**. Do **not** configure Next-Gen Dashboard webhooks against the classic endpoint.
 4. Confirm Vercel Cron calls `GET /api/cron/run` with `Authorization: Bearer $CRON_SECRET` every **5 minutes** (`vercel.json`). Vercel Cron always uses GET; when `CRON_SECRET` is set, Vercel attaches the Bearer header automatically.
 5. Promote deployment (Release chapter only).
 6. Do **not** enable apex→`/api` redirects that break webhooks (`vercel.json` already excludes `api`).
@@ -101,7 +101,7 @@ CI workflow: `.github/workflows/ci.yml`.
 |-------|-------------|
 | `GET /api/ready` | `200` + `ready: true` |
 | `GET /api/health` | `healthy` or intentional `degraded` (AI optional); `configuration.mollie` true when key set |
-| Mollie webhook | Classic payment notification + API re-fetch + idempotent ledger |
+| Mollie webhook | Per-resource `webhookUrl` + classic payment id + API re-fetch + idempotent ledger (Dashboard registration not required) |
 | Cron | Authorized; `queue_worker` / `webhook_retries` execute |
 | Auth | Login / logout / session refresh |
 | Portal | Client portal login + report visibility |
@@ -116,7 +116,7 @@ CI workflow: `.github/workflows/ci.yml`.
 | Item | Production value |
 |------|------------------|
 | Marketing canonical | `https://www.auroranexis.com` |
-| App | `https://app.auroranexis.com` (or configured `NEXT_PUBLIC_APP_URL`) |
+| App | `https://app.auroranexis.com` (`NEXT_PUBLIC_APP_URL` must equal this in production) |
 | Apex | Redirect to www via `vercel.json` (API paths excluded) |
 | Cookie / auth redirects | Match `NEXT_PUBLIC_APP_URL` + Supabase Auth allow-list |
 

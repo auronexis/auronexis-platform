@@ -53,7 +53,7 @@
 
 - [ ] Apex → www redirects exclude `/api/*` (see `vercel.json`)
 - [ ] Cron path `/api/cron/run` every **5 minutes**
-- [ ] Mollie classic webhook points at `/api/mollie/webhook` (not Next-Gen)
+- [ ] Mollie per-resource `webhookUrl` targets `/api/mollie/webhook` on app host (Dashboard/Next-Gen registration **not** required)
 
 ---
 

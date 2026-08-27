@@ -11,7 +11,7 @@ Supersedes Stripe/Paddle/FastSpring-era checklist content for **active** operati
 ## A. Environment validation
 
 - [ ] `.env.example` reviewed against Vercel Production secrets
-- [ ] `NEXT_PUBLIC_APP_URL` is HTTPS production host (no localhost)
+- [ ] `NEXT_PUBLIC_APP_URL` is `https://app.auroranexis.com` (no localhost; not www for app/billing)
 - [ ] Supabase URL / anon / service role set (service role server-only)
 - [ ] `MOLLIE_API_KEY` set (prefer `test_` for controlled mode)
 - [ ] `MOLLIE_BILLING_ROLLOUT=true`
@@ -47,8 +47,10 @@ Supersedes Stripe/Paddle/FastSpring-era checklist content for **active** operati
 
 ## D. Billing validation (Mollie)
 
-- [ ] Webhook URL `/api/mollie/webhook` registered in the Mollie dashboard (classic payment notifications)
-- [ ] Next-Gen / signed Mollie webhooks are **not** configured for this app
+- [ ] `NEXT_PUBLIC_APP_URL` equals `https://app.auroranexis.com` (per-resource webhook base)
+- [ ] Production callback path is `/api/mollie/webhook` via `buildMollieWebhookUrl()` (payment **and** subscription create supply `webhookUrl`)
+- [ ] **DASHBOARD_WEBHOOK_REQUIRED = NO** — Mollie Dashboard webhook registration is **not** required for go-live
+- [ ] Next-Gen Dashboard webhooks are **not** configured against the classic endpoint
 - [ ] Idempotency confirmed on staging (`mollie_webhook_events`)
 - [ ] Checkout creates/updates subscription entitlements via webhook reconcile (not browser callback)
 - [ ] Invoice / transaction history org-scoped
@@ -124,7 +126,7 @@ Supersedes Stripe/Paddle/FastSpring-era checklist content for **active** operati
 
 - [ ] Previous Vercel deployment identified for instant rollback
 - [ ] [rollback-plan.md](./rollback-plan.md) reviewed by on-call
-- [ ] Mollie webhook pause / API key rotate steps known
+- [ ] Mollie webhook incident steps known (`MOLLIE_LIVE_CHARGING_ENABLED=false` / deploy rollback; Dashboard registration not required)
 - [ ] Supabase PITR / backup restore owner assigned
 - [ ] P1-002 legal/tax gate understood before any LIVE charging enablement
 

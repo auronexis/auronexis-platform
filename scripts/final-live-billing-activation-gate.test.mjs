@@ -487,3 +487,61 @@ test("required migrations present for LIVE gate manifest", () => {
     assert.ok(pathExists(file), `missing ${file}`);
   }
 });
+
+test("per-resource Mollie webhookUrl on production checkout and subscription", () => {
+  const production = readSource("src/lib/billing/providers/mollie/production-checkout.ts");
+  assert.match(production, /function buildMollieWebhookUrl\(\):\s*string/);
+  assert.match(production, /\$\{getAppUrl\(\)\}\/api\/mollie\/webhook/);
+  assert.match(production, /customerPayments\.create\([\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/);
+  assert.match(
+    production,
+    /customerSubscriptions\.create\([\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/,
+  );
+});
+
+test("dashboard webhook registration is not a LIVE go-live readiness condition", () => {
+  const gate = readSource("docs/final-live-billing-activation-gate.md");
+  assert.match(gate, /Dashboard webhook \*\*not\*\* required|Dashboard webhook \*\*not\*\* a blocker/i);
+  assert.doesNotMatch(gate, /classic webhook registered/);
+
+  const checklist = readSource("docs/enterprise-release-checklist.md");
+  assert.match(checklist, /DASHBOARD_WEBHOOK_REQUIRED = NO/);
+  assert.doesNotMatch(
+    checklist,
+    /registered in the Mollie dashboard \(classic payment notifications\)/i,
+  );
+
+  const closeout = readSource("docs/production-operator-technical-closeout.md");
+  assert.match(closeout, /DASHBOARD_WEBHOOK_REQUIRED = NO/);
+  assert.match(closeout, /Dashboard webhook registration:\*\* \*\*NOT REQUIRED/i);
+  assert.doesNotMatch(
+    closeout,
+    /\|\s*3\s*\|\s*Mollie Dashboard → Webhooks\s*\|\s*Classic payment webhook registered/i,
+  );
+});
+
+test("production webhook host resolves to app.auroranexis.com", () => {
+  for (const relative of [
+    "docs/domain-setup.md",
+    "docs/enterprise-deployment.md",
+    "docs/enterprise-production-golive-playbook.md",
+    "docs/production-operator-technical-closeout.md",
+    "docs/final-live-billing-activation-gate.md",
+  ]) {
+    const src = readSource(relative);
+    assert.match(
+      src,
+      /https:\/\/app\.auroranexis\.com/,
+      `${relative} must cite app.auroranexis.com`,
+    );
+    assert.doesNotMatch(
+      src,
+      /www\.auroranexis\.com\/api\/mollie\/webhook/,
+      `${relative} must not cite www Mollie webhook URL`,
+    );
+  }
+
+  const env = readSource("src/lib/env.ts");
+  assert.match(env, /export function getAppUrl/);
+  assert.match(env, /NEXT_PUBLIC_APP_URL/);
+});

@@ -183,7 +183,7 @@ None in this pass — Paddle/Stripe SDKs were already absent. Confirmed: no `@pa
 ## 14. Operator actions
 
 1. Remove legacy env vars listed in §8 from Vercel Production/Preview/Development.
-2. Confirm Mollie webhook URL: `https://<domain>/api/mollie/webhook`.
+2. Confirm Mollie per-resource webhook URL base: `https://app.auroranexis.com/api/mollie/webhook` (`NEXT_PUBLIC_APP_URL`). Dashboard registration is not required.
 3. Remove any FastSpring/Paddle/Stripe dashboard webhook URLs pointing at this app.
 4. Review billing diagnostics for orgs with historical `billing_provider != mollie` — support path only.
 5. Do **not** enable `MOLLIE_LIVE_CHARGING_ENABLED` until release board sign-off.

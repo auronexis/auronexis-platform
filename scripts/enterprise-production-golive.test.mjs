@@ -89,3 +89,22 @@ test("billing webhooks are mollie-active; paddle and stripe routes absent", () =
   assert.match(provider, /return "mollie"/);
   assert.doesNotMatch(provider, /return "fastspring"/);
 });
+
+test("Mollie webhook go-live gate uses per-resource webhookUrl; dashboard not required", () => {
+  const playbook = readSource("docs/enterprise-production-golive-playbook.md");
+  assert.match(playbook, /DASHBOARD_WEBHOOK_REQUIRED = NO/);
+  assert.match(playbook, /https:\/\/app\.auroranexis\.com\/api\/mollie\/webhook/);
+  assert.match(playbook, /buildMollieWebhookUrl|per-resource `webhookUrl`/i);
+  assert.doesNotMatch(playbook, /Register classic webhook:\s*`https:\/\/www\.auroranexis\.com/);
+  assert.doesNotMatch(playbook, /www\.auroranexis\.com\/api\/mollie\/webhook/);
+
+  const closeout = readSource("docs/production-operator-technical-closeout.md");
+  assert.match(closeout, /DASHBOARD_WEBHOOK_REQUIRED = NO/);
+  assert.match(closeout, /https:\/\/app\.auroranexis\.com\/api\/mollie\/webhook/);
+  assert.doesNotMatch(closeout, /Register classic webhook in Mollie dashboard/i);
+  assert.doesNotMatch(closeout, /www\.auroranexis\.com\/api\/mollie\/webhook/);
+
+  const domain = readSource("docs/domain-setup.md");
+  assert.match(domain, /https:\/\/app\.auroranexis\.com\/api\/mollie\/webhook/);
+  assert.doesNotMatch(domain, /www\.auroranexis\.com\/api\/mollie\/webhook/);
+});

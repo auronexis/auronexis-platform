@@ -174,7 +174,7 @@ From `src/lib/billing/providers/mollie/*`, `src/lib/env/production-audit.ts`, `s
 | `MOLLIE_LIVE_CHARGING_ENABLED` | LIVE write kill switch | **`false`** (required) |
 | `MOLLIE_BILLING_ORG_ALLOWLIST` | Emergency partial enable | Optional comma-separated org UUIDs |
 | `MOLLIE_BILLING_DEFAULT_FOR_NEW` | Diagnostics only | Optional |
-| `NEXT_PUBLIC_APP_URL` | Webhook/return URL base | HTTPS production host (`https://app.auroranexis.com` or www per deploy) |
+| `NEXT_PUBLIC_APP_URL` | Webhook/return URL base | **Must** be `https://app.auroranexis.com` in production |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project | Set |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client RLS | Set |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server writes / webhook | Set (server-only) |
@@ -206,18 +206,20 @@ From `src/lib/billing/providers/mollie/*`, `src/lib/env/production-audit.ts`, `s
 
 ## 6. Mollie webhook closeout (code-proven)
 
+**Canonical architecture:** per-resource Mollie `webhookUrl` via `buildMollieWebhookUrl()` — **not** Mollie Dashboard webhook registration.
+
 | Item | Evidence | Operator action |
 |------|----------|-----------------|
-| Route | `POST /api/mollie/webhook` — `src/app/api/mollie/webhook/route.ts` | Register classic webhook in Mollie dashboard |
-| Expected URL | `{NEXT_PUBLIC_APP_URL}/api/mollie/webhook` via `buildMollieWebhookUrl()` | Confirm matches production `NEXT_PUBLIC_APP_URL` |
-| Playbook canonical | `https://www.auroranexis.com/api/mollie/webhook` | Use www **or** app host consistently with env |
-| Dashboard type | Classic payment notification (form body `id=tr_…`) — **not** Next-Gen / `X-Mollie-Signature` | Do not register Next-Gen webhooks |
-| Per-payment `webhookUrl` | Set on every Mollie payment create (`production-checkout.ts`, `checkout.ts`, `upgrade-payment.ts`, `cancellation-withdrawal.ts`) | Per-payment URL overrides dashboard default |
+| Route | `POST /api/mollie/webhook` — `src/app/api/mollie/webhook/route.ts` | Keep endpoint healthy; **DASHBOARD_WEBHOOK_REQUIRED = NO** |
+| Production callback | `https://app.auroranexis.com/api/mollie/webhook` | Confirm `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` |
+| URL builder | `buildMollieWebhookUrl()` → `` `${getAppUrl()}/api/mollie/webhook` `` | Do not point marketing www at billing webhooks |
+| Per-resource `webhookUrl` | Set on payment **and** subscription create (`production-checkout.ts`, `checkout.ts`, `upgrade-payment.ts`, `cancellation-withdrawal.ts`) | Continue sending `webhookUrl` explicitly on create |
+| Dashboard Next-Gen | **Not used / not required** | Do **not** configure Next-Gen Dashboard webhook against the classic endpoint |
+| Handler contract | Classic body `id=tr_…` → `payments.get()` re-fetch → ownership validation → `mollie_webhook_events` | N/A — code enforced |
 | Idempotency | `ensureMollieIdempotency` → `mollie_webhook_events` unique `(provider, provider_event_id)` | Confirm table exists (SQL §3.2) |
-| Authoritative fetch | `client.payments.get(paymentId)` in `webhooks.ts` (lines 582, 776, 1084) | N/A — code enforced |
 | LIVE kill switch | LIVE credential + `MOLLIE_LIVE_CHARGING_ENABLED=false` → webhook **503** | Keep flag **false** |
 
-**Operator dashboard sign-off:** **INCOMPLETE**.
+**Dashboard webhook registration:** **NOT REQUIRED** (engineering complete; do not block go-live on Mollie Dashboard → Webhooks).
 
 ---
 
@@ -227,10 +229,10 @@ From `src/lib/billing/providers/mollie/*`, `src/lib/env/production-audit.ts`, `s
 |---------|-----------|----------------|
 | Marketing | `www.auroranexis.com` | `src/lib/deployment/production-domains.ts` |
 | App / dashboard | `app.auroranexis.com` | Same |
-| Billing webhook | Derived from `NEXT_PUBLIC_APP_URL` | `getAppUrl()` throws in production if unset; no localhost fallback in prod |
+| Billing webhook | `https://app.auroranexis.com/api/mollie/webhook` | Derived from `NEXT_PUBLIC_APP_URL` via `buildMollieWebhookUrl()` |
 | Localhost | Dev fallback only | `getAppUrl()` → `http://localhost:3000` when `NODE_ENV !== production` |
 
-**Operator must ensure:** Production `NEXT_PUBLIC_APP_URL` is HTTPS production host; Mollie dashboard webhook matches that host + `/api/mollie/webhook`.
+**Operator must ensure:** Production `NEXT_PUBLIC_APP_URL` equals `https://app.auroranexis.com` so per-resource `webhookUrl` resolves to the app host (never www for billing callbacks).
 
 ---
 
@@ -268,7 +270,7 @@ From `docs/enterprise-release-checklist.md` — all rows **INCOMPLETE** until op
 | **A** | Environment validation | Docs + contracts complete; prior keys verified (Sentry/PostHog/INTEGRATION) | **INCOMPLETE** — Production env diff ritual |
 | **B** | Migration validation | 5 billing migrations present in repo; ordered | **INCOMPLETE** — prod apply + PITR not confirmed |
 | **C** | Pipeline validation | lint/typecheck/build/regression **PASS** (2026-08-26) | **INCOMPLETE** — operator sign-off on release commit |
-| **D** | Billing (Mollie) | Webhook route + idempotency + fail-closed LIVE gate proven in code | **INCOMPLETE** — dashboard webhook + staging smoke |
+| **D** | Billing (Mollie) | Per-resource `webhookUrl` + classic handler + idempotency + LIVE gate proven in code | **INCOMPLETE** — staging TEST smoke only (dashboard webhook **not** required) |
 | **E** | Portal validation | Code complete | **INCOMPLETE** — operator smoke |
 | **F** | Authentication validation | Code complete | **INCOMPLETE** — operator smoke |
 
@@ -282,7 +284,7 @@ From `docs/enterprise-release-checklist.md` — all rows **INCOMPLETE** until op
 |---|-------|------|----------|-------------|
 | 1 | Supabase SQL Editor | Run §3.1–§3.6 verification queries | All required migrations + schema objects present | ☐ PASS ☐ FAIL |
 | 2 | Vercel Production → Environment | Diff vs `.env.example` | `MOLLIE_LIVE_CHARGING_ENABLED=false`; `MOLLIE_BILLING_ROLLOUT=true`; no legacy provider keys | ☐ PASS ☐ FAIL |
-| 3 | Mollie Dashboard → Webhooks | Classic payment webhook registered | URL = `{NEXT_PUBLIC_APP_URL}/api/mollie/webhook`; not Next-Gen | ☐ PASS ☐ FAIL |
+| 3 | Vercel Production → `NEXT_PUBLIC_APP_URL` | App host for per-resource webhooks | Equals `https://app.auroranexis.com`; no Dashboard/Next-Gen webhook required | ☐ PASS ☐ FAIL |
 | 4 | Supabase Dashboard → Database → Backups | PITR / automated backup | Enabled; owner + retention recorded | ☐ PASS ☐ FAIL |
 | 5 | Production HTTPS | `GET /api/ready`, `GET /api/mollie/connectivity` (auth) | 200; Mollie probe sanitized JSON | ☐ PASS ☐ FAIL |
 
@@ -309,7 +311,7 @@ From `docs/enterprise-release-checklist.md` — all rows **INCOMPLETE** until op
 **PRODUCTION_OPERATOR_TECHNICAL_CLOSEOUT = OPERATOR_CONFIRMATION_REQUIRED**
 
 - Engineering: **READY** for SAFE CONTROLLED PRODUCTION MODE (Mollie TEST / LIVE charging off).
-- Operator: **NOT CLOSED** — migrations, env diff, webhook dashboard, PITR, checklist A–F.
+- Operator: **NOT CLOSED** — migrations, env diff (`NEXT_PUBLIC_APP_URL`), PITR, checklist A–F (Dashboard webhook **not** a closeout gate).
 - **NOT BLOCKED** at engineering layer (no new critical defect proven).
 - **NOT CLOSED** — operator confirmations pending.
 

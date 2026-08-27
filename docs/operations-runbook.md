@@ -56,7 +56,7 @@ Legacy Stripe/Paddle/FastSpring are **not** active operations paths. `/api/fasts
 ### Mollie webhook failures
 
 1. Check Vercel logs for `/api/mollie/webhook`.
-2. Confirm Mollie Dashboard points at classic `/api/mollie/webhook` (not Next-Gen).
+2. Confirm `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` so new payment/subscription creates supply the correct per-resource `webhookUrl` (`buildMollieWebhookUrl()`). Dashboard webhook registration is **not** required; do **not** configure Next-Gen Dashboard webhooks against the classic endpoint.
 3. Confirm API key mode matches intent (`test_` vs `live_`).
 4. If `live_` key and LIVE charging disabled → expect **503** (fail-closed by design).
 5. Confirm idempotency store healthy (`mollie_webhook_events`).

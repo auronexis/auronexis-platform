@@ -31,7 +31,7 @@ Status legend: **COMPLETE** (verified by engineering / operator closeout) · **I
 | 1 | Enterprise release checklist A–O with owners/timestamps | **INCOMPLETE** | Template: [enterprise-release-checklist.md](./enterprise-release-checklist.md) |
 | 2 | Production secrets; bypass flags unset; Mollie controlled mode | **INCOMPLETE** | Confirm `MOLLIE_LIVE_CHARGING_ENABLED=false`; `MOLLIE_BILLING_ROLLOUT=true`; allowlist as needed |
 | 3 | Staging migrations OK; prod migration + PITR plan | **INCOMPLETE** | Apply on staging first; confirm Supabase backup |
-| 4 | Staging Mollie webhook / TEST checkout smoke | **INCOMPLETE** | Operator staging smoke — no LIVE charges |
+| 4 | Staging Mollie TEST checkout smoke (per-resource `webhookUrl`) | **INCOMPLETE** | Operator staging smoke — no LIVE charges; Dashboard webhook **not** required |
 | 5 | Staging auth + portal isolation smoke | **INCOMPLETE** | Operator staging smoke |
 | 6 | Health/ready monitored; error reporting on target | **COMPLETE** (ops) / **INCOMPLETE** (named on-call) | Sentry + PostHog configured in Vercel |
 | 7 | Prior Vercel deployment ID; rollback owners; webhook rotate known | **INCOMPLETE** | Record IDs before promote |
@@ -49,7 +49,7 @@ Status legend: **COMPLETE** (verified by engineering / operator closeout) · **I
 | Supabase project readiness | **COMPLETE** (grants + white-label) | `20250824140000` applied; white-label `production_ok=true` |
 | Vercel project readiness | **COMPLETE** (env) / **INCOMPLETE** (promote ritual) | Production env verified for observability + vault |
 | DNS / SSL | **INCOMPLETE** | Confirm www / app / apex per enterprise-deployment |
-| Webhook `/api/mollie/webhook` | **INCOMPLETE** (dashboard confirm) | Classic payment webhook only — not Next-Gen |
+| Webhook `/api/mollie/webhook` | **COMPLETE** (architecture) | Per-resource `webhookUrl` via `buildMollieWebhookUrl()`; production `https://app.auroranexis.com/api/mollie/webhook`; **DASHBOARD_WEBHOOK_REQUIRED = NO** |
 | Environment variables | **INCOMPLETE** (diff ritual) | Diff against `.env.example`; remove legacy provider keys |
 | Backup strategy | **COMPLETE** (docs) / **INCOMPLETE** (owner assigned) | [disaster-recovery.md](./disaster-recovery.md) |
 | Rollback strategy | **COMPLETE** (docs) / **INCOMPLETE** (owners + prior deploy ID) | [rollback-plan.md](./rollback-plan.md) |
@@ -126,7 +126,7 @@ Canonical narrative: [enterprise-deployment.md](./enterprise-deployment.md). Exa
 ### 4.2 Environment variables (Vercel Production)
 
 1. Diff Production env vs `.env.example`.
-2. Set Supabase, `NEXT_PUBLIC_APP_URL` HTTPS, `CRON_SECRET`, SMTP email, Mollie:
+2. Set Supabase, `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com`, `CRON_SECRET`, SMTP email, Mollie:
    - `MOLLIE_API_KEY` (`test_` for controlled mode; `live_` only with explicit LIVE approval)
    - `MOLLIE_BILLING_ROLLOUT=true`
    - `MOLLIE_LIVE_CHARGING_ENABLED=false` (required for SAFE CONTROLLED PRODUCTION MODE)
@@ -144,10 +144,11 @@ Canonical narrative: [enterprise-deployment.md](./enterprise-deployment.md). Exa
 
 ### 4.4 Mollie
 
-1. Register classic webhook: `https://www.auroranexis.com/api/mollie/webhook` (or production app host).
-2. Do **not** configure Next-Gen Dashboard webhooks / `X-Mollie-Signature` for this integration (code expects classic payment id + API re-fetch).
-3. Keep LIVE charging disabled until P1-002 + explicit LIVE approval.
-4. `/api/fastspring/*` returns **410 Gone** — do not register FastSpring webhooks.
+1. Confirm `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` so `buildMollieWebhookUrl()` resolves to `https://app.auroranexis.com/api/mollie/webhook`.
+2. **DASHBOARD_WEBHOOK_REQUIRED = NO** — do **not** treat Mollie Dashboard webhook registration as a go-live gate. Payment and subscription creates already send per-resource `webhookUrl`.
+3. Do **not** configure Next-Gen Dashboard webhooks / `X-Mollie-Signature` against the classic endpoint (handler expects classic payment id + API re-fetch).
+4. Keep LIVE charging disabled until P1-002 + explicit LIVE approval.
+5. `/api/fastspring/*` returns **410 Gone** — do not register FastSpring webhooks.
 
 ### 4.5 Vercel
 
@@ -215,7 +216,7 @@ Operators check each after promote (or on staging first).
 |------|--------|--------|
 | Rollback documentation | **COMPLETE** | [rollback-plan.md](./rollback-plan.md) |
 | Rollback owners | **INCOMPLETE** | Name on-call before promote |
-| Rollback commands | **COMPLETE** (docs) | Vercel Instant Rollback; env revert; pause Mollie webhook |
+| Rollback commands | **COMPLETE** (docs) | Vercel Instant Rollback; env revert; `MOLLIE_LIVE_CHARGING_ENABLED=false` |
 | Rollback timing | **COMPLETE** (guidance) | Prefer immediate app rollback on 5xx / bad build |
 | Rollback criteria | **COMPLETE** | Ready probe fail, auth outage, billing storm, bad migration |
 | Database compatibility | **COMPLETE** (forward-only policy) | Prefer app rollback; PITR if schema corrupt |
@@ -226,7 +227,7 @@ Operators check each after promote (or on staging first).
 
 1. **App fault:** Instant Rollback to prior Vercel deployment → verify `/api/ready` → auth smoke.
 2. **Bad env:** Revert secrets → redeploy/restart → re-audit env.
-3. **Webhook storm:** Pause Mollie webhook destination → fix → re-enable; keep `MOLLIE_LIVE_CHARGING_ENABLED=false`.
+3. **Webhook storm:** Set `MOLLIE_LIVE_CHARGING_ENABLED=false` (LIVE returns 503) and/or application-rollback the poison deploy; Mollie retries per-resource `webhookUrl` when healthy. Do **not** rely on Dashboard webhook pause (Dashboard registration is not required).
 4. **Bad migration:** Freeze writes → PITR/restore → re-apply known-good migrations only.
 
 ---
@@ -254,7 +255,7 @@ Low-traffic weekday with named on-call. Start only after Phase 3 git packaging a
 
 1. Git package + CI green
 2. Staging migrate + smoke (auth, portal, Mollie TEST)
-3. Production secrets + Mollie classic webhook
+3. Production secrets + confirm `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` (per-resource Mollie `webhookUrl`; Dashboard webhook not required)
 4. Production migrate
 5. Vercel Production promote
 6. Phase 5 smoke

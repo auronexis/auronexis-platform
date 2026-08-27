@@ -154,7 +154,7 @@ Common failures:
 |-------|-----|
 | Missing env var | Add in Vercel, redeploy |
 | Supabase connection | Check `NEXT_PUBLIC_SUPABASE_URL`, service role key |
-| Mollie webhook failures | Verify `MOLLIE_API_KEY` + classic webhook URL; keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until LIVE gate |
+| Mollie webhook failures | Verify `MOLLIE_API_KEY` + `NEXT_PUBLIC_APP_URL` (per-resource `webhookUrl`); keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until LIVE gate |
 | Cron 401 | Set `CRON_SECRET`, use Bearer header |
 
 ---

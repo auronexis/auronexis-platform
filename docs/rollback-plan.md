@@ -76,12 +76,13 @@ Migrations are **forward-only**. There are no guaranteed down scripts.
 
 ## 5. Webhook rollback (Mollie)
 
-1. In the Mollie dashboard, pause or disable the production classic webhook destination if the handler is poison.
+1. Set `MOLLIE_LIVE_CHARGING_ENABLED=false` immediately (LIVE credential + flag false → webhook **503**). Optionally set `MOLLIE_BILLING_ROLLOUT=false` to stop new checkout.
 2. Application-rollback the release that broke verification / processing.
 3. Confirm idempotency store still accepts replays (`mollie_webhook_events`).
-4. Re-enable webhook; rely on Mollie retries + `webhook_retries` job where applicable.
+4. After fix, Mollie retries deliveries to the per-resource `webhookUrl` already set on payments/subscriptions; keep `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com`.
 5. Rotate `MOLLIE_API_KEY` only if key leakage is suspected — update Vercel in the same window.
 6. Do **not** re-enable Stripe/Paddle/FastSpring webhooks for active billing. `/api/fastspring/*` stays **410**.
+7. Do **not** configure Next-Gen Dashboard webhooks against the classic endpoint (Dashboard registration is **not** required for this architecture).
 
 **Deterministic exit:** Test payment notification reconciles; no duplicate entitlement grants.
 

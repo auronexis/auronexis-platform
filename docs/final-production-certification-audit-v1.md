@@ -357,7 +357,7 @@ Environment: Windows, Node/npm (local), repo `D:\Projekt.01\Auroranexis`, 2026-0
 1. Confirm Vercel Production: `MOLLIE_LIVE_CHARGING_ENABLED` unset or `false`
 2. Confirm `MOLLIE_BILLING_ROLLOUT=true` only when ready for self-serve TEST checkout
 3. Confirm `MOLLIE_API_KEY` prefix matches intended mode (`test_` for pilot)
-4. Configure Mollie Dashboard webhook → `https://www.auroranexis.com/api/mollie/webhook` (classic, not Next-Gen)
+4. Confirm `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` so per-resource Mollie `webhookUrl` resolves to `https://app.auroranexis.com/api/mollie/webhook` (Dashboard/Next-Gen registration **not** required)
 5. Set `CRON_SECRET`; verify Vercel cron invokes `/api/cron/run` with Bearer auth
 6. Configure STRATO SMTP (`SMTP_*`, `EMAIL_FROM=noreply@auroranexis.com`); send test transactional email
 7. Run pilot smoke: signup → login → Mollie TEST checkout → webhook → entitlement → cancel → withdrawal

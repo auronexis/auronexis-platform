@@ -52,6 +52,30 @@ test("First payment uses sequenceType first and canonical plan pricing", () => {
   assert.match(checkout, /idempotencyKey/);
 });
 
+test("Production checkout and subscription create supply per-resource webhookUrl", () => {
+  const production = readSource("src/lib/billing/providers/mollie/production-checkout.ts");
+  assert.match(production, /function buildMollieWebhookUrl/);
+  assert.match(production, /getAppUrl\(\).*\/api\/mollie\/webhook|`\$\{getAppUrl\(\)\}\/api\/mollie\/webhook`/);
+  assert.match(production, /customerPayments\.create\([\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/);
+  assert.match(
+    production,
+    /customerSubscriptions\.create\([\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/,
+  );
+
+  const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
+  assert.match(checkout, /function buildMollieWebhookUrl/);
+  assert.match(checkout, /webhookUrl:\s*buildMollieWebhookUrl\(\)/);
+  assert.match(checkout, /customerSubscriptions\.create[\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/);
+
+  for (const file of [
+    "src/lib/billing/providers/mollie/upgrade-payment.ts",
+    "src/lib/billing/providers/mollie/cancellation-withdrawal.ts",
+  ]) {
+    const src = readSource(file);
+    assert.match(src, /webhookUrl:\s*buildMollieWebhookUrl\(\)/, `${file} must set webhookUrl`);
+  }
+});
+
 test("Enterprise excluded from Mollie self-serve checkout", () => {
   const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
   assert.match(checkout, /MOLLIE_SELF_SERVE_PLAN_KEYS = \["professional", "business"\]/);

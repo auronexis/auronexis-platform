@@ -85,7 +85,7 @@ Obsolete FastSpring-specific suites (`fastspring-*.test.mjs`) are superseded and
 
 1. Remove `FASTSPRING_*` from Vercel Production / Preview / Development
 2. Disable FastSpring storefront webhooks pointing at Auroranexis
-3. Confirm `MOLLIE_BILLING_ROLLOUT=true` and Mollie classic webhook → `/api/mollie/webhook`
+3. Confirm `MOLLIE_BILLING_ROLLOUT=true` and per-resource Mollie `webhookUrl` → `/api/mollie/webhook` (`NEXT_PUBLIC_APP_URL` on app host; Dashboard registration not required)
 4. Keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until LIVE approval
 5. Legal counsel review of MoR / tax wording (`LEGAL_REVIEW_REQUIRED`)
 6. Support runbook: operator Mollie refunds for approved billing-error cases

@@ -94,10 +94,14 @@ Supabase Auth redirect URLs (Supabase Dashboard → Authentication → URL Confi
 
 ## Mollie webhook URLs (active)
 
-| Environment | Endpoint |
+Auroranexis uses **per-resource** Mollie `webhookUrl` via `buildMollieWebhookUrl()` (payment and subscription create). Mollie Dashboard webhook registration is **not** required. Do **not** configure Next-Gen Dashboard webhooks against the classic endpoint.
+
+| Environment | Endpoint (`NEXT_PUBLIC_APP_URL` + `/api/mollie/webhook`) |
 |-------------|----------|
 | Staging | `https://staging.auroranexis.com/api/mollie/webhook` |
-| Production | `https://www.auroranexis.com/api/mollie/webhook` (or app host matching DNS) |
+| Production | `https://app.auroranexis.com/api/mollie/webhook` |
+
+Production `NEXT_PUBLIC_APP_URL` **must** equal `https://app.auroranexis.com` (app host — not www).
 
 > Legacy FastSpring / Stripe / Paddle webhook routes are retired (410 / archive). See [enterprise-deployment.md](./enterprise-deployment.md).
 

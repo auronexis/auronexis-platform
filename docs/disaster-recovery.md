@@ -48,7 +48,7 @@ Examples: Cron misconfigured, queue stalled, transient Mollie API errors, AI pro
 1. Provision deployment from known-good git tag.
 2. Restore Supabase from backup.
 3. Rotate secrets: `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `MOLLIE_API_KEY`, `INTEGRATION_SECRET_KEY`, email keys.
-4. Re-register Mollie classic webhook with the production URL.
+4. Confirm `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` so new Mollie payment/subscription creates receive the correct per-resource `webhookUrl` (`https://app.auroranexis.com/api/mollie/webhook`). Dashboard webhook re-registration is **not** required.
 5. Reconfigure Vercel Cron Authorization.
 6. Complete [enterprise-release-checklist.md](./enterprise-release-checklist.md) before traffic.
 

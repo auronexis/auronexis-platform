@@ -1,7 +1,7 @@
 # Abuse Protection
 
 **Target:** No unrestricted public endpoint
-**Billing webhooks:** Mollie classic payment notification + API re-fetch + idempotency (`/api/mollie/webhook`)
+**Billing webhooks:** Mollie classic payment notification via per-resource `webhookUrl` + API re-fetch + idempotency (`/api/mollie/webhook`; Dashboard registration not required)
 
 ---
 

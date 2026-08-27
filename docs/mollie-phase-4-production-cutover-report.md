@@ -46,22 +46,25 @@ Not LIVE. `MOLLIE_LIVE_CHARGING_ENABLED` remains false/unset. Global FastSpring 
 
 ## Classic webhook (operator)
 
-Configure **classic payment webhook only**:
+**Per-resource architecture:** payment and subscription creates set `webhookUrl` via `buildMollieWebhookUrl()`.
+
+Production callback:
 
 `https://app.auroranexis.com/api/mollie/webhook`
 
-(Exact host = production `NEXT_PUBLIC_APP_URL`. Do **not** create Next-Gen Dashboard / `X-Mollie-Signature` webhooks for this integration.)
+(`NEXT_PUBLIC_APP_URL` **must** be `https://app.auroranexis.com`. **DASHBOARD_WEBHOOK_REQUIRED = NO**. Do **not** create Next-Gen Dashboard / `X-Mollie-Signature` webhooks against the classic endpoint.)
 
 Body supplies payment id (`tr_*`); server re-fetches Payment (+ Subscription) from Mollie API; `mollie_webhook_events` idempotency ledger handles replay.
 
 ## Operator actions (explicit)
 
-1. Confirm classic webhook URL matches `NEXT_PUBLIC_APP_URL` + `/api/mollie/webhook`.
+1. Confirm `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` so per-resource `webhookUrl` matches production.
 2. Keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until explicit LIVE go-live approval.
 3. For controlled TEST/production-style rollout: `MOLLIE_BILLING_ROLLOUT=true` + org UUID(s) in `MOLLIE_BILLING_ORG_ALLOWLIST`.
 4. Leave `MOLLIE_BILLING_DEFAULT_FOR_NEW=false` until ready for NEW-subscription global cutover.
 5. Do not migrate or cancel FastSpring remotes.
 6. Do not enable LIVE keys for payment writes without the LIVE kill switch.
+7. Do not block go-live on Mollie Dashboard webhook registration.
 
 ## Rollback
 

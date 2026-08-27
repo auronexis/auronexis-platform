@@ -372,7 +372,7 @@ Committed production secrets: **0** (repo audit expectation; `.env.example` docu
 | `MOLLIE_API_KEY` | Prefer `test_` until LIVE approval | `live_` only after counsel + migrations |
 | `MOLLIE_BILLING_ROLLOUT` | `true` for Mollie checkout | unchanged |
 | `MOLLIE_LIVE_CHARGING_ENABLED` | **`false`** | flip only after this gate READY |
-| Mollie webhook | Classic `/api/mollie/webhook` | same |
+| Mollie webhook | Per-resource `webhookUrl` → `/api/mollie/webhook` on app host | same |
 | Legacy Stripe/Paddle/FastSpring keys | Absent | Absent |
 
 **Required configuration confirmed in repo evidence:** **NO** (playbook items still INCOMPLETE).
@@ -408,7 +408,7 @@ Truthy only: `1` / `true` / `yes` / `on` (trim + lower). Missing/other → false
 - CI green (typecheck, lint, build, Mollie + gate suites)
 - Production deployment green
 - Migrations in §33 confirmed applied + PITR/backup recorded
-- Mollie LIVE profile approved; classic webhook registered
+- Mollie LIVE profile approved; `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` (per-resource `webhookUrl`; Dashboard webhook **not** required)
 - Live credentials configured; **`MOLLIE_LIVE_CHARGING_ENABLED=false`** until flip
 - P1-002 counsel sign-off recorded
 
@@ -467,7 +467,7 @@ Command: `npm run test:final-live-billing-gate`
 
 1. **P1-002 EXTERNAL REVIEW REQUIRED** — unrestricted LIVE revenue not authorized.
 2. **Production migrations not operator-confirmed** applied (playbook INCOMPLETE).
-3. **Production config ritual incomplete** in repo evidence (secrets/webhook/PITR sign-off).
+3. Production config ritual incomplete in repo evidence (secrets / `NEXT_PUBLIC_APP_URL` / PITR sign-off; Dashboard webhook **not** a blocker).
 4. EU Reverse Charge self-serve intentionally blocked until counsel legend (expected; blocks broad LIVE EU).
 5. Credit notes not implemented (refund ops must stay manual / non-mutating).
 
@@ -477,7 +477,7 @@ Command: `npm run test:final-live-billing-gate`
 
 1. Complete P1-002 external tax/legal/MoR review; record sign-off in release artifacts.
 2. Confirm §33 migrations applied on production Supabase (staging first); record backup/PITR.
-3. Confirm Mollie classic webhook + env diff vs `.env.example`; keep charging flag **false**.
+3. Confirm `NEXT_PUBLIC_APP_URL=https://app.auroranexis.com` + env diff vs `.env.example`; keep charging flag **false**. Do **not** block on Mollie Dashboard webhook registration (per-resource `webhookUrl`).
 4. Clear remaining Chapter 19/20 playbook INCOMPLETE rows.
 5. Only then reconsider flipping `MOLLIE_LIVE_CHARGING_ENABLED` under a new READY gate.
 6. Until credit notes exist: manual refunds must not edit issued invoice totals.
