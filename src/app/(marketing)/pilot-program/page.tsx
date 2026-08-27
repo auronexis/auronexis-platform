@@ -5,13 +5,31 @@ import { PilotApplicationForm } from "@/components/marketing/pilot-application-f
 import { MarketingCta } from "@/components/marketing/marketing-cta";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { MarketingSection } from "@/components/marketing/marketing-sections";
+import { getSession } from "@/lib/auth/session";
+import { resolveOrganizationEntitlements } from "@/lib/entitlements/resolver";
 import { PILOT_PROGRAM } from "@/lib/marketing/content";
 import { MARKETING_ROUTES } from "@/lib/company/contact";
 import { JsonLdScript, pilotProgramJsonLd } from "@/lib/marketing/seo";
+import { evaluatePilotApplicationEligibility } from "@/lib/sales/pilot-eligibility";
 
 export const metadata: Metadata = createPageMetadataForPath("/pilot-program");
 
-export default function PilotProgramPage() {
+export default async function PilotProgramPage() {
+  const session = await getSession();
+  let blockedReason: string | null = null;
+  if (session) {
+    const entitlements = await resolveOrganizationEntitlements(session.organization.id, {
+      session,
+    });
+    const eligibility = evaluatePilotApplicationEligibility({
+      hasAuthenticatedOrganization: true,
+      isPaidAccess: entitlements.isPaidAccess,
+    });
+    if (!eligibility.allowed) {
+      blockedReason = eligibility.reason;
+    }
+  }
+
   return (
     <MarketingShell>
       <JsonLdScript data={pilotProgramJsonLd()} />
@@ -50,7 +68,7 @@ export default function PilotProgramPage() {
 
       <MarketingSection id="apply" title="Request a Pilot Partner invitation">
         <div className="max-w-2xl">
-          <PilotApplicationForm />
+          <PilotApplicationForm blockedReason={blockedReason} />
         </div>
       </MarketingSection>
 

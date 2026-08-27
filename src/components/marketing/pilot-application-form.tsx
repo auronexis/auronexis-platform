@@ -5,11 +5,30 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 import { submitPilotApplication, type CaptureActionState } from "@/lib/sales/capture-actions";
+import { MARKETING_ROUTES } from "@/lib/company/contact";
 
 const initialState: CaptureActionState = {};
 
-export function PilotApplicationForm({ className }: { className?: string }) {
+export function PilotApplicationForm({
+  className,
+  blockedReason,
+}: {
+  className?: string;
+  /** Server-resolved paid-customer block — mirrored by submitPilotApplication. */
+  blockedReason?: string | null;
+}) {
   const [state, formAction, isPending] = useActionState(submitPilotApplication, initialState);
+
+  if (blockedReason) {
+    return (
+      <FormAlert variant="error" className={className}>
+        {blockedReason}{" "}
+        <a href={MARKETING_ROUTES.contact} className="underline underline-offset-2">
+          Contact sales
+        </a>
+      </FormAlert>
+    );
+  }
 
   if (state.success) {
     return (

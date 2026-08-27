@@ -1,7 +1,9 @@
 "use server";
 
 import { z } from "zod";
+import { getSession } from "@/lib/auth/session";
 import { SALES_EMAIL } from "@/lib/company";
+import { resolveOrganizationEntitlements } from "@/lib/entitlements/resolver";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkPublicFormThrottle } from "@/lib/security/login-throttle";
 import { buildCalendlyLink, buildDiscoveryMeetLink } from "@/lib/sales/calendar";
@@ -9,6 +11,7 @@ import {
   defaultInboxForSource,
   defaultStageForSource,
 } from "@/lib/sales/pipeline-stages";
+import { evaluatePilotApplicationEligibility } from "@/lib/sales/pilot-eligibility";
 import { resolvePlatformSalesOrganizationId } from "@/lib/sales/platform-org";
 import { sendLeadNotificationEmail } from "@/lib/sales/notify";
 import type { SalesInboxKey, SalesLeadSource } from "@/types/database";
@@ -236,6 +239,21 @@ export async function submitPilotApplication(_prev: CaptureActionState, formData
   const parsed = pilotSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid form data." };
+  }
+
+  // Server-side paid-customer exclusion — UI hide alone is not sufficient.
+  const session = await getSession();
+  if (session) {
+    const entitlements = await resolveOrganizationEntitlements(session.organization.id, {
+      session,
+    });
+    const eligibility = evaluatePilotApplicationEligibility({
+      hasAuthenticatedOrganization: true,
+      isPaidAccess: entitlements.isPaidAccess,
+    });
+    if (!eligibility.allowed) {
+      return { error: eligibility.reason };
+    }
   }
 
   const blocked = await validatePublicSubmission(parsed.data.email);
