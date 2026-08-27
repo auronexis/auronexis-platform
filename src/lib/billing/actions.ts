@@ -190,9 +190,7 @@ async function enforceCheckoutContractAndTax(input: {
   if (determination.blocksCheckout) {
     return {
       error:
-        determination.reasonCode === "eu_b2b_reverse_charge_legend_pending_counsel"
-          ? "Cross-border EU B2B checkout requires manual review until reverse-charge invoice wording is counsel-approved. Contact sales."
-          : "Checkout is blocked until billing country / VAT details can be confirmed. Contact sales for manual review.",
+        "Checkout is blocked until billing country / VAT details can be confirmed. Contact sales for manual review.",
     };
   }
 

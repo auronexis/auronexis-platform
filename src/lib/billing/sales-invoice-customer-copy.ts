@@ -53,7 +53,7 @@ export function toCustomerVisibleInvoiceLineDescription(rawDescription: string):
 /**
  * Tax note for the existing German domestic 19% path only.
  * Returns null when treatment is not the persisted STANDARD_DOMESTIC_VAT @ 19% path
- * (international / reverse-charge wording stays counsel-gated elsewhere).
+ * (international / reverse-charge wording is resolved via reverse-charge-legend).
  */
 export function buildGermanDomesticVatTaxNote(input: {
   taxPolicyOutcome: TaxPolicyOutcome;

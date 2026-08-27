@@ -7,7 +7,9 @@ import { requireModuleAccess } from "@/lib/rbac/route-guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import {
   buildPreviewSalesInvoice,
+  resolvePreviewScenario,
   type PreviewSalesInvoicePlanKey,
+  type PreviewSalesInvoiceScenario,
 } from "@/lib/billing/sales-invoice-preview";
 import { renderSalesInvoiceHtml } from "@/lib/billing/sales-invoice-render";
 
@@ -17,12 +19,18 @@ export const metadata: Metadata = {
 };
 
 type InvoicePreviewPageProps = {
-  searchParams: Promise<{ plan?: string }>;
+  searchParams: Promise<{ plan?: string; scenario?: string }>;
 };
 
 function resolvePreviewPlan(value: string | undefined): PreviewSalesInvoicePlanKey {
   return value === "professional" ? "professional" : "business";
 }
+
+const SCENARIO_LABELS: Record<PreviewSalesInvoiceScenario, string> = {
+  de: "DE domestic",
+  fr: "FR EU B2B RC",
+  nl: "NL EU B2B RC",
+};
 
 export default async function InvoicePreviewPage({ searchParams }: InvoicePreviewPageProps) {
   await requireModuleAccess("settings");
@@ -34,10 +42,11 @@ export default async function InvoicePreviewPage({ searchParams }: InvoicePrevie
 
   const params = await searchParams;
   const planKey = resolvePreviewPlan(params.plan);
-  const { invoice, sellerConfig } = buildPreviewSalesInvoice(planKey);
+  const scenario = resolvePreviewScenario(params.scenario);
+  const { invoice, sellerConfig } = buildPreviewSalesInvoice(planKey, scenario);
   const html = renderSalesInvoiceHtml(invoice, { preview: true, locale: "en" });
 
-  const pdfHref = `/api/operator/sales-invoice/preview?plan=${planKey}&format=pdf`;
+  const pdfHref = `/api/operator/sales-invoice/preview?plan=${planKey}&scenario=${scenario}&format=pdf`;
 
   return (
     <>
@@ -63,7 +72,7 @@ export default async function InvoicePreviewPage({ searchParams }: InvoicePrevie
       <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
         <span className="text-muted">Plan:</span>
         <Link
-          href="/settings/billing/invoice-preview?plan=professional"
+          href={`/settings/billing/invoice-preview?plan=professional&scenario=${scenario}`}
           className={
             planKey === "professional"
               ? "font-semibold text-foreground underline"
@@ -73,7 +82,7 @@ export default async function InvoicePreviewPage({ searchParams }: InvoicePrevie
           Professional (EUR)
         </Link>
         <Link
-          href="/settings/billing/invoice-preview?plan=business"
+          href={`/settings/billing/invoice-preview?plan=business&scenario=${scenario}`}
           className={
             planKey === "business"
               ? "font-semibold text-foreground underline"
@@ -83,13 +92,28 @@ export default async function InvoicePreviewPage({ searchParams }: InvoicePrevie
           Business (EUR)
         </Link>
         <span className="text-muted">·</span>
+        <span className="text-muted">Scenario:</span>
+        {(Object.keys(SCENARIO_LABELS) as PreviewSalesInvoiceScenario[]).map((key) => (
+          <Link
+            key={key}
+            href={`/settings/billing/invoice-preview?plan=${planKey}&scenario=${key}`}
+            className={
+              scenario === key
+                ? "font-semibold text-foreground underline"
+                : "text-primary hover:underline"
+            }
+          >
+            {SCENARIO_LABELS[key]}
+          </Link>
+        ))}
+        <span className="text-muted">·</span>
         <a
           href={pdfHref}
           className="font-medium text-primary hover:underline"
           target="_blank"
           rel="noreferrer"
         >
-          Open Business/plan test PDF
+          Open test PDF
         </a>
       </div>
 

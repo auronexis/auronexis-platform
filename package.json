@@ -50,6 +50,7 @@
     "test:customer-invoice-delivery-c1": "node --experimental-strip-types --import ./scripts/_test-helpers/register-ts-alias.mjs --test scripts/customer-invoice-delivery-c1.test.mjs",
     "test:customer-invoice-email-c2": "node --experimental-strip-types --import ./scripts/_test-helpers/register-ts-alias.mjs --test scripts/customer-invoice-email-c2.test.mjs",
     "test:operator-invoice-visual-acceptance-c1-5": "node --experimental-strip-types --import ./scripts/_test-helpers/register-ts-alias.mjs --test scripts/operator-invoice-visual-acceptance-c1-5.test.mjs",
+    "test:eu-b2b-reverse-charge-legend-c3": "node --experimental-strip-types --import ./scripts/_test-helpers/register-ts-alias.mjs --test scripts/eu-b2b-reverse-charge-legend-c3.test.mjs",
     "test:build-bible-ch1": "node --test scripts/build-bible-ch1.test.mjs",
     "test:build-bible-ch2": "node --test scripts/build-bible-ch2.test.mjs",
     "test:build-bible-ch3": "node --test scripts/build-bible-ch3.test.mjs",

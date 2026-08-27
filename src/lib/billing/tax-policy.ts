@@ -2,7 +2,8 @@
  * Tax determination policy outcomes — separate from tax calculation.
  *
  * UNKNOWN must never silently become 0%. Reverse-charge invoice legends remain
- * counsel-gated (LEGAL_TEXT_PENDING_COUNSEL) until approved copy is supplied.
+ * gated until implementation-approved (C3) or external counsel copy is supplied.
+ * IMPLEMENTATION_TEXT_APPROVED_FOR_C3 is not external counsel sign-off.
  *
  * Business relationship classification (DOMESTIC_B2B / EU candidate / NON_EU)
  * is distinct from final tax outcome — country mismatch alone ≠ Reverse Charge.
@@ -36,6 +37,26 @@ export const DE_STANDARD_VAT_RATE_BPS = 1900;
 /** INTERNAL ONLY — never expose this marker on customer-facing invoice copy. */
 export const LEGAL_TEXT_PENDING_COUNSEL = "LEGAL_TEXT_PENDING_COUNSEL" as const;
 
+/**
+ * C3 implementation-approved reverse-charge invoice wording.
+ * Not external tax/legal counsel sign-off — P1-002 remains OPEN.
+ */
+export const IMPLEMENTATION_TEXT_APPROVED_FOR_C3 =
+  "IMPLEMENTATION_TEXT_APPROVED_FOR_C3" as const;
+
+/**
+ * Legend gate statuses:
+ * - IMPLEMENTATION_TEXT_APPROVED_FOR_C3 — engineering C3 wording (not counsel)
+ * - "approved" — reserved for external counsel-supplied copy only
+ * - LEGAL_TEXT_PENDING_COUNSEL — customer legend withheld
+ * - "n/a" — reverse charge not applicable
+ */
+export type ReverseChargeLegendStatus =
+  | typeof LEGAL_TEXT_PENDING_COUNSEL
+  | typeof IMPLEMENTATION_TEXT_APPROVED_FOR_C3
+  | "approved"
+  | "n/a";
+
 export type TaxDeterminationInput = {
   customerCountryCode: string | null | undefined;
   vatId: string | null | undefined;
@@ -52,8 +73,8 @@ export type TaxDeterminationResult = {
   /** When true, self-serve checkout must not proceed. */
   blocksCheckout: boolean;
   reasonCode: string;
-  /** Internal counsel gate for reverse-charge legends — not public copy. */
-  reverseChargeLegendStatus: typeof LEGAL_TEXT_PENDING_COUNSEL | "approved" | "n/a";
+  /** Legend gate — never claim external counsel via IMPLEMENTATION_TEXT_APPROVED_FOR_C3. */
+  reverseChargeLegendStatus: ReverseChargeLegendStatus;
 };
 
 function normalizeCountry(code: string | null | undefined): string | null {
@@ -132,13 +153,13 @@ export function determineTaxPolicy(input: TaxDeterminationInput): TaxDeterminati
   }
 
   if (input.viesStatus === "valid") {
-    // Eligible reverse-charge *outcome* — public legend remains counsel-gated; self-serve blocked.
+    // Verified EU B2B reverse charge — C3 implementation legend; not external counsel sign-off.
     return withClassification(input, {
       outcome: "REVERSE_CHARGE",
       vatRateBps: 0,
-      blocksCheckout: true,
-      reasonCode: "eu_b2b_reverse_charge_legend_pending_counsel",
-      reverseChargeLegendStatus: LEGAL_TEXT_PENDING_COUNSEL,
+      blocksCheckout: false,
+      reasonCode: "eu_b2b_reverse_charge",
+      reverseChargeLegendStatus: IMPLEMENTATION_TEXT_APPROVED_FOR_C3,
     });
   }
 
@@ -163,5 +184,5 @@ export function determineTaxPolicy(input: TaxDeterminationInput): TaxDeterminati
 }
 
 export function taxOutcomeAllowsSelfServeCheckout(outcome: TaxPolicyOutcome): boolean {
-  return outcome === "STANDARD_DOMESTIC_VAT";
+  return outcome === "STANDARD_DOMESTIC_VAT" || outcome === "REVERSE_CHARGE";
 }

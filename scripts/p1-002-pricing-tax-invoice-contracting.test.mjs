@@ -31,7 +31,9 @@ test("Tax determination separates UNKNOWN_BLOCK_CHECKOUT from 0%", () => {
   assert.match(policy, /UNKNOWN_BLOCK_CHECKOUT/);
   assert.match(policy, /DE_STANDARD_VAT_RATE_BPS\s*=\s*1900/);
   assert.match(policy, /LEGAL_TEXT_PENDING_COUNSEL/);
-  assert.match(policy, /eu_b2b_reverse_charge_legend_pending_counsel/);
+  assert.match(policy, /IMPLEMENTATION_TEXT_APPROVED_FOR_C3/);
+  assert.match(policy, /eu_b2b_reverse_charge/);
+  assert.doesNotMatch(policy, /eu_b2b_reverse_charge_legend_pending_counsel/);
 });
 
 test("VAT-inclusive calculation derives net/VAT from gross", () => {

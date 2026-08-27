@@ -21,6 +21,7 @@ import {
 } from "@/lib/billing/sales-invoice";
 import { formatBuyerInvoiceAddressLines } from "@/lib/billing/buyer-invoice-snapshot";
 import { toCustomerVisibleInvoiceLineDescription } from "@/lib/billing/sales-invoice-customer-copy";
+import { reverseChargeLegendTextForLocale } from "@/lib/billing/reverse-charge-legend";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
 import { OPERATOR_TEST_DOCUMENT_INDICATOR } from "@/lib/billing/sales-invoice-test-marker";
@@ -37,6 +38,18 @@ export type SalesInvoiceRenderOptions = {
    */
   compress?: boolean;
 };
+
+/** Prefer locale-aware RC legend when reverse charge tax note is already customer-visible. */
+function displayedInvoiceTaxNote(
+  invoice: SalesInvoiceRecord,
+  taxNote: string | null,
+  locale: "en" | "de",
+): string | null {
+  if (invoice.reverseChargeApplied && taxNote) {
+    return reverseChargeLegendTextForLocale(locale);
+  }
+  return taxNote;
+}
 
 /** Canonical horizontal wordmark for white / light surfaces (login + BrandLogo dark variant). */
 export const INVOICE_PDF_LOGO_PUBLIC_PATH = BRANDING_ASSETS.logoHorizontalOnLight;
@@ -330,11 +343,12 @@ export function renderSalesInvoiceHtml(
         ? `<div class="banner-warning">Seller tax configuration status: OPERATOR_INPUT_REQUIRED — verify COMPANY_INFORMATION before live invoice issuance.</div>`
         : "";
 
+  const customerTaxNote = displayedInvoiceTaxNote(invoice, view.taxNote, locale);
   const reverseChargeNote =
     invoice.reverseChargeApplied && !view.taxNote
       ? `<p class="tax-note"><strong>Reverse charge:</strong> Applied per tax policy, but customer-facing legend is counsel-gated and not shown.</p>`
-      : view.taxNote
-        ? `<p class="tax-note"><strong>Tax note:</strong> ${escapeHtml(view.taxNote)}</p>`
+      : customerTaxNote
+        ? `<p class="tax-note"><strong>Tax note:</strong> ${escapeHtml(customerTaxNote)}</p>`
         : "";
 
   const logoMarkup = `<div class="header-logo"><img src="${escapeHtml(INVOICE_PDF_LOGO_PUBLIC_PATH)}" alt="${escapeHtml(COMPANY_INFORMATION.productName)}" width="220" height="40" /></div>`;
@@ -679,13 +693,14 @@ export async function generateSalesInvoicePdf(
       y += row.bold ? 18 : 15;
     }
 
-    if (view.taxNote) {
+    const pdfTaxNote = displayedInvoiceTaxNote(invoice, view.taxNote, locale);
+    if (pdfTaxNote) {
       y += 10;
       doc
         .fillColor(INVOICE_COLORS.muted)
         .font("Helvetica")
         .fontSize(9)
-        .text(`Tax note: ${view.taxNote}`, left, y, { width: pageWidth });
+        .text(`Tax note: ${pdfTaxNote}`, left, y, { width: pageWidth });
       y = doc.y + 4;
     }
 

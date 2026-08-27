@@ -92,9 +92,9 @@ function determineTaxPolicy(input) {
     return wrap({
       outcome: "REVERSE_CHARGE",
       vatRateBps: 0,
-      blocksCheckout: true,
-      reasonCode: "eu_b2b_reverse_charge_legend_pending_counsel",
-      reverseChargeLegendStatus: "LEGAL_TEXT_PENDING_COUNSEL",
+      blocksCheckout: false,
+      reasonCode: "eu_b2b_reverse_charge",
+      reverseChargeLegendStatus: "IMPLEMENTATION_TEXT_APPROVED_FOR_C3",
     });
   }
   if (input.viesStatus === "invalid") {
@@ -125,6 +125,13 @@ function resolveReverseChargeLegend(input) {
   if (input.taxPolicyOutcome !== "REVERSE_CHARGE") {
     return { showOnInvoice: false, legendText: null, status: "n/a" };
   }
+  if (input.reverseChargeLegendStatus === "IMPLEMENTATION_TEXT_APPROVED_FOR_C3") {
+    return {
+      showOnInvoice: true,
+      legendText: "Reverse charge — VAT to be accounted for by the recipient.",
+      status: "IMPLEMENTATION_TEXT_APPROVED_FOR_C3",
+    };
+  }
   if (input.reverseChargeLegendStatus === "approved") {
     const text = input.approvedLegendText?.trim() || null;
     if (!text) {
@@ -146,14 +153,16 @@ test("decision helper reason codes stay aligned with tax-policy.ts", () => {
     "de_domestic_standard_vat",
     "non_eu_manual_review",
     "eu_vat_id_required",
-    "eu_b2b_reverse_charge_legend_pending_counsel",
+    "eu_b2b_reverse_charge",
     "vies_invalid",
     "vies_not_validated",
   ]) {
     assert.match(policy, new RegExp(code));
   }
+  assert.match(policy, /IMPLEMENTATION_TEXT_APPROVED_FOR_C3/);
   assert.match(policy, /businessClassification/);
   assert.match(policy, /country mismatch alone/);
+  assert.doesNotMatch(policy, /eu_b2b_reverse_charge_legend_pending_counsel/);
   const classification = readSource("src/lib/billing/tax-classification.ts");
   assert.match(classification, /DOMESTIC_B2B/);
   assert.match(classification, /EU_CROSS_BORDER_B2B_CANDIDATE/);
@@ -193,7 +202,7 @@ test("CASE B: EU cross-border format-valid VAT without official VIES → NOT Rev
   assert.equal(result.blocksCheckout, true);
 });
 
-test("CASE C: EU B2B with VIES valid → Reverse Charge outcome but self-serve blocked", () => {
+test("CASE C: EU B2B with VIES valid → Reverse Charge self-serve with implementation legend", () => {
   const result = determineTaxPolicy({
     customerCountryCode: "FR",
     vatId: "FR12345678901",
@@ -201,8 +210,8 @@ test("CASE C: EU B2B with VIES valid → Reverse Charge outcome but self-serve b
     isB2bEntrepreneurConfirmed: true,
   });
   assert.equal(result.outcome, "REVERSE_CHARGE");
-  assert.equal(result.blocksCheckout, true);
-  assert.equal(result.reverseChargeLegendStatus, "LEGAL_TEXT_PENDING_COUNSEL");
+  assert.equal(result.blocksCheckout, false);
+  assert.equal(result.reverseChargeLegendStatus, "IMPLEMENTATION_TEXT_APPROVED_FOR_C3");
 });
 
 test("CASE D: VIES unavailable → fail-closed", () => {
@@ -287,7 +296,7 @@ test("CASE I/J: invoice snapshots seller + tax evidence (immutability)", () => {
   );
 });
 
-test("CASE K: Reverse Charge legend absent unless approved + copy", () => {
+test("CASE K: Reverse Charge legend absent unless implementation-approved or counsel copy", () => {
   assert.equal(
     resolveReverseChargeLegend({
       taxPolicyOutcome: "REVERSE_CHARGE",
@@ -310,6 +319,13 @@ test("CASE K: Reverse Charge legend absent unless approved + copy", () => {
     }).status,
     "EXTERNAL_LEGAL_COPY_REQUIRED",
   );
+  const implementation = resolveReverseChargeLegend({
+    taxPolicyOutcome: "REVERSE_CHARGE",
+    reverseChargeLegendStatus: "IMPLEMENTATION_TEXT_APPROVED_FOR_C3",
+  });
+  assert.equal(implementation.showOnInvoice, true);
+  assert.match(implementation.legendText, /Reverse charge/);
+  assert.equal(implementation.status, "IMPLEMENTATION_TEXT_APPROVED_FOR_C3");
   const approved = resolveReverseChargeLegend({
     taxPolicyOutcome: "REVERSE_CHARGE",
     reverseChargeLegendStatus: "approved",
@@ -318,6 +334,9 @@ test("CASE K: Reverse Charge legend absent unless approved + copy", () => {
   assert.equal(approved.showOnInvoice, true);
   const legend = readSource("src/lib/billing/reverse-charge-legend.ts");
   assert.match(legend, /EXTERNAL_LEGAL_COPY_REQUIRED/);
+  assert.match(legend, /IMPLEMENTATION_TEXT_APPROVED_FOR_C3/);
+  assert.match(legend, /Reverse charge — VAT to be accounted for by the recipient/);
+  assert.doesNotMatch(legend, /COUNSEL_SIGNED_OFF\s*=\s*true/);
 });
 
 test("CASE L: money totals and rounding deterministic", () => {

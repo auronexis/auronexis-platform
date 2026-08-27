@@ -56,7 +56,7 @@ export function calculateVatInclusiveBreakdown(input: {
     throw new Error("Cannot calculate tax for MANUAL_REVIEW without adviser decision");
   }
   if (input.determination.outcome === "REVERSE_CHARGE") {
-    // 0% charge path — invoice legend still counsel-gated; do not invent wording here.
+    // 0% charge path — customer legend resolved separately via reverse-charge-legend.
     return {
       grossMinor: input.grossMinor,
       netMinor: input.grossMinor,

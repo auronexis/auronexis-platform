@@ -42,6 +42,9 @@ const DE_STANDARD_VAT_RATE_BPS = resolveExport(tax, "tax.rate", [/DE_.*VAT.*BPS/
 const LEGAL_TEXT_PENDING_COUNSEL = resolveExport(tax, "tax.legend", [
   /LEGAL_TEXT_PENDING_COUNSEL/i,
 ]);
+const IMPLEMENTATION_TEXT_APPROVED_FOR_C3 = resolveExport(tax, "tax.implLegend", [
+  /IMPLEMENTATION_TEXT_APPROVED_FOR_C3/i,
+]);
 
 const calculateVatInclusiveBreakdown = resolveExport(taxes, "taxes.breakdown", [
   /calculateVatInclusiveBreakdown/i,
@@ -141,17 +144,17 @@ test("A: DE B2B successful tax classification", () => {
   );
 });
 
-test("B: EU B2B valid VAT/VIES → Reverse Charge but self-serve blocked", () => {
+test("B: EU B2B valid VAT/VIES → Reverse Charge self-serve with implementation legend", () => {
   const result = determineTaxPolicy(
     taxInput({ customerCountryCode: "FR", vatId: "FR12345678901", viesStatus: "valid" }),
   );
   assert.equal(result.outcome, "REVERSE_CHARGE");
-  assert.equal(prop(result, "blocksCheckout", "blocksCheckout"), true);
+  assert.equal(prop(result, "blocksCheckout", "blocksCheckout"), false);
   assert.equal(
     prop(result, "reverseChargeLegendStatus", "reverseChargeLegendStatus"),
-    LEGAL_TEXT_PENDING_COUNSEL,
+    IMPLEMENTATION_TEXT_APPROVED_FOR_C3,
   );
-  assert.equal(taxOutcomeAllowsSelfServeCheckout(result.outcome), false);
+  assert.equal(taxOutcomeAllowsSelfServeCheckout(result.outcome), true);
 });
 
 test("C: EU invalid VAT fails closed", () => {
@@ -387,12 +390,18 @@ test("W: invoice snapshot immutability + RC legend gate", () => {
     readSource("supabase/migrations/20250826100000_sales_invoice_tax_evidence_snapshots.sql"),
     /seller_snapshot|tax_decision_evidence|tax_evidence/i,
   );
-  const legend = resolveReverseChargeLegend({
+  const pending = resolveReverseChargeLegend({
     taxPolicyOutcome: "REVERSE_CHARGE",
     reverseChargeLegendStatus: LEGAL_TEXT_PENDING_COUNSEL,
   });
-  assert.equal(prop(legend, "showOnInvoice", "showOnInvoice"), false);
-  assert.equal(prop(legend, "legendText", "legendText"), null);
+  assert.equal(prop(pending, "showOnInvoice", "showOnInvoice"), false);
+  assert.equal(prop(pending, "legendText", "legendText"), null);
+  const impl = resolveReverseChargeLegend({
+    taxPolicyOutcome: "REVERSE_CHARGE",
+    reverseChargeLegendStatus: IMPLEMENTATION_TEXT_APPROVED_FOR_C3,
+  });
+  assert.equal(prop(impl, "showOnInvoice", "showOnInvoice"), true);
+  assert.match(String(prop(impl, "legendText", "legendText")), /Reverse charge/);
 });
 
 test("X: pilot access isolation", () => {

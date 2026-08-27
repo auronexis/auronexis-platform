@@ -1,7 +1,8 @@
 /**
  * Best-effort sales invoice issuance after Mollie payment sync.
  * Never blocks entitlement reconciliation — failures are logged only.
- * Fail-closed: no silent DE country default; no Reverse Charge auto-issue without counsel legend.
+ * Fail-closed: no silent DE country default; Reverse Charge auto-issue only when
+ * determination is unblocked with IMPLEMENTATION_TEXT_APPROVED_FOR_C3 legend status.
  */
 
 import "server-only";
@@ -9,7 +10,10 @@ import "server-only";
 import { getOrganizationBillingIdentity } from "@/lib/billing/billing-identity";
 import { buildBuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
 import { issueSalesInvoice } from "@/lib/billing/sales-invoice";
-import { determineTaxPolicy, LEGAL_TEXT_PENDING_COUNSEL } from "@/lib/billing/tax-policy";
+import {
+  determineTaxPolicy,
+  IMPLEMENTATION_TEXT_APPROVED_FOR_C3,
+} from "@/lib/billing/tax-policy";
 import { calculateVatInclusiveBreakdown } from "@/lib/billing/taxes";
 import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
 import { normalizeVatId } from "@/lib/billing/vies";
@@ -74,8 +78,14 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     isB2bEntrepreneurConfirmed: true,
   });
 
-  // Only auto-issue for self-serve domestic VAT path — never invent reverse-charge legends.
-  if (determination.outcome !== "STANDARD_DOMESTIC_VAT" || determination.vatRateBps === null) {
+  const mayIssueDomestic =
+    determination.outcome === "STANDARD_DOMESTIC_VAT" && determination.vatRateBps !== null;
+  const mayIssueReverseCharge =
+    determination.outcome === "REVERSE_CHARGE" &&
+    !determination.blocksCheckout &&
+    determination.reverseChargeLegendStatus === IMPLEMENTATION_TEXT_APPROVED_FOR_C3;
+
+  if (!mayIssueDomestic && !mayIssueReverseCharge) {
     return;
   }
 
@@ -125,7 +135,7 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     productName: input.productName,
     sellerSnapshot,
     taxDecisionEvidence,
-    reverseChargeLegendStatus: LEGAL_TEXT_PENDING_COUNSEL,
+    reverseChargeLegendStatus: determination.reverseChargeLegendStatus,
   });
 
   await admin

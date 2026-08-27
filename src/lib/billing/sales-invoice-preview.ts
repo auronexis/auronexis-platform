@@ -2,6 +2,8 @@
  * Operator sales invoice visual acceptance — in-memory only.
  * No DB writes, no Mollie calls, no invoice sequence allocation, no accounting mutation.
  * Uses the same tax engine and domain record shape as production issuance.
+ *
+ * Scenarios: DE domestic, FR EU B2B RC, NL EU B2B RC (synthetic validated VAT fixtures).
  */
 
 import "server-only";
@@ -10,7 +12,7 @@ import { getPlanByKey, type PlanKey } from "@/lib/billing/plans";
 import type { SalesInvoiceRecord } from "@/lib/billing/sales-invoice";
 import { buildSellerInvoiceSnapshot, getSellerTaxConfiguration } from "@/lib/billing/seller-tax-config";
 import { buildTaxDecisionEvidenceSnapshot } from "@/lib/billing/tax-decision-evidence";
-import { determineTaxPolicy, LEGAL_TEXT_PENDING_COUNSEL } from "@/lib/billing/tax-policy";
+import { determineTaxPolicy } from "@/lib/billing/tax-policy";
 import { calculateVatInclusiveBreakdown } from "@/lib/billing/taxes";
 import { resolveReverseChargeLegend } from "@/lib/billing/reverse-charge-legend";
 import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
@@ -36,6 +38,28 @@ export const OPERATOR_VISUAL_ACCEPTANCE_BUYER = {
   billingEmail: "invoice-test@auroranexis.invalid",
 } as const;
 
+/** Synthetic FR EU B2B reverse-charge fixture — VIES treated as valid for preview only. */
+export const OPERATOR_PREVIEW_BUYER_FR_RC = {
+  legalName: "Auroranexis Invoice Test SARL",
+  addressLine1: "10 Rue de Rivoli",
+  postalCode: "75001",
+  city: "Paris",
+  countryCode: "FR",
+  vatId: "FR12345678901",
+  billingEmail: "invoice-test-fr@auroranexis.invalid",
+} as const;
+
+/** Synthetic NL EU B2B reverse-charge fixture — VIES treated as valid for preview only. */
+export const OPERATOR_PREVIEW_BUYER_NL_RC = {
+  legalName: "Auroranexis Invoice Test B.V.",
+  addressLine1: "Damrak 1",
+  postalCode: "1012 LG",
+  city: "Amsterdam",
+  countryCode: "NL",
+  vatId: "NL123456789B01",
+  billingEmail: "invoice-test-nl@auroranexis.invalid",
+} as const;
+
 export const PREVIEW_BUYER_LEGAL_NAME = OPERATOR_VISUAL_ACCEPTANCE_BUYER.legalName;
 export const PREVIEW_PAYMENT_REFERENCE = "tr_TEST_VISUAL_ACCEPTANCE_NONPRODUCTION";
 
@@ -43,15 +67,39 @@ export { OPERATOR_TEST_DOCUMENT_INDICATOR };
 
 export type PreviewSalesInvoicePlanKey = Extract<PlanKey, "professional" | "business">;
 
+/** Operator visual-acceptance tax scenarios (zero-write). */
+export type PreviewSalesInvoiceScenario = "de" | "fr" | "nl";
+
 export type PreviewSalesInvoiceResult = {
   invoice: SalesInvoiceRecord;
   sellerConfig: ReturnType<typeof getSellerTaxConfiguration>;
   isPreview: true;
+  scenario: PreviewSalesInvoiceScenario;
 };
+
+export function resolvePreviewScenario(
+  value: string | null | undefined,
+): PreviewSalesInvoiceScenario {
+  const normalized = (value ?? "de").trim().toLowerCase();
+  if (normalized === "fr" || normalized === "fr_eu_b2b_rc") return "fr";
+  if (normalized === "nl" || normalized === "nl_eu_b2b_rc") return "nl";
+  return "de";
+}
+
+function previewBuyerForScenario(scenario: PreviewSalesInvoiceScenario) {
+  if (scenario === "fr") return OPERATOR_PREVIEW_BUYER_FR_RC;
+  if (scenario === "nl") return OPERATOR_PREVIEW_BUYER_NL_RC;
+  return OPERATOR_VISUAL_ACCEPTANCE_BUYER;
+}
+
+function previewViesStatus(scenario: PreviewSalesInvoiceScenario): "valid" | "not_checked" {
+  return scenario === "de" ? "not_checked" : "valid";
+}
 
 function buildPreviewTaxNote(input: {
   taxPolicyOutcome: SalesInvoiceRecord["taxPolicyOutcome"];
   vatRateBps: number;
+  reverseChargeLegendStatus: ReturnType<typeof determineTaxPolicy>["reverseChargeLegendStatus"];
 }): string | null {
   const germanDomestic = buildGermanDomesticVatTaxNote(input);
   if (germanDomestic) {
@@ -60,7 +108,8 @@ function buildPreviewTaxNote(input: {
   if (input.taxPolicyOutcome === "REVERSE_CHARGE") {
     const legend = resolveReverseChargeLegend({
       taxPolicyOutcome: input.taxPolicyOutcome,
-      reverseChargeLegendStatus: LEGAL_TEXT_PENDING_COUNSEL,
+      reverseChargeLegendStatus: input.reverseChargeLegendStatus,
+      locale: "en",
     });
     return legend.showOnInvoice ? legend.legendText : null;
   }
@@ -77,7 +126,16 @@ function currentUtcBillingPeriod(): { start: string; end: string } {
   };
 }
 
-function previewInvoiceNumber(planKey: PreviewSalesInvoicePlanKey): string {
+function previewInvoiceNumber(
+  planKey: PreviewSalesInvoicePlanKey,
+  scenario: PreviewSalesInvoiceScenario,
+): string {
+  if (scenario === "fr") {
+    return planKey === "business" ? "TEST-ANX-2026-FR-000001" : "TEST-ANX-2026-FR-PRO-000001";
+  }
+  if (scenario === "nl") {
+    return planKey === "business" ? "TEST-ANX-2026-NL-000001" : "TEST-ANX-2026-NL-PRO-000001";
+  }
   if (planKey === "business") {
     return OPERATOR_VISUAL_ACCEPTANCE_INVOICE_NUMBER;
   }
@@ -91,20 +149,28 @@ function previewInvoiceNumber(planKey: PreviewSalesInvoicePlanKey): string {
  */
 export function buildPreviewSalesInvoice(
   planKey: PreviewSalesInvoicePlanKey = "business",
+  scenario: PreviewSalesInvoiceScenario = "de",
 ): PreviewSalesInvoiceResult {
   const plan = getPlanByKey(planKey);
   const sellerConfig = getSellerTaxConfiguration();
   const sellerSnapshot = buildSellerInvoiceSnapshot();
   const now = new Date().toISOString();
   const period = currentUtcBillingPeriod();
-  const buyer = OPERATOR_VISUAL_ACCEPTANCE_BUYER;
+  const buyer = previewBuyerForScenario(scenario);
+  const viesStatus = previewViesStatus(scenario);
 
   const determination = determineTaxPolicy({
     customerCountryCode: buyer.countryCode,
     vatId: buyer.vatId,
-    viesStatus: "not_checked",
+    viesStatus,
     isB2bEntrepreneurConfirmed: true,
   });
+
+  if (determination.blocksCheckout || determination.outcome === "UNKNOWN_BLOCK_CHECKOUT") {
+    throw new Error(
+      `Preview scenario "${scenario}" cannot build invoice — tax determination blocked (${determination.reasonCode})`,
+    );
+  }
 
   const breakdown = calculateVatInclusiveBreakdown({
     grossMinor: plan.amountMinor,
@@ -113,7 +179,7 @@ export function buildPreviewSalesInvoice(
 
   const vatTechnicalState = resolveVatIdTechnicalState({
     vatId: buyer.vatId,
-    viesStatus: "not_checked",
+    viesStatus,
   });
 
   const taxDecisionEvidence = buildTaxDecisionEvidenceSnapshot({
@@ -123,8 +189,8 @@ export function buildPreviewSalesInvoice(
     buyerCountryCode: buyer.countryCode,
     buyerVatIdNormalized: buyer.vatId,
     vatTechnicalState,
-    viesStatus: "not_checked",
-    viesCheckedAt: null,
+    viesStatus,
+    viesCheckedAt: scenario === "de" ? null : now,
     businessClassification: determination.businessClassification,
     determination,
     sellerSnapshot,
@@ -137,14 +203,15 @@ export function buildPreviewSalesInvoice(
   const taxNote = buildPreviewTaxNote({
     taxPolicyOutcome: breakdown.outcome,
     vatRateBps: breakdown.vatRateBps,
+    reverseChargeLegendStatus: determination.reverseChargeLegendStatus,
   });
 
   const productName = buildCustomerSalesInvoiceLineDescription(plan.name);
 
   const invoice: SalesInvoiceRecord = {
-    id: "preview-ephemeral-visual-acceptance",
+    id: `preview-ephemeral-visual-acceptance-${scenario}`,
     organizationId: PREVIEW_ORGANIZATION_ID,
-    invoiceNumber: previewInvoiceNumber(planKey),
+    invoiceNumber: previewInvoiceNumber(planKey, scenario),
     status: "issued",
     currency: plan.currency,
     netMinor: breakdown.netMinor,
@@ -183,5 +250,5 @@ export function buildPreviewSalesInvoice(
     createdAt: now,
   };
 
-  return { invoice, sellerConfig, isPreview: true };
+  return { invoice, sellerConfig, isPreview: true, scenario };
 }

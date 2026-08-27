@@ -9,7 +9,10 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { TaxPolicyOutcome } from "@/lib/billing/tax-policy";
 import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
-import { LEGAL_TEXT_PENDING_COUNSEL } from "@/lib/billing/tax-policy";
+import {
+  LEGAL_TEXT_PENDING_COUNSEL,
+  type ReverseChargeLegendStatus,
+} from "@/lib/billing/tax-policy";
 import { resolveReverseChargeLegend } from "@/lib/billing/reverse-charge-legend";
 import {
   buildSellerInvoiceSnapshot,
@@ -98,8 +101,12 @@ export type IssueSalesInvoiceInput = {
   productName: string;
   taxDecisionEvidence?: TaxDecisionEvidenceSnapshot | null;
   sellerSnapshot?: SellerInvoiceSnapshot | null;
-  /** When reverse-charge legend is pending counsel, omit customer-facing RC wording. */
-  reverseChargeLegendStatus?: typeof LEGAL_TEXT_PENDING_COUNSEL | "approved" | "n/a";
+  /**
+   * Legend gate from tax determination.
+   * Defaults fail-closed (pending counsel) when omitted — callers must pass
+   * IMPLEMENTATION_TEXT_APPROVED_FOR_C3 for verified EU B2B RC issuance.
+   */
+  reverseChargeLegendStatus?: ReverseChargeLegendStatus;
 };
 
 function assertMoneyInvariant(input: IssueSalesInvoiceInput): void {
@@ -123,6 +130,7 @@ function buildTaxNote(input: IssueSalesInvoiceInput): string | null {
     const legend = resolveReverseChargeLegend({
       taxPolicyOutcome: input.taxPolicyOutcome,
       reverseChargeLegendStatus: input.reverseChargeLegendStatus ?? LEGAL_TEXT_PENDING_COUNSEL,
+      locale: "en",
     });
     return legend.showOnInvoice ? legend.legendText : null;
   }

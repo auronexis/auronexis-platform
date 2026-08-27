@@ -4,6 +4,7 @@ import { verifyCronAuthorization } from "@/lib/env";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import {
   buildPreviewSalesInvoice,
+  resolvePreviewScenario,
   type PreviewSalesInvoicePlanKey,
 } from "@/lib/billing/sales-invoice-preview";
 import {
@@ -33,6 +34,8 @@ function resolvePreviewPlan(value: string | null): PreviewSalesInvoicePlanKey {
  * Uses the production generateSalesInvoicePdf / renderSalesInvoiceHtml path with preview: true.
  * No DB writes, no Mollie, no invoice sequence, no sales_invoices rows.
  * Requires owner/admin session (settings.write) or Bearer CRON_SECRET.
+ *
+ * Query: plan=business|professional, scenario=de|fr|nl, format=pdf|html
  */
 export async function GET(request: Request): Promise<Response> {
   if (!(await isAuthorized(request))) {
@@ -41,8 +44,9 @@ export async function GET(request: Request): Promise<Response> {
 
   const url = new URL(request.url);
   const planKey = resolvePreviewPlan(url.searchParams.get("plan"));
+  const scenario = resolvePreviewScenario(url.searchParams.get("scenario"));
   const format = url.searchParams.get("format")?.toLowerCase() ?? "pdf";
-  const { invoice } = buildPreviewSalesInvoice(planKey);
+  const { invoice } = buildPreviewSalesInvoice(planKey, scenario);
 
   if (format === "html") {
     const html = renderSalesInvoiceHtml(invoice, { preview: true, locale: "en" });
