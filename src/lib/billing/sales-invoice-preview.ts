@@ -1,5 +1,6 @@
 /**
- * Ephemeral sales invoice preview — no DB writes, no Mollie calls.
+ * Operator sales invoice visual acceptance — in-memory only.
+ * No DB writes, no Mollie calls, no invoice sequence allocation, no accounting mutation.
  * Uses the same tax engine and domain record shape as production issuance.
  */
 
@@ -13,11 +14,28 @@ import { determineTaxPolicy, LEGAL_TEXT_PENDING_COUNSEL } from "@/lib/billing/ta
 import { calculateVatInclusiveBreakdown, formatVatRateBpsLabel } from "@/lib/billing/taxes";
 import { resolveReverseChargeLegend } from "@/lib/billing/reverse-charge-legend";
 import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
+import { OPERATOR_TEST_DOCUMENT_INDICATOR } from "@/lib/billing/sales-invoice-test-marker";
 
+/** Synthetic org id — never persisted; must not appear in Billing history queries. */
 export const PREVIEW_ORGANIZATION_ID = "00000000-0000-4000-8000-000000PREVIEW";
-export const PREVIEW_BUYER_LEGAL_NAME =
-  "PREVIEW — Internal Verification Buyer GmbH (non-production)";
-export const PREVIEW_PAYMENT_REFERENCE = "tr_PREVIEW_NONPRODUCTION";
+
+/** Fixed C1.5 Business visual-acceptance invoice number (ephemeral; not from sequence). */
+export const OPERATOR_VISUAL_ACCEPTANCE_INVOICE_NUMBER = "TEST-ANX-2026-000001";
+
+export const OPERATOR_VISUAL_ACCEPTANCE_BUYER = {
+  legalName: "Auroranexis Invoice Test GmbH",
+  addressLine1: "Musterstraße 10",
+  postalCode: "68159",
+  city: "Mannheim",
+  countryCode: "DE",
+  vatId: "DE123456789",
+  billingEmail: "invoice-test@auroranexis.invalid",
+} as const;
+
+export const PREVIEW_BUYER_LEGAL_NAME = OPERATOR_VISUAL_ACCEPTANCE_BUYER.legalName;
+export const PREVIEW_PAYMENT_REFERENCE = "tr_TEST_VISUAL_ACCEPTANCE_NONPRODUCTION";
+
+export { OPERATOR_TEST_DOCUMENT_INDICATOR };
 
 export type PreviewSalesInvoicePlanKey = Extract<PlanKey, "professional" | "business">;
 
@@ -54,28 +72,31 @@ function currentUtcBillingPeriod(): { start: string; end: string } {
   };
 }
 
-function allocatePreviewInvoiceNumber(): string {
-  const year = new Date().getUTCFullYear();
-  const suffix = crypto.randomUUID().slice(0, 8).toUpperCase();
-  return `ANX-PREVIEW-${year}-${suffix}`;
+function previewInvoiceNumber(planKey: PreviewSalesInvoicePlanKey): string {
+  if (planKey === "business") {
+    return OPERATOR_VISUAL_ACCEPTANCE_INVOICE_NUMBER;
+  }
+  return "TEST-ANX-2026-PRO-000001";
 }
 
 /**
- * Build an in-memory sales invoice for operator/dev verification.
- * Never persists to sales_invoices or mutates production financial state.
+ * Build an in-memory sales invoice for operator visual acceptance.
+ * Never persists to sales_invoices, never allocates production invoice numbers,
+ * never calls Mollie, never mutates subscription/entitlement/tax evidence stores.
  */
 export function buildPreviewSalesInvoice(
-  planKey: PreviewSalesInvoicePlanKey = "professional",
+  planKey: PreviewSalesInvoicePlanKey = "business",
 ): PreviewSalesInvoiceResult {
   const plan = getPlanByKey(planKey);
   const sellerConfig = getSellerTaxConfiguration();
   const sellerSnapshot = buildSellerInvoiceSnapshot();
   const now = new Date().toISOString();
   const period = currentUtcBillingPeriod();
+  const buyer = OPERATOR_VISUAL_ACCEPTANCE_BUYER;
 
   const determination = determineTaxPolicy({
-    customerCountryCode: "DE",
-    vatId: null,
+    customerCountryCode: buyer.countryCode,
+    vatId: buyer.vatId,
     viesStatus: "not_checked",
     isB2bEntrepreneurConfirmed: true,
   });
@@ -86,16 +107,16 @@ export function buildPreviewSalesInvoice(
   });
 
   const vatTechnicalState = resolveVatIdTechnicalState({
-    vatId: null,
+    vatId: buyer.vatId,
     viesStatus: "not_checked",
   });
 
   const taxDecisionEvidence = buildTaxDecisionEvidenceSnapshot({
     organizationId: PREVIEW_ORGANIZATION_ID,
     decidedAt: now,
-    buyerLegalName: PREVIEW_BUYER_LEGAL_NAME,
-    buyerCountryCode: "DE",
-    buyerVatIdNormalized: null,
+    buyerLegalName: buyer.legalName,
+    buyerCountryCode: buyer.countryCode,
+    buyerVatIdNormalized: buyer.vatId,
     vatTechnicalState,
     viesStatus: "not_checked",
     viesCheckedAt: null,
@@ -116,9 +137,9 @@ export function buildPreviewSalesInvoice(
   const productName = `${plan.name} — Monthly subscription (${plan.priceVersion})`;
 
   const invoice: SalesInvoiceRecord = {
-    id: "preview-ephemeral",
+    id: "preview-ephemeral-visual-acceptance",
     organizationId: PREVIEW_ORGANIZATION_ID,
-    invoiceNumber: allocatePreviewInvoiceNumber(),
+    invoiceNumber: previewInvoiceNumber(planKey),
     status: "issued",
     currency: plan.currency,
     netMinor: breakdown.netMinor,
@@ -132,14 +153,14 @@ export function buildPreviewSalesInvoice(
     billingPeriodEnd: period.end,
     molliePaymentId: PREVIEW_PAYMENT_REFERENCE,
     providerTransactionId: PREVIEW_PAYMENT_REFERENCE,
-    buyerLegalName: PREVIEW_BUYER_LEGAL_NAME,
-    buyerVatId: null,
-    buyerCountryCode: "DE",
-    buyerAddressLine1: "Preview Street 1",
+    buyerLegalName: buyer.legalName,
+    buyerVatId: buyer.vatId,
+    buyerCountryCode: buyer.countryCode,
+    buyerAddressLine1: buyer.addressLine1,
     buyerAddressLine2: null,
-    buyerPostalCode: "10115",
-    buyerCity: "Berlin",
-    buyerBillingEmail: "preview-buyer@example.invalid",
+    buyerPostalCode: buyer.postalCode,
+    buyerCity: buyer.city,
+    buyerBillingEmail: buyer.billingEmail,
     sellerSnapshot,
     taxDecisionEvidence,
     issuedAt: now,

@@ -20,9 +20,12 @@ import {
 import { formatBuyerInvoiceAddressLines } from "@/lib/billing/buyer-invoice-snapshot";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
+import { OPERATOR_TEST_DOCUMENT_INDICATOR } from "@/lib/billing/sales-invoice-test-marker";
+
+export { OPERATOR_TEST_DOCUMENT_INDICATOR };
 
 export type SalesInvoiceRenderOptions = {
-  /** When true, adds non-production watermark and omits tax-document claims. */
+  /** When true, adds TEST DOCUMENT overlay; production customer PDFs must use preview: false. */
   preview?: boolean;
   locale?: "en" | "de";
   /**
@@ -172,7 +175,7 @@ export function renderSalesInvoiceHtml(
     .join("");
 
   const previewBanner = options.preview
-    ? `<div class="banner-preview">NON-PRODUCTION PREVIEW — Not a tax document. No financial records were created. Invoice number is ephemeral.</div>`
+    ? `<div class="banner-preview">${OPERATOR_TEST_DOCUMENT_INDICATOR} — Operator visual acceptance only. No financial records were created. Invoice number is ephemeral.</div>`
     : "";
 
   const sellerWarning =
@@ -254,7 +257,7 @@ export function renderSalesInvoiceHtml(
     <footer>
       <p>${escapeHtml(formatLegalContactLine())} · ${escapeHtml(formatSupportContactLine())}</p>
       <p>Auroranexis issues sales invoices distinct from Mollie payment receipts. Amounts in ${escapeHtml(invoice.currency)} (integer minor units internally).</p>
-      ${options.preview ? "<p>This preview was generated in memory for operator verification only.</p>" : ""}
+      ${options.preview ? "<p>This TEST DOCUMENT was generated in memory for operator visual acceptance only.</p>" : ""}
     </footer>
   </div>
 </body>
@@ -288,7 +291,7 @@ export async function generateSalesInvoicePdf(
     doc.on("error", reject);
 
     if (options.preview) {
-      doc.fontSize(10).fillColor("#92400e").text("NON-PRODUCTION PREVIEW — Not a tax document.", {
+      doc.fontSize(10).fillColor("#92400e").text(OPERATOR_TEST_DOCUMENT_INDICATOR, {
         align: "center",
       });
       doc.moveDown(0.5);
@@ -352,7 +355,7 @@ export async function generateSalesInvoicePdf(
     doc.text(`${formatLegalContactLine()} · ${formatSupportContactLine()}`);
     doc.text(`${COMPANY_CONTACT.noReplyEmail}`);
     if (options.preview) {
-      doc.text("Ephemeral operator preview — no database record created.");
+      doc.text("Ephemeral operator test — no database record created.");
     }
     doc.fillColor("#000000");
 

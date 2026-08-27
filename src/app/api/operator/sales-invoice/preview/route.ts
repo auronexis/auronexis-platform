@@ -25,12 +25,14 @@ async function isAuthorized(request: Request): Promise<boolean> {
 }
 
 function resolvePreviewPlan(value: string | null): PreviewSalesInvoicePlanKey {
-  return value === "business" ? "business" : "professional";
+  return value === "professional" ? "professional" : "business";
 }
 
 /**
- * Operator/dev sales invoice preview — in-memory only, no DB writes, no Mollie.
- * Requires owner/admin session or Bearer CRON_SECRET.
+ * Operator visual-acceptance sales invoice — in-memory only.
+ * Uses the production generateSalesInvoicePdf / renderSalesInvoiceHtml path with preview: true.
+ * No DB writes, no Mollie, no invoice sequence, no sales_invoices rows.
+ * Requires owner/admin session (settings.write) or Bearer CRON_SECRET.
  */
 export async function GET(request: Request): Promise<Response> {
   if (!(await isAuthorized(request))) {
@@ -39,27 +41,27 @@ export async function GET(request: Request): Promise<Response> {
 
   const url = new URL(request.url);
   const planKey = resolvePreviewPlan(url.searchParams.get("plan"));
-  const format = url.searchParams.get("format")?.toLowerCase() ?? "html";
+  const format = url.searchParams.get("format")?.toLowerCase() ?? "pdf";
   const { invoice } = buildPreviewSalesInvoice(planKey);
 
-  if (format === "pdf") {
-    const pdf = await generateSalesInvoicePdf(invoice, { preview: true, locale: "en" });
-    return new Response(new Uint8Array(pdf), {
+  if (format === "html") {
+    const html = renderSalesInvoiceHtml(invoice, { preview: true, locale: "en" });
+    return new Response(html, {
       status: 200,
       headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${buildSalesInvoicePdfFilename(invoice.invoiceNumber)}"`,
+        "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "no-store, max-age=0",
         "X-Robots-Tag": "noindex, nofollow",
       },
     });
   }
 
-  const html = renderSalesInvoiceHtml(invoice, { preview: true, locale: "en" });
-  return new Response(html, {
+  const pdf = await generateSalesInvoicePdf(invoice, { preview: true, locale: "en" });
+  return new Response(new Uint8Array(pdf), {
     status: 200,
     headers: {
-      "Content-Type": "text/html; charset=utf-8",
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `inline; filename="${buildSalesInvoicePdfFilename(invoice.invoiceNumber)}"`,
       "Cache-Control": "no-store, max-age=0",
       "X-Robots-Tag": "noindex, nofollow",
     },

@@ -149,12 +149,13 @@ test("TEST 1–7: issued invoice produces valid production PDF with correct fact
   assert.doesNotMatch(text, /Not a tax document/, "TEST 7: no preview disclaimer");
 });
 
-test("TEST 8: operator preview PDF remains NON-PRODUCTION watermarked", async () => {
-  const { invoice } = buildPreviewSalesInvoice("professional");
+test("TEST 8: operator preview PDF remains TEST DOCUMENT watermarked", async () => {
+  const { invoice } = buildPreviewSalesInvoice("business");
   const pdf = await previewPdf(invoice);
   const text = extractPdfText(pdf);
-  assert.match(text, /NON-PRODUCTION/);
-  assert.match(text, /ANX-PREVIEW-/);
+  assert.match(text, /TEST DOCUMENT/);
+  assert.match(text, /NOT AN INVOICE/);
+  assert.match(text, /TEST-ANX-2026-000001/);
 });
 
 test("TEST 9–11: tenant isolation + unauth denial helpers", () => {

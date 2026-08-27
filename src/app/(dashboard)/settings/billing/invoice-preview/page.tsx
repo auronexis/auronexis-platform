@@ -12,7 +12,7 @@ import {
 import { renderSalesInvoiceHtml } from "@/lib/billing/sales-invoice-render";
 
 export const metadata: Metadata = {
-  title: "Invoice Preview",
+  title: "Invoice Visual Acceptance",
   robots: { index: false, follow: false },
 };
 
@@ -21,7 +21,7 @@ type InvoicePreviewPageProps = {
 };
 
 function resolvePreviewPlan(value: string | undefined): PreviewSalesInvoicePlanKey {
-  return value === "business" ? "business" : "professional";
+  return value === "professional" ? "professional" : "business";
 }
 
 export default async function InvoicePreviewPage({ searchParams }: InvoicePreviewPageProps) {
@@ -50,14 +50,14 @@ export default async function InvoicePreviewPage({ searchParams }: InvoicePrevie
           Billing
         </Link>
         <span className="mx-2">/</span>
-        <span>Invoice preview</span>
+        <span>Invoice visual acceptance</span>
       </div>
 
       <PageHeader
         module="settings"
-        eyebrow="Internal · NON-PRODUCTION"
-        title="Sales invoice preview"
-        description="Ephemeral in-memory preview using the production sales invoice domain model and tax engine. No Mollie payment, no database writes."
+        eyebrow="Internal · TEST DOCUMENT"
+        title="Sales invoice visual acceptance"
+        description="Ephemeral in-memory test using the production sales invoice PDF renderer and tax engine. Not an invoice. No Mollie payment, no database writes, not shown in Billing history."
       />
 
       <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
@@ -89,7 +89,7 @@ export default async function InvoicePreviewPage({ searchParams }: InvoicePrevie
           target="_blank"
           rel="noreferrer"
         >
-          Download PDF preview
+          Open Business/plan test PDF
         </a>
       </div>
 
@@ -105,7 +105,7 @@ export default async function InvoicePreviewPage({ searchParams }: InvoicePrevie
 
       <div className="overflow-hidden rounded-xl border border-border/70 bg-muted/5">
         <iframe
-          title={`Invoice preview ${invoice.invoiceNumber}`}
+          title={`Invoice visual acceptance ${invoice.invoiceNumber}`}
           srcDoc={html}
           className="min-h-[960px] w-full bg-white"
           sandbox=""
