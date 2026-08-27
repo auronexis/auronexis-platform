@@ -47,6 +47,7 @@
     "test:final-production-closeout": "node --test scripts/final-production-closeout.test.mjs scripts/white-label-schema.test.mjs",
     "test:white-label-schema": "node --test scripts/white-label-schema.test.mjs",
     "test:p1-002-pricing-tax": "node --test scripts/p1-002-pricing-tax-invoice-contracting.test.mjs scripts/p1-005-entitlement-compliance.test.mjs",
+    "test:customer-invoice-delivery-c1": "node --experimental-strip-types --import ./scripts/_test-helpers/register-ts-alias.mjs --test scripts/customer-invoice-delivery-c1.test.mjs",
     "test:build-bible-ch1": "node --test scripts/build-bible-ch1.test.mjs",
     "test:build-bible-ch2": "node --test scripts/build-bible-ch2.test.mjs",
     "test:build-bible-ch3": "node --test scripts/build-bible-ch3.test.mjs",

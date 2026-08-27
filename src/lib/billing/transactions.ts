@@ -4,18 +4,24 @@ import { createClient } from "@/lib/supabase/server";
 import {
   derivePaymentStatus,
   getBillingHistoryStatusLabel,
-  hasPdfAvailableForStatus,
+  hasPaymentReceiptForStatus,
   normalizeBillingHistoryStatus,
   type BillingHistoryItem,
 } from "@/lib/billing/history-types";
+import { listSalesInvoiceIdsByProviderTransactionIds } from "@/lib/billing/sales-invoice";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { BillingProviderTransaction } from "@/types/database";
 
 const TRANSACTION_SELECT =
   "id, organization_id, billing_provider, provider_transaction_id, provider_customer_id, provider_subscription_id, provider_price_id, status, amount_total, amount_subtotal, amount_tax, currency, occurred_at, paid_at, invoice_url, invoice_number, product_name, payment_method_summary, billing_period_start, billing_period_end, created_at, updated_at";
 
-function toBillingHistoryItem(row: BillingProviderTransaction): BillingHistoryItem {
+function toBillingHistoryItem(
+  row: BillingProviderTransaction,
+  salesInvoiceId: string | null,
+): BillingHistoryItem {
   const status = normalizeBillingHistoryStatus(row.status);
+  const paymentReceiptUrl = row.invoice_url;
+  const hasPaymentReceipt = hasPaymentReceiptForStatus(status, paymentReceiptUrl);
 
   return {
     id: row.id,
@@ -30,16 +36,19 @@ function toBillingHistoryItem(row: BillingProviderTransaction): BillingHistoryIt
     currency: row.currency,
     paymentStatus: derivePaymentStatus(status),
     invoiceNumber: row.invoice_number,
-    invoicePdfUrl: row.invoice_url,
-    hasPdfAvailable: hasPdfAvailableForStatus(status, row.invoice_url),
+    salesInvoiceId,
+    hasSalesInvoicePdf: Boolean(salesInvoiceId),
+    paymentReceiptUrl,
+    hasPaymentReceipt,
+    invoicePdfUrl: paymentReceiptUrl,
+    hasPdfAvailable: hasPaymentReceipt,
   };
 }
 
 /**
- * Paginated billing history for the current organization, sourced entirely
- * from locally persisted `billing_provider_transactions` rows (FastSpring
- * webhook sync and legacy Paddle history). Never calls a provider API.
- * Ordered newest-first by when the transaction occurred (falls back to created_at).
+ * Paginated billing history for the current organization, sourced from
+ * locally persisted `billing_provider_transactions` rows plus linked
+ * Auroranexis `sales_invoices` when issued. Never calls a provider API.
  */
 export async function listOrganizationBillingTransactions(
   session: SessionContext,
@@ -61,7 +70,15 @@ export async function listOrganizationBillingTransactions(
     throw new Error(error.message);
   }
 
-  return ((data ?? []) as BillingProviderTransaction[]).map(toBillingHistoryItem);
+  const rows = (data ?? []) as BillingProviderTransaction[];
+  const salesMap = await listSalesInvoiceIdsByProviderTransactionIds({
+    organizationId: session.organization.id,
+    providerTransactionIds: rows.map((row) => row.provider_transaction_id),
+  });
+
+  return rows.map((row) =>
+    toBillingHistoryItem(row, salesMap.get(row.provider_transaction_id) ?? null),
+  );
 }
 
 /**
@@ -94,5 +111,11 @@ export async function getOrganizationBillingTransaction(
     return null;
   }
 
-  return toBillingHistoryItem(data as BillingProviderTransaction);
+  const row = data as BillingProviderTransaction;
+  const salesMap = await listSalesInvoiceIdsByProviderTransactionIds({
+    organizationId: session.organization.id,
+    providerTransactionIds: [row.provider_transaction_id],
+  });
+
+  return toBillingHistoryItem(row, salesMap.get(row.provider_transaction_id) ?? null);
 }

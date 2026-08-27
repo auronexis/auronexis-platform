@@ -10,11 +10,14 @@ import { COMPANY_CONTACT } from "@/lib/company/company-contact";
 import {
   formatLegalContactLine,
   formatSupportContactLine,
-  formatVatLine,
   LEGAL_UI_LABELS,
 } from "@/lib/company/company-legal";
 import type { SalesInvoiceRecord } from "@/lib/billing/sales-invoice";
-import { toCustomerInvoiceView } from "@/lib/billing/sales-invoice";
+import {
+  getBuyerSnapshotFromInvoice,
+  toCustomerInvoiceView,
+} from "@/lib/billing/sales-invoice";
+import { formatBuyerInvoiceAddressLines } from "@/lib/billing/buyer-invoice-snapshot";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
 import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
 
@@ -22,6 +25,11 @@ export type SalesInvoiceRenderOptions = {
   /** When true, adds non-production watermark and omits tax-document claims. */
   preview?: boolean;
   locale?: "en" | "de";
+  /**
+   * PDF stream compression. Default true. Tests may set false to assert embedded text
+   * without inflating FlateDecode streams.
+   */
+  compress?: boolean;
 };
 
 function escapeHtml(value: string): string {
@@ -140,10 +148,14 @@ export function renderSalesInvoiceHtml(
       : [];
 
   const sellerLines = seller?.addressLines ?? [];
+  const buyer = getBuyerSnapshotFromInvoice(invoice);
+  const buyerAddressLines = formatBuyerInvoiceAddressLines(buyer);
   const buyerLines = [
-    invoice.buyerLegalName,
-    invoice.buyerCountryCode ? `Country: ${invoice.buyerCountryCode}` : null,
-    invoice.buyerVatId ? `${LEGAL_UI_LABELS.vatId}: ${invoice.buyerVatId}` : null,
+    buyer.legalName,
+    ...buyerAddressLines,
+    buyer.countryCode ? `Country: ${buyer.countryCode}` : null,
+    buyer.vatId ? `${LEGAL_UI_LABELS.vatId}: ${buyer.vatId}` : null,
+    buyer.billingEmail ? `Billing email: ${buyer.billingEmail}` : null,
   ].filter(Boolean);
 
   const lineRows = invoice.lines
@@ -203,7 +215,7 @@ export function renderSalesInvoiceHtml(
         <h2>Seller</h2>
         <p><strong>${escapeHtml(seller?.legalName ?? "—")}</strong></p>
         ${sellerLines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
-        ${seller?.vatId ? `<p>${escapeHtml(formatVatLine())}</p>` : `<p>${LEGAL_UI_LABELS.vatId}: —</p>`}
+        ${seller?.vatId ? `<p>${escapeHtml(`${LEGAL_UI_LABELS.vatId}: ${seller.vatId}`)}</p>` : `<p>${LEGAL_UI_LABELS.vatId}: —</p>`}
         <p>Country: ${escapeHtml(seller?.countryCode ?? "—")}</p>
       </div>
       <div class="block">
@@ -264,7 +276,11 @@ export async function generateSalesInvoicePdf(
   const seller = invoice.sellerSnapshot;
 
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 50, size: "A4" });
+    const doc = new PDFDocument({
+      margin: 50,
+      size: "A4",
+      compress: options.compress !== false,
+    });
     const chunks: Buffer[] = [];
 
     doc.on("data", (chunk: Buffer) => chunks.push(chunk));
@@ -295,14 +311,19 @@ export async function generateSalesInvoicePdf(
     for (const line of seller?.addressLines ?? []) {
       doc.text(line);
     }
-    doc.text(seller?.vatId ? formatVatLine() : `${LEGAL_UI_LABELS.vatId}: —`);
+    doc.text(seller?.vatId ? `${LEGAL_UI_LABELS.vatId}: ${seller.vatId}` : `${LEGAL_UI_LABELS.vatId}: —`);
     doc.moveDown(0.8);
 
     doc.fontSize(12).font("Helvetica-Bold").text("Buyer");
     doc.fontSize(10).font("Helvetica");
-    doc.text(invoice.buyerLegalName ?? "—");
-    if (invoice.buyerCountryCode) doc.text(`Country: ${invoice.buyerCountryCode}`);
-    if (invoice.buyerVatId) doc.text(`${LEGAL_UI_LABELS.vatId}: ${invoice.buyerVatId}`);
+    const buyer = getBuyerSnapshotFromInvoice(invoice);
+    doc.text(buyer.legalName ?? "—");
+    for (const line of formatBuyerInvoiceAddressLines(buyer)) {
+      doc.text(line);
+    }
+    if (buyer.countryCode) doc.text(`Country: ${buyer.countryCode}`);
+    if (buyer.vatId) doc.text(`${LEGAL_UI_LABELS.vatId}: ${buyer.vatId}`);
+    if (buyer.billingEmail) doc.text(`Billing email: ${buyer.billingEmail}`);
     doc.moveDown(1);
 
     for (const line of invoice.lines) {

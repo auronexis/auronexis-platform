@@ -1,7 +1,8 @@
 /**
  * Neutral billing-history display type for the invoice/transaction history UI.
  * Provider-agnostic on purpose — populated from billing_provider_transactions,
- * which stores FastSpring (active) and legacy Paddle (historical) rows.
+ * which stores Mollie (active) and legacy provider historical rows.
+ * Auroranexis sales invoices are linked separately via salesInvoiceId.
  */
 
 /** Normalized transaction lifecycle status as persisted on billing_provider_transactions. */
@@ -26,9 +27,23 @@ export type BillingHistoryItem = {
   /** Coarse paid/unpaid flag for filtering — derived from `status`, not stored separately. */
   paymentStatus: "paid" | "unpaid";
   invoiceNumber: string | null;
-  /** Stored invoice/receipt URL persisted from the provider webhook, if any. */
+  /** Auroranexis sales_invoices.id when an issued invoice exists for this payment. */
+  salesInvoiceId: string | null;
+  /** True when an Auroranexis sales invoice PDF can be downloaded. */
+  hasSalesInvoicePdf: boolean;
+  /** Stored Mollie/provider payment receipt URL (not a tax invoice). */
+  paymentReceiptUrl: string | null;
+  /** True when a Mollie/provider payment receipt URL is available. */
+  hasPaymentReceipt: boolean;
+  /**
+   * @deprecated Prefer hasPaymentReceipt — historically meant Mollie receipt URL.
+   * Kept for compatibility with openInvoicePdfAction callers.
+   */
   invoicePdfUrl: string | null;
-  /** True when a stored invoice URL exists for this paid transaction. */
+  /**
+   * @deprecated Prefer hasPaymentReceipt / hasSalesInvoicePdf.
+   * Historically true when a Mollie receipt URL existed.
+   */
   hasPdfAvailable: boolean;
 };
 
@@ -68,10 +83,23 @@ export function derivePaymentStatus(status: BillingHistoryStatus): "paid" | "unp
   return status === "paid" ? "paid" : "unpaid";
 }
 
-/** Only completed/paid transactions with a persisted invoice URL can be opened. */
+/** Mollie/provider payment receipt URL availability (not Auroranexis tax PDF). */
+export function hasPaymentReceiptForStatus(
+  status: BillingHistoryStatus,
+  receiptUrl?: string | null,
+): boolean {
+  return status === "paid" && Boolean(receiptUrl?.trim());
+}
+
+/** @deprecated Use hasPaymentReceiptForStatus — name historically meant Mollie receipt. */
 export function hasPdfAvailableForStatus(
   status: BillingHistoryStatus,
   invoiceUrl?: string | null,
 ): boolean {
-  return status === "paid" && Boolean(invoiceUrl?.trim());
+  return hasPaymentReceiptForStatus(status, invoiceUrl);
+}
+
+/** Authenticated download path for an issued Auroranexis sales invoice PDF. */
+export function buildSalesInvoicePdfDownloadPath(salesInvoiceId: string): string {
+  return `/api/billing/sales-invoices/${encodeURIComponent(salesInvoiceId)}/pdf`;
 }

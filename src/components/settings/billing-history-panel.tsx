@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { BillingHistoryItem } from "@/lib/billing/history-types";
 import {
   openInvoicePdfAction,
+  downloadSalesInvoicePdfAction,
   getBillingHistoryAction,
 } from "@/lib/billing/invoice-actions";
 import { formatMoneyFromCents } from "@/lib/billing/status";
@@ -36,7 +37,7 @@ export function BillingHistoryPanel({
   const [hasMore, setHasMore] = useState(initialItems.length >= pageSize);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [pdfPendingId, setPdfPendingId] = useState<string | null>(null);
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
 
   const paidCount = items.filter((item) => item.paymentStatus === "paid").length;
   const unpaidCount = items.filter((item) => item.paymentStatus === "unpaid").length;
@@ -58,15 +59,37 @@ export function BillingHistoryPanel({
     });
   };
 
-  const openPdf = (providerTransactionId: string) => {
+  const downloadInvoice = (item: BillingHistoryItem) => {
     if (!canManage) {
       return;
     }
+    const key = `invoice:${item.id}`;
     setError(null);
-    setPdfPendingId(providerTransactionId);
+    setPendingKey(key);
+    startTransition(async () => {
+      const result = await downloadSalesInvoicePdfAction({
+        salesInvoiceId: item.salesInvoiceId,
+        providerTransactionId: item.providerTransactionId,
+      });
+      setPendingKey(null);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      window.open(result.url, "_blank", "noopener,noreferrer");
+    });
+  };
+
+  const openPaymentReceipt = (providerTransactionId: string) => {
+    if (!canManage) {
+      return;
+    }
+    const key = `receipt:${providerTransactionId}`;
+    setError(null);
+    setPendingKey(key);
     startTransition(async () => {
       const result = await openInvoicePdfAction(providerTransactionId);
-      setPdfPendingId(null);
+      setPendingKey(null);
       if ("error" in result) {
         setError(result.error);
         return;
@@ -79,7 +102,7 @@ export function BillingHistoryPanel({
     <PageSurface>
       <PageSurfaceHeading
         title="Billing history"
-        description="Payment records synced from Mollie. Where issued, Auroranexis sales invoices show Net, VAT, and Total — Mollie payment links are receipts, not sales invoices."
+        description="Auroranexis sales invoices (Net, VAT, Total) are distinct from Mollie payment receipts. Download invoice opens the Auroranexis PDF; Payment receipt opens the Mollie checkout receipt when available."
       />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -160,17 +183,40 @@ export function BillingHistoryPanel({
                       : shortenRef(item.providerTransactionId)}
                   </td>
                   <td className="py-3">
-                    {canManage && item.hasPdfAvailable ? (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        disabled={isPending && pdfPendingId === item.providerTransactionId}
-                        loading={isPending && pdfPendingId === item.providerTransactionId}
-                        onClick={() => openPdf(item.providerTransactionId)}
-                      >
-                        Payment receipt
-                      </Button>
+                    {canManage ? (
+                      <div className="flex flex-wrap gap-2">
+                        {item.hasSalesInvoicePdf ? (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={isPending && pendingKey === `invoice:${item.id}`}
+                            loading={isPending && pendingKey === `invoice:${item.id}`}
+                            onClick={() => downloadInvoice(item)}
+                          >
+                            Download invoice
+                          </Button>
+                        ) : null}
+                        {item.hasPaymentReceipt ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={
+                              isPending && pendingKey === `receipt:${item.providerTransactionId}`
+                            }
+                            loading={
+                              isPending && pendingKey === `receipt:${item.providerTransactionId}`
+                            }
+                            onClick={() => openPaymentReceipt(item.providerTransactionId)}
+                          >
+                            Payment receipt
+                          </Button>
+                        ) : null}
+                        {!item.hasSalesInvoicePdf && !item.hasPaymentReceipt ? (
+                          <span className="text-xs text-muted">—</span>
+                        ) : null}
+                      </div>
                     ) : (
                       <span className="text-xs text-muted">
                         {item.invoiceNumber ? "Sales invoice on file" : "—"}

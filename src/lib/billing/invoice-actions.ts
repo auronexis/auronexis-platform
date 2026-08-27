@@ -4,11 +4,19 @@ import { requireSession } from "@/lib/auth/session";
 import { AuthorizationError } from "@/lib/rbac/guards";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
-import type { BillingHistoryItem } from "@/lib/billing/history-types";
+import {
+  buildSalesInvoicePdfDownloadPath,
+  type BillingHistoryItem,
+} from "@/lib/billing/history-types";
 import {
   getOrganizationBillingTransaction,
   listOrganizationBillingTransactions,
 } from "@/lib/billing/transactions";
+import {
+  getSalesInvoiceByProviderTransactionId,
+  getSalesInvoiceForOrganization,
+  resolveIssuedSalesInvoiceForDownload,
+} from "@/lib/billing/sales-invoice";
 
 export type GetBillingHistoryActionResult =
   | { ok: true; items: BillingHistoryItem[] }
@@ -38,10 +46,9 @@ export async function getBillingHistoryAction(
 export type OpenInvoicePdfActionResult = { url: string } | { error: string };
 
 /**
- * Returns the persisted invoice/receipt URL for a transaction owned by the
- * caller's organization. Never returns a URL for a transaction it does not
- * own, and never calls a provider API — only what was stored at webhook
- * sync time. Legacy Paddle rows without a stored URL report unavailable.
+ * Returns the Mollie/provider payment receipt URL for a transaction owned by
+ * the caller's organization. This is NOT an Auroranexis sales invoice PDF.
+ * Prefer downloadSalesInvoicePdfAction / the sales-invoice PDF route for tax invoices.
  */
 export async function openInvoicePdfAction(
   providerTransactionId: string,
@@ -63,11 +70,61 @@ export async function openInvoicePdfAction(
       return { error: "Invoice not found." };
     }
 
-    if (!transaction.hasPdfAvailable || !transaction.invoicePdfUrl) {
-      return { error: "An invoice PDF is not available for this transaction." };
+    if (!transaction.hasPaymentReceipt || !transaction.paymentReceiptUrl) {
+      return { error: "A payment receipt is not available for this transaction." };
     }
 
-    return { url: transaction.invoicePdfUrl };
+    return { url: transaction.paymentReceiptUrl };
+  } catch (error) {
+    return {
+      error: sanitizeBillingCustomerError(error, "Unable to open the payment receipt."),
+    };
+  }
+}
+
+export type DownloadSalesInvoicePdfActionResult = { url: string } | { error: string };
+
+/**
+ * Returns the authenticated Auroranexis sales invoice PDF download path.
+ * Resolves only invoices belonging to the caller's organization.
+ * Does not create invoices or call Mollie.
+ */
+export async function downloadSalesInvoicePdfAction(input: {
+  salesInvoiceId?: string | null;
+  providerTransactionId?: string | null;
+}): Promise<DownloadSalesInvoicePdfActionResult> {
+  try {
+    const session = await requireSession();
+
+    if (!canManageOrganizationSettings(session)) {
+      throw new AuthorizationError();
+    }
+
+    const organizationId = session.organization.id;
+    let invoiceId = input.salesInvoiceId?.trim() || null;
+
+    if (!invoiceId && input.providerTransactionId?.trim()) {
+      const linked = await getSalesInvoiceByProviderTransactionId({
+        organizationId,
+        providerTransactionId: input.providerTransactionId.trim(),
+      });
+      invoiceId = linked?.id ?? null;
+    }
+
+    if (!invoiceId) {
+      return { error: "An Auroranexis invoice is not available for this payment." };
+    }
+
+    const invoice = await getSalesInvoiceForOrganization({
+      organizationId,
+      invoiceId,
+    });
+    const issued = resolveIssuedSalesInvoiceForDownload({ invoice, organizationId });
+    if (!issued) {
+      return { error: "An Auroranexis invoice is not available for this payment." };
+    }
+
+    return { url: buildSalesInvoicePdfDownloadPath(issued.id) };
   } catch (error) {
     return {
       error: sanitizeBillingCustomerError(error, "Unable to open the invoice PDF."),

@@ -67,6 +67,8 @@ export function sanitizeBillingCustomerError(error: unknown, fallback: string): 
   if (
     error.message === "Invoice not found." ||
     error.message === "An invoice PDF is not available for this transaction." ||
+    error.message === "A payment receipt is not available for this transaction." ||
+    error.message === "An Auroranexis invoice is not available for this payment." ||
     error.message === "Unable to retrieve the invoice PDF right now. Try again later."
   ) {
     return error.message;

@@ -17,8 +17,12 @@ import {
 } from "@/lib/billing/seller-tax-config";
 import type { TaxDecisionEvidenceSnapshot } from "@/lib/billing/tax-decision-evidence";
 import type { B2bTaxRelationshipClass } from "@/lib/billing/tax-classification";
+import type { BuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
+import { buildBuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
 
 export type SalesInvoiceStatus = "draft" | "issued" | "void";
+
+export type { BuyerInvoiceSnapshot };
 
 export type SalesInvoiceLine = {
   description: string;
@@ -49,6 +53,11 @@ export type SalesInvoiceRecord = {
   buyerLegalName: string | null;
   buyerVatId: string | null;
   buyerCountryCode: string | null;
+  buyerAddressLine1: string | null;
+  buyerAddressLine2: string | null;
+  buyerPostalCode: string | null;
+  buyerCity: string | null;
+  buyerBillingEmail: string | null;
   sellerSnapshot: SellerInvoiceSnapshot | null;
   taxDecisionEvidence: TaxDecisionEvidenceSnapshot | null;
   issuedAt: string | null;
@@ -74,6 +83,13 @@ export type IssueSalesInvoiceInput = {
   buyerLegalName?: string | null;
   buyerVatId?: string | null;
   buyerCountryCode?: string | null;
+  buyerAddressLine1?: string | null;
+  buyerAddressLine2?: string | null;
+  buyerPostalCode?: string | null;
+  buyerCity?: string | null;
+  buyerBillingEmail?: string | null;
+  /** Preferred over individual buyer* fields when provided. */
+  buyerSnapshot?: BuyerInvoiceSnapshot | null;
   productName: string;
   taxDecisionEvidence?: TaxDecisionEvidenceSnapshot | null;
   sellerSnapshot?: SellerInvoiceSnapshot | null;
@@ -128,6 +144,23 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
   const invoiceNumber = await allocateInvoiceNumber(input.organizationId);
   const taxNote = buildTaxNote(input);
   const sellerSnapshot = input.sellerSnapshot ?? buildSellerInvoiceSnapshot();
+  const buyerSnapshot =
+    input.buyerSnapshot ??
+    buildBuyerInvoiceSnapshot({
+      organizationId: input.organizationId,
+      legalName: input.buyerLegalName ?? null,
+      billingEmail: input.buyerBillingEmail ?? null,
+      countryCode: input.buyerCountryCode ?? null,
+      addressLine1: input.buyerAddressLine1 ?? null,
+      addressLine2: input.buyerAddressLine2 ?? null,
+      postalCode: input.buyerPostalCode ?? null,
+      city: input.buyerCity ?? null,
+      vatId: input.buyerVatId ?? null,
+      vatIdNormalized: null,
+      viesStatus: null,
+      viesCheckedAt: null,
+      updatedAt: now,
+    });
   const reverseChargeApplied = input.taxPolicyOutcome === "REVERSE_CHARGE";
   const businessClassification =
     input.businessClassification ??
@@ -160,9 +193,14 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
     billing_period_end: input.billingPeriodEnd ?? null,
     mollie_payment_id: input.molliePaymentId ?? null,
     provider_transaction_id: input.providerTransactionId ?? null,
-    buyer_legal_name: input.buyerLegalName ?? null,
-    buyer_vat_id: input.buyerVatId ?? null,
-    buyer_country_code: input.buyerCountryCode ?? null,
+    buyer_legal_name: buyerSnapshot.legalName,
+    buyer_vat_id: buyerSnapshot.vatId,
+    buyer_country_code: buyerSnapshot.countryCode,
+    buyer_address_line1: buyerSnapshot.addressLine1,
+    buyer_address_line2: buyerSnapshot.addressLine2,
+    buyer_postal_code: buyerSnapshot.postalCode,
+    buyer_city: buyerSnapshot.city,
+    buyer_billing_email: buyerSnapshot.billingEmail,
     seller_snapshot: sellerSnapshot,
     tax_decision_evidence: input.taxDecisionEvidence ?? null,
     reverse_charge_applied: reverseChargeApplied,
@@ -207,6 +245,11 @@ function mapInvoiceRow(row: Record<string, unknown>): SalesInvoiceRecord {
     buyerLegalName: (row.buyer_legal_name as string | null) ?? null,
     buyerVatId: (row.buyer_vat_id as string | null) ?? null,
     buyerCountryCode: (row.buyer_country_code as string | null) ?? null,
+    buyerAddressLine1: (row.buyer_address_line1 as string | null) ?? null,
+    buyerAddressLine2: (row.buyer_address_line2 as string | null) ?? null,
+    buyerPostalCode: (row.buyer_postal_code as string | null) ?? null,
+    buyerCity: (row.buyer_city as string | null) ?? null,
+    buyerBillingEmail: (row.buyer_billing_email as string | null) ?? null,
     sellerSnapshot: (row.seller_snapshot as SellerInvoiceSnapshot | null) ?? null,
     taxDecisionEvidence: (row.tax_decision_evidence as TaxDecisionEvidenceSnapshot | null) ?? null,
     issuedAt: (row.issued_at as string | null) ?? null,
@@ -214,6 +257,35 @@ function mapInvoiceRow(row: Record<string, unknown>): SalesInvoiceRecord {
     taxNote: (row.tax_note as string | null) ?? null,
     createdAt: String(row.created_at),
   };
+}
+
+/** Buyer snapshot from an issued invoice row — never reads live org identity. */
+export function getBuyerSnapshotFromInvoice(invoice: SalesInvoiceRecord): BuyerInvoiceSnapshot {
+  return {
+    legalName: invoice.buyerLegalName,
+    addressLine1: invoice.buyerAddressLine1,
+    addressLine2: invoice.buyerAddressLine2,
+    postalCode: invoice.buyerPostalCode,
+    city: invoice.buyerCity,
+    countryCode: invoice.buyerCountryCode,
+    vatId: invoice.buyerVatId,
+    billingEmail: invoice.buyerBillingEmail,
+  };
+}
+
+/**
+ * Tenant-scoped issued invoice for PDF download.
+ * Returns null when missing, wrong org, or not issued — never invents rows.
+ */
+export function resolveIssuedSalesInvoiceForDownload(input: {
+  invoice: SalesInvoiceRecord | null;
+  organizationId: string;
+}): SalesInvoiceRecord | null {
+  const { invoice, organizationId } = input;
+  if (!invoice) return null;
+  if (invoice.organizationId !== organizationId) return null;
+  if (invoice.status !== "issued") return null;
+  return invoice;
 }
 
 export async function listSalesInvoicesForOrganization(
@@ -252,6 +324,58 @@ export async function getSalesInvoiceForOrganization(input: {
   return mapInvoiceRow(data as Record<string, unknown>);
 }
 
+export async function getSalesInvoiceByProviderTransactionId(input: {
+  organizationId: string;
+  providerTransactionId: string;
+}): Promise<SalesInvoiceRecord | null> {
+  const trimmed = input.providerTransactionId.trim();
+  if (!trimmed) return null;
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("sales_invoices")
+    .select("*")
+    .eq("organization_id", input.organizationId)
+    .eq("provider_transaction_id", trimmed)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load sales invoice by payment: ${error.message}`);
+  }
+  if (!data) return null;
+  return mapInvoiceRow(data as Record<string, unknown>);
+}
+
+export async function listSalesInvoiceIdsByProviderTransactionIds(input: {
+  organizationId: string;
+  providerTransactionIds: string[];
+}): Promise<Map<string, string>> {
+  const ids = [...new Set(input.providerTransactionIds.map((id) => id.trim()).filter(Boolean))];
+  const result = new Map<string, string>();
+  if (ids.length === 0) return result;
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("sales_invoices")
+    .select("id, provider_transaction_id")
+    .eq("organization_id", input.organizationId)
+    .eq("status", "issued")
+    .in("provider_transaction_id", ids);
+
+  if (error) {
+    throw new Error(`Failed to map sales invoices: ${error.message}`);
+  }
+
+  for (const row of data ?? []) {
+    const providerId = (row as { provider_transaction_id?: string | null }).provider_transaction_id;
+    const invoiceId = (row as { id?: string }).id;
+    if (providerId && invoiceId) {
+      result.set(providerId, invoiceId);
+    }
+  }
+  return result;
+}
+
 /**
  * Presentation DTO for customer UI — Net, VAT %, VAT amount, Total.
  * Uses stored invoice facts only (immutable after issue).
@@ -268,6 +392,10 @@ export function toCustomerInvoiceView(invoice: SalesInvoiceRecord): {
   issuedAt: string | null;
   buyerLegalName: string | null;
   buyerCountryCode: string | null;
+  buyerAddressLine1: string | null;
+  buyerCity: string | null;
+  buyerPostalCode: string | null;
+  buyerBillingEmail: string | null;
   sellerLegalName: string | null;
   lines: SalesInvoiceLine[];
 } {
@@ -283,6 +411,10 @@ export function toCustomerInvoiceView(invoice: SalesInvoiceRecord): {
     issuedAt: invoice.issuedAt,
     buyerLegalName: invoice.buyerLegalName,
     buyerCountryCode: invoice.buyerCountryCode,
+    buyerAddressLine1: invoice.buyerAddressLine1,
+    buyerCity: invoice.buyerCity,
+    buyerPostalCode: invoice.buyerPostalCode,
+    buyerBillingEmail: invoice.buyerBillingEmail,
     sellerLegalName: invoice.sellerSnapshot?.legalName ?? null,
     lines: invoice.lines,
   };

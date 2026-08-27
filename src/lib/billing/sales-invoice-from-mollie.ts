@@ -7,6 +7,7 @@
 import "server-only";
 
 import { getOrganizationBillingIdentity } from "@/lib/billing/billing-identity";
+import { buildBuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
 import { issueSalesInvoice } from "@/lib/billing/sales-invoice";
 import { determineTaxPolicy, LEGAL_TEXT_PENDING_COUNSEL } from "@/lib/billing/tax-policy";
 import { calculateVatInclusiveBreakdown } from "@/lib/billing/taxes";
@@ -84,6 +85,7 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
   });
 
   const sellerSnapshot = buildSellerInvoiceSnapshot();
+  const buyerSnapshot = buildBuyerInvoiceSnapshot(identity);
   const vatTechnicalState = resolveVatIdTechnicalState({
     vatId: identity?.vatId,
     viesStatus,
@@ -91,7 +93,7 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
 
   const taxDecisionEvidence = buildTaxDecisionEvidenceSnapshot({
     organizationId: input.organizationId,
-    buyerLegalName: identity?.legalName ?? null,
+    buyerLegalName: buyerSnapshot.legalName,
     buyerCountryCode: countryCode,
     buyerVatIdNormalized: normalizeVatId(identity?.vatId ?? null),
     vatTechnicalState,
@@ -119,9 +121,7 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     billingPeriodEnd: input.billingPeriodEnd ?? null,
     molliePaymentId: input.paymentId,
     providerTransactionId: input.paymentId,
-    buyerLegalName: identity?.legalName ?? null,
-    buyerVatId: identity?.vatId ?? null,
-    buyerCountryCode: countryCode,
+    buyerSnapshot,
     productName: input.productName,
     sellerSnapshot,
     taxDecisionEvidence,
