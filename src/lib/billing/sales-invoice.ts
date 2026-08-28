@@ -8,12 +8,13 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { TaxPolicyOutcome } from "@/lib/billing/tax-policy";
-import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
+import { formatInvoiceVatColumnLabel } from "@/lib/billing/taxes";
 import {
   LEGAL_TEXT_PENDING_COUNSEL,
   type ReverseChargeLegendStatus,
 } from "@/lib/billing/tax-policy";
 import { resolveReverseChargeLegend } from "@/lib/billing/reverse-charge-legend";
+import { resolveNonEuB2bLegend } from "@/lib/billing/non-eu-b2b-legend";
 import {
   buildSellerInvoiceSnapshot,
   type SellerInvoiceSnapshot,
@@ -104,7 +105,8 @@ export type IssueSalesInvoiceInput = {
   /**
    * Legend gate from tax determination.
    * Defaults fail-closed (pending counsel) when omitted — callers must pass
-   * IMPLEMENTATION_TEXT_APPROVED_FOR_C3 for verified EU B2B RC issuance.
+   * IMPLEMENTATION_TEXT_APPROVED_FOR_C3 for verified EU B2B RC issuance, or
+   * IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2 for verified NON_EU_B2B issuance.
    */
   reverseChargeLegendStatus?: ReverseChargeLegendStatus;
 };
@@ -131,6 +133,13 @@ function buildTaxNote(input: IssueSalesInvoiceInput): string | null {
       taxPolicyOutcome: input.taxPolicyOutcome,
       reverseChargeLegendStatus: input.reverseChargeLegendStatus ?? LEGAL_TEXT_PENDING_COUNSEL,
       locale: "en",
+    });
+    return legend.showOnInvoice ? legend.legendText : null;
+  }
+  if (input.taxPolicyOutcome === "NON_EU_B2B_PLACE_OF_SUPPLY") {
+    const legend = resolveNonEuB2bLegend({
+      taxPolicyOutcome: input.taxPolicyOutcome,
+      reverseChargeLegendStatus: input.reverseChargeLegendStatus ?? LEGAL_TEXT_PENDING_COUNSEL,
     });
     return legend.showOnInvoice ? legend.legendText : null;
   }
@@ -444,7 +453,10 @@ export function toCustomerInvoiceView(invoice: SalesInvoiceRecord): {
     invoiceNumber: invoice.invoiceNumber,
     currency: invoice.currency,
     netMinor: invoice.netMinor,
-    vatRateLabel: formatVatRateBpsLabel(invoice.vatRateBps),
+    vatRateLabel: formatInvoiceVatColumnLabel({
+      taxPolicyOutcome: invoice.taxPolicyOutcome,
+      vatRateBps: invoice.vatRateBps,
+    }),
     vatMinor: invoice.vatMinor,
     grossMinor: invoice.grossMinor,
     taxNote: resolveCustomerInvoiceTaxNote({

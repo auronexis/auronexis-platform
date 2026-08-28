@@ -71,11 +71,11 @@ function determineTaxPolicy(input) {
   }
   if (!EU.has(country === "GR" ? "EL" : country)) {
     return wrap({
-      outcome: "MANUAL_REVIEW",
-      vatRateBps: null,
-      blocksCheckout: true,
-      reasonCode: "non_eu_manual_review",
-      reverseChargeLegendStatus: "n/a",
+      outcome: "NON_EU_B2B_PLACE_OF_SUPPLY",
+      vatRateBps: 0,
+      blocksCheckout: false,
+      reasonCode: "non_eu_b2b_place_of_supply",
+      reverseChargeLegendStatus: "IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2",
     });
   }
   const vatId = (input.vatId ?? "").trim();
@@ -151,7 +151,7 @@ test("decision helper reason codes stay aligned with tax-policy.ts", () => {
     "b2b_confirmation_required",
     "customer_country_unknown",
     "de_domestic_standard_vat",
-    "non_eu_manual_review",
+    "non_eu_b2b_place_of_supply",
     "eu_vat_id_required",
     "eu_b2b_reverse_charge",
     "vies_invalid",
@@ -160,6 +160,7 @@ test("decision helper reason codes stay aligned with tax-policy.ts", () => {
     assert.match(policy, new RegExp(code));
   }
   assert.match(policy, /IMPLEMENTATION_TEXT_APPROVED_FOR_C3/);
+  assert.match(policy, /IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2/);
   assert.match(policy, /businessClassification/);
   assert.match(policy, /country mismatch alone/);
   assert.doesNotMatch(policy, /eu_b2b_reverse_charge_legend_pending_counsel/);
@@ -257,7 +258,7 @@ test("CASE F: no VAT ID — DE domestic allowed; other EU blocked", () => {
   );
 });
 
-test("CASE G: non-EU B2B distinct — no invented 0%", () => {
+test("CASE G: non-EU B2B verified — place of supply, German VAT not charged", () => {
   assert.equal(
     classifyB2bTaxRelationship({
       customerCountryCode: "US",
@@ -271,8 +272,10 @@ test("CASE G: non-EU B2B distinct — no invented 0%", () => {
     viesStatus: "not_checked",
     isB2bEntrepreneurConfirmed: true,
   });
-  assert.equal(result.outcome, "MANUAL_REVIEW");
-  assert.equal(result.vatRateBps, null);
+  assert.equal(result.outcome, "NON_EU_B2B_PLACE_OF_SUPPLY");
+  assert.equal(result.vatRateBps, 0);
+  assert.equal(result.blocksCheckout, false);
+  assert.equal(result.reasonCode, "non_eu_b2b_place_of_supply");
 });
 
 test("CASE H: seller tax configuration module + COMPANY_INFORMATION", () => {

@@ -3,7 +3,8 @@
  * No DB writes, no Mollie calls, no invoice sequence allocation, no accounting mutation.
  * Uses the same tax engine and domain record shape as production issuance.
  *
- * Scenarios: DE domestic, FR EU B2B RC, NL EU B2B RC (synthetic validated VAT fixtures).
+ * Scenarios: DE domestic, FR/NL EU B2B RC, US/CH/GB/JP/KR/CA/AU NON_EU_B2B
+ * (synthetic validated fixtures; zero production numbers).
  */
 
 import "server-only";
@@ -15,6 +16,7 @@ import { buildTaxDecisionEvidenceSnapshot } from "@/lib/billing/tax-decision-evi
 import { determineTaxPolicy } from "@/lib/billing/tax-policy";
 import { calculateVatInclusiveBreakdown } from "@/lib/billing/taxes";
 import { resolveReverseChargeLegend } from "@/lib/billing/reverse-charge-legend";
+import { resolveNonEuB2bLegend } from "@/lib/billing/non-eu-b2b-legend";
 import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
 import { OPERATOR_TEST_DOCUMENT_INDICATOR } from "@/lib/billing/sales-invoice-test-marker";
 import {
@@ -60,6 +62,77 @@ export const OPERATOR_PREVIEW_BUYER_NL_RC = {
   billingEmail: "invoice-test-nl@auroranexis.invalid",
 } as const;
 
+/** Synthetic NON_EU_B2B fixtures — no VIES; VAT ID optional / omitted. */
+export const OPERATOR_PREVIEW_BUYER_US = {
+  legalName: "Auroranexis Invoice Test Inc.",
+  addressLine1: "1 Market Street",
+  postalCode: "94105",
+  city: "San Francisco",
+  countryCode: "US",
+  vatId: null as string | null,
+  billingEmail: "invoice-test-us@auroranexis.invalid",
+} as const;
+
+export const OPERATOR_PREVIEW_BUYER_CH = {
+  legalName: "Auroranexis Invoice Test AG",
+  addressLine1: "Bahnhofstrasse 1",
+  postalCode: "8001",
+  city: "Zürich",
+  countryCode: "CH",
+  vatId: null as string | null,
+  billingEmail: "invoice-test-ch@auroranexis.invalid",
+} as const;
+
+export const OPERATOR_PREVIEW_BUYER_GB = {
+  legalName: "Auroranexis Invoice Test Ltd",
+  addressLine1: "1 King William Street",
+  postalCode: "EC4N 7AF",
+  city: "London",
+  countryCode: "GB",
+  vatId: null as string | null,
+  billingEmail: "invoice-test-gb@auroranexis.invalid",
+} as const;
+
+export const OPERATOR_PREVIEW_BUYER_JP = {
+  legalName: "Auroranexis Invoice Test KK",
+  addressLine1: "1-1 Marunouchi",
+  postalCode: "100-0005",
+  city: "Tokyo",
+  countryCode: "JP",
+  vatId: null as string | null,
+  billingEmail: "invoice-test-jp@auroranexis.invalid",
+} as const;
+
+export const OPERATOR_PREVIEW_BUYER_KR = {
+  legalName: "Auroranexis Invoice Test Co., Ltd.",
+  addressLine1: "123 Teheran-ro",
+  postalCode: "06133",
+  city: "Seoul",
+  countryCode: "KR",
+  vatId: null as string | null,
+  billingEmail: "invoice-test-kr@auroranexis.invalid",
+} as const;
+
+export const OPERATOR_PREVIEW_BUYER_CA = {
+  legalName: "Auroranexis Invoice Test Corp.",
+  addressLine1: "100 King Street West",
+  postalCode: "M5X 1A9",
+  city: "Toronto",
+  countryCode: "CA",
+  vatId: null as string | null,
+  billingEmail: "invoice-test-ca@auroranexis.invalid",
+} as const;
+
+export const OPERATOR_PREVIEW_BUYER_AU = {
+  legalName: "Auroranexis Invoice Test Pty Ltd",
+  addressLine1: "1 Martin Place",
+  postalCode: "2000",
+  city: "Sydney",
+  countryCode: "AU",
+  vatId: null as string | null,
+  billingEmail: "invoice-test-au@auroranexis.invalid",
+} as const;
+
 export const PREVIEW_BUYER_LEGAL_NAME = OPERATOR_VISUAL_ACCEPTANCE_BUYER.legalName;
 export const PREVIEW_PAYMENT_REFERENCE = "tr_TEST_VISUAL_ACCEPTANCE_NONPRODUCTION";
 
@@ -68,7 +141,27 @@ export { OPERATOR_TEST_DOCUMENT_INDICATOR };
 export type PreviewSalesInvoicePlanKey = Extract<PlanKey, "professional" | "business">;
 
 /** Operator visual-acceptance tax scenarios (zero-write). */
-export type PreviewSalesInvoiceScenario = "de" | "fr" | "nl";
+export type PreviewSalesInvoiceScenario =
+  | "de"
+  | "fr"
+  | "nl"
+  | "us"
+  | "ch"
+  | "gb"
+  | "jp"
+  | "kr"
+  | "ca"
+  | "au";
+
+const NON_EU_PREVIEW_SCENARIOS = new Set<PreviewSalesInvoiceScenario>([
+  "us",
+  "ch",
+  "gb",
+  "jp",
+  "kr",
+  "ca",
+  "au",
+]);
 
 export type PreviewSalesInvoiceResult = {
   invoice: SalesInvoiceRecord;
@@ -83,17 +176,43 @@ export function resolvePreviewScenario(
   const normalized = (value ?? "de").trim().toLowerCase();
   if (normalized === "fr" || normalized === "fr_eu_b2b_rc") return "fr";
   if (normalized === "nl" || normalized === "nl_eu_b2b_rc") return "nl";
+  if (NON_EU_PREVIEW_SCENARIOS.has(normalized as PreviewSalesInvoiceScenario)) {
+    return normalized as PreviewSalesInvoiceScenario;
+  }
   return "de";
 }
 
 function previewBuyerForScenario(scenario: PreviewSalesInvoiceScenario) {
-  if (scenario === "fr") return OPERATOR_PREVIEW_BUYER_FR_RC;
-  if (scenario === "nl") return OPERATOR_PREVIEW_BUYER_NL_RC;
-  return OPERATOR_VISUAL_ACCEPTANCE_BUYER;
+  switch (scenario) {
+    case "fr":
+      return OPERATOR_PREVIEW_BUYER_FR_RC;
+    case "nl":
+      return OPERATOR_PREVIEW_BUYER_NL_RC;
+    case "us":
+      return OPERATOR_PREVIEW_BUYER_US;
+    case "ch":
+      return OPERATOR_PREVIEW_BUYER_CH;
+    case "gb":
+      return OPERATOR_PREVIEW_BUYER_GB;
+    case "jp":
+      return OPERATOR_PREVIEW_BUYER_JP;
+    case "kr":
+      return OPERATOR_PREVIEW_BUYER_KR;
+    case "ca":
+      return OPERATOR_PREVIEW_BUYER_CA;
+    case "au":
+      return OPERATOR_PREVIEW_BUYER_AU;
+    default:
+      return OPERATOR_VISUAL_ACCEPTANCE_BUYER;
+  }
 }
 
-function previewViesStatus(scenario: PreviewSalesInvoiceScenario): "valid" | "not_checked" {
-  return scenario === "de" ? "not_checked" : "valid";
+function previewViesStatus(
+  scenario: PreviewSalesInvoiceScenario,
+): "valid" | "not_checked" | "skipped" {
+  if (scenario === "de") return "not_checked";
+  if (scenario === "fr" || scenario === "nl") return "valid";
+  return "skipped";
 }
 
 function buildPreviewTaxNote(input: {
@@ -110,6 +229,13 @@ function buildPreviewTaxNote(input: {
       taxPolicyOutcome: input.taxPolicyOutcome,
       reverseChargeLegendStatus: input.reverseChargeLegendStatus,
       locale: "en",
+    });
+    return legend.showOnInvoice ? legend.legendText : null;
+  }
+  if (input.taxPolicyOutcome === "NON_EU_B2B_PLACE_OF_SUPPLY") {
+    const legend = resolveNonEuB2bLegend({
+      taxPolicyOutcome: input.taxPolicyOutcome,
+      reverseChargeLegendStatus: input.reverseChargeLegendStatus,
     });
     return legend.showOnInvoice ? legend.legendText : null;
   }
@@ -130,16 +256,13 @@ function previewInvoiceNumber(
   planKey: PreviewSalesInvoicePlanKey,
   scenario: PreviewSalesInvoiceScenario,
 ): string {
-  if (scenario === "fr") {
-    return planKey === "business" ? "TEST-ANX-2026-FR-000001" : "TEST-ANX-2026-FR-PRO-000001";
+  const suffix = planKey === "business" ? "000001" : "PRO-000001";
+  if (scenario === "de") {
+    return planKey === "business"
+      ? OPERATOR_VISUAL_ACCEPTANCE_INVOICE_NUMBER
+      : "TEST-ANX-2026-PRO-000001";
   }
-  if (scenario === "nl") {
-    return planKey === "business" ? "TEST-ANX-2026-NL-000001" : "TEST-ANX-2026-NL-PRO-000001";
-  }
-  if (planKey === "business") {
-    return OPERATOR_VISUAL_ACCEPTANCE_INVOICE_NUMBER;
-  }
-  return "TEST-ANX-2026-PRO-000001";
+  return `TEST-ANX-2026-${scenario.toUpperCase()}-${suffix}`;
 }
 
 /**
@@ -190,7 +313,7 @@ export function buildPreviewSalesInvoice(
     buyerVatIdNormalized: buyer.vatId,
     vatTechnicalState,
     viesStatus,
-    viesCheckedAt: scenario === "de" ? null : now,
+    viesCheckedAt: scenario === "fr" || scenario === "nl" ? now : null,
     businessClassification: determination.businessClassification,
     determination,
     sellerSnapshot,

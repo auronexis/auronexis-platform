@@ -65,6 +65,16 @@ export function calculateVatInclusiveBreakdown(input: {
       outcome: "REVERSE_CHARGE",
     };
   }
+  if (input.determination.outcome === "NON_EU_B2B_PLACE_OF_SUPPLY") {
+    // German VAT not charged — place of supply outside Germany. Not domestic 0%; not EU RC.
+    return {
+      grossMinor: input.grossMinor,
+      netMinor: input.grossMinor,
+      vatMinor: 0,
+      vatRateBps: 0,
+      outcome: "NON_EU_B2B_PLACE_OF_SUPPLY",
+    };
+  }
   if (
     input.determination.outcome === "ZERO_RATE_IF_LEGALLY_APPLICABLE" ||
     input.determination.outcome === "TAX_EXEMPT_IF_LEGALLY_APPLICABLE"
@@ -121,6 +131,17 @@ export function formatVatRateBpsLabel(vatRateBps: number): string {
   const frac = vatRateBps % 100;
   if (frac === 0) return `VAT (${whole}%)`;
   return `VAT (${whole}.${frac.toString().padStart(2, "0")}%)`;
+}
+
+/** Customer-facing VAT column label from persisted tax outcome (immutable invoice facts). */
+export function formatInvoiceVatColumnLabel(input: {
+  taxPolicyOutcome: TaxPolicyOutcome;
+  vatRateBps: number;
+}): string {
+  if (input.taxPolicyOutcome === "NON_EU_B2B_PLACE_OF_SUPPLY") {
+    return "German VAT";
+  }
+  return formatVatRateBpsLabel(input.vatRateBps);
 }
 
 export function resolveTaxForCheckout(input: {

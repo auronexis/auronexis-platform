@@ -35,7 +35,7 @@ function resolvePreviewPlan(value: string | null): PreviewSalesInvoicePlanKey {
  * No DB writes, no Mollie, no invoice sequence, no sales_invoices rows.
  * Requires owner/admin session (settings.write) or Bearer CRON_SECRET.
  *
- * Query: plan=business|professional, scenario=de|fr|nl, format=pdf|html
+ * Query: plan=business|professional, scenario=de|fr|nl|us|ch|gb|jp|kr|ca|au, format=pdf|html
  */
 export async function GET(request: Request): Promise<Response> {
   if (!(await isAuthorized(request))) {

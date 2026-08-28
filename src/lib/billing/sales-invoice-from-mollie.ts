@@ -13,6 +13,7 @@ import { issueSalesInvoice } from "@/lib/billing/sales-invoice";
 import {
   determineTaxPolicy,
   IMPLEMENTATION_TEXT_APPROVED_FOR_C3,
+  IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2,
 } from "@/lib/billing/tax-policy";
 import { calculateVatInclusiveBreakdown } from "@/lib/billing/taxes";
 import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
@@ -84,8 +85,12 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     determination.outcome === "REVERSE_CHARGE" &&
     !determination.blocksCheckout &&
     determination.reverseChargeLegendStatus === IMPLEMENTATION_TEXT_APPROVED_FOR_C3;
+  const mayIssueNonEuB2b =
+    determination.outcome === "NON_EU_B2B_PLACE_OF_SUPPLY" &&
+    !determination.blocksCheckout &&
+    determination.reverseChargeLegendStatus === IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2;
 
-  if (!mayIssueDomestic && !mayIssueReverseCharge) {
+  if (!mayIssueDomestic && !mayIssueReverseCharge && !mayIssueNonEuB2b) {
     return;
   }
 

@@ -3,10 +3,11 @@
  *
  * UNKNOWN must never silently become 0%. Reverse-charge invoice legends remain
  * gated until implementation-approved (C3) or external counsel copy is supplied.
- * IMPLEMENTATION_TEXT_APPROVED_FOR_C3 is not external counsel sign-off.
+ * IMPLEMENTATION_TEXT_APPROVED_FOR_C3 / C3_2 are not external counsel sign-off.
  *
  * Business relationship classification (DOMESTIC_B2B / EU candidate / NON_EU)
- * is distinct from final tax outcome — country mismatch alone ≠ Reverse Charge.
+ * is distinct from final tax outcome — country mismatch alone ≠ Reverse Charge
+ * and country alone ≠ NON_EU_B2B charge path (B2B entrepreneur evidence required).
  */
 
 import {
@@ -20,6 +21,7 @@ export { EU_VAT_COUNTRY_CODES, SELLER_COUNTRY_CODE };
 export const TAX_POLICY_OUTCOMES = [
   "STANDARD_DOMESTIC_VAT",
   "REVERSE_CHARGE",
+  "NON_EU_B2B_PLACE_OF_SUPPLY",
   "ZERO_RATE_IF_LEGALLY_APPLICABLE",
   "TAX_EXEMPT_IF_LEGALLY_APPLICABLE",
   "MANUAL_REVIEW",
@@ -45,15 +47,25 @@ export const IMPLEMENTATION_TEXT_APPROVED_FOR_C3 =
   "IMPLEMENTATION_TEXT_APPROVED_FOR_C3" as const;
 
 /**
+ * C3.2 implementation-approved NON_EU_B2B place-of-supply invoice wording.
+ * Not external tax/legal counsel sign-off — P1-002 remains OPEN.
+ * Engineering model cites § 3a Abs. 2 UStG; not German domestic 0%; not EU RC.
+ */
+export const IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2 =
+  "IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2" as const;
+
+/**
  * Legend gate statuses:
- * - IMPLEMENTATION_TEXT_APPROVED_FOR_C3 — engineering C3 wording (not counsel)
+ * - IMPLEMENTATION_TEXT_APPROVED_FOR_C3 — engineering C3 EU RC wording (not counsel)
+ * - IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2 — engineering C3.2 NON_EU wording (not counsel)
  * - "approved" — reserved for external counsel-supplied copy only
  * - LEGAL_TEXT_PENDING_COUNSEL — customer legend withheld
- * - "n/a" — reverse charge not applicable
+ * - "n/a" — legend path not applicable
  */
 export type ReverseChargeLegendStatus =
   | typeof LEGAL_TEXT_PENDING_COUNSEL
   | typeof IMPLEMENTATION_TEXT_APPROVED_FOR_C3
+  | typeof IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2
   | "approved"
   | "n/a";
 
@@ -132,12 +144,15 @@ export function determineTaxPolicy(input: TaxDeterminationInput): TaxDeterminati
   }
 
   if (!EU_VAT_COUNTRY_CODES.has(country === "GR" ? "EL" : country)) {
+    // Verified B2B outside EU — German VAT not charged (place of supply at customer
+    // establishment). Country alone never reaches this branch without B2B confirmation.
+    // Not EU reverse charge; no VIES; not German domestic 0%.
     return withClassification(input, {
-      outcome: "MANUAL_REVIEW",
-      vatRateBps: null,
-      blocksCheckout: true,
-      reasonCode: "non_eu_manual_review",
-      reverseChargeLegendStatus: "n/a",
+      outcome: "NON_EU_B2B_PLACE_OF_SUPPLY",
+      vatRateBps: 0,
+      blocksCheckout: false,
+      reasonCode: "non_eu_b2b_place_of_supply",
+      reverseChargeLegendStatus: IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2,
     });
   }
 
@@ -184,5 +199,9 @@ export function determineTaxPolicy(input: TaxDeterminationInput): TaxDeterminati
 }
 
 export function taxOutcomeAllowsSelfServeCheckout(outcome: TaxPolicyOutcome): boolean {
-  return outcome === "STANDARD_DOMESTIC_VAT" || outcome === "REVERSE_CHARGE";
+  return (
+    outcome === "STANDARD_DOMESTIC_VAT" ||
+    outcome === "REVERSE_CHARGE" ||
+    outcome === "NON_EU_B2B_PLACE_OF_SUPPLY"
+  );
 }

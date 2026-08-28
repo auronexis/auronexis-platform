@@ -30,6 +30,13 @@ const SCENARIO_LABELS: Record<PreviewSalesInvoiceScenario, string> = {
   de: "DE domestic",
   fr: "FR EU B2B RC",
   nl: "NL EU B2B RC",
+  us: "US NON-EU B2B",
+  ch: "CH NON-EU B2B",
+  gb: "GB NON-EU B2B",
+  jp: "JP NON-EU B2B",
+  kr: "KR NON-EU B2B",
+  ca: "CA NON-EU B2B",
+  au: "AU NON-EU B2B",
 };
 
 export default async function InvoicePreviewPage({ searchParams }: InvoicePreviewPageProps) {

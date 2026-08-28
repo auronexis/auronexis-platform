@@ -251,15 +251,15 @@ test("C3: no external counsel sign-off claimed; LIVE remains false; P1-002 OPEN"
   assert.match(closeout, /P1-002.*OPEN/i);
 });
 
-test("C3: non-EU and B2C paths unchanged", () => {
+test("C3: B2C paths fail closed; NON_EU verified unblocked by C3.2", () => {
   const nonEu = determineTaxPolicy({
     customerCountryCode: "US",
     vatId: null,
     viesStatus: "not_checked",
     isB2bEntrepreneurConfirmed: true,
   });
-  assert.equal(nonEu.outcome, "MANUAL_REVIEW");
-  assert.equal(nonEu.blocksCheckout, true);
+  assert.equal(nonEu.outcome, "NON_EU_B2B_PLACE_OF_SUPPLY");
+  assert.equal(nonEu.blocksCheckout, false);
 
   const b2c = determineTaxPolicy({
     customerCountryCode: "DE",

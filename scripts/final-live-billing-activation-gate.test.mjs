@@ -43,7 +43,10 @@ const LEGAL_TEXT_PENDING_COUNSEL = resolveExport(tax, "tax.legend", [
   /LEGAL_TEXT_PENDING_COUNSEL/i,
 ]);
 const IMPLEMENTATION_TEXT_APPROVED_FOR_C3 = resolveExport(tax, "tax.implLegend", [
-  /IMPLEMENTATION_TEXT_APPROVED_FOR_C3/i,
+  /^IMPLEMENTATION_TEXT_APPROVED_FOR_C3$/,
+]);
+const IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2 = resolveExport(tax, "tax.implLegendC32", [
+  /^IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2$/,
 ]);
 
 const calculateVatInclusiveBreakdown = resolveExport(taxes, "taxes.breakdown", [
@@ -175,14 +178,24 @@ test("D: VIES unavailable fails closed", () => {
   }
 });
 
-test("E: non-EU unsupported / manual review", () => {
+test("E: non-EU verified B2B — place of supply (C3.2); unverified still blocks", () => {
   const result = determineTaxPolicy(taxInput({ customerCountryCode: "US" }));
-  assert.equal(result.outcome, "MANUAL_REVIEW");
-  assert.equal(prop(result, "blocksCheckout", "blocksCheckout"), true);
-  assert.equal(taxOutcomeAllowsSelfServeCheckout(result.outcome), false);
-  assert.throws(() =>
-    calculateVatInclusiveBreakdown({ grossMinor: 17_900, determination: result }),
+  assert.equal(result.outcome, "NON_EU_B2B_PLACE_OF_SUPPLY");
+  assert.equal(prop(result, "blocksCheckout", "blocksCheckout"), false);
+  assert.equal(taxOutcomeAllowsSelfServeCheckout(result.outcome), true);
+  const breakdown = calculateVatInclusiveBreakdown({
+    grossMinor: 17_900,
+    determination: result,
+  });
+  assert.equal(breakdown.vatMinor, 0);
+  assert.equal(breakdown.netMinor, 17_900);
+
+  const unverified = determineTaxPolicy(
+    taxInput({ customerCountryCode: "US", isB2bEntrepreneurConfirmed: false }),
   );
+  assert.equal(unverified.outcome, "UNKNOWN_BLOCK_CHECKOUT");
+  assert.equal(prop(unverified, "blocksCheckout", "blocksCheckout"), true);
+  assert.equal(IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2, "IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2");
 });
 
 test("F: B2B acknowledgement omitted blocks checkout", () => {

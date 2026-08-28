@@ -36,7 +36,7 @@ Technical money-path controls for controlled DE domestic B2B self-serve are larg
 ```
 Plan/Price catalog (server EUR minor units)
   → Session org + RBAC + B2B contract + billing identity
-  → Tax policy (DE self-serve only; EU RC / non-EU fail-closed)
+  → Tax policy (DE domestic; EU RC; NON_EU_B2B place-of-supply when B2B verified; otherwise fail-closed)
   → Mollie first payment (PSP) [TEST always; LIVE requires charging flag]
   → Return page (UX only — non-authoritative)
   → Webhook: extract id → Mollie payments.get → idempotent reconcile
@@ -116,16 +116,18 @@ Plan/Price catalog (server EUR minor units)
 **PASS (engineering fail-closed; LIVE EU self-serve still blocked)**
 
 - Legend resolver never invents customer-facing RC text while `LEGAL_TEXT_PENDING_COUNSEL`.
-- Auto invoice issuance limited to domestic standard VAT path.
+- Auto invoice issuance: domestic standard VAT, verified EU RC (C3 legend), and verified NON_EU_B2B place-of-supply (C3.2 legend).
 
 ---
 
 ## 11. Non-EU Policy
 
-**PASS**
+**PASS** (updated C3.2)
 
-- Non-EU → `MANUAL_REVIEW` + checkout blocked.
-- Tax calculation throws for manual/unknown outcomes (no silent 0%).
+- Verified NON_EU_B2B (B2B entrepreneur confirmed + non-EU country) → `NON_EU_B2B_PLACE_OF_SUPPLY` (German VAT not charged; place of supply outside Germany; engineering legend `IMPLEMENTATION_TEXT_APPROVED_FOR_C3_2`).
+- Country alone without B2B confirmation → fail-closed (`UNKNOWN_BLOCK_CHECKOUT`).
+- Not EU reverse charge; no VIES for non-EU. P1-002 remains OPEN (not counsel sign-off).
+- Tax calculation still throws for `MANUAL_REVIEW` / `UNKNOWN_BLOCK_CHECKOUT` (no silent invent).
 
 ---
 

@@ -24,7 +24,7 @@ import { toCustomerVisibleInvoiceLineDescription } from "@/lib/billing/sales-inv
 import { reverseChargeLegendTextForLocale } from "@/lib/billing/reverse-charge-legend";
 import { formatInvoiceCountryName } from "@/lib/i18n/country";
 import { formatMoneyFromCentsLocale } from "@/lib/i18n/format";
-import { formatVatRateBpsLabel } from "@/lib/billing/taxes";
+import { formatInvoiceVatColumnLabel } from "@/lib/billing/taxes";
 import { OPERATOR_TEST_DOCUMENT_INDICATOR } from "@/lib/billing/sales-invoice-test-marker";
 
 export { OPERATOR_TEST_DOCUMENT_INDICATOR };
@@ -427,7 +427,7 @@ export function renderSalesInvoiceHtml(
 
     <div class="totals">
       <div><span>Net total</span><span>${escapeHtml(formatMinor(view.netMinor, view.currency, locale))}</span></div>
-      <div><span>${escapeHtml(view.vatRateLabel || formatVatRateBpsLabel(invoice.vatRateBps))}</span><span>${escapeHtml(formatMinor(view.vatMinor, view.currency, locale))}</span></div>
+      <div><span>${escapeHtml(view.vatRateLabel || formatInvoiceVatColumnLabel({ taxPolicyOutcome: invoice.taxPolicyOutcome, vatRateBps: invoice.vatRateBps }))}</span><span>${escapeHtml(formatMinor(view.vatMinor, view.currency, locale))}</span></div>
       <div class="grand"><span>Total (${escapeHtml(view.currency)})</span><span>${escapeHtml(formatMinor(view.grossMinor, view.currency, locale))}</span></div>
     </div>
 
@@ -663,7 +663,12 @@ export async function generateSalesInvoicePdf(
     y += 6;
     const totalsWidth = 220;
     const totalsX = right - totalsWidth;
-    const vatLabel = view.vatRateLabel || formatVatRateBpsLabel(invoice.vatRateBps);
+    const vatLabel =
+      view.vatRateLabel ||
+      formatInvoiceVatColumnLabel({
+        taxPolicyOutcome: invoice.taxPolicyOutcome,
+        vatRateBps: invoice.vatRateBps,
+      });
     const totals: Array<{ label: string; value: string; bold?: boolean }> = [
       { label: "Net total", value: formatMinor(view.netMinor, view.currency, locale) },
       { label: vatLabel, value: formatMinor(view.vatMinor, view.currency, locale) },
