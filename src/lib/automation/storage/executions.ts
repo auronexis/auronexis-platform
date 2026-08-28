@@ -12,6 +12,7 @@ import {
   type CreateExecutionInput,
   type AutomationRepositoryContext,
 } from "@/lib/automation/storage/types";
+import { upsertWorkflowRecord } from "@/lib/automation/storage/mutations";
 import { getWorkflowRow } from "@/lib/automation/storage/queries";
 import { listExecutionStepsByExecutionIds } from "@/lib/automation/storage/queries";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -186,6 +187,13 @@ export async function recordSimulationExecution(
     organizationId: session.organization.id,
     userId: session.user.id,
   };
+
+  // Run simulation is independent of Save draft in the builder UI. Persist the
+  // parent workflow first so automation_executions.workflow_id FK succeeds.
+  const existingWorkflow = await getWorkflowRow(ctx, workflow.id);
+  if (!existingWorkflow) {
+    await upsertWorkflowRecord(session, workflow);
+  }
 
   const record = buildSimulatedExecutionRecord(workflow, triggeredBy);
   const supabase = await createClient();
