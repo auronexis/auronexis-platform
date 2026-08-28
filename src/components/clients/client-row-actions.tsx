@@ -14,6 +14,7 @@ type ClientRowActionsProps = {
   clientId: string;
   clientName: string;
   canManage: boolean;
+  canHardDelete?: boolean;
   isArchived: boolean;
   variant?: "table" | "detail";
 };
@@ -22,22 +23,26 @@ export function ClientRowActions({
   clientId,
   clientName,
   canManage,
+  canHardDelete = false,
   isArchived,
   variant = "table",
 }: ClientRowActionsProps) {
   const router = useRouter();
+  const showHardDelete = canHardDelete && isArchived;
 
-  if (!canManage) {
+  if (!canManage && !showHardDelete) {
     return null;
   }
 
   if (variant === "detail") {
     return (
       <div className="flex flex-wrap gap-2">
-        {!isArchived ? (
+        {canManage && !isArchived ? (
           <ArchiveClientButton clientId={clientId} clientName={clientName} />
         ) : null}
-        <DeleteClientButton clientId={clientId} clientName={clientName} />
+        {showHardDelete ? (
+          <DeleteClientButton clientId={clientId} clientName={clientName} />
+        ) : null}
       </div>
     );
   }
@@ -51,14 +56,14 @@ export function ClientRowActions({
       >
         Edit
       </Link>
-      {!isArchived ? (
+      {canManage && !isArchived ? (
         <ConfirmActionButton
           variant="secondary"
           size="sm"
           className="h-7 px-2 text-xs"
           dialogTitle="Archive client"
           dialogDescription={`Archive ${clientName}? The client will be hidden from the active list.`}
-          dialogConsequences="Historical data, reports, and activity remain in the system."
+          dialogConsequences="Historical data, reports, and activity remain in the system. Permanent delete is available only after archive, for owners and admins."
           confirmLabel="Archive"
           successToast={`${clientName} archived`}
           onConfirm={async () => {
@@ -69,13 +74,15 @@ export function ClientRowActions({
           Archive
         </ConfirmActionButton>
       ) : null}
-      <DeleteClientButton
-        clientId={clientId}
-        clientName={clientName}
-        size="sm"
-        className="h-7 px-2 text-xs"
-        onDeleted={() => router.refresh()}
-      />
+      {showHardDelete ? (
+        <DeleteClientButton
+          clientId={clientId}
+          clientName={clientName}
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onDeleted={() => router.refresh()}
+        />
+      ) : null}
     </div>
   );
 }

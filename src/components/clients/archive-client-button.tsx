@@ -13,7 +13,7 @@ export function ArchiveClientButton({ clientId, clientName }: ArchiveClientButto
     <ConfirmActionButton
       dialogTitle="Archive client"
       dialogDescription={`Archive ${clientName}? The client will be hidden from the active list.`}
-      dialogConsequences="Historical data, reports, and activity remain in the system."
+      dialogConsequences="Historical data, reports, and activity remain in the system. Permanent delete stays available to owners and admins only after archive."
       confirmLabel="Archive client"
       successToast={`${clientName} archived`}
       onConfirm={() => archiveClientAction(clientId)}

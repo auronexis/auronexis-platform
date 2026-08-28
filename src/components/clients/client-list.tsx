@@ -21,10 +21,16 @@ import { ACTIVATION_EMPTY_STATE_COPY, ACTIVATION_EMPTY_STATE_LINKS } from "@/lib
 type ClientListProps = {
   clients: ClientWithRelations[];
   canManage: boolean;
+  canHardDelete?: boolean;
   healthSummaries?: Map<string, ClientHealthSummary>;
 };
 
-export function ClientList({ clients, canManage, healthSummaries }: ClientListProps) {
+export function ClientList({
+  clients,
+  canManage,
+  canHardDelete = false,
+  healthSummaries,
+}: ClientListProps) {
   if (clients.length === 0) {
     return (
       <EmptyState
@@ -51,7 +57,9 @@ export function ClientList({ clients, canManage, healthSummaries }: ClientListPr
             <AuroraTableHeaderCell>Health</AuroraTableHeaderCell>
             <AuroraTableHeaderCell>Owner</AuroraTableHeaderCell>
             <AuroraTableHeaderCell>Created</AuroraTableHeaderCell>
-            {canManage ? <AuroraTableHeaderCell>Actions</AuroraTableHeaderCell> : null}
+            {canManage || canHardDelete ? (
+              <AuroraTableHeaderCell>Actions</AuroraTableHeaderCell>
+            ) : null}
           </tr>
         </AuroraTableHead>
         <AuroraTableBody>
@@ -76,12 +84,13 @@ export function ClientList({ clients, canManage, healthSummaries }: ClientListPr
               <AuroraTableCell className="whitespace-nowrap text-muted">
                 {formatClientDate(client.created_at)}
               </AuroraTableCell>
-              {canManage ? (
+              {canManage || canHardDelete ? (
                 <AuroraTableCell className="whitespace-nowrap">
                   <ClientRowActions
                     clientId={client.id}
                     clientName={client.name}
                     canManage={canManage}
+                    canHardDelete={canHardDelete}
                     isArchived={client.status === "archived"}
                   />
                 </AuroraTableCell>

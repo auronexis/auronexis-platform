@@ -21,7 +21,7 @@
 | Billing | PASS | PASS | PASS | N/A | PASS | N/A | **PASS** |
 | White Label | PASS | PASS | PASS | N/A | N/A | N/A | **PASS** |
 
-**Overall:** All major modules have complete CRUD or lifecycle paths. Gaps are search UX (global search only). Clients support both archive (soft) and owner/admin hard delete with CASCADE on related rows.
+**Overall:** All major modules have complete CRUD or lifecycle paths. Gaps are search UX (global search only). Clients use archive for routine offboarding; owner/admin hard delete is archive-first only and cascades operational child rows (not billing/invoices).
 
 ---
 
@@ -32,7 +32,7 @@
 | Create | PASS | `createClientAction` → `/clients/new` |
 | Edit | PASS | `updateClientAction` on detail page |
 | Archive | PASS | `archiveClientAction` — status → `archived` |
-| Delete | PASS | `deleteClientAction` hard-deletes for owner/admin (CASCADE on related FKs). Prefer archive for routine offboarding. |
+| Delete | PASS | `deleteClientAction` hard-deletes archived clients for owner/admin only (CASCADE on operational FKs). Archive first for routine offboarding. |
 | Filters | PASS | `ArchiveFilterTabs` on `/clients` (`?archived=1`) |
 | Search | WARN | No list-level search; global search may surface clients |
 

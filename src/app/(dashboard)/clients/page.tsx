@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { AccessDenied } from "@/components/authorization/access-denied";
 import { sessionHasPermission } from "@/lib/authorization/guards";
+import { sessionCanHardDeleteClient } from "@/lib/clients/guards";
 import { listClientsSafe } from "@/lib/clients/queries";
 import { enrichClientHealthSummaries } from "@/lib/health/queries";
 import { requireSession } from "@/lib/auth/session";
@@ -47,6 +48,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
   const healthSummaries = loadError ? new Map() : await enrichClientHealthSummaries(session, clients);
   const canCreate = sessionHasPermission(session, "clients.write");
   const canManage = sessionHasPermission(session, "clients.write");
+  const canHardDelete = sessionCanHardDeleteClient(session);
 
   return (
     <>
@@ -73,7 +75,12 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
         </FormAlert>
       ) : null}
 
-      <ClientList clients={clients} canManage={canManage} healthSummaries={healthSummaries} />
+      <ClientList
+        clients={clients}
+        canManage={canManage}
+        canHardDelete={canHardDelete}
+        healthSummaries={healthSummaries}
+      />
     </>
   );
 }

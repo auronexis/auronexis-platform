@@ -96,6 +96,7 @@ export const ENTERPRISE_REGRESSION_SUITE = [
   "scripts/technical-seo.test.mjs",
   "scripts/analytics-conversion.test.mjs",
   "scripts/workspace-currency.test.mjs",
+  "scripts/client-data-retention-lifecycle.test.mjs",
   "scripts/openai-integration.test.mjs",
   "scripts/ai-copilot-safety.test.mjs",
   "scripts/contact-sales-pipeline.test.mjs",

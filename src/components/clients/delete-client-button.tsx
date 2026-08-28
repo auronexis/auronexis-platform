@@ -21,11 +21,11 @@ export function DeleteClientButton({
 
   return (
     <ConfirmActionButton
-      dialogTitle="Delete client"
-      dialogDescription={`Permanently delete ${clientName}?`}
-      dialogConsequences="This removes the client and cascades related risks, incidents, reports, and portal access."
-      confirmLabel="Delete client"
-      successToast={`${clientName} deleted`}
+      dialogTitle="Permanently delete client"
+      dialogDescription={`Permanently delete archived client ${clientName}?`}
+      dialogConsequences="This irreversibly removes the client and cascaded operational rows (risks, incidents, reports, schedules, portal users, health/CS history). Organization billing, sales invoices, contract acceptances, and payment records are not deleted. Prefer Archive for normal offboarding. This is not a formal GDPR erasure workflow — use Compliance DSRs for data-subject requests."
+      confirmLabel="Permanently delete"
+      successToast={`${clientName} permanently deleted`}
       onConfirm={async () => {
         await deleteClientAction(clientId);
         if (onDeleted) {
@@ -36,7 +36,7 @@ export function DeleteClientButton({
       }}
       {...buttonProps}
     >
-      Delete
+      Delete permanently
     </ConfirmActionButton>
   );
 }

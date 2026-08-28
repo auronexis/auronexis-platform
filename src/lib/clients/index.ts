@@ -17,3 +17,4 @@ export {
   deleteClientAction,
   type ClientActionState,
 } from "./actions";
+export { canHardDeleteClient, sessionCanHardDeleteClient } from "./guards";

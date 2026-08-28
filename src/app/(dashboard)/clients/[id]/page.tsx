@@ -57,6 +57,7 @@ import { canManagePortalUsers } from "@/lib/client-portal/guards";
 import { listPortalUsersForClient } from "@/lib/client-portal/queries";
 import { getClientOverview } from "@/lib/client-overview/queries";
 import { updateClientAction } from "@/lib/clients/actions";
+import { sessionCanHardDeleteClient } from "@/lib/clients/guards";
 import { getClientById, listOrgUsers } from "@/lib/clients";
 import { getClientHealthDetail } from "@/lib/health/record";
 import { formatClientDate } from "@/lib/clients/types";
@@ -172,6 +173,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
   const showRevenue = canViewRevenue(session.role);
   const canManage = sessionHasPermission(session, "clients.write");
+  const canHardDelete = sessionCanHardDeleteClient(session);
   const boundUpdateAction = updateClientAction.bind(null, client.id);
   const profitability = overview.kpis.profitability;
   const ownerName =
@@ -522,16 +524,21 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               />
             </DetailSection>
 
-            {canManage ? (
+            {canManage || canHardDelete ? (
               <DetailActionSection
                 title="Client actions"
-                description="Archive to hide from active lists, or permanently delete the client record."
+                description={
+                  client.status === "archived"
+                    ? "This client is archived. Owners and admins may permanently delete it; that cascades operational history and cannot be undone. Billing and invoice records stay with the organization."
+                    : "Archive to remove the client from active lists while preserving history. Permanent delete is available only after archive."
+                }
                 variant="danger"
               >
                 <ClientRowActions
                   clientId={client.id}
                   clientName={client.name}
                   canManage={canManage}
+                  canHardDelete={canHardDelete}
                   isArchived={client.status === "archived"}
                   variant="detail"
                 />

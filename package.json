@@ -82,6 +82,7 @@
     "test:build-bible-ch20": "node --test scripts/build-bible-ch20.test.mjs",
     "test:enterprise-production-golive": "node --test scripts/enterprise-production-golive.test.mjs scripts/build-bible-ch20.test.mjs",
     "test:workspace-currency": "node --test scripts/workspace-currency.test.mjs",
+    "test:client-data-retention": "node --test scripts/client-data-retention-lifecycle.test.mjs",
     "verify:domain-routing": "node scripts/verify-domain-routing.mjs",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",

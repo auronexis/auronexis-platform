@@ -1008,7 +1008,7 @@ Soft delete preferred for routine offboarding (archive).
 
 
 
-Owner/admin hard delete of clients is implemented and cascades related rows — document operator retention policy before relying on hard delete in production.
+Owner/admin hard delete of clients is implemented only after archive, and cascades related operational rows — see `docs/retention.md` (ARCHIVE_PLUS_RESTRICTED_HARD_DELETE). Billing/invoice tables are organization-scoped and are not cascaded from client delete.
 
 
 

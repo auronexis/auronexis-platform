@@ -7,6 +7,7 @@ import { recordActivityEvent } from "@/lib/activity/record";
 import { fireWorkflowEngine } from "@/lib/automation/engine-v2/dispatch-hook";
 import { requireSession } from "@/lib/auth/session";
 import { assertPermissionSafe } from "@/lib/authorization/guards";
+import { canHardDeleteClient } from "@/lib/clients/guards";
 import { computeAndRecordClientHealth } from "@/lib/health/record";
 import { assertCanCreateClient } from "@/lib/plans/guards";
 import { canViewRevenue } from "@/lib/rbac/permissions";
@@ -410,18 +411,27 @@ export async function archiveClientAction(
   }
 }
 
-/** Permanently delete a client — Owner/Admin only. */
+/**
+ * Permanently delete an already-archived client — Owner/Admin only.
+ * Archive first for routine offboarding. Does not remove organization billing,
+ * sales invoices, contract acceptances, or Mollie payment records.
+ */
 export async function deleteClientAction(clientId: string): Promise<void> {
   const session = await requireSession();
   const denied = assertPermissionSafe(session.role, "clients.write");
   if (denied) {
     throw new Error(denied.error);
   }
+  if (!canHardDeleteClient(session.role)) {
+    throw new Error(
+      "Only organization owners and admins can permanently delete clients. Archive the client instead.",
+    );
+  }
 
   const supabase = await createClient();
   const { data: existing } = await supabase
     .from("clients")
-    .select("name")
+    .select("name, status")
     .eq("id", clientId)
     .eq("organization_id", session.organization.id)
     .maybeSingle();
@@ -430,7 +440,14 @@ export async function deleteClientAction(clientId: string): Promise<void> {
     throw new Error("Client not found.");
   }
 
-  const clientName = (existing as { name: string }).name;
+  const row = existing as { name: string; status: string };
+  if (row.status !== "archived") {
+    throw new Error(
+      "Archive the client before permanent delete. Archive preserves history; hard delete is irreversible.",
+    );
+  }
+
+  const clientName = row.name;
 
   const { error } = await supabase
     .from("clients")
