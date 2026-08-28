@@ -55,6 +55,7 @@ export const MARKETING_TESTIMONIALS = [
 
 export const PLAN_COMPARISON_ROWS = [
   { feature: "AI copilot", professional: true, business: true, enterprise: "Unlimited credits" },
+  { feature: "Automation workflows", professional: "—", business: true, enterprise: true },
   { feature: "Risk & incident modules", professional: "—", business: true, enterprise: true },
   { feature: "SLA tracking", professional: "—", business: true, enterprise: true },
   { feature: "Profitability", professional: true, business: true, enterprise: true },
@@ -115,12 +116,13 @@ export const FEATURES: readonly MarketingFeature[] = [
     enterpriseValue: "Repeatable automation with organization-scoped execution logs.",
     ctaLabel: "View automation features",
     ctaHref: "/features/automation",
+    planNote: "Available on Business and Enterprise plans.",
   },
   {
     title: "Integrations & Connectors",
-    description: "Connect CRM, ticketing, and productivity tools with OAuth and sync jobs.",
+    description: "Connect CRM, ticketing, and productivity tools with OAuth and connector health jobs.",
     problem: "Client data lives in external systems that operations teams still reconcile by hand.",
-    workflow: "Connect approved systems, sync events, and keep operational records in one workspace.",
+    workflow: "Connect approved systems, authorize OAuth, and use connector actions from automation where live.",
     outcome: "Less swivel-chair work between delivery tools and client intelligence.",
     enterpriseValue: "Connector inventory and OAuth flows designed for multi-tenant operations teams.",
     ctaLabel: "Browse integrations",
@@ -169,8 +171,8 @@ export const PUBLIC_PRICING_PLANS = [
     price: "€179",
     period: "/ month",
     productPath: "professional" as const,
-    description: "For growing agencies starting with automation and client portal delivery.",
-    highlights: ["Up to 25 clients", "Automation workflows", "Client portal", "Integrations"],
+    description: "For growing agencies with client portal delivery, integrations, and AI-assisted reporting.",
+    highlights: ["Up to 25 clients", "Client portal", "Integrations", "AI report assistant"],
     featured: false,
   },
   {
@@ -179,7 +181,7 @@ export const PUBLIC_PRICING_PLANS = [
     period: "/ month",
     productPath: "business" as const,
     description: "For established agencies with compliance, white-label, and higher operational limits.",
-    highlights: ["Higher limits", "White label", "Compliance center", "Advanced operations"],
+    highlights: ["Higher limits", "Automation workflows", "White label", "Compliance center"],
     featured: true,
   },
   {

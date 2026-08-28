@@ -91,14 +91,14 @@ export const CANONICAL_PLAN_CATALOG: readonly CanonicalPlanCatalogEntry[] = [
     visibility: "public",
     amountMinor: 17_900,
     planKey: "professional",
-    description: "For growing agencies starting with automation and client portal delivery.",
+    description: "For growing agencies with client portal delivery, integrations, and AI-assisted reporting.",
     highlights: [
       "Up to 25 clients",
-      "Automation workflows",
       "Client portal",
       "Integrations",
       "Report templates and scheduling",
       "AI report assistant",
+      "Profitability tracking",
     ],
   }),
   entry({
@@ -112,10 +112,10 @@ export const CANONICAL_PLAN_CATALOG: readonly CanonicalPlanCatalogEntry[] = [
     description: "For established agencies with compliance, white-label, and higher limits.",
     highlights: [
       "Higher client and seat limits",
+      "Automation workflows",
       "White label branding",
       "Compliance center",
       "Risk and incident management",
-      "Automation engine",
       "Advanced AI knowledge features",
     ],
   }),

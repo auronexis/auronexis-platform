@@ -31,6 +31,31 @@
       "source": "/dpa",
       "destination": "/data-processing-agreement",
       "permanent": true
+    },
+    {
+      "source": "/legal/privacy",
+      "destination": "/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/legal/terms",
+      "destination": "/terms",
+      "permanent": true
+    },
+    {
+      "source": "/legal/imprint",
+      "destination": "/imprint",
+      "permanent": true
+    },
+    {
+      "source": "/legal/cookies",
+      "destination": "/cookies",
+      "permanent": true
+    },
+    {
+      "source": "/refund",
+      "destination": "/refund-policy",
+      "permanent": true
     }
   ],
   "headers": [

@@ -331,7 +331,7 @@ export const WHITE_LABEL_DOC: DocPageInput = {
         {
           title: "Enterprise deployment",
           paragraphs: [
-            "An agency preparing a custom portal hostname reviews the Domain section in Settings → Branding for CNAME configuration status. While DNS propagates, they publish interim branding on the default login URL. Once the custom domain is verified, portal users access the fully branded experience at the agency hostname with consistent login and portal previews validated on mobile viewports.",
+            "An agency preparing a custom portal hostname reviews the Domain section in Settings → Branding for CNAME configuration status. Custom-domain verification and SSL provisioning remain architecture-only in v1 — status may stay pending even after DNS is correct. Publish interim branding on the default login URL and validate portal previews on mobile viewports while domain work is incomplete.",
           ],
         },
       ],
@@ -374,8 +374,8 @@ export const WHITE_LABEL_DOC: DocPageInput = {
           ],
           [
             "Custom domain stuck in pending",
-            "DNS records not propagated or incorrect CNAME",
-            "Verify CNAME records shown in the Domain section; propagation can take up to 48 hours",
+            "Custom-domain verification and SSL provisioning are architecture-only in v1 (status remains pending)",
+            "Use the default portal hostname for production access; treat Domain status as informational until provisioning ships",
           ],
         ],
       },

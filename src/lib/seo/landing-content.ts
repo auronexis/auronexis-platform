@@ -248,7 +248,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
       {
         question: "Can I white-label the dashboard for clients?",
-        answer: "Business and Enterprise plans support white-label and client portal branding options.",
+        answer: "Professional and higher plans support white-label and client portal branding options.",
       },
     ],
     relatedLinks: [

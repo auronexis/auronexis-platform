@@ -60,7 +60,7 @@ Use `listConnectorDefinitions()` after `bootstrapConnectors()` to enumerate regi
 
 ## Sync engine
 
-The sync engine (`runConnectorSync`) supports:
+The sync engine (`runConnectorSync`) supports job modes and persistence:
 
 | Mode | Behavior |
 |------|----------|
@@ -70,6 +70,8 @@ The sync engine (`runConnectorSync`) supports:
 | `full` | Full refresh pass |
 
 Jobs are tracked in `integration_sync_jobs` with duration, records changed, errors, and cursors. Connection rows store `last_sync_at` and `last_sync_status`.
+
+**v1 truth:** shared connector clients return simulated `recordsChanged` counts. Treat sync as scaffolding for job/cursor diagnostics — not as production CRM/ticketing data replication.
 
 ## Mapping strategy
 

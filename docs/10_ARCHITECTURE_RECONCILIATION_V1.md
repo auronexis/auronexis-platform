@@ -632,7 +632,7 @@ Decision:
 
 
 
-Staff may create notes.
+Staff may not create client notes (requires `clients.write` — Owner/Admin).
 
 
 

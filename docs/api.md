@@ -21,8 +21,10 @@ Future versions mount at `/api/v2/*` without breaking `/api/v1/*` clients.
 Send API keys in the `Authorization` header:
 
 ```http
-Authorization: Bearer anx_live_...
+Authorization: Bearer ax_live_...
 ```
+
+Legacy `anx_live_...` prefixes may still validate for older keys. New keys are issued as `ax_live_...` / `ax_test_...`.
 
 Key types:
 
@@ -33,22 +35,21 @@ Key types:
 
 Keys are stored as SHA-256 hashes only. Plaintext is shown once at creation in **Settings → Public API**.
 
-Enterprise plan (`future_api_webhooks`) is required.
+Enterprise plan (`future_api_webhooks`) is required for outbound webhooks.
 
 ## Scopes
 
-Granular scopes integrate with existing RBAC:
+Handlers may require scopes from `ALL_API_SCOPES`. The Settings → Public API key dialog currently offers **Public API V1 scopes** only:
 
-- `clients.read` / `clients.write`
-- `reports.read` / `reports.write`
-- `risks.read` / `risks.write`
-- `incidents.read` / `incidents.write`
-- `automation.read` / `automation.write`
-- `integrations.read` / `integrations.write`
-- `predictive.read`
-- `ai.execute`
-- `billing.read`
-- `settings.read`
+- `clients.read`
+- `health.read`
+- `risks.read`
+- `incidents.read`
+- `reports.read`
+- `activity.read`
+- `webhooks.write`
+
+Write scopes such as `clients.write` exist in the type system for route guards, but are not selectable in the current key-creation UI. Mutating dashboard operations remain available in-app under RBAC.
 
 Each route checks required scopes before executing handlers.
 
@@ -99,21 +100,26 @@ On limit exceeded: `429 Too Many Requests` with `Retry-After`.
 
 ## REST resources (v1)
 
-| Resource | Methods |
-|----------|---------|
-| `/api/v1/clients` | GET, POST |
-| `/api/v1/clients/{id}` | GET, PATCH, DELETE |
-| `/api/v1/reports` | GET |
-| `/api/v1/reports/{id}` | GET |
-| `/api/v1/risks` | GET |
-| `/api/v1/risks/{id}` | GET |
-| `/api/v1/incidents` | GET |
-| `/api/v1/incidents/{id}` | GET |
-| `/api/v1/automation` | GET |
-| `/api/v1/automation/{id}` | GET |
-| `/api/v1/predictive` | GET |
-| `/api/v1/ai` | POST |
-| `/api/v1/integrations` | GET |
+| Resource | Methods | Notes |
+|----------|---------|-------|
+| `/api/v1/me` | GET | Current key/org context |
+| `/api/v1/activity` | GET | Activity feed |
+| `/api/v1/clients` | GET, POST | |
+| `/api/v1/clients/{id}` | GET, PATCH, DELETE | `DELETE` archives the client (`status: archived`); it does not hard-delete |
+| `/api/v1/clients/{id}/health` | GET | Health snapshot |
+| `/api/v1/clients/{id}/risks` | GET | Nested risks |
+| `/api/v1/clients/{id}/incidents` | GET | Nested incidents |
+| `/api/v1/reports` | GET | |
+| `/api/v1/reports/{id}` | GET | |
+| `/api/v1/risks` | GET | |
+| `/api/v1/risks/{id}` | GET | |
+| `/api/v1/incidents` | GET | |
+| `/api/v1/incidents/{id}` | GET | |
+| `/api/v1/automation` | GET | |
+| `/api/v1/automation/{id}` | GET | |
+| `/api/v1/predictive` | GET | |
+| `/api/v1/ai` | POST | |
+| `/api/v1/integrations` | GET | |
 
 ## Webhooks
 
@@ -122,11 +128,15 @@ Outbound webhooks deliver signed events to registered HTTPS endpoints.
 Events:
 
 - `client.created`
-- `report.published`
+- `client.updated`
+- `health.changed`
 - `risk.created`
+- `risk.updated`
 - `incident.created`
-- `automation.executed`
-- `ai.generated`
+- `incident.resolved`
+- `report.published`
+- `sla.breached`
+- `monitoring.event_detected`
 
 Headers:
 

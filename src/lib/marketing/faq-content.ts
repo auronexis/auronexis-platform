@@ -171,7 +171,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Which plans include automation?",
-        answer: "Automation workflows are available on Professional and above. Specific limits vary by plan tier.",
+        answer: "Automation workflows are available on Business and Enterprise. Specific limits vary by plan tier.",
       },
     ],
   },

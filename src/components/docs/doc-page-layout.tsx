@@ -217,10 +217,10 @@ export function DocPageLayout({ doc }: DocPageLayoutProps) {
           ) : null}
 
           <section id="need-help" className="mt-12 scroll-mt-24 rounded-xl border border-white/10 bg-white/[0.03] p-5">
-            <div className="flex items-center gap-2 text-base font-semibold text-white">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-white">
               <LifeBuoy className="h-4 w-4 text-primary" aria-hidden />
               Need help?
-            </div>
+            </h2>
             <p className="mt-2 text-sm leading-7 text-primary-foreground/80">
               Contact{" "}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-white hover:underline">

@@ -138,7 +138,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       {
         question: "Is white-label portal branding available?",
         answer:
-          "Branding options depend on your plan. Business and Enterprise tiers support organization-level portal customization.",
+          "Branding options depend on your plan. Professional and higher tiers support organization-level portal customization; branded PDF exports require Business or Enterprise.",
       },
     ],
     relatedLinks: [

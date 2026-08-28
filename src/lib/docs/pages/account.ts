@@ -12,7 +12,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       variant: "info",
       title: "Who can manage billing",
-      body: "Only workspace owners and admins with billing permissions can change plans, apply discount codes, or manage subscriptions in Settings → Billing. Staff and viewer roles cannot modify payment details or subscription settings.",
+      body: "Only workspace owners and admins with billing permissions can change plans and manage subscriptions in Settings → Billing. Staff and viewer roles cannot modify payment details or subscription settings. Discount codes are not available in Mollie checkout today.",
     },
     {
       variant: "info",
@@ -26,7 +26,7 @@ export const BILLING_DOC: DocPageInput = {
       paragraphs: [
         "Auroranexis is the seller for subscriptions; Mollie is the payment service provider that processes checkout and settlement. Your workspace plan determines feature access, usage limits, seat counts, and support tier. All billing activity — plan selection, checkout, Auroranexis invoices, and subscription changes — is accessible from Settings → Billing within the application.",
         "Billing is tied to your organization, not individual user accounts. When you upgrade or downgrade, the change applies to the entire workspace. Usage meters and effective limits are reflected in Settings → Usage and update after plan changes are processed.",
-        "Three public self-serve plans are available: Professional for growing teams that need automation and client portal delivery, Business for agencies requiring advanced compliance features and white-label branding, and Enterprise for organizations that need custom limits and negotiated arrangements. Pilot Partner and Founding Customer are invite-only early access cohorts — not public plan tiers. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
+        "Three public self-serve plans are available: Professional for growing teams that need client portal delivery, integrations, and AI-assisted reporting; Business for agencies requiring automation workflows, advanced compliance features, and white-label branding; and Enterprise for organizations that need custom limits and negotiated arrangements. Pilot Partner and Founding Customer are invite-only early access cohorts — not public plan tiers. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
       ],
     },
     {
@@ -41,8 +41,8 @@ export const BILLING_DOC: DocPageInput = {
       title: "Core Concepts",
       bullets: [
         "Workspace plan — the subscription tier (Professional, Business, or Enterprise) that governs features and limits.",
-        "Billing cycle — monthly or annual period during which your subscription is active and renewed.",
-        "Proration — a partial charge or credit applied when you change plans mid-cycle.",
+        "Billing cycle — monthly period during which your subscription is active and renewed (self-serve Mollie subscriptions are monthly).",
+        "Proration — a mid-cycle upgrade charge for the remainder of the current month when you upgrade; downgrades take effect at the next billing cycle without inventing partial credits.",
         "Subscription management — in-app cancel, keep, and plan-change actions in Settings → Billing (Mollie does not provide a hosted billing portal).",
         "Usage limits — caps on clients, seats, API calls, monitoring targets, and other resources defined by your plan.",
         "Past due — a subscription status indicating a failed or overdue payment that requires attention.",
@@ -59,7 +59,6 @@ export const BILLING_DOC: DocPageInput = {
         "Mollie checkout — secure, hosted payment flow for new subscriptions and upgrades.",
         "Invoice history — access recent invoices with payment status and PDF downloads where available.",
         "Subscription management — cancel renewals, withdraw cancellation, and change plans in Settings → Billing; contact support for payment-method updates when needed.",
-        "Discount codes — apply promotional codes during checkout when eligible.",
         "Usage visibility — cross-reference your plan limits with current consumption in Settings → Usage.",
         "Enterprise requests — submit custom plan inquiries from Settings → Billing or Settings → Enterprise.",
       ],
@@ -67,9 +66,9 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "Plan tiers",
           bullets: [
-            "Professional — core client operations, automation, client portal delivery, integrations, and essential monitoring for growing agencies.",
-            "Business — advanced compliance features, white-label branding, expanded limits, and priority support options.",
-            "Enterprise — custom limits, tailored onboarding, plan overrides, and dedicated support; request via Settings → Billing or Enterprise.",
+            "Professional — core client operations, client portal delivery, integrations, profitability tracking, and essential monitoring for growing agencies.",
+            "Business — automation workflows, advanced compliance features, white-label branding, and expanded limits.",
+            "Enterprise — custom limits, tailored onboarding, plan overrides, priority support, and dedicated support; request via Settings → Billing or Enterprise.",
           ],
         },
         {
@@ -90,7 +89,6 @@ export const BILLING_DOC: DocPageInput = {
             "Review the plan comparison table and select the tier that matches your agency's needs.",
             "Click the upgrade or subscribe action to start Mollie checkout.",
             "Enter payment details on the secure Mollie checkout page.",
-            "Apply a discount code during checkout if you have one.",
             "Complete payment and return to Auroranexis.",
             "Verify your new plan and limits appear in Settings → Billing and Settings → Usage.",
           ],
@@ -119,7 +117,7 @@ export const BILLING_DOC: DocPageInput = {
           ordered: [
             "Open Settings → Billing (and Settings → Plans for upgrades or downgrades).",
             "To upgrade or downgrade, select the desired plan change and confirm.",
-            "Review any proration or effective-date details shown before confirming mid-cycle changes.",
+            "Review upgrade proration or next-cycle downgrade effective dates shown before confirming.",
             "To cancel future renewals, choose Cancel subscription and follow the prompts — paid access continues until the end of the current billing period.",
             "Export any critical data before access ends if cancelling.",
             "Enterprise customers should coordinate changes with their account contact.",
@@ -134,9 +132,9 @@ export const BILLING_DOC: DocPageInput = {
         "Ensure your billing email address receives billing invoice and payment failure notifications.",
         "Review Settings → Usage after any plan change to confirm new limits meet operational needs.",
         "Export reports and client data before cancelling if you may need records after access ends.",
-        "Apply discount codes during checkout — they cannot typically be applied retroactively to existing subscriptions.",
+        "Promotional discount codes are not applied during Mollie checkout today — treat published list prices as the charged amounts unless support confirms an exception.",
         "Restrict billing permissions to owners and trusted admins who manage financial decisions.",
-        "For annual billing, note renewal dates and budget accordingly; annual plans may offer cost savings over monthly billing.",
+        "Self-serve subscriptions renew monthly; contact support if you need a non-standard billing arrangement.",
         "Compare plan tiers against projected growth — upgrading before hitting hard limits avoids blocked operations.",
       ],
     },
@@ -187,9 +185,9 @@ export const BILLING_DOC: DocPageInput = {
             "Refresh Settings → Billing and wait a few minutes. If unchanged, contact support with the approximate checkout time.",
           ],
           [
-            "Discount code rejected at checkout",
-            "Code expired, ineligible for selected tier, or already redeemed",
-            "Verify the code is active and applicable to your chosen plan. Contact the code issuer if issues persist.",
+            "Promotional pricing not applied at checkout",
+            "Discount codes are not wired into Mollie checkout amounts",
+            "Use the listed plan price, or contact support if you were promised a promotion outside self-serve checkout.",
           ],
           [
             "Workspace shows past due or limited access",
@@ -213,8 +211,8 @@ export const BILLING_DOC: DocPageInput = {
           ],
           [
             "Unexpected charge amount after plan change",
-            "Mid-cycle proration for upgrades or partial credits for downgrades",
-            "Review invoice line items in Settings → Billing; proration explains partial-period charges.",
+            "Mid-cycle upgrade proration for the remainder of the month (downgrades do not invent partial credits)",
+            "Review invoice line items in Settings → Billing; upgrade proration explains partial-period charges.",
           ],
         ],
       },
@@ -224,7 +222,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       question: "Who can manage billing in my workspace?",
       answer:
-        "Workspace owners and admins with billing permissions can change plans, apply discount codes, and manage billing in Settings → Billing. Other roles cannot modify subscription or payment settings.",
+        "Workspace owners and admins with billing permissions can change plans and manage billing in Settings → Billing. Other roles cannot modify subscription or payment settings. Discount codes are not available in Mollie checkout today.",
     },
     {
       question: "Where are my payment details stored?",
@@ -239,7 +237,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       question: "Can I switch between monthly and annual billing?",
       answer:
-        "Billing interval options depend on the plan and checkout configuration available at the time of subscription. Contact support for interval change requests when self-serve options are not shown in Settings → Billing.",
+        "Self-serve Mollie subscriptions are monthly. Contact support if you need a non-standard billing arrangement; annual self-serve checkout is not offered today.",
     },
     {
       question: "How do I get a copy of an invoice for accounting?",

@@ -214,7 +214,11 @@ Cannot:
 
 \* Change owner role
 
-\* Access billing system
+\* Delete organization (Owner only)
+
+
+
+Admins with `settings.write` **can** access Settings → Billing and manage subscriptions. Owner-only actions remain organization delete and ownership transfer.
 
 
 
@@ -260,7 +264,9 @@ Can create:
 
 \* workflow updates
 
-\* client notes
+
+
+Cannot create client notes without `clients.write` (Owner/Admin). Staff is read-only for clients.
 
 
 
@@ -532,7 +538,7 @@ Create + Read + Export
 
 Staff:
 
-Read
+Create + Read + Export (reports module; Staff maps to `reports.write` for report actions)
 
 
 
@@ -564,13 +570,13 @@ Read
 
 Staff:
 
-No Access
+Read
 
 
 
 Viewer:
 
-No Access
+Read
 
 
 

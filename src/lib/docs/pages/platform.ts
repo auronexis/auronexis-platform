@@ -11,7 +11,7 @@ export const AUTOMATION_DOC: DocPageInput = {
     {
       variant: "info",
       title: "Plan availability",
-      body: "The automation builder is included on Professional and higher tiers. If the Automation module shows an upgrade prompt, review Settings → Billing or contact your workspace owner before creating workflows.",
+      body: "The automation builder is included on Business and Enterprise tiers. If the Automation module shows an upgrade prompt, review Settings → Billing or contact your workspace owner before creating workflows.",
     },
     {
       variant: "tip",
@@ -268,7 +268,7 @@ export const AUTOMATION_DOC: DocPageInput = {
     {
       question: "Is automation available on all plans?",
       answer:
-        "The workflow builder is plan-gated. Workspaces without automation entitlements may see an upgrade prompt; Professional and higher tiers include automation. Review Settings → Billing for your effective entitlements.",
+        "The workflow builder is plan-gated. Workspaces without automation entitlements may see an upgrade prompt; Business and Enterprise tiers include the automation engine. Review Settings → Billing for your effective entitlements.",
     },
   ],
   relatedLinks: [
@@ -355,7 +355,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
         {
           title: "Sync",
           paragraphs: [
-            "Supported connectors can run sync jobs that pull or push selected data on a schedule or on demand. Sync complements event-driven automation for data that must stay current even when no platform trigger fires. Sync runs appear in integration logs with record counts and error summaries.",
+            "Supported connectors can run sync jobs that record job metadata, cursors, and simulated record counts in v1. Treat sync as connector scaffolding for diagnostics and workflow readiness — not as a guarantee of production CRM/ticketing data replication. Sync runs appear in integration logs with recorded counts and error summaries.",
           ],
         },
         {
@@ -525,7 +525,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
     {
       question: "Does sync replace automation?",
       answer:
-        "No. Sync keeps selected data aligned on a schedule or on demand. Automation reacts to platform events in real time. Most agencies use both: sync for baseline alignment, automation for event-driven actions.",
+        "No. Sync jobs track connector health and job metadata; v1 sync counts are simulated and do not guarantee production data replication. Automation reacts to platform events in real time. Most agencies use connectors for OAuth/actions and automation for event-driven work.",
     },
     {
       question: "How do I store an API key instead of using OAuth?",

@@ -47,3 +47,9 @@ Table: `retention_rules`
 ## Future work
 
 Automatic purge jobs and hold-aware deletion are out of scope for Sprint 9.
+
+## Client hard delete (operator note)
+
+Dashboard owners/admins can permanently delete a client (`deleteClientAction`). Many client-linked tables use `ON DELETE CASCADE`. Archive (`status: archived`) remains the preferred soft offboarding path. Public API `DELETE /api/v1/clients/{id}` archives only.
+
+**OPERATOR_DATA_RETENTION_DECISION_REQUIRED:** define whether production operators should disable hard delete, retain legal holds before CASCADE, or document retention of cascaded child rows.

@@ -1004,11 +1004,15 @@ Fast dashboard queries.
 
 
 
-Soft delete preferred.
+Soft delete preferred for routine offboarding (archive).
 
 
 
-Archive instead of hard delete.
+Owner/admin hard delete of clients is implemented and cascades related rows — document operator retention policy before relying on hard delete in production.
+
+
+
+Archive instead of hard delete for standard lifecycle.
 
 
 

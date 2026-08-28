@@ -88,12 +88,12 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       {
         question: "Can we white-label the client portal?",
         answer:
-          "Yes. Business and Enterprise plans support white-label branding so clients see your agency identity, not Auroranexis.",
+          "Yes. Professional and higher plans support white-label branding so clients see your agency identity, not Auroranexis.",
       },
       {
         question: "How do health scores work for marketing clients?",
         answer:
-          "Health indicators combine operational signals such as incident volume, open risks, SLA performance, and delivery activity. They are transparent and configurable, not opaque AI scores.",
+          "Health indicators combine operational signals such as incident volume, open risks, SLA performance, and delivery activity. They are transparent platform formulas — not opaque AI scores — and are not operator-configurable weights in v1.",
       },
     ],
     relatedLinks: [
@@ -558,7 +558,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       {
         question: "Is the client portal customizable?",
         answer:
-          "Business and Enterprise plans support white-label branding so clients see your agency identity throughout the portal experience.",
+          "Business and Enterprise plans include advanced portal operations; Professional and higher plans support white-label branding so clients see your agency identity throughout the portal experience.",
       },
     ],
     relatedLinks: [
@@ -651,7 +651,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       {
         question: "How do health scores reflect software delivery?",
         answer:
-          "Health indicators combine incident volume, open risks, SLA performance, and delivery activity. They provide transparent, configurable signals rather than opaque scoring.",
+          "Health indicators combine incident volume, open risks, SLA performance, and delivery activity. They provide transparent platform signals with fixed formulas rather than opaque scoring.",
       },
     ],
     relatedLinks: [
