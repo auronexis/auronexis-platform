@@ -57,6 +57,9 @@ export function isMarketingPublicPath(pathname: string): boolean {
   if (
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
+    pathname === "/llms.txt" ||
+    pathname === "/sub-processors" ||
+    pathname === "/dpa" ||
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||
     pathname.startsWith("/invite/") ||

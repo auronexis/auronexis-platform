@@ -15,9 +15,12 @@ function isPublicPath(pathname: string): boolean {
   if (
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
+    pathname === "/llms.txt" ||
     pathname === "/manifest.webmanifest" ||
     pathname === "/favicon.ico" ||
     pathname === "/favicon.svg" ||
+    pathname === "/sub-processors" ||
+    pathname === "/dpa" ||
     pathname.startsWith("/.well-known/") ||
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||

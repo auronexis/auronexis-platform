@@ -192,6 +192,7 @@ const PUBLIC_BILLING_CONTENT_FILES = [
   "src/lib/docs/pages/account.ts",
   "src/lib/docs/pages/operations.ts",
   "src/lib/marketing/content.ts",
+  "src/lib/marketing/integrations-catalog.ts",
 ];
 
 const PUBLIC_ACTIVE_LEGACY_PROVIDER_PATTERN =
@@ -213,8 +214,11 @@ test("public legal and docs sources name Mollie — no active Stripe/Paddle/Fast
   assert.doesNotMatch(legal, /Merchant of Record/i);
 
   const billingDoc = readSource("src/lib/docs/pages/account.ts");
-  assert.match(billingDoc, /billed through Mollie/);
+  assert.match(billingDoc, /Auroranexis is the seller for subscriptions/);
+  assert.match(billingDoc, /Mollie is the payment service provider/);
   assert.match(billingDoc, /Mollie does not provide a hosted billing portal/);
+  assert.match(billingDoc, /Auroranexis remains the seller, issues sales invoices/);
+  assert.doesNotMatch(billingDoc, /billed through Mollie/);
   assert.doesNotMatch(billingDoc, /customer portal/i);
   assert.doesNotMatch(billingDoc, /account management link/i);
 
@@ -223,7 +227,31 @@ test("public legal and docs sources name Mollie — no active Stripe/Paddle/Fast
   assert.match(gettingStarted, /Auroranexis remains the seller/);
 
   const marketing = readSource("src/lib/marketing/content.ts");
-  assert.match(marketing, /Mollie subscriptions and invoices/);
+  assert.match(marketing, /Subscription billing available/);
+  assert.doesNotMatch(marketing, /Mollie subscriptions and invoices/);
+
+  const integrations = readSource("src/lib/marketing/integrations-catalog.ts");
+  assert.match(integrations, /Payment processing for Auroranexis subscription checkout and settlement/);
+  assert.doesNotMatch(integrations, /invoice sync/i);
+});
+
+test("llms.txt and legal aliases stay public — never auth-gated", () => {
+  const staticAssets = readSource("src/lib/deployment/middleware-routing.ts");
+  assert.match(staticAssets, /pathname === "\/llms\.txt"/);
+
+  const sessionMw = readSource("src/lib/supabase/middleware.ts");
+  assert.match(sessionMw, /pathname === "\/llms\.txt"/);
+  assert.match(sessionMw, /pathname === "\/sub-processors"/);
+  assert.match(sessionMw, /pathname === "\/dpa"/);
+
+  const marketingPaths = readSource("src/lib/deployment/domain-routing.ts");
+  assert.match(marketingPaths, /pathname === "\/llms\.txt"/);
+
+  const subAlias = readSource("src/app/(marketing)/sub-processors/page.tsx");
+  assert.match(subAlias, /permanentRedirect\("\/subprocessors"\)/);
+
+  const dpaAlias = readSource("src/app/(marketing)/dpa/page.tsx");
+  assert.match(dpaAlias, /permanentRedirect\("\/data-processing-agreement"\)/);
 });
 
 test("public legal routes render from LEGAL_PAGES — not duplicate hardcoded Stripe/Paddle copy", () => {

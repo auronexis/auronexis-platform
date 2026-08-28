@@ -24,7 +24,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       title: "Overview",
       paragraphs: [
-        "Auroranexis subscriptions are billed through Mollie. Your workspace plan determines feature access, usage limits, seat counts, and support tier. All billing activity — plan selection, checkout, invoices, and subscription changes — is accessible from Settings → Billing within the application.",
+        "Auroranexis is the seller for subscriptions; Mollie is the payment service provider that processes checkout and settlement. Your workspace plan determines feature access, usage limits, seat counts, and support tier. All billing activity — plan selection, checkout, Auroranexis invoices, and subscription changes — is accessible from Settings → Billing within the application.",
         "Billing is tied to your organization, not individual user accounts. When you upgrade or downgrade, the change applies to the entire workspace. Usage meters and effective limits are reflected in Settings → Usage and update after plan changes are processed.",
         "Three public self-serve plans are available: Professional for growing teams that need automation and client portal delivery, Business for agencies requiring advanced compliance features and white-label branding, and Enterprise for organizations that need custom limits and negotiated arrangements. Pilot Partner and Founding Customer are invite-only early access cohorts — not public plan tiers. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
       ],
@@ -32,7 +32,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       title: "Purpose",
       paragraphs: [
-        "The billing module gives agency operators a self-serve way to subscribe, pay, and manage their Auroranexis workspace without manual invoicing or back-and-forth with sales for standard plans. Mollie handles payment collection and settlement; Auroranexis surfaces plan status, usage against limits, and invoice history.",
+        "The billing module gives agency operators a self-serve way to subscribe, pay, and manage their Auroranexis workspace without manual invoicing or back-and-forth with sales for standard plans. Mollie handles payment collection and settlement; Auroranexis remains the seller, issues sales invoices where tax determination allows, and surfaces plan status, usage against limits, and invoice history.",
         "For agencies on Professional or Business tiers, billing is fully automated. You choose a plan, complete Mollie checkout, and manage renewals in Settings → Billing. Enterprise customers may have custom arrangements negotiated separately, but day-to-day invoice access and subscription management still flow through the same billing interface where applicable.",
         "The billing page also serves as the starting point for understanding what your plan includes. Before upgrading, compare tier summaries against your current consumption in Settings → Usage so you select a plan that covers client count, seats, API volume, and feature requirements without unnecessary overspend.",
       ],

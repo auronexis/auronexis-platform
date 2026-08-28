@@ -33,7 +33,7 @@ export const INTEGRATION_CATALOG: IntegrationCatalogItem[] = [
   {
     id: "mollie",
     title: "Mollie",
-    description: "Payment processing for subscription billing, checkout, and invoice sync.",
+    description: "Payment processing for Auroranexis subscription checkout and settlement.",
     status: "connected",
     section: "connected",
   },

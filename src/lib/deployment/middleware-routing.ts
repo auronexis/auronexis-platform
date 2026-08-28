@@ -19,6 +19,7 @@ export function isStaticPublicAssetPath(pathname: string): boolean {
     pathname === "/manifest.webmanifest" ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
+    pathname === "/llms.txt" ||
     pathname === "/favicon.ico" ||
     pathname === "/favicon.svg" ||
     pathname.startsWith("/.well-known/")
