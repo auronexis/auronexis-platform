@@ -21,6 +21,16 @@
       "has": [{ "type": "host", "value": "auroranexis.com" }],
       "destination": "https://www.auroranexis.com/:path",
       "permanent": true
+    },
+    {
+      "source": "/sub-processors",
+      "destination": "/subprocessors",
+      "permanent": true
+    },
+    {
+      "source": "/dpa",
+      "destination": "/data-processing-agreement",
+      "permanent": true
     }
   ],
   "headers": [

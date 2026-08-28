@@ -252,6 +252,12 @@ test("llms.txt and legal aliases stay public — never auth-gated", () => {
 
   const dpaAlias = readSource("src/app/(marketing)/dpa/page.tsx");
   assert.match(dpaAlias, /permanentRedirect\("\/data-processing-agreement"\)/);
+
+  const vercel = readSource("vercel.json");
+  assert.match(vercel, /"source":\s*"\/sub-processors"/);
+  assert.match(vercel, /"destination":\s*"\/subprocessors"/);
+  assert.match(vercel, /"source":\s*"\/dpa"/);
+  assert.match(vercel, /"destination":\s*"\/data-processing-agreement"/);
 });
 
 test("public legal routes render from LEGAL_PAGES — not duplicate hardcoded Stripe/Paddle copy", () => {
