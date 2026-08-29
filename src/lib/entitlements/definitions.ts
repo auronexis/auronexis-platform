@@ -12,6 +12,7 @@ const PROFESSIONAL_FEATURES = [
   "clients",
   "reports",
   "sla_policies",
+  "automations",
   "activity_history",
   "billing_portal",
 ] as const satisfies readonly EntitlementFeatureKey[];
