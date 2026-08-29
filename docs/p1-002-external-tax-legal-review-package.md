@@ -1,9 +1,8 @@
 # P1-002 External Tax / Legal Review Package
 
 **Status:** TECHNICAL GATE COMPLETE — EXTERNAL REVIEW REQUIRED  
-**Date:** 2026-08-26  
-**Audience:** German tax adviser + legal counsel  
-**Scope:** Finite policy decisions for controlled B2B SaaS subscription sales  
+**Superseded for sign-off handoff by:** [`docs/p1-002-external-signoff-dossier.md`](./p1-002-external-signoff-dossier.md)  
+**Date:** 2026-08-26 (facts refreshed 2026-08-29 for self-serve tax geography)
 
 **This document is not legal advice, tax advice, or compliance certification.**  
 **LIVE charging remains disabled (`MOLLIE_LIVE_CHARGING_ENABLED=false`).**
@@ -27,7 +26,7 @@ Related engineering foundations (repository):
 | Merchant of Record | **Not Mollie** — Auroranexis remains the SaaS seller under current architecture |
 | Billing model | Recurring subscription (monthly catalog interval for self-serve) |
 | Catalog currency | EUR catalog list prices (Professional / Business / Enterprise) |
-| Geography (self-serve today) | Self-serve checkout completes for **Germany domestic B2B** under current fail-closed policy; other EU / non-EU typically block for manual review |
+| Geography (self-serve today) | DE domestic B2B; verified EU B2B Reverse Charge (VIES valid); NON_EU B2B with entrepreneur confirmation — all other uncertain cases block checkout |
 | Production mode | Technically verified **controlled** production; LIVE charging **off** |
 | B2C / consumer checkout | **Not implemented** as a supported self-serve path |
 
@@ -51,7 +50,8 @@ Engineering separates **relationship classification** from **final tax outcome**
 | Outcome | Self-serve today |
 |---------|------------------|
 | `STANDARD_DOMESTIC_VAT` | Allowed when domestic B2B evidence satisfied |
-| `REVERSE_CHARGE` | Representable when configured evidence passes (incl. official VAT validation); **self-serve still blocked** until counsel-approved invoice legend exists |
+| `REVERSE_CHARGE` | Allowed when VAT ID + official VIES `valid` and B2B confirmation present; customer legend uses **implementation-approved** wording (`IMPLEMENTATION_TEXT_APPROVED_FOR_C3`) — **not** external counsel sign-off |
+| `NON_EU_B2B_PLACE_OF_SUPPLY` | Allowed when B2B confirmation + non-EU country; implementation legend C3.2 — **not** counsel sign-off |
 | `MANUAL_REVIEW` / `UNKNOWN_BLOCK_CHECKOUT` | Fail-closed — checkout blocked |
 
 ### Hard fail-closed rules already enforced in code

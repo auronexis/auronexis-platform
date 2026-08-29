@@ -5,8 +5,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 /**
- * @deprecated Stripe invoice mirror retired — FastSpring is the sole active
- * billing provider. Use listOrganizationBillingTransactions from
+ * @deprecated Stripe invoice mirror retired — Mollie is the sole active
+ * billing PSP. Use listOrganizationBillingTransactions from
  * "@/lib/billing/transactions" for active billing history. Always returns an
  * empty list.
  */

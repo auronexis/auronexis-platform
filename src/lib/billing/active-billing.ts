@@ -164,8 +164,8 @@ export function isActiveBillingSubscriptionRow(
   }
 
   if (activeProvider === "fastspring") {
-    // FastSpring is the sole global default — Paddle rows are historical only
-    // and never drive active billing, checkout, portal, or entitlements.
+    // Historical FastSpring path only — Paddle rows are archive-only and never
+    // drive active billing, checkout, portal, or entitlements. Live default is Mollie.
     return isFastSpringBackedSubscription(row);
   }
 

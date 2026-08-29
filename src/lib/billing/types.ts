@@ -227,7 +227,7 @@ export function buildBillingOverview(
   _organizationPlan: string,
   currentPlanName: string | null,
   currentPlanKey: PlanKey | null,
-  activeProvider: BillingProvider = "fastspring",
+  activeProvider: BillingProvider = "mollie",
 ): BillingOverview {
   const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
   const displaySubscription =

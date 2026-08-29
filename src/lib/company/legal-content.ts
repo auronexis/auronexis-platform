@@ -98,7 +98,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Sub-processors and transfers",
         body:
-          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, Mollie, Resend, and optional AI providers when enabled). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
+          "We use sub-processors listed on our Sub-processors page (including Supabase, Vercel, Mollie, transactional email providers, optional analytics where consented, and optional AI providers when enabled). Transfers outside the EEA, if any, rely on appropriate safeguards such as Standard Contractual Clauses. Material sub-processor changes are communicated to workspace administrators with reasonable notice.",
       },
       {
         heading: "Your rights",
@@ -360,7 +360,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Current sub-processors",
         body:
-          "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nMollie — payment processing for subscription billing.\nResend — transactional email delivery.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
+          "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nMollie — payment processing for subscription billing.\nTransactional email — production path uses SMTP (e.g. STRATO); Resend may be used when configured.\nOptional consent-gated website analytics where configured (e.g. Plausible, Microsoft Clarity, PostHog).\nOptional application error monitoring (Sentry) when configured.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
       },
       {
         heading: "International transfers",

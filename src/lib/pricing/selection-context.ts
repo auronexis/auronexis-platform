@@ -31,7 +31,7 @@ export type PricingSelectionContext = {
 export function createFallbackPricingSelection(
   canManage = false,
 ): PricingSelectionContext {
-  const overview = buildBillingOverview(null, "starter", null, null);
+  const overview = buildBillingOverview(null, "starter", null, null, "mollie");
   const invoices: CustomerInvoiceView[] = [];
 
   return {

@@ -9,19 +9,19 @@ The Operations Command Center for AI Automation Agencies.
 - Next.js 15 App Router + TypeScript + Tailwind CSS
 - Supabase Auth + PostgreSQL multi-tenancy (RLS)
 - RBAC + client portal isolation
-- **FastSpring** sole active billing provider (Merchant of Record)
+- **Mollie** sole active billing PSP (Auroranexis remains the seller; not Mollie MoR)
 - Background jobs / queue via `/api/cron/run`
 
 ## Prerequisites
 
 - Node.js 22+ / npm 10+
 - [Supabase](https://supabase.com) project
-- FastSpring credentials for billing (API username/password, webhook secret, storefront)
+- Mollie API credentials for billing (`MOLLIE_API_KEY`; keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until LIVE approval)
 
 ## Setup
 
 1. `npm install`
-2. `cp .env.example .env.local` — fill Supabase + FastSpring + `CRON_SECRET`
+2. `cp .env.example .env.local` — fill Supabase + Mollie + `CRON_SECRET`
 3. Apply migrations: `supabase db push` (or SQL editor) — all files under `supabase/migrations/` in timestamp order
 4. Configure Supabase Auth Site URL + redirect URLs for your `NEXT_PUBLIC_APP_URL`
 5. `npm run dev` → open the app URL
@@ -55,7 +55,7 @@ Canonical ops docs (Build Bible V2 Chapter 14):
 - [docs/enterprise-release-checklist.md](docs/enterprise-release-checklist.md)
 - [docs/rollback-plan.md](docs/rollback-plan.md)
 - [docs/disaster-recovery.md](docs/disaster-recovery.md)
-- [docs/paddle-billing.md](docs/paddle-billing.md)
+- [docs/billing.md](docs/billing.md)
 
 Definition of Done: [docs/19_BUILD_BIBLE_V2_CHAPTER_17_DEFINITION_OF_DONE.md](docs/19_BUILD_BIBLE_V2_CHAPTER_17_DEFINITION_OF_DONE.md), [docs/enterprise-definition-of-done.md](docs/enterprise-definition-of-done.md), [docs/enterprise-dod-report.md](docs/enterprise-dod-report.md).
 
