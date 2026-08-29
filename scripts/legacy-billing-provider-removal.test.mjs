@@ -210,8 +210,12 @@ test("public legal and docs sources name Mollie — no active Stripe/Paddle/Fast
 
   const legal = readSource("src/lib/company/legal-content.ts");
   assert.match(legal, /payment service provider, Mollie/);
-  assert.match(legal, /Mollie — payment processing for subscription billing/);
+  assert.match(legal, /subprocessors-inventory/);
+  const inventory = readSource("src/lib/company/subprocessors-inventory.ts");
+  assert.match(inventory, /Mollie/);
+  assert.match(inventory, /Payment processing for subscription billing/i);
   assert.doesNotMatch(legal, /Merchant of Record/i);
+  // Inventory may factually negate MoR ("not Merchant of Record") — that is allowed.
 
   const billingDoc = readSource("src/lib/docs/pages/account.ts");
   assert.match(billingDoc, /Auroranexis is the seller for subscriptions/);

@@ -111,6 +111,10 @@ export function CheckoutContractSummaryDialog({
             <dt className="text-muted-foreground">Terms version</dt>
             <dd className="font-medium text-foreground">{summary.termsVersion}</dd>
           </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">DPA version</dt>
+            <dd className="font-medium text-foreground">{summary.dpaVersion}</dd>
+          </div>
         </dl>
 
         <div className="mt-4 space-y-3">
@@ -207,7 +211,7 @@ export function CheckoutContractSummaryDialog({
                 href={LEGAL_ROUTES.dataProcessingAgreement}
                 className="font-medium text-primary underline"
               >
-                Data Processing Agreement summary
+                Data Processing Agreement
               </Link>
               . See also{" "}
               <Link href={LEGAL_ROUTES.refundPolicy} className="font-medium text-primary underline">

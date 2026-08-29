@@ -222,9 +222,10 @@ test("TEST 8 — preview zero-write + TEST DOCUMENT marker", () => {
   assert.match(html, /TEST DOCUMENT/);
 });
 
-test("C3: German locale uses approved DE legend without new i18n framework", () => {
-  assert.match(REVERSE_CHARGE_LEGEND_DE, /Reverse Charge/);
-  assert.match(REVERSE_CHARGE_LEGEND_DE, /Steuerschuldnerschaft/);
+test("C3: bilingual RC legend is canonical; LIVE remains false; P1-002 OPEN", () => {
+  assert.match(REVERSE_CHARGE_LEGEND_DE, /Reverse charge/);
+  assert.match(REVERSE_CHARGE_LEGEND_DE, /Steuerschuldnerschaft des Leistungsempfängers/);
+  assert.equal(REVERSE_CHARGE_LEGEND_EN, REVERSE_CHARGE_LEGEND_DE);
   const legend = resolveReverseChargeLegend({
     taxPolicyOutcome: "REVERSE_CHARGE",
     reverseChargeLegendStatus: IMPLEMENTATION_TEXT_APPROVED_FOR_C3,
@@ -234,7 +235,15 @@ test("C3: German locale uses approved DE legend without new i18n framework", () 
 
   const { invoice } = buildPreviewSalesInvoice("business", "fr");
   const htmlDe = renderSalesInvoiceHtml(invoice, { preview: true, locale: "de" });
-  assert.match(htmlDe, /Steuerschuldnerschaft des Leistungsempfängers \(Reverse Charge\)/);
+  assert.match(
+    htmlDe,
+    /Steuerschuldnerschaft des Leistungsempfängers \/ Reverse charge — VAT to be accounted for by the recipient/,
+  );
+  const htmlEn = renderSalesInvoiceHtml(invoice, { preview: true, locale: "en" });
+  assert.match(
+    htmlEn,
+    /Steuerschuldnerschaft des Leistungsempfängers \/ Reverse charge — VAT to be accounted for by the recipient/,
+  );
 });
 
 test("C3: no external counsel sign-off claimed; LIVE remains false; P1-002 OPEN", () => {

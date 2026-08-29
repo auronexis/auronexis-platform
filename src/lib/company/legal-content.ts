@@ -9,6 +9,13 @@ import {
   formatVatLine,
   LEGAL_LAST_UPDATED,
 } from "@/lib/company";
+import { buildDpaPageSections, DPA_DOCUMENT_VERSION } from "@/lib/company/dpa-document";
+import {
+  formatSubprocessorInventoryPlainText,
+  SUBPROCESSORS_DOCUMENT_VERSION,
+  SUBPROCESSORS_EFFECTIVE_DATE,
+  subprocessorsChangeContactLine,
+} from "@/lib/company/subprocessors-inventory";
 
 export type LegalPageKey =
   | "imprint"
@@ -203,7 +210,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "15. Data protection and DPA",
         body:
-          `Personal data is processed as described in our Privacy Policy. Where you process personal data of your clients or staff in the workspace, you are typically the controller and we act as processor. Our Data Processing Agreement (DPA) applies and may be supplemented by a signed addendum for enterprise customers. Contact ${COMPANY_CONTACT.legalEmail} for DPA requests.`,
+          `Personal data is processed as described in our Privacy Policy. Where you process personal data of your clients or staff in the workspace, you are typically the controller and we act as processor. Our Data Processing Agreement (DPA) under GDPR Article 28 applies and may be supplemented by a signed addendum for enterprise customers. Contact ${COMPANY_CONTACT.legalEmail} for DPA requests.`,
       },
       {
         heading: "16. Confidentiality",
@@ -355,81 +362,35 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
     sections: [
       {
         heading: "Overview",
-        body: `${legalName} uses sub-processors to provide hosting, authentication, billing, email delivery, and optional AI features. This list is provided for transparency under GDPR Article 28.`,
+        body: `${legalName} uses sub-processors and related service providers to provide hosting, authentication, billing, email delivery, monitoring, and optional AI features. This list is provided for transparency under GDPR Article 28.\n\nInventory version: ${SUBPROCESSORS_DOCUMENT_VERSION}\nEffective date: ${SUBPROCESSORS_EFFECTIVE_DATE}`,
       },
       {
-        heading: "Current sub-processors",
-        body:
-          "Supabase — database, authentication, and storage (EU-capable regions).\nVercel — application hosting and edge delivery.\nMollie — payment processing for subscription billing.\nTransactional email — production path uses SMTP (e.g. STRATO); Resend may be used when configured.\nOptional consent-gated website analytics where configured (e.g. Plausible, Microsoft Clarity, PostHog).\nOptional application error monitoring (Sentry) when configured.\nOpenAI (optional) — AI-assisted features when explicitly enabled by the customer and configured in the workspace.",
+        heading: "Current inventory",
+        body: formatSubprocessorInventoryPlainText(),
       },
       {
         heading: "International transfers",
         body:
-          "Where sub-processors process data outside the EEA, we rely on appropriate safeguards such as Standard Contractual Clauses and supplementary measures where required.",
+          "Where sub-processors process data outside the EEA, we rely on appropriate safeguards such as Standard Contractual Clauses and supplementary measures where required. Specific transfer details are available on request.",
       },
       {
         heading: "Changes",
         body:
-          `Material changes to sub-processors are communicated to workspace administrators with reasonable notice. Enterprise customers may request notification procedures or DPA addenda via ${COMPANY_CONTACT.legalEmail}.`,
+          `Material changes to sub-processors are communicated to workspace administrators with reasonable notice and reflected in an updated inventory version. Enterprise customers may request notification procedures or DPA addenda via ${COMPANY_CONTACT.legalEmail}.`,
       },
       {
         heading: "Contact",
-        body: `Sub-processor and DPA inquiries: ${COMPANY_CONTACT.legalEmail}. Support: ${COMPANY_CONTACT.supportEmail}.`,
+        body: subprocessorsChangeContactLine(),
       },
     ],
   },
   dataProcessingAgreement: {
     title: "Data Processing Agreement",
-    description: "Standard data processing terms for business customers under GDPR Article 28.",
+    description: `Art. 28 GDPR / AVV processing terms for ${productName} business customers (version ${DPA_DOCUMENT_VERSION}).`,
     lastUpdated: LEGAL_LAST_UPDATED,
     showCompanyCard: true,
     companyCardTitle: "Processor",
-    sections: [
-      {
-        heading: "Parties",
-        body: `The Processor is identified in the company information section above. The Customer is the organization entering into the ${productName} subscription and acts as controller for customer-uploaded personal data.`,
-      },
-      {
-        heading: "Subject matter and duration",
-        body:
-          "Processing relates to personal data uploaded or generated in the Auroranexis workspace for the duration of the subscription and any agreed retention period thereafter.",
-      },
-      {
-        heading: "Nature and purpose",
-        body:
-          "Processing is limited to providing the Auroranexis platform, customer support, billing, security monitoring, audit logging, backups, and optional AI features enabled by the Controller. Processing occurs only on documented instructions of the Controller, these Terms, and applicable law.",
-      },
-      {
-        heading: "Categories of data and subjects",
-        body:
-          "Depending on Controller use: employee and contact data, client data, operational records, portal user data, logs, and communication content. Data subjects may include Controller staff, Controller clients, and authorized portal users.",
-      },
-      {
-        heading: "Processor obligations",
-        body:
-          "The Processor implements appropriate technical and organizational measures (see Security Policy), ensures confidentiality of personnel, assists with data subject requests where required, notifies the Controller of personal data breaches without undue delay, and deletes or returns data upon termination subject to legal retention.",
-      },
-      {
-        heading: "Sub-processors",
-        body:
-          "The Controller authorizes engagement of sub-processors listed on our Sub-processors page. Material changes are notified with reasonable notice. The Processor remains responsible for sub-processor performance under Article 28(4) GDPR.",
-      },
-      {
-        heading: "International transfers",
-        body:
-          `Transfers outside the EEA use appropriate safeguards such as Standard Contractual Clauses. Details are available on request at ${COMPANY_CONTACT.legalEmail}.`,
-      },
-      {
-        heading: "Audits and documentation",
-        body:
-          "The Processor makes available information necessary to demonstrate compliance and allows audits upon reasonable notice, subject to confidentiality and security constraints, or provides third-party audit summaries where available.",
-      },
-      {
-        heading: "Execution",
-        body:
-          `This page summarizes standard processing terms incorporated into the Terms of Service. Enterprise customers may request a countersigned DPA addendum via ${COMPANY_CONTACT.legalEmail} or ${COMPANY_CONTACT.salesEmail}. This summary does not replace an individually negotiated signed agreement where required.`,
-      },
-    ],
+    sections: buildDpaPageSections(),
   },
   acceptableUse: {
     title: "Acceptable Use Policy",

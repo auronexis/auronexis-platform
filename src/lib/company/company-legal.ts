@@ -62,4 +62,4 @@ export function formatLegalAddressBlock(): string {
 export const LEGAL_ADDRESS_BLOCK = formatLegalAddressBlock();
 
 /** Shared last-updated stamp for legal pages. */
-export const LEGAL_LAST_UPDATED = "August 23, 2026";
+export const LEGAL_LAST_UPDATED = "August 29, 2026";

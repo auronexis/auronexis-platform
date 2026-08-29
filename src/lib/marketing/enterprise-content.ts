@@ -34,7 +34,7 @@ export const ENTERPRISE_CONTENT = {
     },
     {
       title: "Procurement documentation",
-      description: "DPA summary, sub-processor list, and security policy available for vendor review.",
+      description: "Art. 28 DPA, sub-processor list, and security policy available for vendor review.",
     },
   ] satisfies readonly MarketingBenefit[],
   securityHighlights: [

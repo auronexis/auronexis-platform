@@ -120,7 +120,7 @@ export function SignUpForm() {
             href="/data-processing-agreement"
             className="font-medium text-blue-600 hover:text-blue-700"
           >
-            Data Processing Agreement summary
+            Data Processing Agreement
           </Link>
           .
         </span>

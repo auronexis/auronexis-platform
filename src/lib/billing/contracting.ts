@@ -2,15 +2,21 @@
  * B2B contracting + Terms / DPA acceptance evidence.
  * Checkboxes must not be pre-checked. Version strings are persisted for audit.
  *
- * DPA body text for countersigned Art. 28 remains counsel-dependent —
- * LEGAL_TEXT_PENDING_COUNSEL is internal-only and never shown publicly.
+ * DPA full Art. 28 text is published at /data-processing-agreement under
+ * DPA_DOCUMENT_VERSION. External counsel review status is internal-only.
  */
 
-export const TERMS_DOCUMENT_VERSION = "terms-2026-08-23" as const;
-export const DPA_DOCUMENT_VERSION = "dpa-summary-2026-08-23" as const;
+import {
+  DPA_DOCUMENT_VERSION,
+  DPA_EXTERNAL_REVIEW_STATUS,
+} from "@/lib/company/dpa-document";
 
-/** INTERNAL ONLY — do not render on customer UI. */
-export const DPA_FULL_TEXT_STATUS = "LEGAL_TEXT_PENDING_COUNSEL" as const;
+export { DPA_DOCUMENT_VERSION, DPA_EXTERNAL_REVIEW_STATUS };
+
+export const TERMS_DOCUMENT_VERSION = "terms-2026-08-23" as const;
+
+/** @deprecated Use DPA_EXTERNAL_REVIEW_STATUS — kept as alias for internal gates. */
+export const DPA_FULL_TEXT_STATUS = DPA_EXTERNAL_REVIEW_STATUS;
 
 export type ContractAcceptanceKind =
   | "terms"

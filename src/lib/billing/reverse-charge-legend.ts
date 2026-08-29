@@ -6,6 +6,8 @@
  *
  * IMPLEMENTATION_TEXT_APPROVED_FOR_C3 ≠ external tax/legal counsel sign-off.
  * Do not treat "approved" / IMPLEMENTATION_TEXT_APPROVED_FOR_C3 as COUNSEL_SIGNED_OFF.
+ *
+ * Canonical bilingual legend is a single constant — no locale-split variants.
  */
 
 import {
@@ -17,13 +19,16 @@ import {
 
 export const EXTERNAL_LEGAL_COPY_REQUIRED = "EXTERNAL_LEGAL_COPY_REQUIRED" as const;
 
-/** C3 implementation-approved English legend — must include "Reverse charge". */
-export const REVERSE_CHARGE_LEGEND_EN =
-  "Reverse charge — VAT to be accounted for by the recipient." as const;
+/**
+ * Canonical EU Reverse Charge invoice legend (DE/EN bilingual).
+ * TAX_ADVISER_SIGNOFF_REQUIRED / LEGAL_COUNSEL_SIGNOFF_REQUIRED remain open.
+ */
+export const REVERSE_CHARGE_LEGEND =
+  "Steuerschuldnerschaft des Leistungsempfängers / Reverse charge — VAT to be accounted for by the recipient." as const;
 
-/** German wording when invoice render locale is already `de` (no new i18n framework). */
-export const REVERSE_CHARGE_LEGEND_DE =
-  "Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge)." as const;
+/** Aliases — same canonical string (no divergent EN/DE wording). */
+export const REVERSE_CHARGE_LEGEND_EN = REVERSE_CHARGE_LEGEND;
+export const REVERSE_CHARGE_LEGEND_DE = REVERSE_CHARGE_LEGEND;
 
 export type ReverseChargeLegendResolution = {
   showOnInvoice: boolean;
@@ -33,8 +38,10 @@ export type ReverseChargeLegendResolution = {
     | typeof EXTERNAL_LEGAL_COPY_REQUIRED;
 };
 
-export function reverseChargeLegendTextForLocale(locale: "en" | "de"): string {
-  return locale === "de" ? REVERSE_CHARGE_LEGEND_DE : REVERSE_CHARGE_LEGEND_EN;
+/** Always returns the canonical bilingual legend (locale retained for call-site compatibility). */
+export function reverseChargeLegendTextForLocale(locale: "en" | "de" = "en"): string {
+  void locale;
+  return REVERSE_CHARGE_LEGEND;
 }
 
 /**
@@ -46,7 +53,7 @@ export function resolveReverseChargeLegend(input: {
   reverseChargeLegendStatus: ReverseChargeLegendStatus;
   /** Optional counsel-approved text — required only when status is external "approved". */
   approvedLegendText?: string | null;
-  /** Existing invoice locale only (`en` | `de`); defaults to English. */
+  /** Existing invoice locale only (`en` | `de`); ignored for canonical bilingual text. */
   locale?: "en" | "de";
 }): ReverseChargeLegendResolution {
   if (input.taxPolicyOutcome !== "REVERSE_CHARGE") {
@@ -56,7 +63,7 @@ export function resolveReverseChargeLegend(input: {
   if (input.reverseChargeLegendStatus === IMPLEMENTATION_TEXT_APPROVED_FOR_C3) {
     return {
       showOnInvoice: true,
-      legendText: reverseChargeLegendTextForLocale(input.locale ?? "en"),
+      legendText: REVERSE_CHARGE_LEGEND,
       status: IMPLEMENTATION_TEXT_APPROVED_FOR_C3,
     };
   }

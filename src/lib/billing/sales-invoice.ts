@@ -120,6 +120,30 @@ function assertMoneyInvariant(input: IssueSalesInvoiceInput): void {
   }
 }
 
+/**
+ * EU Reverse Charge invoices require seller + buyer VAT IDs — fail closed otherwise.
+ * Does not invent VAT IDs; does not issue 0% RC without customer VAT evidence.
+ */
+function assertReverseChargeVatIds(input: {
+  taxPolicyOutcome: TaxPolicyOutcome;
+  sellerVatId: string | null | undefined;
+  buyerVatId: string | null | undefined;
+}): void {
+  if (input.taxPolicyOutcome !== "REVERSE_CHARGE") {
+    return;
+  }
+  if (!input.sellerVatId?.trim()) {
+    throw new Error(
+      "Reverse Charge invoice blocked: seller VAT ID missing (fail-closed)",
+    );
+  }
+  if (!input.buyerVatId?.trim()) {
+    throw new Error(
+      "Reverse Charge invoice blocked: buyer VAT ID missing (fail-closed)",
+    );
+  }
+}
+
 function buildTaxNote(input: IssueSalesInvoiceInput): string | null {
   const germanDomestic = buildGermanDomesticVatTaxNote({
     taxPolicyOutcome: input.taxPolicyOutcome,
@@ -196,6 +220,11 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
       viesCheckedAt: null,
       updatedAt: now,
     });
+  assertReverseChargeVatIds({
+    taxPolicyOutcome: input.taxPolicyOutcome,
+    sellerVatId: sellerSnapshot.vatId,
+    buyerVatId: buyerSnapshot.vatId,
+  });
   const reverseChargeApplied = input.taxPolicyOutcome === "REVERSE_CHARGE";
   const businessClassification =
     input.businessClassification ??

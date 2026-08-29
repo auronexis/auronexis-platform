@@ -79,7 +79,7 @@ Self-serve checkout requires B2B entrepreneur confirmation and country/VAT evide
 | Scenario | Engineering outcome | Self-serve | Category |
 |----------|---------------------|------------|----------|
 | **DE B2B** (entrepreneur confirmed) | `STANDARD_DOMESTIC_VAT` @ **19%** (1900 bps), VAT-inclusive split | Allowed | ENGINEERING_VERIFIED + TAX_ADVISER_SIGNOFF_REQUIRED |
-| **EU B2B verified** (VAT ID + VIES `valid`) | `REVERSE_CHARGE` @ 0 bps + implementation RC legend | Allowed | ENGINEERING_VERIFIED + TAX_ADVISER_SIGNOFF_REQUIRED + LEGAL_COUNSEL_SIGNOFF_REQUIRED (legend) |
+| **EU B2B verified** (VAT ID + VIES `valid`) | `REVERSE_CHARGE` @ 0 bps + canonical bilingual RC legend; seller + buyer VAT IDs required | Allowed | ENGINEERING_VERIFIED + TAX_ADVISER_SIGNOFF_REQUIRED + LEGAL_COUNSEL_SIGNOFF_REQUIRED (legend) |
 | **EU B2B unverified** (missing VAT / invalid / VIES unavailable / not_checked / skipped) | `UNKNOWN_BLOCK_CHECKOUT` | **Blocked** | ENGINEERING_VERIFIED |
 | **NON_EU B2B** (entrepreneur confirmed + non-EU country) | `NON_EU_B2B_PLACE_OF_SUPPLY` @ 0 bps + §3a(2) UStG implementation legend | Allowed | ENGINEERING_VERIFIED + TAX_ADVISER_SIGNOFF_REQUIRED + LEGAL_COUNSEL_SIGNOFF_REQUIRED (legend) |
 | **NON_EU without B2B confirmation** | `UNKNOWN_BLOCK_CHECKOUT` | **Blocked** | ENGINEERING_VERIFIED |
@@ -132,7 +132,7 @@ Operator route: `/settings/billing/invoice-preview` — fake buyers, **no** prod
 | Scenario | Expected engineering presentation |
 |----------|-----------------------------------|
 | DE B2B Business | Gross €599.00; net/VAT split at 19%; note “German VAT (19%)”; number `TEST-ANX-…` |
-| EU B2B FR/NL RC | Gross = catalog; VAT 0; legend includes “Reverse charge” |
+| EU B2B FR/NL RC | Gross = catalog; VAT 0; bilingual legend; seller + buyer VAT IDs |
 | NON_EU B2B (e.g. US/CH/GB) | Gross = catalog; VAT 0; NON_EU place-of-supply legend (not EU RC wording) |
 | Negative / unsupported | Unverified EU / no B2B confirmation → block (no zero-VAT self-serve) |
 
@@ -144,11 +144,12 @@ Operator route: `/settings/billing/invoice-preview` — fake buyers, **no** prod
 |---------|----------------|
 | Signup | Terms + entrepreneur checkboxes; server Zod requires `true` (`auth/actions.ts`) |
 | Checkout | Contract summary dialog; Terms + B2B + DPA evidence; tax determination before Mollie redirect (`billing/actions.ts`) |
-| Versions | `TERMS_DOCUMENT_VERSION` / `DPA_DOCUMENT_VERSION` persisted (`contracting.ts`) |
-| DPA page | Public Art. 28 **summary**; full countersigned template status `LEGAL_TEXT_PENDING_COUNSEL` (internal) |
+| Versions | `TERMS_DOCUMENT_VERSION` / `DPA_DOCUMENT_VERSION` (`dpa-2026-08-29-v1`) persisted (`contracting.ts` → `organization_contract_acceptances`) |
+| DPA page | Public **full Art. 28 DPA/AVV** with Annexes I–IV at `/data-processing-agreement` (alias `/dpa`) — same version as acceptance evidence |
+| DPA review marker | Internal `READY_FOR_EXTERNAL_LEGAL_REVIEW` only — not rendered on public page |
 | Checkboxes | Not pre-checked |
 
-Counsel: confirm evidence sufficiency and DPA summary vs countersigned Art. 28 for enterprise procurement. → `LEGAL_COUNSEL_SIGNOFF_REQUIRED`
+Counsel: confirm evidence sufficiency and countersigned addendum need for enterprise procurement. → `LEGAL_COUNSEL_SIGNOFF_REQUIRED`
 
 ---
 
@@ -157,7 +158,9 @@ Counsel: confirm evidence sufficiency and DPA summary vs countersigned Art. 28 f
 | Topic | Product behaviour | Category |
 |-------|-------------------|----------|
 | Refunds | No customer self-serve refund button; requests via support@; operator Mollie Dashboard/API | POST_LAUNCH_PROCESS + LEGAL_COUNSEL_SIGNOFF_REQUIRED |
-| Accounting correction | No automated credit-note mutation of issued invoices | MANUAL_REQUIRED + TAX_ADVISER_SIGNOFF_REQUIRED |
+| Accounting correction | No automated credit-note mutation of issued invoices; **Mollie refund ≠ invoice correction** | MANUAL_REQUIRED + TAX_ADVISER_SIGNOFF_REQUIRED |
+| Operator runbook | `docs/billing/refund-invoice-correction-runbook.md` — 12-step process; original invoice preserved | ENGINEERING_VERIFIED (process) + TAX_ADVISER_SIGNOFF_REQUIRED |
+| Automated credit notes | **NO** | POST_LAUNCH_PROCESS |
 | Cancellation | Cancel at period end; paid-through access; withdrawal recreates lifecycle (Mollie reactivation unsupported) | ENGINEERING_VERIFIED |
 | Public wording | Terms §12–14 + Refund policy align with cancel ≠ refund | ENGINEERING_VERIFIED + LEGAL_COUNSEL_SIGNOFF_REQUIRED |
 | Proration | Upgrade proration implemented for catalog amounts; Terms point to billing settings workflow | ENGINEERING_VERIFIED + LEGAL_COUNSEL_SIGNOFF_REQUIRED (disclosure depth) |
@@ -184,6 +187,7 @@ Counsel: confirm evidence sufficiency and DPA summary vs countersigned Art. 28 f
 | ZUGFeRD | NO |
 | EN 16931 structured output | NO |
 | Domain readiness note | Scaffold exists; generator deferred (`e-invoice.ts`) |
+| Roadmap | `docs/billing/e-invoice-readiness-roadmap.md` — **ROADMAP_DEFINED / NOT_IMPLEMENTED** |
 | External tax review | REQUIRED (obligation/timeline vs turnover) |
 
 ---
@@ -196,9 +200,9 @@ Production HTTP 200 verified (2026-08-29) for: `/pricing`, `/terms`, `/privacy`,
 |---------|----------------------------------------|
 | Terms | READY_FOR_EXTERNAL_REVIEW |
 | Privacy | READY_FOR_EXTERNAL_REVIEW |
-| DPA (summary) | READY_FOR_EXTERNAL_REVIEW (full countersigned text still counsel-gated) |
+| DPA (Art. 28 full + annexes) | READY_FOR_EXTERNAL_LEGAL_REVIEW (engineering complete; not counsel-approved) |
 | Refund policy | READY_FOR_EXTERNAL_REVIEW |
-| Subprocessors | READY_FOR_EXTERNAL_REVIEW (inventory aligned to SMTP/analytics/Sentry facts in remediation) |
+| Subprocessors | READY_FOR_EXTERNAL_REVIEW (versioned inventory + change procedure) |
 
 Prices on production `/pricing` match catalog (€179 / €599 / €1,799; EUR; no USD/FastSpring/Stripe).
 
@@ -224,8 +228,8 @@ Prices on production `/pricing` match catalog (€179 / €599 / €1,799; EUR; 
 1. Review B2B-only entrepreneur acknowledgement (no consumer-rights waiver claim).  
 2. Review Terms commercial / renewal / cancellation / tax / Mollie-PSP clauses.  
 3. Review Refund / Cancellation policy enforceability for intended B2B audience.  
-4. Approve invoice legends (EU RC + NON_EU) or supply replacement copy.  
-5. Review DPA summary vs need for countersigned Art. 28 template.  
+4. Approve invoice legends (EU RC bilingual + NON_EU) or supply replacement copy.  
+5. Review full Art. 28 DPA (+ annexes) and countersignature need for enterprise.  
 6. Review contract acceptance evidence (versions, timestamps, org, user, plan snapshot).  
 7. Confirm Impressum / entity disclosures for Einzelunternehmen.  
 8. Confirm subprocessors / privacy / cookies disclosures after inventory update.  
@@ -238,24 +242,42 @@ Prices on production `/pricing` match catalog (€179 / €599 / €1,799; EUR; 
 1. Keep `MOLLIE_LIVE_CHARGING_ENABLED=false` until **after** recorded tax + legal sign-off and a separate LIVE gate.  
 2. Confirm Production Vercel env: LIVE charging false; Mollie rollout as intended; no legacy provider keys driving checkout.  
 3. Confirm VAT ID DE449657077 active in VIES/BZSt.  
-4. Confirm SMTP/STRATO production email path and mailbox ownership (support@ / sales@ / noreply@).  
-5. Confirm Production migrations for sales invoices / tax evidence / allocator grants applied (prior migration certification artifacts).  
-6. Confirm seller identity on live invoices matches commercial registry.  
-7. Do **not** enable LIVE charging from this dossier alone.  
-8. Record external sign-off artifacts in release checklist when received.
+4. Confirm legal business identity / Impressum registry facts.  
+5. Confirm SMTP/STRATO production email path and mailbox ownership (support@ / sales@ / noreply@).  
+6. Confirm Production migrations for sales invoices / tax evidence / allocator grants applied (prior migration certification artifacts).  
+7. Confirm seller identity on live invoices matches commercial registry.  
+8. Record tax-adviser sign-off and legal-counsel sign-off in release checklist when received.  
+9. Approve refund/correction workflow (`docs/billing/refund-invoice-correction-runbook.md`) with accountant.  
+10. Approve e-invoice target timeline with tax adviser (PDF-only until then).  
+11. Do **not** enable LIVE charging from this dossier alone.
 
 ---
 
 ## 17. Known limitations (explicit)
 
-- No automated credit notes.  
-- No XRechnung/ZUGFeRD.  
-- DPA full countersigned text not published (summary only).  
+- No automated credit notes — see refund/correction runbook.  
+- No XRechnung/ZUGFeRD — e-invoice roadmap only.  
+- DPA is full Art. 28 text ready for external legal review — **not** counsel-approved / not a compliance certificate.  
 - Invoice legends are implementation-approved, not counsel-approved.  
 - Historical internal docs (`docs/pricing-assumptions.md`, older phase reports) may show legacy prices/providers — **not** customer-facing; catalog + public site are authoritative.  
 - `maybeIssueSalesInvoiceForPaidMolliePayment` assumes B2B confirmation already enforced at checkout (does not re-query acceptances).  
-- Controlled TEST/pilot charging ≠ unrestricted LIVE commercial charging.
+- Controlled TEST/pilot charging ≠ unrestricted LIVE commercial charging.  
 
+---
+
+## 17a. P1-002 final hardening status (engineering)
+
+| Item | Status |
+|------|--------|
+| DPA full text | **READY_FOR_EXTERNAL_LEGAL_REVIEW** |
+| Reverse charge hardening | **ENGINEERING_COMPLETE** (bilingual canonical legend) |
+| Both VAT IDs on RC invoices | **ENGINEERING_VERIFIED** (fail-closed if missing) |
+| NON-EU evidence | **ENGINEERING_COMPLETE** (`SELF_ATTESTED_B2B` vs `VIES_VERIFIED` in tax decision evidence) |
+| Refund correction runbook | **CREATED** |
+| Automated credit notes | **NO** |
+| E-invoice | **ROADMAP_DEFINED / NOT_IMPLEMENTED** |
+| Subprocessor change procedure | **CREATED** |
+| Mollie live charging | **false** (must remain) |
 ---
 
 ## 18. Evidence references (non-exhaustive)
@@ -265,8 +287,10 @@ Prices on production `/pricing` match catalog (€179 / €599 / €1,799; EUR; 
 | Catalog / prices | `src/lib/billing/price-catalog.ts`, `catalog.ts`, `plans.ts` |
 | Tax policy | `src/lib/billing/tax-policy.ts`, `tax-classification.ts`, `vies.ts` |
 | Invoices | `sales-invoice.ts`, `sales-invoice-from-mollie.ts`, `sales-invoice-preview.ts`, `sales-invoice-pdf.ts` |
-| Legends | `reverse-charge-legend.ts`, `non-eu-b2b-legend.ts` |
+| Legends | `reverse-charge-legend.ts` (canonical bilingual), `non-eu-b2b-legend.ts` |
 | Contracting | `contracting.ts`, `contract-acceptance.ts`, `billing/actions.ts`, `signup-form.tsx` |
+| DPA / subprocessors | `dpa-document.ts`, `subprocessors-inventory.ts`, `legal-content.ts` |
+| Operator process | `docs/billing/refund-invoice-correction-runbook.md`, `e-invoice-readiness-roadmap.md`, `subprocessor-change-procedure.md` |
 | Legal copy | `src/lib/company/legal-content.ts`, `company-information.ts`, `company-contact.ts` |
 | Mollie gate | `providers/mollie/rollout.ts`, `mode.ts`, webhook route |
 | Prior packages | `docs/p1-002-external-tax-legal-review-package.md`, `docs/p1-002-remediation-pricing-tax-invoice-contracting.md` |

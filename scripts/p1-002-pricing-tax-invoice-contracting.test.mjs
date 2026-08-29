@@ -69,11 +69,13 @@ test("E-Invoice domain ready — XML generator deferred (no fake XML)", () => {
 
 test("B2B contracting + DPA acceptance versions exist", () => {
   const contracting = readSource("src/lib/billing/contracting.ts");
+  const dpa = readSource("src/lib/company/dpa-document.ts");
   assert.match(contracting, /TERMS_DOCUMENT_VERSION/);
   assert.match(contracting, /DPA_DOCUMENT_VERSION/);
-  assert.match(contracting, /LEGAL_TEXT_PENDING_COUNSEL/);
+  assert.match(contracting, /READY_FOR_EXTERNAL_LEGAL_REVIEW|DPA_EXTERNAL_REVIEW_STATUS/);
   assert.match(contracting, /buildCheckoutContractSummary/);
   assert.match(contracting, /organizationName/);
+  assert.match(dpa, /dpa-2026-08-29-v1/);
   const signup = readSource("src/components/auth/signup-form.tsx");
   assert.match(signup, /b2bEntrepreneurConfirmed/);
   assert.match(signup, /termsAccepted/);

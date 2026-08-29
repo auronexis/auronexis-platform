@@ -94,6 +94,18 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     return;
   }
 
+  if (mayIssueReverseCharge) {
+    const sellerVat = sellerConfig.vatId?.trim() || null;
+    const buyerVat = identity?.vatId?.trim() || null;
+    if (!sellerVat || !buyerVat) {
+      console.warn("[billing][sales-invoice] skipped — Reverse Charge requires seller and buyer VAT IDs", {
+        hasSellerVat: Boolean(sellerVat),
+        hasBuyerVat: Boolean(buyerVat),
+      });
+      return;
+    }
+  }
+
   const breakdown = calculateVatInclusiveBreakdown({
     grossMinor: input.amountTotalMinor,
     determination,
