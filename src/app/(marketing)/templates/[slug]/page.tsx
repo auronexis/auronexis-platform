@@ -8,6 +8,9 @@ type TemplatePageProps = {
   params: Promise<{ slug: string }>;
 };
 
+/** Unknown template slugs must 404 — do not soft-render the not-found UI as HTTP 200. */
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return TEMPLATE_SLUGS.map((slug) => ({ slug }));
 }

@@ -9,6 +9,9 @@ type FeaturePageProps = {
   params: Promise<{ slug: string }>;
 };
 
+/** Unknown feature slugs must 404 — do not soft-render the not-found UI as HTTP 200. */
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return FEATURE_SLUGS.map((slug) => ({ slug }));
 }

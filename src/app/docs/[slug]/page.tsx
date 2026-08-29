@@ -10,6 +10,9 @@ type DocTopicPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+/** Unknown doc slugs must 404 — do not soft-render the not-found UI as HTTP 200. */
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return getAllDocSlugs().map((slug) => ({ slug }));
 }

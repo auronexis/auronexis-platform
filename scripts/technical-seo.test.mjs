@@ -564,3 +564,50 @@ test("pricing schema remains SoftwareApplication SaaS with EUR — no Product me
   assert.doesNotMatch(schema, /priceCurrency:\s*"USD"/);
   assert.doesNotMatch(schema, /OfferShippingDetails|shippingDetails\s*:/);
 });
+
+test("public marketing slug routes set dynamicParams false to prevent soft-404", () => {
+  const files = [
+    "src/app/docs/[slug]/page.tsx",
+    "src/app/(marketing)/features/[slug]/page.tsx",
+    "src/app/(marketing)/solutions/[slug]/page.tsx",
+    "src/app/(marketing)/templates/[slug]/page.tsx",
+    "src/app/(marketing)/use-cases/[slug]/page.tsx",
+    "src/app/(marketing)/industries/[slug]/page.tsx",
+  ];
+  for (const file of files) {
+    const source = readSource(file);
+    assert.match(source, /export const dynamicParams = false/, `${file} must disable unknown dynamic params`);
+    assert.match(source, /generateStaticParams/, `${file} must keep static params`);
+  }
+});
+
+test("integrations catalog does not bury live Teams or Enterprise API under Coming soon", () => {
+  const catalog = readSource("src/lib/marketing/integrations-catalog.ts");
+  assert.match(catalog, /id: "teams"/);
+  assert.match(catalog, /id: "api-access"/);
+  assert.match(catalog, /id: "zapier"/);
+  // Teams + API must not be sectioned as coming_soon
+  assert.doesNotMatch(
+    catalog,
+    /id: "teams"[\s\S]{0,220}section: "coming_soon"/,
+    "Microsoft Teams must not be Coming soon when live delivery exists",
+  );
+  assert.doesNotMatch(
+    catalog,
+    /id: "api-access"[\s\S]{0,220}section: "coming_soon"/,
+    "API Access must not be Coming soon when REST API exists",
+  );
+  assert.match(catalog, /id: "teams"[\s\S]{0,220}section: "available"/);
+  assert.match(catalog, /id: "api-access"[\s\S]{0,220}section: "available"/);
+  assert.match(catalog, /id: "zapier"[\s\S]{0,220}section: "coming_soon"/);
+});
+
+test("features/integrations copy does not overclaim production CRM sync replication", () => {
+  const feature = readSource("src/lib/seo/feature-content.ts");
+  assert.match(feature, /v1 sync as scaffolding/);
+  assert.match(feature, /not guaranteed CRM\/ticketing replication/);
+  assert.doesNotMatch(
+    feature,
+    /Operational records stay aligned with your CRM, ticketing, and productivity tools without constant manual export and import/,
+  );
+});

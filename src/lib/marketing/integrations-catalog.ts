@@ -75,22 +75,24 @@ export const INTEGRATION_CATALOG: IntegrationCatalogItem[] = [
   {
     id: "teams",
     title: "Microsoft Teams",
-    description: "Channel notifications and operational updates for Microsoft-first agencies.",
-    status: "planned",
-    section: "coming_soon",
+    description:
+      "Channel notifications and operational updates via Teams webhooks and connector actions.",
+    status: "available",
+    section: "available",
+  },
+  {
+    id: "api-access",
+    title: "API Access",
+    description:
+      "REST API for clients, reports, risks, incidents, and integrations — Enterprise plan entitlement.",
+    status: "enterprise",
+    section: "available",
   },
   {
     id: "zapier",
     title: "Zapier",
     description: "No-code automation bridges to CRM, ticketing, and productivity tools.",
     status: "planned",
-    section: "coming_soon",
-  },
-  {
-    id: "api-access",
-    title: "API Access",
-    description: "REST API for clients, reports, risks, incidents, and integrations on Enterprise plans.",
-    status: "enterprise",
     section: "coming_soon",
   },
 ];

@@ -9,6 +9,9 @@ type UseCasePageProps = {
   params: Promise<{ slug: string }>;
 };
 
+/** Unknown use-case slugs must 404 — do not soft-render the not-found UI as HTTP 200. */
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return AUDIENCE_SLUGS.map((slug) => ({ slug }));
 }

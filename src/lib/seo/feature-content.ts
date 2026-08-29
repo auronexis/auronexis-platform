@@ -1004,33 +1004,33 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     eyebrow: "Feature",
     title: "Integrations and connectors for your stack",
     description:
-      "Connect CRM, ticketing, and productivity tools with OAuth flows and sync jobs to keep operational data current.",
+      "Authorize OAuth connectors, store secrets, and drive workflow actions into CRM, ticketing, messaging, and productivity tools.",
     metaDescription:
-      "MSP integrations — CRM, ticketing, OAuth connectors, and sync workflows in Auroranexis.",
+      "MSP integrations — OAuth connectors, webhooks, secrets, and workflow actions in Auroranexis.",
     problem:
       "Client and delivery data lives in external systems that operations teams reconcile manually. Swivel-chair work between tools creates delays, errors, and incomplete portfolio views.",
     solution:
-      "Auroranexis integrations connect approved external systems via OAuth and configured sync jobs. Operational records stay aligned with your CRM, ticketing, and productivity tools without constant manual export and import.",
+      "Auroranexis connectors authorize approved external systems via OAuth where configured, store API secrets when needed, and unlock workflow actions for notifications and operational writes. Sync jobs record connector health and diagnostics — treat v1 sync as scaffolding, not guaranteed CRM/ticketing replication.",
     businessValue:
-      "Reduce reconciliation overhead and keep your command center current. Teams spend less time copying data between systems and more time acting on portfolio signals.",
+      "Reduce manual copy-paste into chat, tickets, and CRM activity logs. Teams keep Auroranexis as the operational source of truth while pushing events into tools they already monitor.",
     audience:
       "Technical operations leads, integration administrators, and delivery managers at MSPs connecting Auroranexis to existing client and service management tools.",
     enterpriseAdvantages: [
-      "OAuth-based connector authentication for supported systems",
+      "OAuth-based connector authentication for supported systems when provider apps are configured",
       "Organization-scoped integration inventory and status monitoring",
-      "Sync job configuration with execution history",
+      "Connector sync diagnostics with execution history (v1 scaffolding)",
       "Role-based access for integration administration",
     ],
     benefits: [
       {
-        title: "Less manual reconciliation",
+        title: "Less manual handoff",
         description:
-          "Sync client and event data from connected systems instead of maintaining parallel spreadsheets.",
+          "Push incidents, SLA events, and operational updates into connected ticketing and messaging tools from workflows.",
       },
       {
-        title: "Current operational context",
+        title: "Connector visibility",
         description:
-          "Keep portfolio views aligned with your CRM and ticketing tools through configured sync jobs.",
+          "Monitor connection status, OAuth health, and delivery failures from Automation → Connectors and integration logs.",
       },
       {
         title: "Controlled connector access",
@@ -1039,22 +1039,22 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     capabilities: [
-      "Connector catalog with OAuth authorization flows",
-      "Sync job configuration and execution monitoring",
+      "Connector catalog with OAuth authorization flows for supported providers",
+      "Webhook and secret-backed delivery for messaging and custom endpoints",
       "Integration status and error visibility",
-      "Event-driven data alignment with operational records",
+      "Workflow actions unlocked after connector authorization",
       "Organization-scoped connector administration",
     ],
     faq: [
       {
         question: "Which systems can I connect?",
         answer:
-          "Auroranexis supports a growing catalog of CRM, ticketing, and productivity connectors. See the integrations page for current availability.",
+          "Auroranexis ships OAuth connector modules for CRM, ticketing, messaging, and productivity providers. Availability depends on workspace plan and whether OAuth app credentials are configured for each provider. See the integrations page and Automation → Connectors for current options.",
       },
       {
         question: "Do integrations require custom development?",
         answer:
-          "Supported connectors use OAuth and configured sync jobs. Custom integrations may require Enterprise plan discussion with our team.",
+          "Supported connectors use OAuth and/or stored secrets plus workflow actions. Sync in v1 is diagnostic scaffolding, not guaranteed bidirectional CRM replication. Custom integrations may require Enterprise plan discussion or the REST API.",
       },
     ],
     relatedLinks: [
