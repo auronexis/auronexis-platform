@@ -113,7 +113,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Can the portal be white-labeled?",
-        answer: "Business and Enterprise plans support white-label branding. Configure logos, colors, and domain settings in workspace branding.",
+        answer: "Professional and higher plans support white-label branding. Configure logos, colors, and domain settings in workspace branding. Branded PDF export customization requires Business or Enterprise.",
       },
       {
         question: "How do clients access the portal?",
@@ -171,7 +171,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Which plans include automation?",
-        answer: "Automation workflows are available on Business and Enterprise. Specific limits vary by plan tier.",
+        answer: "Automation workflows are available on Professional, Business, and Enterprise. Specific limits vary by plan tier.",
       },
     ],
   },

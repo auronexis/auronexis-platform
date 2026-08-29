@@ -11,7 +11,7 @@ export const AUTOMATION_DOC: DocPageInput = {
     {
       variant: "info",
       title: "Plan availability",
-      body: "The automation builder is included on Business and Enterprise tiers. If the Automation module shows an upgrade prompt, review Settings → Billing or contact your workspace owner before creating workflows.",
+      body: "The automation builder is included on Professional and higher tiers. If the Automation module shows an upgrade prompt, review Settings → Billing or contact your workspace owner before creating workflows.",
     },
     {
       variant: "tip",
@@ -268,7 +268,7 @@ export const AUTOMATION_DOC: DocPageInput = {
     {
       question: "Is automation available on all plans?",
       answer:
-        "The workflow builder is plan-gated. Workspaces without automation entitlements may see an upgrade prompt; Business and Enterprise tiers include the automation engine. Review Settings → Billing for your effective entitlements.",
+        "The workflow builder is plan-gated. Professional and higher include automation workflows; Business and Enterprise increase automation limits and related engine capacity. Review Settings → Billing for your effective entitlements.",
     },
   ],
   relatedLinks: [

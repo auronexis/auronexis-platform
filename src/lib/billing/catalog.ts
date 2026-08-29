@@ -91,11 +91,12 @@ export const CANONICAL_PLAN_CATALOG: readonly CanonicalPlanCatalogEntry[] = [
     visibility: "public",
     amountMinor: 17_900,
     planKey: "professional",
-    description: "For growing agencies with client portal delivery, integrations, and AI-assisted reporting.",
+    description: "For growing agencies with client portal delivery, integrations, automation workflows, and AI-assisted reporting.",
     highlights: [
       "Up to 25 clients",
       "Client portal",
       "Integrations",
+      "Automation workflows",
       "Report templates and scheduling",
       "AI report assistant",
       "Profitability tracking",

@@ -26,7 +26,7 @@ export const BILLING_DOC: DocPageInput = {
       paragraphs: [
         "Auroranexis is the seller for subscriptions; Mollie is the payment service provider that processes checkout and settlement. Your workspace plan determines feature access, usage limits, seat counts, and support tier. All billing activity — plan selection, checkout, Auroranexis invoices, and subscription changes — is accessible from Settings → Billing within the application.",
         "Billing is tied to your organization, not individual user accounts. When you upgrade or downgrade, the change applies to the entire workspace. Usage meters and effective limits are reflected in Settings → Usage and update after plan changes are processed.",
-        "Three public self-serve plans are available: Professional for growing teams that need client portal delivery, integrations, and AI-assisted reporting; Business for agencies requiring automation workflows, advanced compliance features, and white-label branding; and Enterprise for organizations that need custom limits and negotiated arrangements. Pilot Partner and Founding Customer are invite-only early access cohorts — not public plan tiers. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
+        "Three public self-serve plans are available: Professional for growing teams that need client portal delivery, integrations, automation workflows, and AI-assisted reporting; Business for agencies requiring advanced compliance features, higher automation limits, and expanded capacity; and Enterprise for organizations that need custom limits and negotiated arrangements. Pilot Partner and Founding Customer are invite-only early access cohorts — not public plan tiers. Enterprise requests are submitted from Settings → Billing or Settings → Enterprise and reviewed separately from standard checkout.",
       ],
     },
     {
@@ -66,8 +66,8 @@ export const BILLING_DOC: DocPageInput = {
         {
           title: "Plan tiers",
           bullets: [
-            "Professional — core client operations, client portal delivery, integrations, profitability tracking, and essential monitoring for growing agencies.",
-            "Business — automation workflows, advanced compliance features, white-label branding, and expanded limits.",
+            "Professional — core client operations, client portal delivery, integrations, automation workflows, profitability tracking, and essential monitoring for growing agencies.",
+            "Business — higher automation and client limits, advanced compliance features, and expanded operational capacity.",
             "Enterprise — custom limits, tailored onboarding, plan overrides, priority support, and dedicated support; request via Settings → Billing or Enterprise.",
           ],
         },
@@ -552,7 +552,7 @@ export const API_DOC: DocPageInput = {
     {
       variant: "tip",
       title: "OpenAPI reference",
-      body: "The interactive API reference at /api/docs provides full endpoint documentation, request and response schemas, and try-it-out functionality. Access it after signing in or from Settings → API.",
+      body: "The interactive API reference at /api/docs provides a curated OpenAPI overview with selected endpoint paths and schemas. It is not a complete inventory of every API route — use Settings → API and this documentation alongside /api/docs when integrating.",
     },
     {
       variant: "warning",
@@ -566,7 +566,7 @@ export const API_DOC: DocPageInput = {
       paragraphs: [
         "The Auroranexis API is a RESTful, organization-scoped interface. Every request is authenticated with an API key that carries explicit scopes limiting what the key can read or write. The API follows standard HTTP conventions — JSON request and response bodies, appropriate status codes, and TLS encryption for all traffic.",
         "API access availability and rate limits depend on your subscription plan. Plan-gated features such as AI execution and predictive analytics require both the appropriate scope and an eligible plan tier.",
-        "All key management — creation, scope selection, revocation, and webhook registration — happens in Settings → API. The OpenAPI reference at /api/docs is the authoritative source for endpoint paths, request schemas, and response formats.",
+        "All key management — creation, scope selection, revocation, and webhook registration — happens in Settings → API. The OpenAPI reference at /api/docs documents selected public endpoints and schemas; treat it as a guided reference rather than a claim of complete coverage of every route.",
       ],
     },
     {
@@ -674,7 +674,7 @@ export const API_DOC: DocPageInput = {
         "Rotate keys periodically and revoke unused keys immediately.",
         "Implement idempotent handlers for webhook receivers to safely process duplicate deliveries.",
         "Log API errors with correlation IDs from response headers when available.",
-        "Use the OpenAPI reference at /api/docs as the source of truth for endpoint behavior.",
+        "Use the OpenAPI reference at /api/docs together with Settings → API for endpoint behavior; coverage is curated and may lag new routes.",
         "Never expose API keys in client-side JavaScript, mobile apps, or public repositories.",
         "Test integrations against a dedicated key with minimal scopes before granting production access.",
       ],
@@ -763,7 +763,7 @@ export const API_DOC: DocPageInput = {
     {
       question: "Where do I find endpoint documentation?",
       answer:
-        "The interactive OpenAPI reference at /api/docs provides full endpoint details, schemas, and examples. Access it after signing in or from Settings → API.",
+        "The interactive OpenAPI reference at /api/docs provides selected endpoint details and schemas. Access it after signing in or from Settings → API; expand coverage may lag new routes.",
     },
     {
       question: "Can I retrieve an API key after creating it?",

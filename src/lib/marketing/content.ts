@@ -55,7 +55,7 @@ export const MARKETING_TESTIMONIALS = [
 
 export const PLAN_COMPARISON_ROWS = [
   { feature: "AI copilot", professional: true, business: true, enterprise: "Unlimited credits" },
-  { feature: "Automation workflows", professional: "—", business: true, enterprise: true },
+  { feature: "Automation workflows", professional: true, business: true, enterprise: true },
   { feature: "Risk & incident modules", professional: "—", business: true, enterprise: true },
   { feature: "SLA tracking", professional: "—", business: true, enterprise: true },
   { feature: "Profitability", professional: true, business: true, enterprise: true },
@@ -116,7 +116,7 @@ export const FEATURES: readonly MarketingFeature[] = [
     enterpriseValue: "Repeatable automation with organization-scoped execution logs.",
     ctaLabel: "View automation features",
     ctaHref: "/features/automation",
-    planNote: "Available on Business and Enterprise plans.",
+    planNote: "Available on Professional, Business, and Enterprise plans.",
   },
   {
     title: "Integrations & Connectors",
@@ -171,8 +171,8 @@ export const PUBLIC_PRICING_PLANS = [
     price: "€179",
     period: "/ month",
     productPath: "professional" as const,
-    description: "For growing agencies with client portal delivery, integrations, and AI-assisted reporting.",
-    highlights: ["Up to 25 clients", "Client portal", "Integrations", "AI report assistant"],
+    description: "For growing agencies with client portal delivery, integrations, automation workflows, and AI-assisted reporting.",
+    highlights: ["Up to 25 clients", "Client portal", "Integrations", "Automation workflows", "AI report assistant"],
     featured: false,
   },
   {
