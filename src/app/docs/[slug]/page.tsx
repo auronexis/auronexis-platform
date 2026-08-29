@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: DocTopicPageProps): Promise<M
   const doc = getDocPage(slug);
 
   if (!doc) {
-    return { title: "Documentation" };
+    notFound();
   }
 
   return createPageMetadata({

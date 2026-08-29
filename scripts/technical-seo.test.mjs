@@ -611,3 +611,15 @@ test("features/integrations copy does not overclaim production CRM sync replicat
     /Operational records stay aligned with your CRM, ticketing, and productivity tools without constant manual export and import/,
   );
 });
+
+test("middleware hard-404s unknown public marketing/docs slugs", () => {
+  const middleware = readSource("src/middleware.ts");
+  const allowlist = readSource("src/lib/seo/public-dynamic-slug-allowlist.ts");
+  assert.match(middleware, /isUnknownPublicDynamicSlugPath/);
+  assert.match(middleware, /status:\s*404/);
+  assert.match(allowlist, /isUnknownPublicDynamicSlugPath/);
+  assert.match(allowlist, /\/features\//);
+  assert.match(allowlist, /\/docs\//);
+  assert.match(allowlist, /release-notes/);
+  assert.match(allowlist, /integrations/);
+});

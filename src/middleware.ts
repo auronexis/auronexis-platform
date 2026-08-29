@@ -7,6 +7,7 @@ import {
   shouldRedirectAppMarketingToWww,
 } from "@/lib/deployment/middleware-routing";
 import { applySecurityHeaders } from "@/lib/security/response-headers";
+import { isUnknownPublicDynamicSlugPath } from "@/lib/seo/public-dynamic-slug-allowlist";
 import { updateSession } from "@/lib/supabase/middleware";
 
 function withSecurityHeaders(
@@ -19,6 +20,18 @@ function withSecurityHeaders(
     secured.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   return secured;
+}
+
+function hardNotFoundResponse(hostname: string, pathname: string): NextResponse {
+  const body = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="robots" content="noindex, nofollow"/><title>Page Not Found | Auroranexis</title></head><body><main><p>404</p><h1>Page not found</h1><p>The page you requested does not exist.</p><p><a href="/">Back home</a></p></main></body></html>`;
+  const response = new NextResponse(body, {
+    status: 404,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "private, no-store",
+    },
+  });
+  return withSecurityHeaders(response, hostname, pathname);
 }
 
 export async function middleware(request: NextRequest) {
@@ -43,6 +56,10 @@ export async function middleware(request: NextRequest) {
       hostname,
       pathname,
     );
+  }
+
+  if (isUnknownPublicDynamicSlugPath(pathname)) {
+    return hardNotFoundResponse(hostname, pathname);
   }
 
   const response = await updateSession(request);

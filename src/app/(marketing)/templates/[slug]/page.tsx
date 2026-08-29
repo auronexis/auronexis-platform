@@ -18,7 +18,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: TemplatePageProps): Promise<Metadata> {
   const { slug } = await params;
   const content = TEMPLATE_PAGES[slug];
-  if (!content) return { title: "Template" };
+  if (!content) notFound();
 
   return createPageMetadataForPath(content.path);
 }

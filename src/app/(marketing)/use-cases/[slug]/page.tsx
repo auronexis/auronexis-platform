@@ -19,7 +19,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: UseCasePageProps): Promise<Metadata> {
   const { slug } = await params;
   const content = AUDIENCE_PAGES[slug];
-  if (!content) return { title: "Use case" };
+  if (!content) notFound();
 
   return createPageMetadataForPath(content.path);
 }

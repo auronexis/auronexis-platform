@@ -19,7 +19,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: IndustryPageProps): Promise<Metadata> {
   const { slug } = await params;
   const content = INDUSTRY_PAGES[slug];
-  if (!content) return { title: "Industry" };
+  if (!content) notFound();
 
   return createPageMetadataForPath(content.path);
 }
