@@ -23,7 +23,7 @@ export function getPlatformBrandingDefaults(): ResolvedOrganizationBranding {
     loginBackgroundUrl: BRANDING_ASSETS.loginBackground,
     portalWelcomeMessage: DEFAULT_PORTAL_WELCOME_MESSAGE,
     loginTitle: PLATFORM_NAME,
-    loginSubtitle: "Monitor clients. Detect risks. Prove value.",
+    loginSubtitle: "Monitor clients. Detect risks. Document value.",
     hidePlatformBranding: false,
   };
 }

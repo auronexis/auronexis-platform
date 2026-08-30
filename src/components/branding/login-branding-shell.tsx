@@ -14,7 +14,7 @@ const BRAND_TAGLINE = (
     <br />
     Detect risks.
     <br />
-    Prove value.
+    Document value.
   </>
 );
 

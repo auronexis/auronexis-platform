@@ -322,7 +322,7 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis gives consulting leaders a practice-wide operations layer. Track client health, incidents, and risks per engagement, standardize executive reporting, and maintain audit-ready delivery history — so partners spend time advising clients, not assembling status updates.",
     businessValue:
-      "Protect revenue from silent engagement degradation. Scale partner oversight across a growing client base. Present a consistent, professional operational posture to enterprise clients during procurement and QBR cycles.",
+      "Improve visibility into engagement health before silent degradation. Scale partner oversight across a growing client base. Present a consistent, professional operational posture to enterprise clients during procurement and QBR cycles.",
     audience:
       "Management consultancies, strategy firms, implementation partners, and professional services organizations with multi-client engagement portfolios.",
     enterpriseAdvantages: [

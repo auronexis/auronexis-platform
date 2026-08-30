@@ -67,7 +67,7 @@ export default async function MarketingHomePage() {
       <MarketingHero
         withBanner
         eyebrow="Operations Command Center"
-        title="Monitor clients. Detect risks. Prove value."
+        title="Monitor clients. Detect risks. Document value."
         description="Auroranexis is the Operations Command Center for AI automation agencies and MSPs — client health, risk, incidents, monitoring, reporting, and delivery transparency in one workspace."
         primaryHref="/signup"
         primaryLabel="Get started"

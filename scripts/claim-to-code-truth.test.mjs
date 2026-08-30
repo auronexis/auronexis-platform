@@ -213,16 +213,32 @@ test("it-service-providers and industries/it do not promise revenue protection o
     iBlock,
     /surface SLA breaches for review and documented follow-up/,
   );
+
+  assert.doesNotMatch(audience, /Protect retainer revenue/i);
+  assert.match(
+    audience,
+    /Support recurring retainer relationships through proactive account management/,
+  );
+
+  assert.doesNotMatch(industry, /Protect revenue from silent engagement degradation/i);
+  assert.match(
+    industry,
+    /Improve visibility into engagement health before silent degradation/,
+  );
 });
 
 test("homepage and about avoid ROI show claims and unsupported prove-value language", () => {
   const page = readSource("src/app/(marketing)/page.tsx");
-  assert.doesNotMatch(page, /prove outcomes/);
+  assert.doesNotMatch(page, /prove outcomes/i);
+  assert.doesNotMatch(page, /prove value/i);
   assert.match(page, /document operational outcomes/);
+  assert.match(page, /Document value/);
 
   const about = readSource("src/app/(marketing)/about/page.tsx");
-  assert.doesNotMatch(about, /prove value/);
-  assert.match(about, /document delivered value/);
+  assert.doesNotMatch(about, /prove value/i);
+  assert.doesNotMatch(about, /demonstrate outcomes/i);
+  assert.match(about, /Document delivered value/);
+  assert.match(about, /communicate delivered operational value/);
 
   const marketing = readSource("src/lib/marketing/content.ts");
   assert.doesNotMatch(marketing, /OAuth and connector health jobs/);
@@ -231,6 +247,16 @@ test("homepage and about avoid ROI show claims and unsupported prove-value langu
     marketing,
     /Connect supported CRM, ticketing, messaging, and productivity systems through available connectors and integration workflows/,
   );
+
+  const brandingDefaults = readSource("src/lib/branding/defaults.ts");
+  const platformDefaults = readSource("src/lib/branding/platform-defaults.ts");
+  const whiteLabel = readSource("src/lib/white-label/branding.ts");
+  const loginShell = readSource("src/components/branding/login-branding-shell.tsx");
+  const loginForm = readSource("src/components/auth/login-form.tsx");
+  for (const source of [brandingDefaults, platformDefaults, whiteLabel, loginShell, loginForm]) {
+    assert.doesNotMatch(source, /prove value/i);
+    assert.match(source, /Document value/);
+  }
 });
 
 test("public audience pages avoid Frankfurt customer-option and headcount outcome overclaims", () => {

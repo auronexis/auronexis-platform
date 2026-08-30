@@ -102,7 +102,7 @@ export function getLoginDisplaySubtitle(branding: ResolvedOrganizationBranding):
   return (
     branding.loginSubtitle?.trim() ||
     branding.loginWelcomeMessage?.trim() ||
-    "Monitor clients. Detect risks. Prove value."
+    "Monitor clients. Detect risks. Document value."
   );
 }
 

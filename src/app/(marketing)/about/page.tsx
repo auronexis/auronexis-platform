@@ -27,8 +27,8 @@ const VALUES = [
     body: "Multi-tenant isolation, audit trails, and transparent security practices built for B2B workloads and client portals.",
   },
   {
-    title: "Prove value",
-    body: "Help teams demonstrate outcomes to clients through reporting, health signals, and executive-ready deliverables.",
+    title: "Document delivered value",
+    body: "Help teams communicate delivered operational value to clients through reporting, health signals, and executive-ready deliverables.",
   },
 ] as const;
 

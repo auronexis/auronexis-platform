@@ -52,7 +52,7 @@ export function LoginForm({ redirectTo, initialError, initialSuccess }: LoginFor
           <br />
           Detect risks.
           <br />
-          Prove value.
+          Document value.
         </p>
       </div>
       <div className="space-y-2">

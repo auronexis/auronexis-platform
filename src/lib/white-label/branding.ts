@@ -187,7 +187,7 @@ function buildPlatformDefaults(_organizationName: string): ResolvedWhiteLabelBra
     portalTitle: `${PLATFORM_NAME} Client Portal`,
     portalDescription: null,
     loginTitle: PLATFORM_NAME,
-    loginSubtitle: "Monitor clients. Detect risks. Prove value.",
+    loginSubtitle: "Monitor clients. Detect risks. Document value.",
     loginWelcomeMessage: null,
     supportEmail: null,
     supportUrl: null,

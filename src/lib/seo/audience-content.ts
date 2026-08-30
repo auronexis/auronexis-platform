@@ -493,7 +493,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis gives digital agencies a client-centric workspace for tracking delivery health, incidents, risks, and reporting across the portfolio. Account managers, project leads, and leadership operate from shared operational data instead of disconnected project tools and status spreadsheets.",
     businessValue:
-      "Protect retainer revenue through proactive account management, reduce senior time on report assembly, and demonstrate delivery value with structured evidence during client reviews.",
+      "Support recurring retainer relationships through proactive account management, reduce senior time on report assembly, and provide structured evidence of delivered operational work during client reviews.",
     audience:
       "Web agencies, UX studios, digital product shops, and full-service digital firms managing multiple concurrent client engagements with recurring or project-based contracts.",
     enterpriseAdvantages: [
