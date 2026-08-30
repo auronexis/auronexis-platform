@@ -28,7 +28,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis gives marketing agencies a client-centric command center. Connect each account to incidents, risks, reports, and health signals so account managers, strategists, and leadership work from the same operational record — not scattered spreadsheets and inbox threads.",
     businessValue:
-      "Reduce manual reporting overhead, surface at-risk accounts earlier, and support delivery-value discussions with operational evidence during renewals. Agencies protect margin by standardizing how teams monitor, communicate, and report across the portfolio.",
+      "Reduce manual reporting overhead, surface at-risk accounts earlier, and support delivery-value discussions with operational evidence during renewals. Agencies can improve operational consistency by standardizing how teams monitor, communicate, and report across the portfolio.",
     audience:
       "Performance marketing agencies, brand agencies, and full-service shops managing multi-client retainers who need portfolio visibility, client-facing transparency, and executive-ready reporting that supports delivery oversight across a growing client portfolio.",
     enterpriseAdvantages: [
@@ -51,7 +51,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       {
         title: "Client transparency",
         description:
-          "Share appropriate status, incidents, and progress through a dedicated portal that reinforces trust and retention.",
+          "Share appropriate status, incidents, and progress through a dedicated portal that supports transparent client communication and retention discussions.",
       },
     ],
     capabilities: [
@@ -117,11 +117,11 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     metaDescription:
       "IT service provider operations — incident tracking, SLA management, and multi-client visibility in Auroranexis.",
     problem:
-      "IT service providers coordinate delivery across ticketing systems, monitoring tools, and client communication channels. Without a portfolio-level view, managers react to escalations instead of managing proactively, and SLA performance is difficult to prove during contract reviews.",
+      "IT service providers coordinate delivery across ticketing systems, monitoring tools, and client communication channels. Without a portfolio-level view, managers react to escalations instead of managing proactively, and SLA performance is difficult to document with auditable records during contract reviews.",
     solution:
       "Auroranexis centralizes client records, incident lifecycles, SLA policies, and risk registers so IT service teams operate from a shared system of record. Technicians, account managers, and leadership see the same data — reducing handoff friction and improving client transparency.",
     businessValue:
-      "Support SLA compliance discussions with auditable records, reduce time spent on status reporting, and scale delivery standards as the client base grows. Service providers protect revenue by demonstrating reliability with operational evidence earlier in the client relationship.",
+      "Support SLA compliance discussions with auditable records, reduce time spent on status reporting, and scale delivery standards as the client base grows. Service providers can document reliability with operational records that support client reviews.",
     audience:
       "Managed IT firms, outsourced IT departments, and technology service providers delivering recurring support and infrastructure services to business clients.",
     enterpriseAdvantages: [
@@ -167,7 +167,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       "Include SLA performance in scheduled client reports and QBRs",
     ],
     expectedOutcomes: [
-      "Reduced SLA disputes backed by timestamped operational records",
+      "Clearer SLA discussions backed by timestamped operational records",
       "Faster incident resolution through clear ownership and escalation paths",
       "Proactive account management based on portfolio health signals",
       "Scalable reporting that supports a growing client portfolio",
@@ -214,7 +214,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis gives MSPs a portfolio command center designed for multi-client operators. Track health signals, incidents, risks, and SLA performance per client while providing transparent status through a branded portal — all from one workspace.",
     businessValue:
-      "Help teams identify at-risk accounts earlier with operational signals, support retention discussions through proactive transparency, and support delivery oversight across a growing client portfolio. MSPs compete on reliability — Auroranexis helps surface operational performance evidence.",
+      "Help teams identify at-risk accounts earlier with operational signals, support retention efforts through proactive operational transparency, and support delivery oversight across a growing client portfolio. MSPs compete on reliability — Auroranexis helps teams document operational performance with auditable records.",
     audience:
       "Managed service providers of all sizes — from boutique MSPs to regional operators — who need portfolio visibility, SLA accountability, and client-facing transparency at scale.",
     enterpriseAdvantages: [
@@ -299,7 +299,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     eyebrow: "Use case",
     title: "Delivery operations for consultancies",
     description:
-      "Package operational insights, track engagement health, and demonstrate ongoing value across consulting retainers and programs.",
+      "Package operational insights, track engagement health, and document delivered value across consulting retainers and programs.",
     metaDescription:
       "Consultancy client operations — engagement tracking, executive reporting, and portfolio visibility in Auroranexis.",
     problem:
@@ -307,7 +307,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis gives consultancies a structured operations layer for multi-client engagements. Track risks, incidents, delivery milestones, and health signals per client while producing executive-ready reports that reinforce the value of ongoing advisory relationships.",
     businessValue:
-      "Extend retainer relationships by demonstrating continuous value, reduce partner time spent on status assembly, and identify engagement risks before they affect client satisfaction or renewal decisions.",
+      "Extend retainer relationships by documenting continuous delivery evidence, reduce partner time spent on status assembly, and identify engagement risks before they affect client satisfaction or renewal decisions.",
     audience:
       "Management consultancies, technology advisory firms, and boutique consulting practices managing multiple concurrent client engagements with recurring or project-based contracts.",
     enterpriseAdvantages: [

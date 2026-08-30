@@ -126,7 +126,7 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis provides a client-centric operations layer for IT delivery teams. Associate incidents, risks, and SLA performance with each client, monitor portfolio health from executive dashboards, and communicate status through structured reports and the client portal.",
     businessValue:
-      "Protect recurring revenue by catching delivery degradation early. Support SLA performance reporting with auditable records. Scale operational oversight across a growing client portfolio.",
+      "Support recurring client relationships by surfacing accounts that may require attention. Support SLA performance reporting with auditable records. Scale operational oversight across a growing client portfolio.",
     audience:
       "Managed service providers, IT consultancies, internal IT shared services teams, and technology service firms with multi-client or multi-department delivery models.",
     enterpriseAdvantages: [
@@ -140,7 +140,7 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
       {
         title: "SLA-aware incident management",
         description:
-          "Track incidents against client SLA policies and surface breach warnings before they become contract disputes.",
+          "Track incidents against client SLA policies and surface SLA breaches for review and documented follow-up.",
       },
       {
         title: "Portfolio command center",

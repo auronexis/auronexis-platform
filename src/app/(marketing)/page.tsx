@@ -150,7 +150,7 @@ export default async function MarketingHomePage() {
         <MarketingSection
           eyebrow="Use Cases"
           title="Designed for service providers"
-          description="From MSPs to automation firms — standardize delivery and prove outcomes."
+          description="From MSPs to automation firms — standardize delivery and document operational outcomes."
         >
           <MarketingCardGrid items={USE_CASES} />
         </MarketingSection>

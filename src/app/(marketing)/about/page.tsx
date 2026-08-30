@@ -88,7 +88,7 @@ export default function AboutPage() {
       <MarketingSection title="Our mission">
         <p className="max-w-3xl text-base leading-relaxed text-muted">
           {COMPANY_NAME} helps agencies monitor client operations, detect risks early, automate delivery,
-          and prove value through reporting and client portals. Public plans are Professional, Business, and
+          and document delivered value through reporting and client portals. Public plans are Professional, Business, and
           Enterprise. Pilot and Founding programs are invite-only.
         </p>
       </MarketingSection>

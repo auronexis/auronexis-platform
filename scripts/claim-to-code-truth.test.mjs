@@ -138,23 +138,27 @@ test("msps does not promise churn reduction, SLA proof, or headcount freeze", ()
   assert.doesNotMatch(block, /reduce churn/i);
   assert.doesNotMatch(block, /prove SLA/i);
   assert.doesNotMatch(block, /helps you prove it/i);
+  assert.doesNotMatch(block, /Protect recurring revenue/i);
   assert.doesNotMatch(block, /without adding reporting-focused roles/i);
   assert.doesNotMatch(block, /without proportional growth in reporting overhead/i);
-  assert.match(block, /support retention discussions through proactive transparency/);
+  assert.match(block, /support retention efforts through proactive operational transparency/);
   assert.match(block, /support delivery oversight across a growing client portfolio/);
   assert.match(block, /track and report SLA performance with auditable records/);
+  assert.match(block, /helps teams document operational performance with auditable records/);
 
   const marketing = readSource("src/lib/marketing/content.ts");
   assert.doesNotMatch(marketing, /prove SLA performance/);
   assert.match(marketing, /track and report SLA performance/);
 });
 
-test("marketing-agencies does not promise headcount freeze or absolute delivery-value proof", () => {
+test("marketing-agencies does not promise margin protection, headcount freeze, or absolute delivery-value proof", () => {
   const audience = readSource("src/lib/seo/audience-content.ts");
   const start = audience.indexOf('"marketing-agencies": buildLandingPage');
   const end = audience.indexOf('"it-service-providers": buildLandingPage', start + 1);
   const block = audience.slice(start, end);
   assert.doesNotMatch(block, /without adding headcount/i);
+  assert.doesNotMatch(block, /protect margin/i);
+  assert.doesNotMatch(block, /reinforces trust and retention/i);
   assert.doesNotMatch(block, /demonstrate measurable delivery value/i);
   assert.match(
     block,
@@ -162,7 +166,62 @@ test("marketing-agencies does not promise headcount freeze or absolute delivery-
   );
   assert.match(
     block,
+    /Agencies can improve operational consistency by standardizing how teams monitor, communicate, and report across the portfolio/,
+  );
+  assert.match(
+    block,
+    /supports transparent client communication and retention discussions/,
+  );
+  assert.match(
+    block,
     /executive-ready reporting that supports delivery oversight across a growing client portfolio/,
+  );
+});
+
+test("it-service-providers and industries/it do not promise revenue protection or dispute prevention", () => {
+  const audience = readSource("src/lib/seo/audience-content.ts");
+  const aStart = audience.indexOf('"it-service-providers": buildLandingPage');
+  const aEnd = audience.indexOf("msps: buildLandingPage", aStart + 1);
+  const aBlock = audience.slice(aStart, aEnd);
+  assert.doesNotMatch(aBlock, /protect revenue/i);
+  assert.doesNotMatch(aBlock, /before clients question/i);
+  assert.doesNotMatch(aBlock, /Reduced SLA disputes/);
+  assert.match(
+    aBlock,
+    /Service providers can document reliability with operational records that support client reviews/,
+  );
+
+  const industry = readSource("src/lib/seo/industry-content.ts");
+  const iStart = industry.indexOf("it: buildLandingPage");
+  const iEnd = industry.indexOf("cybersecurity: buildLandingPage", iStart + 1);
+  const iBlock = industry.slice(iStart, iEnd);
+  assert.doesNotMatch(iBlock, /Protect recurring revenue/);
+  assert.doesNotMatch(iBlock, /before they become contract disputes/);
+  assert.match(
+    iBlock,
+    /Support recurring client relationships by surfacing accounts that may require attention/,
+  );
+  assert.match(
+    iBlock,
+    /surface SLA breaches for review and documented follow-up/,
+  );
+});
+
+test("homepage and about avoid ROI show claims and unsupported prove-value language", () => {
+  const page = readSource("src/app/(marketing)/page.tsx");
+  assert.doesNotMatch(page, /prove outcomes/);
+  assert.match(page, /document operational outcomes/);
+
+  const about = readSource("src/app/(marketing)/about/page.tsx");
+  assert.doesNotMatch(about, /prove value/);
+  assert.match(about, /document delivered value/);
+
+  const marketing = readSource("src/lib/marketing/content.ts");
+  assert.doesNotMatch(marketing, /OAuth and connector health jobs/);
+  assert.doesNotMatch(marketing, /protect revenue and delivery quality/);
+  assert.match(
+    marketing,
+    /Connect supported CRM, ticketing, messaging, and productivity systems through available connectors and integration workflows/,
   );
 });
 
@@ -171,6 +230,8 @@ test("public audience pages avoid Frankfurt customer-option and headcount outcom
   assert.doesNotMatch(audience, /Frankfurt region support/i);
   assert.doesNotMatch(audience, /without adding headcount/i);
   assert.doesNotMatch(audience, /additional operations headcount/i);
+  assert.doesNotMatch(audience, /protect margin/i);
+  assert.doesNotMatch(audience, /protect revenue by/i);
   assert.match(
     audience,
     /EU-capable infrastructure with data-residency requirements confirmed for applicable enterprise arrangements/,
@@ -178,6 +239,7 @@ test("public audience pages avoid Frankfurt customer-option and headcount outcom
 
   const industry = readSource("src/lib/seo/industry-content.ts");
   assert.doesNotMatch(industry, /without adding management overhead per client/i);
+  assert.doesNotMatch(industry, /Protect recurring revenue/);
   assert.match(industry, /Scale operational oversight across a growing client portfolio/);
 });
 
