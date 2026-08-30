@@ -53,7 +53,7 @@ export default function EnterprisePage() {
         <MarketingFeatureSection
           eyebrow="Security"
           title="Enterprise security posture"
-          description="Tenant isolation, RBAC, audit trails, and EU-friendly deployment options designed for procurement review."
+          description="Tenant isolation, RBAC, audit trails, and EU-capable infrastructure designed for procurement review."
           visual={
             <ul className="space-y-2 text-sm text-primary-foreground/80">
               {ENTERPRISE_CONTENT.securityHighlights.map((item) => (

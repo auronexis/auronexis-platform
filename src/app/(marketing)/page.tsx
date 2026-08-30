@@ -164,7 +164,7 @@ export default async function MarketingHomePage() {
       />
 
       <MarketingPace bordered>
-        <MarketingSection eyebrow="Security" title="Enterprise security posture" description="Security-first architecture with EU-friendly deployment options.">
+        <MarketingSection eyebrow="Security" title="Enterprise security posture" description="Security-first architecture with EU-capable infrastructure.">
         <ul className="grid gap-3 md:grid-cols-2">
           {[
             "Encryption in transit and at rest",

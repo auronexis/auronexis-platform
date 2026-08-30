@@ -100,6 +100,14 @@ test("security highlights use EU-capable residency wording without Frankfurt cus
     marketing,
     /EU-friendly data residency options via Supabase \(Frankfurt region supported\)/,
   );
+
+  const homepage = readSource("src/app/(marketing)/page.tsx");
+  assert.doesNotMatch(homepage, /EU-friendly/);
+  assert.match(homepage, /EU-capable infrastructure/);
+
+  const enterprise = readSource("src/app/(marketing)/enterprise/page.tsx");
+  assert.doesNotMatch(enterprise, /EU-friendly/);
+  assert.match(enterprise, /EU-capable infrastructure/);
 });
 
 test("billing docs keep Professional+ automation truth", () => {
