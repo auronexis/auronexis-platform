@@ -587,7 +587,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
           [
             "API returns 403 on predictive endpoints",
             "Plan missing ai_predictive_intelligence or API key lacks predictive.read scope",
-            "Verify plan tier and create a new API key with predictive.read scope in Settings → API",
+            "Verify plan tier (Enterprise for Settings → API keys) and create a new API key with predictive.read scope in Settings → API",
           ],
         ],
       },

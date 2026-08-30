@@ -149,7 +149,8 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Is there a public API?",
-        answer: "Yes. REST API and webhook documentation is available at /docs/api.",
+        answer:
+          "Yes. REST API and webhook documentation is available at /docs/api. Managing API keys and outbound webhooks in Settings → API requires the Enterprise plan.",
       },
       {
         question: "Can I connect custom tools?",

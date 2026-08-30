@@ -326,3 +326,42 @@ test("getting-started docs gate SLA and Usage by plan and role", () => {
   assert.match(ops, /Staff and viewer roles do not have Settings access/);
   assert.match(ops, /On Business or Enterprise, open Settings → SLA/);
 });
+
+test("API docs gate Settings → API key management to Enterprise", () => {
+  const api = readSource("src/lib/docs/pages/account.ts");
+  const start = api.indexOf("export const API_DOC");
+  const end = api.indexOf("export const ENTERPRISE_DOC", start + 1);
+  const doc = api.slice(start, end > start ? end : undefined);
+  assert.match(doc, /Enterprise entitlement|requires the Enterprise plan/i);
+  assert.match(doc, /future_api_webhooks|creating API keys[\s\S]{0,80}requires Enterprise/i);
+  assert.doesNotMatch(
+    doc,
+    /All key management[\s\S]{0,40}happens in Settings → API\./,
+  );
+});
+
+test("automation and integrations docs do not claim live HubSpot/Jira/Zendesk writes", () => {
+  const platform = readSource("src/lib/docs/pages/platform.ts");
+  assert.doesNotMatch(platform, /logs a HubSpot activity/);
+  assert.doesNotMatch(platform, /open Zendesk tickets/);
+  assert.doesNotMatch(platform, /create Linear ticket|create Linear issues/);
+  assert.doesNotMatch(platform, /immediate Jira escalation/);
+  assert.doesNotMatch(platform, /Connector-backed actions for Slack, Jira, HubSpot/);
+  assert.match(platform, /Live connector-backed HTTP actions today cover Slack/);
+  assert.match(platform, /Assign owner and archive entity remain listed[\s\S]{0,40}skipped in v1/);
+});
+
+test("industry cybersecurity advantages use canonical workspace roles", () => {
+  const industry = readSource("src/lib/seo/industry-content.ts");
+  assert.doesNotMatch(industry, /Role-based permissions for analysts, managers, and executives/);
+  assert.match(
+    industry,
+    /Role-based permissions with Owner, Admin, Staff, and Viewer workspace roles/,
+  );
+});
+
+test("escalation docs do not claim paging or SMS delivery", () => {
+  const ops = readSource("src/lib/docs/pages/operations.ts");
+  assert.doesNotMatch(ops, /paging on-call engineers/);
+  assert.match(ops, /in-app notifications to owners, admins, and assignees/);
+});

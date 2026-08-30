@@ -547,8 +547,13 @@ export const API_DOC: DocPageInput = {
   description:
     "API keys, scopes, webhooks, rate limits, and integration guidelines.",
   intro:
-    "The Auroranexis REST API lets your workspace integrate with external systems, automate operational workflows, and receive event notifications. Manage keys and webhook endpoints in Settings → API. For endpoint-level details, use the interactive OpenAPI reference at /api/docs.",
+    "The Auroranexis REST API lets Enterprise workspaces integrate with external systems, automate operational workflows, and receive event notifications. Manage keys and webhook endpoints in Settings → API when your plan includes API access. For endpoint-level details, use the interactive OpenAPI reference at /api/docs.",
   callouts: [
+    {
+      variant: "info",
+      title: "Enterprise entitlement",
+      body: "Creating and managing API keys and outbound webhook endpoints in Settings → API requires the Enterprise plan (future_api_webhooks). Professional and Business workspaces see an upgrade prompt on that settings page.",
+    },
     {
       variant: "tip",
       title: "OpenAPI reference",
@@ -565,8 +570,8 @@ export const API_DOC: DocPageInput = {
       title: "Overview",
       paragraphs: [
         "The Auroranexis API is a RESTful, organization-scoped interface. Every request is authenticated with an API key that carries explicit scopes limiting what the key can read or write. The API follows standard HTTP conventions — JSON request and response bodies, appropriate status codes, and TLS encryption for all traffic.",
-        "API access availability and rate limits depend on your subscription plan. Plan-gated features such as AI execution and predictive analytics require both the appropriate scope and an eligible plan tier.",
-        "All key management — creation, scope selection, revocation, and webhook registration — happens in Settings → API. The OpenAPI reference at /api/docs documents selected public endpoints and schemas; treat it as a guided reference rather than a claim of complete coverage of every route.",
+        "API key management and outbound webhook registration in Settings → API require Enterprise. Rate limits and plan-gated features such as AI execution and predictive analytics additionally require the appropriate scope and an eligible plan tier.",
+        "All key management — creation, scope selection, revocation, and webhook registration — happens in Settings → API on eligible plans. The OpenAPI reference at /api/docs documents selected public endpoints and schemas; treat it as a guided reference rather than a claim of complete coverage of every route.",
       ],
     },
     {
@@ -773,12 +778,12 @@ export const API_DOC: DocPageInput = {
     {
       question: "What rate limits apply to my workspace?",
       answer:
-        "Rate limits vary by plan and protect platform stability. Review usage in Settings → API and Settings → Usage. Contact support or request enterprise limits if your integration requires sustained higher throughput.",
+        "API key and webhook management requires Enterprise. Rate limits vary by plan and protect platform stability. Review usage in Settings → API and Settings → Usage on eligible plans. Contact support or request higher enterprise limits if needed.",
     },
     {
       question: "Do webhooks require a specific scope?",
       answer:
-        "Registering webhook endpoints requires the webhooks.write scope on the API key used for registration. Receiving webhook deliveries does not require an API key on your endpoint, but you should validate incoming requests according to your integration design.",
+        "Registering webhook endpoints requires the webhooks.write scope on an Enterprise API key used for registration. Receiving webhook deliveries does not require an API key on your endpoint, but you should validate incoming requests according to your integration design.",
     },
     {
       question: "Are example keys in documentation real?",
@@ -788,13 +793,14 @@ export const API_DOC: DocPageInput = {
     {
       question: "Can I use the API on the Professional plan?",
       answer:
-        "API access and rate limits depend on your subscription tier. Review Settings → API for availability and consult /api/docs for plan-gated endpoints such as ai.execute.",
+        "OpenAPI overview pages are available for reference, but creating API keys and registering outbound webhooks in Settings → API requires Enterprise. Upgrade or contact sales for programmatic access.",
     },
   ],
   relatedLinks: [
     { href: "/api/docs", label: "OpenAPI reference" },
     { href: "/docs/integrations", label: "Integrations" },
     { href: "/docs/security", label: "Security" },
+    { href: "/docs/enterprise", label: "Enterprise" },
   ],
 };
 

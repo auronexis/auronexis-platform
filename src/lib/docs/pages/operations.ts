@@ -1759,7 +1759,7 @@ export const SLA_DOC: DocPageInput = {
         {
           title: "MSP",
           paragraphs: [
-            "An MSP mirrors three MSA tiers—Standard, Plus, Premium—with distinct critical response minutes. Premium clients pair Premium policies with Settings → Escalation paging on-call engineers. Portfolio dashboards compare breach rates across tiers each quarter.",
+            "An MSP mirrors three MSA tiers—Standard, Plus, Premium—with distinct critical response minutes. Premium clients pair Premium policies with Settings → Escalation in-app notifications to owners, admins, and assignees. Portfolio dashboards compare breach rates across tiers each quarter.",
           ],
         },
         {

@@ -32,17 +32,17 @@ export const AUTOMATION_DOC: DocPageInput = {
       title: "Purpose",
       paragraphs: [
         "Agencies manage dozens of clients and hundreds of operational signals. Manual follow-up does not scale. Automation reduces repetitive work, enforces consistent response patterns, and keeps external systems in sync without requiring your team to copy data between tools.",
-        "Well-designed workflows complement human judgment rather than replacing it. They handle predictable reactions—notify the account owner, log an activity, open a ticket—so your team can focus on client conversations, root-cause analysis, and delivery quality.",
+        "Well-designed workflows complement human judgment rather than replacing it. They handle predictable reactions—notify the account owner, log an activity, or post to a configured channel—so your team can focus on client conversations, root-cause analysis, and delivery quality.",
       ],
       subsections: [
         {
           title: "When to use automation",
           bullets: [
             "Notify account owners when a high-severity incident is created for a key client.",
-            "Post a summary to Slack or Microsoft Teams when a report is published.",
-            "Create a ticket in Jira, Linear, or Zendesk when an SLA breach occurs.",
-            "Assign an internal owner or create an activity when a risk crosses a severity threshold.",
-            "Send a webhook to a custom endpoint when monitoring events reach critical severity.",
+            "Post a summary to Slack, Microsoft Teams, or Discord when a report is published.",
+            "Create an activity or incident record when an SLA warning or breach is recorded.",
+            "Create an activity when a risk crosses a severity threshold.",
+            "Send an outbound webhook to a custom endpoint when monitoring events reach critical severity.",
           ],
         },
         {
@@ -79,7 +79,7 @@ export const AUTOMATION_DOC: DocPageInput = {
         {
           title: "Actions",
           paragraphs: [
-            "Actions are the steps executed after a trigger fires and conditions pass. Built-in actions include send notification, create activity, assign owner, update record fields, and AI-assisted summaries where your plan includes them. Connector-backed actions—such as create Jira issue or send Slack message—require an authorized connection at Automation → Connectors.",
+            "Actions are the steps executed after a trigger fires and conditions pass. Built-in actions include send notification, create activity, create risk, create incident, create report draft, and AI-assisted summaries where your plan includes them. Assign owner and archive entity remain listed in the builder but are skipped in v1 execution until target configuration ships. Live connector-backed HTTP actions today cover Slack, Microsoft Teams, Discord, and generic outbound webhooks when secrets are configured; other catalog connectors may authorize and record simulated/scaffolded runs without live CRM or ticketing writes.",
           ],
         },
         {
@@ -111,8 +111,8 @@ export const AUTOMATION_DOC: DocPageInput = {
         "Visual workflow builder at Automation → New with trigger, condition tree, and action chain.",
         "Platform event triggers for incidents, reports, risks, clients, SLA states, and monitoring events.",
         "Condition filters with AND/OR groups to narrow high-frequency triggers.",
-        "Built-in actions: send notification, create activity, assign owner, update fields.",
-        "Connector-backed actions for Slack, Jira, HubSpot, Linear, Zendesk, and other OAuth systems.",
+        "Built-in actions: send notification, create activity, create risk, create incident, create report draft, and AI summary where plan-gated.",
+        "Live connector HTTP actions for Slack, Microsoft Teams, Discord, and outbound webhooks; other catalog connectors use scaffolding or simulated execution in v1.",
         "Execution history with step-level success, failure messages, and duration.",
         "Manual trigger for on-demand testing before activation.",
         "Automation → Connectors catalog for OAuth authorization and connection status.",
@@ -147,9 +147,9 @@ export const AUTOMATION_DOC: DocPageInput = {
     {
       title: "Best Practices",
       bullets: [
-        "Name workflows with the trigger and outcome, e.g. \"Incident P1 → Slack + Jira\".",
-        "Start with read-only or notification actions before write actions to external systems.",
-        "Use conditions aggressively on high-frequency triggers to avoid duplicate tickets or messages.",
+        "Name workflows with the trigger and outcome, e.g. \"Incident P1 → Slack + webhook\".",
+        "Start with notification or activity actions before live outbound connector actions.",
+        "Use conditions aggressively on high-frequency triggers to avoid duplicate messages.",
         "Review failed executions weekly; unresolved failures often indicate expired OAuth tokens or rotated secrets.",
         "Document which workflow owns each external side effect so operators know where to look during incidents.",
         "Maintain one canonical connector per external system—duplicate connections cause conflicting writes.",
@@ -165,31 +165,31 @@ export const AUTOMATION_DOC: DocPageInput = {
         {
           title: "Marketing agency",
           paragraphs: [
-            "A digital marketing agency on Professional connects HubSpot at Automation → Connectors. When a monthly performance report is published for a retainer client, a workflow sends a Slack message to the account channel and logs a HubSpot activity with the report title. Conditions limit execution to Active clients with a specific tag. Execution history confirms each delivery before the account manager emails the client.",
+            "A digital marketing agency on Professional connects Slack at Automation → Connectors. When a monthly performance report is published for a retainer client, a workflow sends a Slack message to the account channel and creates an activity with the report title. Conditions limit execution to Active clients with a specific tag. Execution history confirms each delivery before the account manager emails the client.",
           ],
         },
         {
           title: "AI automation agency",
           paragraphs: [
-            "An AI automation consultancy builds workflows triggered on incident created with condition severity equals high. Actions create a Linear ticket with the incident summary, assign the client owner internally, and send notification to the on-call engineer. A second workflow on SLA breached posts to a Teams channel for leadership visibility. Secrets for a custom webhook endpoint are stored at Integrations → Secrets.",
+            "An AI automation consultancy builds workflows triggered on incident created with condition severity equals high. Actions create an activity with the incident summary and send an in-app notification to the on-call engineer. A second workflow on SLA breached posts to a Teams channel for leadership visibility. Secrets for a custom outbound webhook endpoint are stored at Integrations → Secrets.",
           ],
         },
         {
           title: "MSP",
           paragraphs: [
-            "A managed services provider monitors dozens of clients. Workflows on monitoring event detected with condition severity equals critical create incidents automatically, notify the assigned owner, and open Zendesk tickets for the NOC queue. A separate workflow on report published ensures QBR deliverables trigger client-owner notifications without manual polling of the Reports module.",
+            "A managed services provider monitors dozens of clients. Workflows on monitoring event detected with condition severity equals critical create incidents automatically, notify the assigned owner, and post an outbound webhook to the NOC tooling. A separate workflow on report published ensures QBR deliverables trigger client-owner notifications without manual polling of the Reports module.",
           ],
         },
         {
           title: "Consultancy",
           paragraphs: [
-            "A strategy consultancy uses lighter automation: report published triggers send notification to the engagement lead and create activity on the client timeline. Risk created with high severity assigns the partner of record. The team reviews execution history monthly rather than daily because external write volume is low and notifications are the primary outcome.",
+            "A strategy consultancy uses lighter automation: report published triggers send notification to the engagement lead and create activity on the client timeline. Risk created with high severity creates a follow-up activity for the partner of record. The team reviews execution history monthly rather than daily because notifications and activities are the primary outcome.",
           ],
         },
         {
           title: "Enterprise deployment",
           paragraphs: [
-            "An enterprise agency with custom plan limits runs tiered workflows per client segment. Premium clients get immediate Jira escalation on SLA breach; standard clients get notification only. Workflow permissions are restricted to admins; staff can view execution history but not edit definitions. OAuth connectors are authorized once per workspace with secrets rotated quarterly per security policy.",
+            "An enterprise agency with custom plan limits runs tiered workflows per client segment. Premium clients get immediate Slack or webhook escalation on SLA breach; standard clients get in-app notification only. Workflow permissions are restricted to admins; staff can view execution history but not edit definitions. Live messaging connectors are authorized once per workspace with secrets rotated quarterly per security policy.",
           ],
         },
       ],
@@ -290,7 +290,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
     {
       variant: "warning",
       title: "Organization-scoped tokens",
-      body: "Connected integrations can act on behalf of your entire workspace. Limit connector authorization to an administrator or another account with integration-management permission.",
+      body: "Connected integrations can act on behalf of your entire workspace. Limit connector authorization to an administrator or another account with permission to manage integrations.",
     },
     {
       variant: "info",
@@ -302,24 +302,24 @@ export const INTEGRATIONS_DOC: DocPageInput = {
     {
       title: "Overview",
       paragraphs: [
-        "The integration catalog lives under Automation in the dashboard. Each connector represents a supported external platform—CRM tools like HubSpot and Salesforce, ticketing systems like Jira, Linear, and Zendesk, messaging via Slack and Microsoft Teams, and workspace productivity through Google and Microsoft 365.",
-        "Connections are organization-scoped. An administrator or another account with integration-management permission completes authorization once per connector per workspace. Connected systems become available to automation workflows. Available sync behavior depends on the selected integration. The integration catalog reflects currently supported capabilities.",
-        "Integration activity—successful deliveries, sync runs, token refreshes, and errors—is recorded in integration logs for operational visibility. Logs are the first place to look when CRM data is stale, tickets fail to create, or channel messages stop arriving.",
+        "The integration catalog lives under Automation in the dashboard. Each connector represents an external platform entry—messaging systems such as Slack, Microsoft Teams, and Discord with live outbound HTTP when configured, plus catalog entries for CRM and ticketing tools (for example HubSpot, Salesforce, Jira, Linear, Zendesk) that support authorization and scaffolding in v1 without promising live CRM or ticket writes.",
+        "Connections are organization-scoped. An administrator or another account with permission to manage integrations completes authorization once per connector per workspace. Connected systems become available to automation workflows. Available sync behavior depends on the selected integration. The integration catalog reflects currently supported capabilities.",
+        "Integration activity—successful deliveries, sync runs, token refreshes, and errors—is recorded in integration logs for operational visibility. Logs are the first place to look when channel messages stop arriving, sync scaffolding reports failures, or connector authorization expires.",
       ],
     },
     {
       title: "Purpose",
       paragraphs: [
-        "Agencies operate across many tools. Auroranexis is the operational source of truth for client health, incidents, and reports; integrations extend that truth into systems your delivery, sales, and support teams already monitor.",
-        "Without integrations, operators manually copy incident summaries into ticketing systems, log delivery milestones in CRMs, and post status updates in chat channels. Connectors and sync reduce that friction while preserving Auroranexis as the authoritative record for SLA compliance and client reporting.",
+        "Agencies operate across many tools. Auroranexis is the operational source of truth for client health, incidents, and reports; integrations extend selected signals into systems your delivery, sales, and support teams already monitor.",
+        "Without integrations, operators manually copy incident summaries into other tools and post status updates in chat channels. Live messaging connectors and outbound webhooks reduce that friction for notifications; CRM and ticketing catalog entries remain scaffolding-oriented in v1 while preserving Auroranexis as the authoritative record for SLA tracking and client reporting.",
       ],
       subsections: [
         {
           title: "Primary use cases",
           bullets: [
-            "Push incident or SLA events into Jira, Linear, or Zendesk so engineering tracks work in familiar boards.",
-            "Log client activities or deal updates in HubSpot or Salesforce when operational milestones occur.",
-            "Send channel notifications through Slack or Teams when reports publish or risks escalate.",
+            "Send channel notifications through Slack, Teams, or Discord when reports publish or risks escalate.",
+            "Deliver outbound webhooks to custom endpoints when incidents or monitoring events need external routing.",
+            "Authorize CRM or ticketing catalog connectors for diagnostics and future workflow readiness—treat production ticket or CRM writes as unavailable until live execution is enabled for that provider.",
             "Use connector sync diagnostics where supported instead of relying solely on manual copy-paste.",
           ],
         },
@@ -375,11 +375,12 @@ export const INTEGRATIONS_DOC: DocPageInput = {
         caption: "Connector categories (representative)",
         headers: ["Category", "Examples", "Typical use"],
         rows: [
-          ["CRM", "HubSpot, Salesforce", "Log activities, update deals or opportunities"],
-          ["Helpdesk / ticketing", "Zendesk, Jira, Linear", "Create or update tickets from incidents"],
-          ["Messaging", "Slack, Microsoft Teams", "Channel alerts for operational events"],
-          ["Workspace", "Google, Microsoft 365", "Email, calendar, and document workflows"],
-          ["DevOps", "GitHub, GitLab", "Link incidents to issues and pipelines"],
+          ["Messaging", "Slack, Microsoft Teams, Discord", "Live outbound channel notifications when secrets are configured"],
+          ["Webhook", "Generic webhook", "Live outbound HTTPS delivery with retries"],
+          ["CRM (catalog)", "HubSpot, Salesforce", "Authorization and sync scaffolding in v1 — not live CRM writes"],
+          ["Helpdesk / ticketing (catalog)", "Zendesk, Jira, Linear", "Authorization and scaffolding in v1 — not live ticket writes"],
+          ["Workspace (catalog)", "Google, Microsoft 365", "Catalog entries for productivity tooling; treat as scaffolding unless live execution is confirmed"],
+          ["DevOps (catalog)", "GitHub, GitLab", "Catalog entries for issue/pipeline linkage; scaffolding unless live execution is confirmed"],
         ],
       },
     },
@@ -422,7 +423,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
     {
       title: "Best Practices",
       bullets: [
-        "Limit connector authorization to an administrator or another account with integration-management permission.",
+        "Limit connector authorization to an administrator or another account with permission to manage integrations.",
         "Maintain one canonical connection per external system—duplicate connections cause conflicting sync and duplicate records.",
         "Document which connector and workflow owns each external write path.",
         "Review integration logs weekly for silent failures, especially after provider-side policy changes.",
@@ -437,31 +438,31 @@ export const INTEGRATIONS_DOC: DocPageInput = {
         {
           title: "Marketing agency",
           paragraphs: [
-            "A performance marketing firm connects HubSpot and Slack at Automation → Connectors. A workflow logs HubSpot activities when reports publish; Slack receives channel alerts for client health drops. Sync scaffolding records diagnostic job metadata where supported; the ops lead reviews integration logs every Monday.",
+            "A performance marketing firm connects Slack at Automation → Connectors and optionally authorizes HubSpot for catalog diagnostics. A workflow creates an Auroranexis activity when reports publish; Slack receives channel alerts for client health drops. Sync scaffolding records diagnostic job metadata where supported; the ops lead reviews integration logs every Monday.",
           ],
         },
         {
           title: "AI automation agency",
           paragraphs: [
-            "An AI consultancy connects Linear, GitHub, and a custom webhook via Integrations → Secrets. Incident workflows create Linear issues linked to GitHub repositories mentioned in incident notes. The webhook posts structured payloads to an internal orchestration layer. OAuth covers Linear and GitHub where configured; the webhook secret rotates quarterly.",
+            "An AI consultancy connects Discord and a custom outbound webhook via Integrations → Secrets, and may authorize Linear or GitHub catalog entries for scaffolding diagnostics. Incident workflows create Auroranexis activities and post webhook payloads to an internal orchestration layer. Messaging secrets rotate quarterly; catalog CRM/ticketing connectors are not treated as live write paths in v1.",
           ],
         },
         {
           title: "MSP",
           paragraphs: [
-            "An MSP connects Zendesk and Microsoft Teams for NOC operations. High-severity incidents create Zendesk tickets automatically; Teams channels receive bridge-call summaries. Sync scaffolding records connector diagnostics for Zendesk where supported. Integration logs filter quickly to Zendesk when clients report missing tickets.",
+            "An MSP connects Microsoft Teams for NOC channel alerts and may authorize Zendesk for connector diagnostics. High-severity incidents create Auroranexis incident records and Teams notifications; live Zendesk ticket creation is not assumed in v1. Integration logs filter by connector when operators investigate delivery failures.",
           ],
         },
         {
           title: "Consultancy",
           paragraphs: [
-            "A management consultancy connects Salesforce only for strategic accounts. Workflows log delivery milestones when reports publish; sync scaffolding is limited to diagnostic metadata for those connectors. Messaging integrations are intentionally omitted to keep client communication human-led. Logs are reviewed monthly because write volume is low.",
+            "A management consultancy authorizes Salesforce catalog connectivity only for strategic accounts and uses sync scaffolding for diagnostic metadata. Workflows create Auroranexis activities when reports publish. Messaging integrations are intentionally omitted to keep client communication human-led. Logs are reviewed monthly because write volume is low.",
           ],
         },
         {
           title: "Enterprise deployment",
           paragraphs: [
-            "An enterprise agency authorizes connectors through a dedicated integration service account at each provider. Salesforce, Jira, and Teams are connected once per workspace with secrets stored in a managed rotation process. Integration infrastructure includes sync scaffolding where supported; current provider-specific availability is shown in the integration catalog. Integration logs export to the compliance team quarterly.",
+            "An enterprise agency authorizes live messaging connectors through a dedicated service account and stores webhook secrets in a managed rotation process. Catalog CRM and ticketing connectors may be connected for diagnostics; production external writes use Slack, Teams, Discord, or outbound webhooks until provider-specific live execution expands. Integration logs export to the compliance team quarterly.",
           ],
         },
       ],

@@ -230,7 +230,7 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
     enterpriseAdvantages: [
       "Tenant isolation with organization-scoped data access",
       "Audit trails for operational record changes and assignments",
-      "Role-based permissions for analysts, managers, and executives",
+      "Role-based permissions with Owner, Admin, Staff, and Viewer workspace roles",
       "Controlled client portal sharing for appropriate status visibility",
       "Documented security posture for procurement and vendor review",
     ],
