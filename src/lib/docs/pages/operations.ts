@@ -1496,7 +1496,7 @@ export const MONITORING_DOC: DocPageInput = {
         {
           title: "Consultancy",
           paragraphs: [
-            "A consultancy uses Manual connectors to record milestone checkpoints on short engagements without persistent infrastructure monitoring. Events provide audit trail context in monthly reports without automatic incident creation.",
+            "A consultancy uses Manual connectors to record milestone checkpoints on short engagements without persistent infrastructure monitoring. In this example, automatic incident creation is disabled; events remain available as audit-trail context for operational review and reporting.",
           ],
         },
         {

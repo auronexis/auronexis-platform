@@ -283,14 +283,14 @@ export const INTEGRATIONS_DOC: DocPageInput = {
   slug: "integrations",
   title: "Integrations",
   description:
-    "OAuth connectors for CRM, ticketing, and productivity tools; sync jobs; integration logs.",
+    "Connectors for CRM, ticketing, and productivity tools; sync scaffolding where supported; integration logs.",
   intro:
-    "Integrations connect Auroranexis to the CRM, ticketing, messaging, and productivity systems your agency already uses. Authorize connectors via OAuth at Automation → Connectors, run sync where supported, store API keys at Integrations → Secrets, and diagnose delivery through integration logs. Connectivity established here powers automation workflows and keeps operational data aligned with external tools your delivery, sales, and support teams monitor daily.",
+    "Integrations connect Auroranexis to the CRM, ticketing, messaging, and productivity systems your agency already uses. Authentication method depends on the integration and may include OAuth, API credentials, webhook configuration, or manual setup. Authorize connectors at Automation → Connectors, run sync where supported, store API keys at Integrations → Secrets, and diagnose delivery through integration logs. Connectivity established here powers automation workflows and keeps operational data aligned with external tools your delivery, sales, and support teams monitor daily.",
   callouts: [
     {
       variant: "warning",
       title: "Organization-scoped tokens",
-      body: "OAuth connections act on behalf of your entire workspace. Limit connector authorization to owners, admins, or designated integration owners.",
+      body: "Connected integrations can act on behalf of your entire workspace. Limit connector authorization to an administrator or another account with integration-management permission.",
     },
     {
       variant: "info",
@@ -303,8 +303,8 @@ export const INTEGRATIONS_DOC: DocPageInput = {
       title: "Overview",
       paragraphs: [
         "The integration catalog lives under Automation in the dashboard. Each connector represents a supported external platform—CRM tools like HubSpot and Salesforce, ticketing systems like Jira, Linear, and Zendesk, messaging via Slack and Microsoft Teams, and workspace productivity through Google and Microsoft 365.",
-        "Connections are organization-scoped. An admin or authorized integration owner completes the OAuth flow once per connector per workspace. Connected systems become available to automation workflows and, where supported, scheduled sync jobs that keep selected records aligned even when no platform trigger fires.",
-        "Integration activity—successful deliveries, sync runs, OAuth refreshes, and errors—is recorded in integration logs for operational visibility. Logs are the first place to look when CRM data is stale, tickets fail to create, or channel messages stop arriving.",
+        "Connections are organization-scoped. An administrator or another account with integration-management permission completes authorization once per connector per workspace. Connected systems become available to automation workflows. Available sync behavior depends on the selected integration. The integration catalog reflects currently supported capabilities.",
+        "Integration activity—successful deliveries, sync runs, token refreshes, and errors—is recorded in integration logs for operational visibility. Logs are the first place to look when CRM data is stale, tickets fail to create, or channel messages stop arriving.",
       ],
     },
     {
@@ -320,13 +320,13 @@ export const INTEGRATIONS_DOC: DocPageInput = {
             "Push incident or SLA events into Jira, Linear, or Zendesk so engineering tracks work in familiar boards.",
             "Log client activities or deal updates in HubSpot or Salesforce when operational milestones occur.",
             "Send channel notifications through Slack or Teams when reports publish or risks escalate.",
-            "Keep selected records aligned through connector sync instead of manual copy-paste.",
+            "Use connector sync diagnostics where supported instead of relying solely on manual copy-paste.",
           ],
         },
         {
           title: "Integration vs. automation",
           paragraphs: [
-            "Integrations establish connectivity and optional sync. Automation consumes that connectivity in workflows. Connect first at Automation → Connectors; then reference connectors in workflow actions. Manage API keys at Integrations → Secrets when OAuth alone is insufficient for a given endpoint or custom integration.",
+            "Integrations establish connectivity and optional sync scaffolding. Automation consumes that connectivity in workflows. Connect first at Automation → Connectors; then reference connectors in workflow actions. Manage API keys at Integrations → Secrets when OAuth alone is insufficient for a given endpoint or custom integration.",
           ],
         },
       ],
@@ -337,31 +337,31 @@ export const INTEGRATIONS_DOC: DocPageInput = {
         {
           title: "Connector",
           paragraphs: [
-            "A connector is a pre-built integration module for a specific external platform. Each connector declares supported actions (write operations), inbound triggers where applicable, and OAuth requirements. Browse the full catalog at Automation → Connectors.",
+            "A connector is a pre-built integration module for a specific external platform. Each connector declares supported actions (write operations), inbound triggers where applicable, and its authentication requirements. Browse the full catalog at Automation → Connectors.",
           ],
         },
         {
-          title: "OAuth authorization",
+          title: "Authentication",
           paragraphs: [
-            "Most connectors use OAuth 2.0. An authorized user is redirected to the external provider, grants consent, and is returned to Auroranexis with a stored refresh token. The platform uses that token for subsequent API calls on behalf of your organization until consent is revoked or the token expires.",
+            "Authentication method depends on the integration and may include OAuth, API credentials, webhook configuration, or manual setup. Where OAuth 2.0 is used, an authorized user is redirected to the external provider, grants consent, and is returned to Auroranexis with a stored refresh token. The platform uses that token for subsequent API calls on behalf of your organization until consent is revoked or the token expires.",
           ],
         },
         {
           title: "Connection status",
           paragraphs: [
-            "Each connector shows connected, disconnected, or error state on the Connectors page. Error state usually indicates an expired token, revoked consent, or misconfigured environment credentials. Click Reconnect to repeat the OAuth flow.",
+            "Each connector shows connected, disconnected, or error state on the Connectors page. Error state usually indicates an expired token, revoked consent, or misconfigured environment credentials. Click Reconnect to repeat the authorization flow for that connector.",
           ],
         },
         {
           title: "Sync",
           paragraphs: [
-            "Supported connectors can run sync jobs that record job metadata, cursors, and simulated record counts in v1. Treat sync as connector scaffolding for diagnostics and workflow readiness — not as a guarantee of production CRM/ticketing data replication. Sync runs appear in integration logs with recorded counts and error summaries.",
+            "Integration infrastructure includes sync scaffolding where supported; current provider-specific availability is shown in the integration catalog. Supported connectors can record job metadata, cursors, and simulated record counts in v1. Treat sync as connector scaffolding for diagnostics and workflow readiness — not as a guarantee of production CRM/ticketing data replication. Sync runs appear in integration logs with recorded counts and error summaries.",
           ],
         },
         {
           title: "Integration logs",
           paragraphs: [
-            "Every significant integration operation—OAuth refresh, sync run, workflow action delivery—is logged with timestamp, connector, outcome, and error detail when applicable. Open Automation → Integrations → Logs to review recent activity across all connectors.",
+            "Every significant integration operation—authorization refresh, sync run, workflow action delivery—is logged with timestamp, connector, outcome, and error detail when applicable. Open Automation → Integrations → Logs to review recent activity across all connectors.",
           ],
         },
         {
@@ -386,13 +386,13 @@ export const INTEGRATIONS_DOC: DocPageInput = {
     {
       title: "Features",
       bullets: [
-        "OAuth connector catalog at Automation → Connectors with one-click authorization.",
+        "Connector catalog at Automation → Connectors with authorization flows where supported.",
         "Connection status indicators: connected, disconnected, and error with reconnect action.",
-        "Connector sync for supported platforms with on-demand and scheduled runs.",
+        "Available sync behavior depends on the selected integration. The integration catalog reflects currently supported capabilities.",
         "Integration logs at Automation → Integrations → Logs with filter by connector and outcome.",
         "Secrets management at Integrations → Secrets for API keys and manual credentials.",
-        "Workflow action targets unlocked after successful OAuth authorization.",
-        "Activity logging for OAuth refresh, sync, and delivery operations.",
+        "Workflow action targets unlocked after successful connector authorization where supported.",
+        "Activity logging for authorization refresh, sync, and delivery operations.",
         "Plan-gated connectors with availability reflected in Settings → Usage.",
       ],
     },
@@ -403,9 +403,9 @@ export const INTEGRATIONS_DOC: DocPageInput = {
         "Locate the target system—for example Zendesk for ticketing or HubSpot for CRM.",
         "Click Connect and sign in to the external provider with an account that has sufficient permissions.",
         "Grant the requested scopes and confirm you are redirected back with status Connected.",
-        "Optional: configure sync on the connector detail page if your use case requires ongoing data alignment.",
+        "Optional: review sync scaffolding on the connector detail page if your use case requires ongoing diagnostics.",
         "Add API keys at Integrations → Secrets if the connector or workflow requires manual credentials.",
-        "Reference the connector in an automation workflow action, or rely on sync for passive alignment.",
+        "Reference the connector in an automation workflow action, or use sync diagnostics where supported.",
         "If deliveries fail, open Automation → Integrations → Logs and review the error entry for that connector.",
       ],
       subsections: [
@@ -422,7 +422,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
     {
       title: "Best Practices",
       bullets: [
-        "Limit OAuth authorization to workspace owners, admins, or designated integration owners.",
+        "Limit connector authorization to an administrator or another account with integration-management permission.",
         "Maintain one canonical connection per external system—duplicate connections cause conflicting sync and duplicate records.",
         "Document which connector and workflow owns each external write path.",
         "Review integration logs weekly for silent failures, especially after provider-side policy changes.",
@@ -437,31 +437,31 @@ export const INTEGRATIONS_DOC: DocPageInput = {
         {
           title: "Marketing agency",
           paragraphs: [
-            "A performance marketing firm connects HubSpot and Slack at Automation → Connectors. A workflow logs HubSpot activities when reports publish; Slack receives channel alerts for client health drops. Weekly sync keeps deal stages aligned with client status changes in Auroranexis. Integration logs confirm each sync run; the ops lead reviews failures every Monday.",
+            "A performance marketing firm connects HubSpot and Slack at Automation → Connectors. A workflow logs HubSpot activities when reports publish; Slack receives channel alerts for client health drops. Sync scaffolding records diagnostic job metadata where supported; the ops lead reviews integration logs every Monday.",
           ],
         },
         {
           title: "AI automation agency",
           paragraphs: [
-            "An AI consultancy connects Linear, GitHub, and a custom webhook via Integrations → Secrets. Incident workflows create Linear issues linked to GitHub repositories mentioned in incident notes. The webhook posts structured payloads to an internal orchestration layer. OAuth covers Linear and GitHub; the webhook secret rotates quarterly.",
+            "An AI consultancy connects Linear, GitHub, and a custom webhook via Integrations → Secrets. Incident workflows create Linear issues linked to GitHub repositories mentioned in incident notes. The webhook posts structured payloads to an internal orchestration layer. OAuth covers Linear and GitHub where configured; the webhook secret rotates quarterly.",
           ],
         },
         {
           title: "MSP",
           paragraphs: [
-            "An MSP connects Zendesk and Microsoft Teams for NOC operations. High-severity incidents create Zendesk tickets automatically; Teams channels receive bridge-call summaries. Sync pulls ticket status back for display on incident detail pages where supported. Integration logs filter quickly to Zendesk when clients report missing tickets.",
+            "An MSP connects Zendesk and Microsoft Teams for NOC operations. High-severity incidents create Zendesk tickets automatically; Teams channels receive bridge-call summaries. Sync scaffolding records connector diagnostics for Zendesk where supported. Integration logs filter quickly to Zendesk when clients report missing tickets.",
           ],
         },
         {
           title: "Consultancy",
           paragraphs: [
-            "A management consultancy connects Salesforce only for strategic accounts. Workflows log delivery milestones when reports publish; sync is limited to opportunity stages for those clients. Messaging integrations are intentionally omitted to keep client communication human-led. Logs are reviewed monthly because write volume is low.",
+            "A management consultancy connects Salesforce only for strategic accounts. Workflows log delivery milestones when reports publish; sync scaffolding is limited to diagnostic metadata for those connectors. Messaging integrations are intentionally omitted to keep client communication human-led. Logs are reviewed monthly because write volume is low.",
           ],
         },
         {
           title: "Enterprise deployment",
           paragraphs: [
-            "An enterprise agency authorizes connectors through a dedicated integration service account at each provider. Salesforce, Jira, and Teams are connected once per workspace with secrets stored in a managed rotation process. Sync jobs run on conservative schedules to respect enterprise API quotas. Integration logs export to the compliance team quarterly.",
+            "An enterprise agency authorizes connectors through a dedicated integration service account at each provider. Salesforce, Jira, and Teams are connected once per workspace with secrets stored in a managed rotation process. Integration infrastructure includes sync scaffolding where supported; current provider-specific availability is shown in the integration catalog. Integration logs export to the compliance team quarterly.",
           ],
         },
       ],
@@ -475,7 +475,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
           [
             "OAuth authorization fails",
             "Insufficient permissions at the provider or conflicting browser session.",
-            "Sign in with an admin or integration-manager account; try an incognito session; verify redirect URLs for your deployment.",
+            "Sign in with an account that has permission to manage integrations; try an incognito session; verify redirect URLs for your deployment.",
           ],
           [
             "Connector shows error status",
@@ -489,7 +489,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
           ],
           [
             "Workflow action fails despite connected status",
-            "OAuth token lacks a required scope.",
+            "Token or credentials lack a required scope.",
             "Disconnect and reconnect granting full requested permissions; check Integrations → Secrets if the action uses a stored API key.",
           ],
           [
@@ -525,7 +525,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
     {
       question: "Does sync replace automation?",
       answer:
-        "No. Sync jobs track connector health and job metadata; v1 sync counts are simulated and do not guarantee production data replication. Automation reacts to platform events in real time. Most agencies use connectors for OAuth/actions and automation for event-driven work.",
+        "No. Sync jobs track connector health and job metadata; v1 sync counts are simulated and do not guarantee production data replication. Automation reacts to platform events in real time. Most agencies use connectors for authorization/actions and automation for event-driven work.",
     },
     {
       question: "How do I store an API key instead of using OAuth?",

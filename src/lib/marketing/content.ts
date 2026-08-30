@@ -159,7 +159,8 @@ export const USE_CASES = [
   },
   {
     title: "Automation Firms",
-    description: "Show automation ROI, workflow reliability, and client health in one command center.",
+    description:
+      "Support ROI discussions with operational performance evidence, workflow reliability, and client health in one command center.",
     href: "/use-cases/automation-agencies",
   },
 ] as const;
@@ -204,7 +205,7 @@ export const SECURITY_HIGHLIGHTS = [
   "Encryption in transit (TLS) and at rest for platform data stores.",
   "Role-based access control with organization-scoped permissions.",
   "Audit logging for sensitive actions and compliance workflows.",
-  "EU-friendly data residency options via Supabase (Frankfurt region supported).",
+  "Auroranexis uses EU-capable infrastructure. Specific data-residency requirements are confirmed for applicable enterprise arrangements.",
   `Security contact: ${SECURITY_EMAIL} for responsible disclosure.`,
 ] as const;
 

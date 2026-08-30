@@ -671,15 +671,15 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     eyebrow: "Use case",
     title: "Operations for automation and integration agencies",
     description:
-      "Monitor workflow reliability, demonstrate automation ROI, and manage client health across your integration portfolio.",
+      "Monitor workflow reliability, support ROI discussions with operational performance evidence, and manage client health across your integration portfolio.",
     metaDescription:
-      "Automation agency operations — workflow monitoring, client health, and ROI reporting in Auroranexis.",
+      "Automation agency operations — workflow monitoring, client health, and operational performance reporting in Auroranexis.",
     problem:
       "Automation agencies build integrations and workflows that clients depend on daily. When workflows fail silently, client trust erodes quickly. Yet most agencies lack a portfolio-level view of automation health, incident history, and delivery reliability across their client base.",
     solution:
       "Auroranexis gives automation agencies an operational command center for multi-client delivery. Track incidents, monitor health signals, manage risks, and report automation reliability to clients through structured reports and a transparent portal.",
     businessValue:
-      "Demonstrate automation ROI with operational evidence, reduce client churn from undetected workflow failures, and scale delivery oversight as the integration portfolio grows without adding operations headcount.",
+      "Support ROI discussions with operational performance evidence, help teams address workflow issues that can contribute to client dissatisfaction or churn, and support delivery oversight across a growing client portfolio.",
     audience:
       "Workflow automation firms, integration specialists, and no-code/low-code agencies delivering recurring automation services and managed integration programs to business clients.",
     enterpriseAdvantages: [
@@ -692,12 +692,12 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       {
         title: "Workflow reliability visibility",
         description:
-          "Track incidents and health signals related to automation delivery so failures are surfaced before clients discover them.",
+          "Track incidents and health signals related to automation delivery to help teams identify configured monitoring signals earlier.",
       },
       {
-        title: "ROI documentation",
+        title: "Operational performance evidence",
         description:
-          "Produce structured reports that connect automation performance to business outcomes for client reviews.",
+          "Produce structured reports that summarize automation performance and operational value evidence for client reviews.",
       },
       {
         title: "Portfolio monitoring",
@@ -709,7 +709,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       "Incident tracking for automation failures with severity and ownership",
       "Health monitoring signals for workflow reliability per client",
       "Automation workflow triggers based on operational events",
-      "Executive reports demonstrating automation performance and ROI",
+      "Executive reports summarizing automation performance and operational value evidence.",
       "Client portal for transparent status sharing on managed integrations",
     ],
     challenges: [
@@ -725,8 +725,8 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       "Include reliability metrics and incident summaries in scheduled client reports",
     ],
     expectedOutcomes: [
-      "Proactive detection and resolution of automation issues before client impact",
-      "Documented automation ROI suitable for renewal and upsell conversations",
+      "Detection and resolution of automation issues earlier in the incident lifecycle",
+      "Operational performance evidence suitable for renewal and upsell conversations",
       "Systematic portfolio monitoring that scales with client growth",
       "Consistent client communication about automation health and performance",
     ],
@@ -742,7 +742,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
           "Yes. Automation workflows can react to operational events such as incidents, health changes, and SLA breaches where configured.",
       },
       {
-        question: "How do we demonstrate automation ROI to clients?",
+        question: "How do we support ROI discussions with clients?",
         answer:
           "Executive reports aggregate operational data — reliability, incident resolution, and delivery activity — into structured narratives suitable for QBRs and steering reviews.",
       },
