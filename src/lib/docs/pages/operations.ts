@@ -24,15 +24,15 @@ export const GETTING_STARTED_DOC: DocPageInput = {
       paragraphs: [
         "Getting started in Auroranexis means creating your agency workspace, inviting teammates with appropriate roles, and configuring the settings that govern delivery. The Operations Command Center dashboard surfaces portfolio health, open incidents, SLA status, and recent activity so operators can orient quickly without hunting across disconnected tools.",
         "Your workspace is an isolated tenant. All modules—Clients, Reports, Risks, Incidents, Monitoring—read and write data only within your organization identifier. Internal users, portal users, and automation workflows all respect this boundary, which keeps client data segregated and audit-friendly as your portfolio grows.",
-        "Billing runs through Mollie as payment service provider; Auroranexis remains the seller. Plan limits on clients, monitoring connectors, and advanced modules are enforced at the organization level. Owners and admins manage subscriptions in Settings → Billing; all roles can review effective limits in Settings → Usage before onboarding large client batches.",
-        "The recommended onboarding path moves from workspace identity and team access to your first managed clients, then to SLA policies, report templates, and optional portal access. Completing these steps in order reduces rework and ensures health scores, SLA timers, and portfolio views reflect accurate data from day one.",
+        "Billing runs through Mollie as payment service provider; Auroranexis remains the seller. Plan limits on clients, monitoring connectors, and advanced modules are enforced at the organization level. Owners and admins manage subscriptions in Settings → Billing and can review effective limits in Settings → Usage before onboarding large client batches. Staff and viewer roles do not have Settings access.",
+        "The recommended onboarding path moves from workspace identity and team access to your first managed clients, then to report templates and optional portal access. On Business and Enterprise, add SLA policies and escalation rules after baseline clients exist. Completing these steps in order reduces rework and keeps portfolio views aligned with the modules your plan includes.",
       ],
     },
     {
       title: "Purpose",
       paragraphs: [
-        "The onboarding path is designed to move an agency from empty workspace to operational readiness without custom setup. You establish who can access what, add your first managed clients, and connect delivery artifacts—reports, SLA policies, monitoring—to those clients so daily operations have a single system of record.",
-        "Early configuration reduces rework later. Assigning owners, aligning SLA policies with contracts, and defining report templates before bulk client import keeps portfolio data consistent. Teams that skip these steps often discover mismatched SLA timers, incomplete health scores, or portal users added before published content exists.",
+        "The onboarding path is designed to move an agency from empty workspace to operational readiness without custom setup. You establish who can access what, add your first managed clients, and connect delivery artifacts—reports and, on Business or Enterprise, SLA policies and monitoring—to those clients so daily operations have a single system of record.",
+        "Early configuration reduces rework later. Assigning owners, defining report templates, and—where your plan includes them—aligning SLA policies before bulk client import keeps portfolio data consistent. Teams that skip these steps often discover incomplete health scores or portal users added before published content exists.",
         "For agency leadership, a well-configured workspace supports weekly operations reviews, quarterly business reviews, and escalation decisions without exporting data to spreadsheets. The goal is not merely to sign up—it is to reach a state where every client has an owner, a policy, and a reporting cadence your team can defend in client conversations.",
       ],
     },
@@ -58,11 +58,11 @@ export const GETTING_STARTED_DOC: DocPageInput = {
               ],
               [
                 "Admin",
-                "Manage operations and most settings; billing access depends on assigned permissions.",
+                "Manage operations, settings, and billing alongside most operational modules.",
               ],
               [
                 "Staff",
-                "Day-to-day create and update access on assigned modules such as clients, reports, and incidents.",
+                "Day-to-day create and update access on operational modules such as reports, incidents, risks, and monitoring; client records remain read-only.",
               ],
               [
                 "Viewer",
@@ -111,14 +111,13 @@ export const GETTING_STARTED_DOC: DocPageInput = {
         "Go to Sign up, enter your name, agency name, email, and password, then confirm your account.",
         "Sign in to reach the Operations Command Center dashboard.",
         "Open Settings → Organization and verify your workspace name and profile details.",
-        "Open Settings → Team and invite owners, admins, staff, or viewers as needed.",
+        "Open Settings → Team and invite admins, staff, or viewers as needed (Owner is assigned by promoting an existing member, not by invitation).",
         "Review Settings → Billing to confirm your plan; complete Mollie checkout if upgrading.",
         "Check Settings → Usage to understand current limits before adding many clients or connectors.",
         "Add your first client from Clients → New client with status and internal owner assigned.",
-        "Open Settings → SLA and create or review policies before assigning them to clients.",
-        "Create a report template under Reports → Templates, then generate a draft report for the client.",
+        "Create a report template under Reports → Templates (Professional+), then generate a draft report for the client.",
         "Review the draft internally, publish when ready, and add portal users on the client detail page.",
-        "Optionally configure Settings → Escalation rules for SLA warning and breach notifications.",
+        "On Business or Enterprise, open Settings → SLA to create policies, assign them on client records, and optionally configure Settings → Escalation for warning and breach notifications.",
         "Schedule a weekly operations review using dashboard metrics and client health scores.",
       ],
     },
@@ -146,19 +145,19 @@ export const GETTING_STARTED_DOC: DocPageInput = {
         {
           title: "Marketing agency",
           paragraphs: [
-            "A fifteen-person marketing agency signs up on Professional, invites two admins and six staff users, and adds twelve active clients with account managers as owners. They create a monthly operations report template, assign Standard SLA policies matching their MSA, and enable portal access for three strategic accounts after the first published report cycle.",
+            "A fifteen-person marketing agency signs up on Professional, invites two admins and six staff users, and adds twelve active clients with account managers as internal client owners. They create a monthly operations report template, publish the first report cycle, and enable portal access for three strategic accounts.",
           ],
         },
         {
           title: "AI automation agency",
           paragraphs: [
-            "An automation consultancy on Professional configures five clients who receive workflow monitoring via HTTP connectors linked on each client record. They log Medium incidents when integrations fail, publish quarterly executive summaries, and upgrade through Settings → Billing when client count approaches plan limits.",
+            "An automation consultancy on Professional configures five clients with monitoring connectors linked on each client record, publishes quarterly executive summaries, and upgrades through Settings → Billing when client count approaches plan limits. After moving to Business, they enable incident logging for integration failures and assign SLA policies to production accounts.",
           ],
         },
         {
           title: "MSP",
           paragraphs: [
-            "A managed services provider imports twenty clients in batches while watching Settings → Usage, defines Premium and Standard SLA tiers in Settings → SLA, and pairs escalation rules for critical accounts. Monitoring connectors feed events that staff triage into incidents during daily standups.",
+            "A managed services provider on Business imports twenty clients in batches while watching Settings → Usage, defines Premium and Standard SLA tiers in Settings → SLA, and pairs escalation rules for critical accounts. Monitoring connectors feed events that staff triage into incidents during daily standups.",
           ],
         },
         {
@@ -249,7 +248,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
     {
       question: "Can staff manage billing?",
       answer:
-        "Billing changes require owner or admin roles with billing permissions. Staff can review operational data but cannot modify subscriptions or payment methods.",
+        "Billing changes require owner or admin roles. Staff can review operational data but cannot access Settings → Billing or modify subscriptions or payment methods.",
     },
   ],
   relatedLinks: [
@@ -327,7 +326,7 @@ export const CLIENTS_DOC: DocPageInput = {
         {
           title: "Health score",
           paragraphs: [
-            "Health score is a composite signal derived from operational activity: SLA violations, critical monitoring events, missing reports, portal engagement, and recent incident patterns. Scores update as underlying data changes rather than on a fixed schedule.",
+            "Health score is a composite signal derived from operational activity: aged open incident and risk SLA-style violations, critical monitoring events, inactive client status, missing recent published reports, portal enabled or disabled state, and recent activity or engagement. Scores update as underlying data changes rather than on a fixed schedule.",
             "Use the score as an early indicator, not a substitute for reviewing open risks and incidents. A client with a moderate score may have one critical open incident; a high score does not eliminate the need for pre-QBR preparation.",
           ],
         },
@@ -475,8 +474,8 @@ export const CLIENTS_DOC: DocPageInput = {
           ],
           [
             "Cannot edit client owner or SLA",
-            "Insufficient write permissions",
-            "Ask an admin to verify your role includes clients.write and related settings access.",
+            "Role lacks clients.write (owner or admin required)",
+            "Ask an owner or admin to update the client record, or promote your role if appropriate.",
           ],
         ],
       },
@@ -506,7 +505,7 @@ export const CLIENTS_DOC: DocPageInput = {
     {
       question: "Can staff edit client records?",
       answer:
-        "Staff with clients.write permission can edit operational fields. Revenue, SLA policy assignment, and portal user management may require additional permissions.",
+        "Owner and admin roles can create and edit client records. Staff and viewer roles have read-only client access. Revenue visibility is limited to owner and admin; SLA policy assignment and portal user management require the corresponding settings permissions.",
     },
     {
       question: "Do archived clients count toward plan limits?",
@@ -527,7 +526,7 @@ export const REPORTS_DOC: DocPageInput = {
   title: "Reports",
   description: "Templates, schedules, publish workflow, and portal delivery.",
   intro:
-    "Reports package operational outcomes for client conversations. Auroranexis supports reusable templates, draft and published lifecycles, scheduled generation, PDF export, email delivery, and client portal publishing. Every report is linked to a client and can surface health scores, SLA metrics, and related open risks and incidents in a consistent format your agency controls.",
+    "Reports package operational outcomes for client conversations. Auroranexis supports reusable templates, draft and published lifecycles, scheduled draft creation, PDF export, email delivery, and client portal publishing. Every report is linked to a client and can surface health scores, SLA metrics, and related open risks and incidents in a consistent format your agency controls.",
   callouts: [
     {
       variant: "warning",
@@ -544,10 +543,10 @@ export const REPORTS_DOC: DocPageInput = {
     {
       title: "Overview",
       paragraphs: [
-        "The Reports module spans the full lifecycle: define structure in templates, generate content for a reporting period, review and edit, then publish or export. Reports → Templates holds reusable section layouts your agency standardizes on; Reports → Schedules automates recurring generation where your plan allows.",
+        "The Reports module spans the full lifecycle: define structure in templates, generate content for a reporting period, review and edit, then publish or export. Reports → Templates holds reusable section layouts your agency standardizes on; Reports → Schedules creates recurring draft report shells where your plan allows—you still run Generate to populate metrics and narrative.",
         "Report statuses progress from draft through generated to published. Draft reports are internal work in progress. Generated reports have metrics and default narrative populated for the selected period. Published reports are finalized and eligible for portal delivery, PDF export, and email. Archived reports remain for history but are not actively delivered.",
         "The report detail page shows version history, metrics captured at generation time, delivery options, and activity logging. Each report links to exactly one client, which determines portal audience and which operational data feeds into generated sections.",
-        "Templates reduce preparation time and enforce consistency across account managers. Schedules help teams meet contractual cadence without manual reminders, though every generated report should still pass human review before publishing to clients.",
+        "Templates reduce preparation time and enforce consistency across account managers. Schedules help teams meet delivery cadence without manual draft creation reminders, though every report should still be generated, reviewed, and approved by a human before publishing to clients.",
       ],
     },
     {
@@ -590,7 +589,7 @@ export const REPORTS_DOC: DocPageInput = {
           title: "Templates and schedules",
           bullets: [
             "Template — reusable structure for sections and default content your agency standardizes on.",
-            "Schedule — ties a template and client to a recurring generation cadence when your plan includes scheduling.",
+            "Schedule — ties a client and title template to a recurring cadence that creates draft report shells when your plan includes scheduling.",
             "Reporting period — start and end dates that frame metrics and narrative content for each report.",
             "Sections — typical areas include executive summary, key wins, key risks, next actions, and operational metrics.",
           ],
@@ -621,7 +620,7 @@ export const REPORTS_DOC: DocPageInput = {
         "Publish to client portal with activity logging.",
         "PDF export from the report detail page.",
         "Email delivery with PDF attachment where enabled.",
-        "Schedules for automated generation under Reports → Schedules.",
+        "Schedules that create recurring draft report shells under Reports → Schedules.",
         "Version history for published report iterations.",
         "Archive workflow for superseded reports without deleting history.",
         "Client-linked report lists on client detail pages.",
@@ -641,7 +640,7 @@ export const REPORTS_DOC: DocPageInput = {
         "Publish when the report is client-ready; confirm activity shows published status.",
         "Verify portal users exist on the client detail page if external portal delivery is required.",
         "Export PDF or send by email from the report detail page as needed for non-portal stakeholders.",
-        "Optionally create a schedule under Reports → Schedules for recurring generation on the same template.",
+        "Optionally create a schedule under Reports → Schedules so draft shells are created on a recurring cadence for the same client.",
         "After client feedback, archive superseded versions rather than deleting published history.",
         "Reference the published report in your next client meeting and update risks if new issues emerged.",
       ],
@@ -658,7 +657,7 @@ export const REPORTS_DOC: DocPageInput = {
         "Use consistent template naming so staff select the correct format under time pressure.",
         "Confirm portal users are active before publishing sensitive operational content.",
         "Store PDF exports for accounts without portal access to maintain delivery records.",
-        "Review schedule output promptly—automated generation still requires human approval before publish.",
+        "Review schedule-created drafts promptly—scheduled runs create draft shells only; run Generate and complete human review before publish.",
       ],
       paragraphs: [
         "Assign a report reviewer who is not the primary author for strategic accounts. A second pair of eyes catches metric mismatches and client-facing language issues that authors overlook after hours of editing.",
@@ -682,7 +681,7 @@ export const REPORTS_DOC: DocPageInput = {
         {
           title: "MSP",
           paragraphs: [
-            "An MSP schedules weekly operational reports for Premium clients using Reports → Schedules, triages generated drafts during Monday standup, and publishes by midday. Standard-tier clients receive monthly reports with SLA compliance sections generated from assigned policies.",
+            "An MSP schedules weekly operational draft shells for Premium clients using Reports → Schedules, runs Generate and triages drafts during Monday standup, and publishes by midday. Standard-tier clients receive monthly reports where SLA compliance sections are populated when Generate runs against assigned policies.",
           ],
         },
         {
@@ -694,7 +693,7 @@ export const REPORTS_DOC: DocPageInput = {
         {
           title: "Enterprise deployment",
           paragraphs: [
-            "A large agency enforces three approved templates globally, requires admin publish approval on Critical-status clients, and exports PDF batches for legal records. Schedules run per region with local account owners responsible for narrative edits before publish.",
+            "A large agency enforces three approved templates globally, requires admin publish approval on Critical-status clients, and exports PDF batches for legal records. Schedules create draft shells per region; local account owners run Generate and edit narrative before publish.",
           ],
         },
       ],
@@ -816,7 +815,7 @@ export const RISKS_DOC: DocPageInput = {
       title: "Purpose",
       paragraphs: [
         "Operational risk tracking gives agencies a defensible record of known issues, mitigation plans, and accepted exposures. It supports internal governance, selective client transparency through published reports, and post-incident analysis when risks were identified but not yet resolved.",
-        "Linking risks to clients ensures portfolio views and reports reflect the correct account context. SLA policies apply response targets to open risks based on severity, aligning platform metrics with contractual commitments your team can demonstrate in QBRs.",
+        "Linking risks to clients ensures portfolio views and reports reflect the correct account context. SLA policies apply response monitoring targets to open risks based on severity, aligning platform metrics with the delivery targets your team reviews in QBRs.",
         "Risk history also helps agencies avoid repeating mistakes. When a similar issue resurfaces, searchable records show what was tried, who owned mitigation, and why prior records were resolved or dismissed.",
       ],
     },
@@ -1065,7 +1064,7 @@ export const INCIDENTS_DOC: DocPageInput = {
   title: "Incidents",
   description: "Manage incidents, SLA impact, and client visibility.",
   intro:
-    "Incidents record operational events that affect client delivery. Log impact, assign responders, track resolution against SLA targets, and control what client portal users see. Each incident belongs to a client, supports severity classification, optional linkage to related risks, and maintains history suitable for post-incident review and contractual reporting.",
+    "Incidents record operational events that affect client delivery. Log impact, assign responders, track resolution against SLA monitoring targets, and control what client portal users see. Each incident belongs to a client, supports severity classification, optional linkage to related risks, and maintains history suitable for post-incident review and operational reporting.",
   callouts: [
     {
       variant: "warning",
@@ -1356,7 +1355,7 @@ export const MONITORING_DOC: DocPageInput = {
       paragraphs: [
         "The Monitoring module lists connectors configured for your organization—each linked to a client where applicable. Connectors support providers such as Manual entry, Webhook, HTTP checks, Healthcheck, and common integration targets. Events capture severity, message, detection time, and resolution status.",
         "Client detail pages include a monitoring summary card showing recent activity for linked connectors. Critical events can affect client health scores and may optionally trigger incident or risk creation based on connector configuration such as create incident on critical.",
-        "Connector status reflects operational health of the check itself—active, paused, failed, disabled, or archived. A failed connector may indicate configuration or reachability problems rather than client system outage; investigate before ignoring subsequent events.",
+        "Connector status reflects the last simulated or recorded check outcome—active, paused, failed, disabled, or archived. A failed connector status indicates a recorded check failure in Auroranexis, not necessarily a live reachability probe of the client system; investigate before ignoring subsequent events.",
         "Monitoring complements but does not replace incident management. Events provide signals; incidents document client impact with SLA timers and optional portal visibility when your team confirms delivery is affected.",
       ],
     },
@@ -1364,7 +1363,7 @@ export const MONITORING_DOC: DocPageInput = {
       title: "Purpose",
       paragraphs: [
         "Agencies often monitor client systems, integrations, or delivery checkpoints outside a single ticket queue. Centralizing monitoring signals in Auroranexis places them next to SLA status, incidents, and reports—the same context operators use for client conversations.",
-        "Documented escalation from monitoring events to incidents preserves timeline integrity and supports post-incident analysis. When a critical HTTP check fails and your team opens an incident within minutes, SLA metrics and client summaries reflect a coherent story.",
+        "Documented escalation from monitoring events to incidents preserves timeline integrity and supports post-incident analysis. When a critical monitoring event is recorded and your team opens an incident within minutes, SLA metrics and client summaries reflect a coherent story.",
         "Portfolio-level monitoring usage is constrained by plan limits in Settings → Usage. Planning connector allocation per client tier prevents surprise blocks during onboarding spikes.",
       ],
     },
@@ -1374,7 +1373,7 @@ export const MONITORING_DOC: DocPageInput = {
         {
           title: "Connectors",
           paragraphs: [
-            "A connector defines what you monitor and how checks run. Each connector has a provider type, status, and configuration including the linked client, endpoint or webhook details, and optional automation such as creating incidents on critical events or enabling health impact tracking.",
+            "A connector defines what you track and how checks are represented. Each connector has a provider type, status, and configuration including the linked client, optional endpoint metadata, and options such as creating incidents on critical events or enabling health impact tracking.",
           ],
         },
         {
@@ -1413,7 +1412,7 @@ export const MONITORING_DOC: DocPageInput = {
         {
           title: "Provider types",
           paragraphs: [
-            "Manual entry supports ad hoc signals your team records. Webhook receives payloads from external tools. HTTP and Healthcheck run scheduled reachability or endpoint validation. Choose the provider that matches how your agency already observes client systems.",
+            "Manual entry supports ad hoc signals your team records. Provider types such as Webhook, HTTP, Healthcheck, and integration-named options classify connectors in the catalog. Health checks in v1 use simulated outcomes for diagnostics and event history—they do not perform live HTTP reachability probes or accept inbound webhook payloads from external tools. Choose the provider label that matches how your agency categorizes the signal source.",
           ],
         },
       ],
@@ -1443,9 +1442,8 @@ export const MONITORING_DOC: DocPageInput = {
         "Review Settings → Usage to confirm available monitoring connector capacity.",
         "Open Monitoring and review existing connectors for your portfolio.",
         "Create a connector, select provider type, and link it to the relevant client.",
-        "Configure endpoint URL, webhook secret, or manual check parameters per provider documentation.",
-        "Set options such as create incident on critical and health impact if appropriate for the client tier.",
-        "Enable the connector and confirm status shows active after successful checks.",
+        "Configure optional endpoint metadata and options such as create incident on critical and health impact if appropriate for the client tier.",
+        "Enable the connector and confirm status after running a check from the connector detail view.",
         "Review events on the Monitoring detail view and client summary card during daily standup.",
         "Triage open critical events—open Incidents → New incident when client impact is confirmed.",
         "Resolve events after remediation is complete with notes if your playbook requires them.",
@@ -1465,7 +1463,7 @@ export const MONITORING_DOC: DocPageInput = {
         "Investigate repeated failed connector status before ignoring events.",
         "Link each connector to exactly one client for clear portfolio reporting.",
         "Name connectors consistently so staff identify production versus staging checks.",
-        "Test webhook endpoints after credential rotation to prevent silent failures.",
+        "Treat provider labels as catalog classification—do not assume live inbound webhooks or HTTP probes in v1.",
         "Review ignored events monthly to ensure triage criteria remain valid.",
       ],
       paragraphs: [
@@ -1478,19 +1476,19 @@ export const MONITORING_DOC: DocPageInput = {
         {
           title: "Marketing agency",
           paragraphs: [
-            "A marketing agency runs HTTP checks on client landing pages during campaign launches, links connectors to Active clients, and triages Medium events during business hours. Critical failures during live campaigns trigger incidents with portal summaries for affected clients.",
+            "A marketing agency configures HTTP-labeled connectors on client landing pages during campaign launches, links connectors to Active clients, and triages Medium events during business hours. Critical recorded failures during live campaigns trigger incidents with portal summaries for affected clients.",
           ],
         },
         {
           title: "AI automation agency",
           paragraphs: [
-            "An automation agency configures Webhook connectors receiving alerts from external uptime tools, maps events to the correct client, and enables create incident on critical for production workflows. Staff resolve events after confirming automated remediation succeeded.",
+            "An automation agency configures Webhook-labeled connectors to represent alerts originating from external uptime tools, maps events to the correct client via Manual or simulated checks, and enables create incident on critical for production workflows. Staff resolve events after confirming remediation succeeded.",
           ],
         },
         {
           title: "MSP",
           paragraphs: [
-            "An MSP deploys Healthcheck connectors across Premium client infrastructure, hits plan limits at forty connectors, and upgrades through Settings → Billing. Critical events feed on-call rotation paired with Settings → Escalation for breach-adjacent response.",
+            "An MSP deploys Healthcheck-labeled connectors across Premium client infrastructure, hits plan limits at forty connectors, and upgrades through Settings → Billing. Critical recorded events feed on-call rotation paired with Settings → Escalation for breach-adjacent response.",
           ],
         },
         {
@@ -1597,17 +1595,17 @@ export const SLA_DOC: DocPageInput = {
   title: "SLA Policies",
   description: "Define response-time targets for incidents and risks.",
   intro:
-    "SLA policies define response and resolution expectations for incidents and risks. Configure policies in Settings → SLA, assign them to clients, and the platform evaluates timers automatically when records are created or updated. Client detail pages and operational dashboards show compliance status, breaches, and upcoming deadlines so your team meets contractual obligations.",
+    "SLA policies define response and resolution monitoring targets for incidents and risks. Configure policies in Settings → SLA (Business and Enterprise), assign them to clients, and the platform evaluates timers automatically when records are created or updated. Client detail pages and operational dashboards show compliance status, breaches, and upcoming deadlines so your team can track delivery against those targets.",
   callouts: [
     {
       variant: "tip",
       title: "Pair with escalation",
-      body: "Configure Settings → Escalation to notify the right people when SLA timers enter warning or breach states for critical clients.",
+      body: "On Business and Enterprise, configure Settings → Escalation to notify the right people when SLA timers enter warning or breach states for critical clients.",
     },
     {
       variant: "info",
       title: "Assignment required",
-      body: "Clients without an assigned SLA policy do not show timers on incidents or risks. Assign policies during client onboarding before logging operational records.",
+      body: "Clients without an assigned SLA policy do not show timers on incidents or risks. Assign policies during client onboarding before logging operational records. SLA tracking requires Business or Enterprise.",
     },
   ],
   sections: [
@@ -1617,15 +1615,15 @@ export const SLA_DOC: DocPageInput = {
         "SLA policies are organization-level templates stored under Settings → SLA. Each policy includes default incident and risk hour targets plus severity-specific response and resolution minutes for low through critical tiers. Clients receive an assigned policy; summaries on client detail pages show effective targets and current compliance.",
         "Open incidents and risks evaluate against the client's assigned policy. Timers display remaining time, warning states, and breach indicators on record detail pages and in SLA dashboard metrics on the Operations Command Center.",
         "Policies can be named to mirror contract language—Standard MSA, Premium 24x7, Enterprise Gold—so staff assign the correct tier without interpreting abstract identifiers. A default policy optional designation speeds onboarding when most clients share the same tier.",
-        "Settings → Escalation complements SLA policies by notifying stakeholders when timers enter warning or breach states. Together they convert contractual commitments into visible operational signals rather than spreadsheet tracking.",
+        "Settings → Escalation complements SLA policies by notifying stakeholders when timers enter warning or breach states. Together they turn configured monitoring targets into visible operational signals rather than spreadsheet tracking.",
       ],
     },
     {
       title: "Purpose",
       paragraphs: [
-        "Contracts specify response expectations, but informal tracking in spreadsheets breaks down as portfolios grow. SLA policies encode those commitments in Auroranexis so every incident and risk is measured consistently across account managers and regions.",
-        "Compliance visibility supports client QBRs, internal performance review, and escalation when teams approach breach thresholds. When leadership asks whether you met response targets last quarter, dashboard metrics and client SLA summaries provide defensible answers.",
-        "SLA evaluation also feeds client health scores. Sustained breaches reduce health signals; consistent compliance contributes positively when other operational data is healthy. Accurate policy assignment is therefore both a contractual and portfolio health requirement.",
+        "Contracts often specify response expectations, but informal tracking in spreadsheets breaks down as portfolios grow. SLA policies encode those monitoring targets in Auroranexis so every incident and risk is measured consistently across account managers and regions. The platform tracks timers; it does not fulfill or guarantee legal contractual obligations.",
+        "Compliance visibility supports client QBRs, internal performance review, and escalation when teams approach breach thresholds. When leadership asks whether you met response targets last quarter, dashboard metrics and client SLA summaries provide operational records for that discussion.",
+        "SLA evaluation also feeds client health scores. Sustained breaches reduce health signals; consistent compliance contributes positively when other operational data is healthy. Accurate policy assignment is therefore both an operational monitoring and portfolio health practice.",
       ],
     },
     {

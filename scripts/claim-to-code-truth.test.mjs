@@ -259,3 +259,70 @@ test("monitoring docs avoid absolute pre-client-report detection promises", () =
     /operators can review configured monitoring signals earlier in the incident lifecycle/,
   );
 });
+
+test("public role docs match assignable UserRole registry (owner/admin/staff/viewer)", () => {
+  const rbac = readSource("src/lib/rbac/permissions.ts");
+  assert.match(
+    rbac,
+    /USER_ROLES\s*=\s*\[["']owner["'],\s*["']admin["'],\s*["']staff["'],\s*["']viewer["']\]/,
+  );
+
+  const ops = readSource("src/lib/docs/pages/operations.ts");
+  const account = readSource("src/lib/docs/pages/account.ts");
+  const publicDocs = `${ops}\n${account}`;
+
+  assert.match(ops, /caption:\s*"Internal role summary"/);
+  assert.match(ops, /"Owner"/);
+  assert.match(ops, /"Admin"/);
+  assert.match(ops, /"Staff"/);
+  assert.match(ops, /"Viewer"/);
+
+  assert.doesNotMatch(publicDocs, /invite owners,/i);
+  assert.doesNotMatch(
+    publicDocs,
+    /Invite new members with the appropriate role \(Owner, Admin, Staff, or Viewer\)/,
+  );
+  assert.match(ops, /invite admins, staff, or viewers/i);
+  assert.match(account, /Invite new members as Admin, Staff, or Viewer/);
+
+  assert.doesNotMatch(publicDocs, /Staff with clients\.write permission/);
+  assert.match(ops, /Staff and viewer roles have read-only client access/);
+
+  assert.doesNotMatch(publicDocs, /"Manager"/);
+  assert.doesNotMatch(publicDocs, /"Analyst"/);
+  assert.doesNotMatch(publicDocs, /"Member"/);
+  assert.doesNotMatch(publicDocs, /"Readonly"/);
+  assert.doesNotMatch(publicDocs, /integration-manager/i);
+});
+
+test("SLA docs describe monitoring targets not contractual fulfillment", () => {
+  const ops = readSource("src/lib/docs/pages/operations.ts");
+  assert.doesNotMatch(ops, /so your team meets contractual obligations/);
+  assert.doesNotMatch(ops, /convert contractual commitments into visible operational signals/);
+  assert.doesNotMatch(ops, /both a contractual and portfolio health requirement/);
+  assert.match(ops, /monitoring targets/);
+  assert.match(ops, /does not fulfill or guarantee legal contractual obligations/);
+});
+
+test("report schedules create draft shells not full generation", () => {
+  const ops = readSource("src/lib/docs/pages/operations.ts");
+  assert.doesNotMatch(ops, /Schedules automates recurring generation/);
+  assert.doesNotMatch(ops, /Schedules for automated generation under Reports/);
+  assert.match(ops, /creates recurring draft report shells/);
+  assert.match(ops, /scheduled runs create draft shells only/);
+});
+
+test("monitoring docs do not claim live HTTP probes or inbound webhooks", () => {
+  const ops = readSource("src/lib/docs/pages/operations.ts");
+  assert.doesNotMatch(ops, /HTTP and Healthcheck run scheduled reachability/);
+  assert.doesNotMatch(ops, /Webhook receives payloads from external tools/);
+  assert.match(ops, /do not perform live HTTP reachability probes/);
+  assert.match(ops, /accept inbound webhook payloads from external tools/);
+});
+
+test("getting-started docs gate SLA and Usage by plan and role", () => {
+  const ops = readSource("src/lib/docs/pages/operations.ts");
+  assert.doesNotMatch(ops, /all roles can review effective limits in Settings → Usage/);
+  assert.match(ops, /Staff and viewer roles do not have Settings access/);
+  assert.match(ops, /On Business or Enterprise, open Settings → SLA/);
+});

@@ -7,12 +7,12 @@ export const BILLING_DOC: DocPageInput = {
   description:
     "Plans, Mollie checkout, invoices, payment methods, and subscription management.",
   intro:
-    "Billing is managed in Settings → Billing. Workspace owners and admins with billing permissions can compare plans, start Mollie checkout, download invoices, and manage subscriptions in Settings → Billing or by contacting support.",
+    "Billing is managed in Settings → Billing. Workspace owners and admins can compare plans, start Mollie checkout, download invoices, and manage subscriptions in Settings → Billing or by contacting support.",
   callouts: [
     {
       variant: "info",
       title: "Who can manage billing",
-      body: "Only workspace owners and admins with billing permissions can change plans and manage subscriptions in Settings → Billing. Staff and viewer roles cannot modify payment details or subscription settings. Discount codes are not available in Mollie checkout today.",
+      body: "Only workspace owners and admins can change plans and manage subscriptions in Settings → Billing. Staff and viewer roles cannot open billing settings or modify payment details. Discount codes are not available in Mollie checkout today.",
     },
     {
       variant: "info",
@@ -133,7 +133,7 @@ export const BILLING_DOC: DocPageInput = {
         "Review Settings → Usage after any plan change to confirm new limits meet operational needs.",
         "Export reports and client data before cancelling if you may need records after access ends.",
         "Promotional discount codes are not applied during Mollie checkout today — treat published list prices as the charged amounts unless support confirms an exception.",
-        "Restrict billing permissions to owners and trusted admins who manage financial decisions.",
+        "Restrict billing access to owners and trusted admins who manage financial decisions.",
         "Self-serve subscriptions renew monthly; contact support if you need a non-standard billing arrangement.",
         "Compare plan tiers against projected growth — upgrading before hitting hard limits avoids blocked operations.",
       ],
@@ -196,7 +196,7 @@ export const BILLING_DOC: DocPageInput = {
           ],
           [
             "Cannot change plan or cancel subscription",
-            "Your role lacks billing permissions",
+            "Your role cannot access billing settings",
             "Ask a workspace owner or admin with billing access to manage subscription changes in Settings → Billing.",
           ],
           [
@@ -222,7 +222,7 @@ export const BILLING_DOC: DocPageInput = {
     {
       question: "Who can manage billing in my workspace?",
       answer:
-        "Workspace owners and admins with billing permissions can change plans and manage billing in Settings → Billing. Other roles cannot modify subscription or payment settings. Discount codes are not available in Mollie checkout today.",
+        "Workspace owners and admins can change plans and manage billing in Settings → Billing. Other roles cannot modify subscription or payment settings. Discount codes are not available in Mollie checkout today.",
     },
     {
       question: "Where are my payment details stored?",
@@ -322,8 +322,8 @@ export const SECURITY_DOC: DocPageInput = {
           title: "Role-based access control",
           bullets: [
             "Owner — full workspace control including billing, team management, and all operational modules.",
-            "Admin — manage operations, settings, and most modules; billing access depends on assigned permissions.",
-            "Staff — day-to-day operational access for assigned clients, reports, incidents, and workflows.",
+            "Admin — manage operations, settings, billing, and most modules.",
+            "Staff — day-to-day operational access for reports, incidents, risks, monitoring, and workflows; client records are read-only.",
             "Viewer — read-focused access suitable for reporting, review, and oversight roles.",
           ],
           paragraphs: [
@@ -365,7 +365,7 @@ export const SECURITY_DOC: DocPageInput = {
           title: "Configure team roles",
           ordered: [
             "Open Settings → Team.",
-            "Invite new members with the appropriate role (Owner, Admin, Staff, or Viewer).",
+            "Invite new members as Admin, Staff, or Viewer. Promote an existing member to Owner when needed—Owner is not available on the invite form.",
             "Review existing members and downgrade permissions where access exceeds job requirements.",
             "Remove or deactivate accounts promptly when staff leave the agency.",
           ],
@@ -418,7 +418,7 @@ export const SECURITY_DOC: DocPageInput = {
         "Limit client portal users to the minimum contacts required for each engagement.",
         "Never share API keys via email, chat, or unencrypted documents.",
         "Monitor activity history for unexpected configuration or data access patterns.",
-        "Keep billing permissions restricted to owners and designated financial administrators.",
+        "Keep billing access restricted to owners and designated financial administrators.",
         "Document your internal access review process and align it with client contractual obligations.",
       ],
     },
@@ -516,7 +516,7 @@ export const SECURITY_DOC: DocPageInput = {
       {
         question: "Can staff members access billing settings?",
         answer:
-          "Only workspace owners and admins with billing permissions can manage subscriptions and manage billing in Settings → Billing. Staff and viewer roles cannot modify billing settings.",
+          "Only workspace owners and admins can manage subscriptions and billing in Settings → Billing. Staff and viewer roles cannot modify billing settings.",
       },
     {
       question: "How do I report a security vulnerability?",

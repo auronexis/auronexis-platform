@@ -525,7 +525,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
         {
           title: "AI automation agency",
           paragraphs: [
-            "An automation agency newly upgraded to Professional enables ai_predictive_intelligence and opens Dashboard → Predictive. Initial confidence is Low because historical data is sparse. Over six weeks, consistent report publishing and incident recording raise confidence labels. The portfolio owner establishes a baseline health score review as part of the monthly operations cadence.",
+            "An automation agency newly upgraded to Professional enables ai_predictive_intelligence and opens Dashboard → Predictive. Initial confidence is Low because historical data is sparse. Over six weeks, consistent report publishing and monitoring activity raise confidence labels. The portfolio owner establishes a baseline health score review as part of the monthly operations cadence.",
           ],
         },
         {
