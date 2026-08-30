@@ -1337,7 +1337,7 @@ export const MONITORING_DOC: DocPageInput = {
   title: "Monitoring",
   description: "Track monitored endpoints and client operational signals.",
   intro:
-    "Monitoring helps your team observe configured checks and external signals tied to clients. Connectors represent monitoring sources; events record detected conditions with severity and status. Summaries on client detail pages and the Monitoring module support early awareness alongside health scores and incidents, so operators can escalate before clients report problems.",
+    "Monitoring helps your team observe configured checks and external signals tied to clients. Connectors represent monitoring sources; events record detected conditions with severity and status. Summaries on client detail pages and the Monitoring module support early awareness alongside health scores and incidents, so operators can review configured monitoring signals earlier in the incident lifecycle.",
   callouts: [
     {
       variant: "info",

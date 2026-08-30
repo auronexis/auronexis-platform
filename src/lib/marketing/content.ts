@@ -144,7 +144,7 @@ export const FEATURES: readonly MarketingFeature[] = [
 export const USE_CASES = [
   {
     title: "MSPs",
-    description: "Monitor multi-client operations, prove SLA performance, and standardize reporting.",
+    description: "Monitor multi-client operations, track and report SLA performance, and standardize reporting.",
     href: "/use-cases/msps",
   },
   {

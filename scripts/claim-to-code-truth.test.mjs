@@ -129,3 +129,63 @@ test("integrations catalog preserves Teams/API available and Zapier coming soon"
   assert.match(catalog, /id: "api-access"[\s\S]{0,220}section: "available"/);
   assert.match(catalog, /id: "zapier"[\s\S]{0,220}section: "coming_soon"/);
 });
+
+test("msps does not promise churn reduction, SLA proof, or headcount freeze", () => {
+  const audience = readSource("src/lib/seo/audience-content.ts");
+  const start = audience.indexOf("msps: buildLandingPage");
+  const end = audience.indexOf("consultancies: buildLandingPage", start + 1);
+  const block = audience.slice(start, end);
+  assert.doesNotMatch(block, /reduce churn/i);
+  assert.doesNotMatch(block, /prove SLA/i);
+  assert.doesNotMatch(block, /helps you prove it/i);
+  assert.doesNotMatch(block, /without adding reporting-focused roles/i);
+  assert.doesNotMatch(block, /without proportional growth in reporting overhead/i);
+  assert.match(block, /support retention discussions through proactive transparency/);
+  assert.match(block, /support delivery oversight across a growing client portfolio/);
+  assert.match(block, /track and report SLA performance with auditable records/);
+
+  const marketing = readSource("src/lib/marketing/content.ts");
+  assert.doesNotMatch(marketing, /prove SLA performance/);
+  assert.match(marketing, /track and report SLA performance/);
+});
+
+test("marketing-agencies does not promise headcount freeze or absolute delivery-value proof", () => {
+  const audience = readSource("src/lib/seo/audience-content.ts");
+  const start = audience.indexOf('"marketing-agencies": buildLandingPage');
+  const end = audience.indexOf('"it-service-providers": buildLandingPage', start + 1);
+  const block = audience.slice(start, end);
+  assert.doesNotMatch(block, /without adding headcount/i);
+  assert.doesNotMatch(block, /demonstrate measurable delivery value/i);
+  assert.match(
+    block,
+    /support delivery-value discussions with operational evidence during renewals/,
+  );
+  assert.match(
+    block,
+    /executive-ready reporting that supports delivery oversight across a growing client portfolio/,
+  );
+});
+
+test("public audience pages avoid Frankfurt customer-option and headcount outcome overclaims", () => {
+  const audience = readSource("src/lib/seo/audience-content.ts");
+  assert.doesNotMatch(audience, /Frankfurt region support/i);
+  assert.doesNotMatch(audience, /without adding headcount/i);
+  assert.doesNotMatch(audience, /additional operations headcount/i);
+  assert.match(
+    audience,
+    /EU-capable infrastructure with data-residency requirements confirmed for applicable enterprise arrangements/,
+  );
+
+  const industry = readSource("src/lib/seo/industry-content.ts");
+  assert.doesNotMatch(industry, /without adding management overhead per client/i);
+  assert.match(industry, /Scale operational oversight across a growing client portfolio/);
+});
+
+test("monitoring docs avoid absolute pre-client-report detection promises", () => {
+  const ops = readSource("src/lib/docs/pages/operations.ts");
+  assert.doesNotMatch(ops, /escalate before clients report problems/);
+  assert.match(
+    ops,
+    /operators can review configured monitoring signals earlier in the incident lifecycle/,
+  );
+});

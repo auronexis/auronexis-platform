@@ -28,9 +28,9 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis gives marketing agencies a client-centric command center. Connect each account to incidents, risks, reports, and health signals so account managers, strategists, and leadership work from the same operational record — not scattered spreadsheets and inbox threads.",
     businessValue:
-      "Reduce manual reporting overhead, surface at-risk accounts earlier, and demonstrate measurable delivery value during renewals. Agencies protect margin by standardizing how teams monitor, communicate, and report across the portfolio.",
+      "Reduce manual reporting overhead, surface at-risk accounts earlier, and support delivery-value discussions with operational evidence during renewals. Agencies protect margin by standardizing how teams monitor, communicate, and report across the portfolio.",
     audience:
-      "Performance marketing agencies, brand agencies, and full-service shops managing multi-client retainers who need portfolio visibility, client-facing transparency, and executive-ready reporting without adding headcount.",
+      "Performance marketing agencies, brand agencies, and full-service shops managing multi-client retainers who need portfolio visibility, client-facing transparency, and executive-ready reporting that supports delivery oversight across a growing client portfolio.",
     enterpriseAdvantages: [
       "Organization-scoped workspaces with role-based access for account, strategy, and leadership teams",
       "White-label client portal options for branded status sharing on Business and Enterprise plans",
@@ -121,7 +121,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis centralizes client records, incident lifecycles, SLA policies, and risk registers so IT service teams operate from a shared system of record. Technicians, account managers, and leadership see the same data — reducing handoff friction and improving client transparency.",
     businessValue:
-      "Prove SLA compliance with auditable records, reduce time spent on status reporting, and scale delivery standards as the client base grows. Service providers protect revenue by demonstrating reliability before clients question it.",
+      "Support SLA compliance discussions with auditable records, reduce time spent on status reporting, and scale delivery standards as the client base grows. Service providers protect revenue by demonstrating reliability with operational evidence earlier in the client relationship.",
     audience:
       "Managed IT firms, outsourced IT departments, and technology service providers delivering recurring support and infrastructure services to business clients.",
     enterpriseAdvantages: [
@@ -137,9 +137,9 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
           "Track severity, ownership, timelines, and resolution status for every client incident in one workspace.",
       },
       {
-        title: "SLA proof on demand",
+        title: "SLA records on demand",
         description:
-          "Evaluate incidents against client-specific SLA policies and surface breaches before they become disputes.",
+          "Evaluate incidents against client-specific SLA policies and surface breach indicators for operational review.",
       },
       {
         title: "Portfolio oversight",
@@ -170,7 +170,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       "Reduced SLA disputes backed by timestamped operational records",
       "Faster incident resolution through clear ownership and escalation paths",
       "Proactive account management based on portfolio health signals",
-      "Scalable reporting that does not require additional operations headcount",
+      "Scalable reporting that supports a growing client portfolio",
     ],
     faq: [
       {
@@ -206,7 +206,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     eyebrow: "Use case",
     title: "Portfolio operations built for MSPs",
     description:
-      "Monitor multi-client health, prove SLA performance, and standardize delivery across your managed services portfolio.",
+      "Monitor multi-client health, track and report SLA performance with auditable records, and standardize delivery across your managed services portfolio.",
     metaDescription:
       "MSP client operations — portfolio health, SLA tracking, incident management, and client portal in Auroranexis.",
     problem:
@@ -214,7 +214,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis gives MSPs a portfolio command center designed for multi-client operators. Track health signals, incidents, risks, and SLA performance per client while providing transparent status through a branded portal — all from one workspace.",
     businessValue:
-      "Protect recurring revenue by identifying at-risk accounts early, reduce churn through proactive transparency, and scale operations without proportional growth in reporting overhead. MSPs compete on reliability — Auroranexis helps you prove it.",
+      "Help teams identify at-risk accounts earlier with operational signals, support retention discussions through proactive transparency, and support delivery oversight across a growing client portfolio. MSPs compete on reliability — Auroranexis helps surface operational performance evidence.",
     audience:
       "Managed service providers of all sizes — from boutique MSPs to regional operators — who need portfolio visibility, SLA accountability, and client-facing transparency at scale.",
     enterpriseAdvantages: [
@@ -230,7 +230,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
           "Aggregate operational signals across your portfolio to surface accounts that need attention before renewal conversations.",
       },
       {
-        title: "SLA performance proof",
+        title: "SLA performance reporting",
         description:
           "Track and report SLA outcomes per client with auditable records suitable for contract reviews and QBRs.",
       },
@@ -263,7 +263,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       "Proactive account management driven by operational data, not gut feel",
       "Documented SLA performance that strengthens renewal negotiations",
       "Consistent client experience across the entire portfolio",
-      "Operations that scale without adding reporting-focused roles",
+      "Operational reporting that supports a growing client portfolio",
     ],
     faq: [
       {
@@ -407,7 +407,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       "Audit logging for sensitive operational and configuration changes",
       "Role-based access with organization-scoped permissions",
       "Compliance center workflows on Business and Enterprise plans",
-      "EU-friendly data residency via Supabase Frankfurt region support",
+      "EU-capable infrastructure with data-residency requirements confirmed for applicable enterprise arrangements",
     ],
     benefits: [
       {
@@ -586,7 +586,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     solution:
       "Auroranexis bridges the gap between engineering delivery and client operations. Track incidents, risks, health signals, and SLA performance per client while providing account managers and clients with appropriate visibility through reports and a dedicated portal.",
     businessValue:
-      "Improve client retention through transparent delivery communication, reduce escalations caused by information gaps, and scale account management without proportional growth in senior oversight time.",
+      "Support retention discussions through transparent delivery communication, help reduce escalations caused by information gaps, and support account management across a growing client portfolio.",
     audience:
       "Custom software shops, product development agencies, and engineering consultancies delivering recurring development services or long-term product partnerships to business clients.",
     enterpriseAdvantages: [
