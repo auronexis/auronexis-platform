@@ -8,8 +8,21 @@ import {
   isPortalLoginPath,
 } from "@/lib/deployment/domain-routing";
 import { isApiRoute, shouldBypassSessionMiddleware } from "@/lib/deployment/middleware-routing";
+import { isPrivateRoute } from "@/lib/seo/private-routes";
 import type { Database } from "@/types/database";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
+
+/** Hard 404 for unknown non-public paths — must not masquerade as an auth wall. */
+function hardNotFoundResponse(): NextResponse {
+  const body = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="robots" content="noindex, nofollow"/><title>Page Not Found | Auroranexis</title></head><body><main><p>404</p><h1>Page not found</h1><p>The page you requested does not exist.</p><p><a href="/">Back home</a></p></main></body></html>`;
+  return new NextResponse(body, {
+    status: 404,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "private, no-store",
+    },
+  });
+}
 
 function isPublicPath(pathname: string): boolean {
   if (
@@ -103,6 +116,11 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (!user && !isPublicRoute) {
+    // Known app surfaces keep the login redirect. Unknown paths must hard-404
+    // (not 307 → /login), so crawlers and mistyped URLs do not hit an auth wall.
+    if (!isPrivateRoute(pathname)) {
+      return hardNotFoundResponse();
+    }
     return NextResponse.redirect(buildAppLoginUrl(request.nextUrl, pathname));
   }
 

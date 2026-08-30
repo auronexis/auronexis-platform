@@ -623,3 +623,16 @@ test("middleware hard-404s unknown public marketing/docs slugs", () => {
   assert.match(allowlist, /release-notes/);
   assert.match(allowlist, /integrations/);
 });
+
+test("session middleware hard-404s unknown non-private paths instead of login redirect", () => {
+  const sessionMw = readSource("src/lib/supabase/middleware.ts");
+  assert.match(sessionMw, /isPrivateRoute/);
+  assert.match(sessionMw, /hardNotFoundResponse/);
+  assert.match(sessionMw, /status:\s*404/);
+  // Login redirect must remain for known private app surfaces only.
+  assert.match(
+    sessionMw,
+    /if\s*\(\s*!isPrivateRoute\(pathname\)\s*\)\s*\{[\s\S]*?hardNotFoundResponse\(\)/,
+  );
+  assert.match(sessionMw, /buildAppLoginUrl/);
+});
