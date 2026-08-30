@@ -45,7 +45,7 @@ This document defines sections and messaging for the public marketing site. Impl
 
 Mirror [pricing-beta.md](./pricing-beta.md) list prices (not pilot discount).  
 Highlight: 14-day trial, no credit card optional (product decision).  
-Link to **FastSpring Checkout** on the app subdomain (see [paddle-billing.md](./paddle-billing.md)).
+Link to **Mollie Checkout** on the app subdomain (see [billing.md](./billing.md)). Mollie is the sole active payment service provider; Auroranexis remains the seller.
 
 ---
 
@@ -115,7 +115,7 @@ Link → [connectors.md](./connectors.md)
 
 - Supabase Auth + RLS
 - Encrypted connector tokens
-- Paddle PCI scope minimized (Checkout / Portal hosted by Paddle)
+- Mollie PCI scope minimized (hosted checkout; Auroranexis does not store card data)
 - Link → [security.md](./security.md)
 
 ---
@@ -142,7 +142,7 @@ Yes — client portal with role-based access.
 Roadmap; email/password and magic link today.
 
 **What about billing?**  
-Paddle subscriptions, invoices, and customer portal.
+Mollie processes payments; Auroranexis remains the seller and surfaces subscriptions, invoices, and plan status in Settings → Billing.
 
 ---
 

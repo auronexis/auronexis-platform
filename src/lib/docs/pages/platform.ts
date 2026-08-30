@@ -268,7 +268,7 @@ export const AUTOMATION_DOC: DocPageInput = {
     {
       question: "Is automation available on all plans?",
       answer:
-        "The workflow builder is plan-gated. Professional and higher include automation workflows; Business and Enterprise increase automation limits and related engine capacity. Review Settings → Billing for your effective entitlements.",
+        "Automation uses two intentionally separate plan gates. Professional and higher unlock the Automation workspace, AI builder, connectors, and workflow engine. Business and Enterprise also enable the operational automation engine (trigger→action dispatch and escalation processing) and raise automation limits. Review Settings → Billing for your effective entitlements.",
     },
   ],
   relatedLinks: [

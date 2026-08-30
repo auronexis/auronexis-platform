@@ -19,21 +19,6 @@ export type PlatformHealthSnapshot = {
     supabase: boolean;
     /** Mollie billing configured (sole active provider). */
     mollie: boolean;
-    /**
-     * @deprecated Alias of `mollie` for older monitors that read `fastspring`.
-     * Prefer `mollie`.
-     */
-    fastspring: boolean;
-    /**
-     * @deprecated Alias of `mollie` for older monitors that read `paddle`.
-     * Prefer `mollie`.
-     */
-    paddle: boolean;
-    /**
-     * @deprecated Alias of `mollie` for older monitors — not Stripe.
-     * Prefer `mollie`.
-     */
-    stripe: boolean;
     ai: boolean;
   };
 };
@@ -60,9 +45,6 @@ export async function getPlatformHealthSnapshot(): Promise<PlatformHealthSnapsho
     database: database.level !== "unavailable",
     supabase: supabaseConfigured,
     mollie: mollieConfigured,
-    fastspring: mollieConfigured,
-    paddle: mollieConfigured,
-    stripe: mollieConfigured,
     ai: aiConfigured,
   };
 

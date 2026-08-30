@@ -205,7 +205,6 @@ export async function getIntegrationCenterSnapshot(
       status: slackStatus,
     },
     mollie: mollieBilling,
-    fastspring: mollieBilling,
     webhooks: {
       activeWebhooks: apiSnapshot.webhookEndpointCount,
       lastDelivery: lastWebhookDelivery ?? (stripeWebhooks.lastWebhookReceivedAt ?? null),

@@ -62,11 +62,13 @@ test("src still has no TODO FIXME HACK markers", () => {
 
 test("billing docs no longer describe active Stripe or Paddle checkout", () => {
   const billing = readSource("docs/billing.md");
-  assert.match(billing, /FastSpring-only|FastSpring/);
+  assert.match(billing, /Mollie-only|Mollie sole/);
   assert.doesNotMatch(billing, /Stripe Checkout \/ Customer Portal \/ Webhooks \(existing integration\)/);
   const website = readSource("docs/website.md");
-  assert.match(website, /FastSpring Checkout/);
+  assert.match(website, /Mollie Checkout/);
+  assert.doesNotMatch(website, /FastSpring Checkout/);
   assert.doesNotMatch(website, /Link to Stripe Checkout/);
+  assert.doesNotMatch(website, /Paddle subscriptions, invoices/);
   const domain = readSource("docs/domain-setup.md");
   assert.match(domain, /\/api\/mollie\/webhook/);
   assert.doesNotMatch(domain, /\/api\/stripe\/webhook/);

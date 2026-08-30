@@ -360,6 +360,26 @@ test("industry cybersecurity advantages use canonical workspace roles", () => {
   );
 });
 
+test("automation dual-gate is intentional — builder Professional+, engine Business+", () => {
+  const features = readSource("src/lib/plans/features.ts");
+  assert.match(features, /ai_automation_builder:\s*"professional"/);
+  assert.match(features, /automation_engine:\s*"business"/);
+
+  const layout = readSource("src/app/(dashboard)/automation/layout.tsx");
+  assert.match(layout, /PlanFeatureGate feature="ai_automation_builder"/);
+
+  const engine = readSource("src/lib/automation/engine.ts");
+  assert.match(engine, /canUseFeature\(event\.organizationId, "automation_engine"\)/);
+
+  const dispatcher = readSource("src/lib/automation/engine-v2/dispatcher.ts");
+  assert.match(dispatcher, /checkPlanFeature\(event\.organizationId, "ai_automation_builder"\)/);
+
+  const platform = readSource("src/lib/docs/pages/platform.ts");
+  assert.match(platform, /two intentionally separate plan gates/);
+  assert.match(platform, /Professional and higher unlock the Automation workspace/);
+  assert.match(platform, /operational automation engine/);
+});
+
 test("escalation docs do not claim paging or SMS delivery", () => {
   const ops = readSource("src/lib/docs/pages/operations.ts");
   assert.doesNotMatch(ops, /paging on-call engineers/);

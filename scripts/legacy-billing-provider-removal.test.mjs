@@ -316,3 +316,60 @@ test("getActiveBillingProvider is Mollie-only — ACTIVE_* legacy providers = 0"
   assert.doesNotMatch(provider, /return "stripe"/);
   assert.match(provider, /isFastSpringActiveBillingProvider[\s\S]*return false/);
 });
+
+test("checkout-block defaults to Mollie and never bypasses invoice guards via FastSpring", () => {
+  const block = readSource("src/lib/billing/checkout-block.ts");
+  assert.match(block, /input\.activeProvider \?\? "mollie"/);
+  assert.doesNotMatch(block, /\?\? "fastspring"/);
+  assert.doesNotMatch(block, /activeProvider === "fastspring"/);
+  assert.match(block, /OPEN_INVOICE_CHECKOUT_BLOCK_MESSAGE/);
+
+  const grid = readSource("src/components/pricing/pricing-grid.tsx");
+  assert.match(grid, /activeProvider:\s*"mollie"/);
+});
+
+test("public health snapshot publishes Mollie only — no legacy provider config aliases", () => {
+  const health = readSource("src/lib/observability/health.ts");
+  assert.match(health, /mollie:\s*mollieConfigured/);
+  assert.doesNotMatch(health, /fastspring:\s*mollieConfigured/);
+  assert.doesNotMatch(health, /paddle:\s*mollieConfigured/);
+  assert.doesNotMatch(health, /stripe:\s*mollieConfigured/);
+
+  const centerTypes = readSource("src/lib/integrations/center/types.ts");
+  assert.doesNotMatch(centerTypes, /fastspring:\s*IntegrationCenterMollie/);
+  const centerSnap = readSource("src/lib/integrations/center/snapshot.ts");
+  assert.doesNotMatch(centerSnap, /fastspring:\s*mollieBilling/);
+
+  const vercel = readSource("src/lib/diagnostics/vercel-production-readiness.ts");
+  assert.doesNotMatch(vercel, /fastspringEnvReady/);
+  assert.doesNotMatch(vercel, /fastspring:\s*\[\]/);
+});
+
+test("ACTIVE eradication surfaces stay free of unexplained legacy provider brands", () => {
+  const files = [
+    "src/lib/billing/checkout-block.ts",
+    "src/lib/billing/provider.ts",
+    "src/lib/observability/health.ts",
+    "src/lib/integrations/center/types.ts",
+    "src/lib/integrations/center/snapshot.ts",
+    "src/lib/diagnostics/vercel-production-readiness.ts",
+    "src/components/pricing/pricing-grid.tsx",
+  ];
+  for (const file of files) {
+    const source = readSource(file);
+    for (const line of source.split("\n")) {
+      if (!/\b(Stripe|Paddle|FastSpring|stripe|paddle|fastspring)\b/.test(line)) continue;
+      const justified =
+        /retired|legacy|historical|quarantine|410|Gone|@deprecated|sole active|never|Mollie|tombstone|archive|compat|DB column|field name/i.test(
+          line,
+        ) ||
+        /stripeInvoiceId|ignoredStripeInvoiceIds|blockingInvoiceStripeId|maskStripeId|stripeStatus|stripe_/i.test(
+          line,
+        ) ||
+        /isFastSpringActiveBillingProvider|LEGACY_BILLING|billing_provider|BillingProvider|mapFastSpring|api\/fastspring/i.test(
+          line,
+        );
+      assert.ok(justified, `${file} unexplained legacy line: ${line.trim()}`);
+    }
+  }
+});

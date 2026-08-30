@@ -64,8 +64,6 @@ export type IntegrationCenterSnapshot = {
   anthropic: IntegrationCenterAnthropic;
   slack: IntegrationCenterSlack;
   mollie: IntegrationCenterMollie;
-  /** @deprecated Alias of mollie for older UI — FastSpring retired. */
-  fastspring: IntegrationCenterMollie;
   webhooks: IntegrationCenterWebhooks;
   resend: IntegrationCenterResend;
   restApi: IntegrationCenterRestApi;

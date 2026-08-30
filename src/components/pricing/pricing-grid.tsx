@@ -90,6 +90,7 @@ export function PricingGrid({
     resolveCheckoutBlockState({
       overview: safeSelection.overview,
       invoices: safeSelection.invoices ?? [],
+      activeProvider: "mollie",
     });
 
   const selectPlan = (planKey: PlanKey) => {

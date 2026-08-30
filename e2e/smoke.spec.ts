@@ -37,12 +37,11 @@ test.describe("Public smoke", () => {
       configuration: {
         database: boolean;
         supabase: boolean;
-        fastspring: boolean;
-        /** @deprecated Alias of fastspring for older monitors. */
-        paddle: boolean;
-        /** @deprecated Alias of fastspring for older monitors. */
-        stripe: boolean;
+        mollie: boolean;
         ai: boolean;
+        fastspring?: boolean;
+        paddle?: boolean;
+        stripe?: boolean;
       };
     };
 
@@ -53,11 +52,10 @@ test.describe("Public smoke", () => {
     expect(typeof body.configuration).toBe("object");
     expect(typeof body.configuration.database).toBe("boolean");
     expect(typeof body.configuration.supabase).toBe("boolean");
-    expect(typeof body.configuration.fastspring).toBe("boolean");
-    expect(typeof body.configuration.paddle).toBe("boolean");
-    expect(typeof body.configuration.stripe).toBe("boolean");
-    expect(body.configuration.paddle).toBe(body.configuration.fastspring);
-    expect(body.configuration.stripe).toBe(body.configuration.fastspring);
+    expect(typeof body.configuration.mollie).toBe("boolean");
+    expect(body.configuration.fastspring).toBeUndefined();
+    expect(body.configuration.paddle).toBeUndefined();
+    expect(body.configuration.stripe).toBeUndefined();
     expect(typeof body.configuration.ai).toBe("boolean");
     if (status === 503) {
       expect(body.status).toBe("unavailable");

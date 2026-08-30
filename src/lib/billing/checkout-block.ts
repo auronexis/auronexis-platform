@@ -1,6 +1,3 @@
-import {
-  providerSubscriptionBlocksCheckout,
-} from "@/lib/billing/active-billing";
 import type { BillingProvider } from "@/lib/billing/provider-types";
 import type { BillingOverview, CustomerInvoiceView } from "@/lib/billing/types";
 import { findLatestOpenInvoice } from "@/lib/billing/status";
@@ -44,8 +41,8 @@ function isBlockingOpenInvoice(
 
 /**
  * Resolve whether checkout should be blocked.
- * When activeProvider is fastspring, Stripe invoices and Stripe subscription remnants
- * never block — only verified FastSpring state may block.
+ * Mollie is the sole active provider — default uses Mollie invoice/payment guards.
+ * Legacy provider argument values are ignored (historical rows never own checkout).
  */
 export function resolveCheckoutBlockState(input: {
   overview: BillingOverview;
@@ -53,46 +50,8 @@ export function resolveCheckoutBlockState(input: {
   ignoredStripeInvoiceIds?: ReadonlySet<string>;
   activeProvider?: BillingProvider;
 }): CheckoutBlockState {
-  const activeProvider = input.activeProvider ?? "fastspring";
-
-  if (activeProvider === "fastspring") {
-    const subscription = input.overview.subscription;
-
-    if (providerSubscriptionBlocksCheckout(subscription)) {
-      if (input.overview.hasPaymentProblem) {
-        return {
-          blocked: true,
-          code: "payment_problem",
-          message: PAYMENT_PROBLEM_CHECKOUT_BLOCK_MESSAGE,
-          bannerMessage: PAYMENT_PROBLEM_CHECKOUT_BLOCK_MESSAGE,
-          blockingInvoice: null,
-          blockingInvoiceStripeId: null,
-          hostedInvoiceUrl: null,
-        };
-      }
-
-      return {
-        blocked: true,
-        code: "payment_pending",
-        message: PAYMENT_PENDING_CHECKOUT_BLOCK_MESSAGE,
-        bannerMessage: PAYMENT_PENDING_CHECKOUT_BLOCK_MESSAGE,
-        blockingInvoice: null,
-        blockingInvoiceStripeId: null,
-        hostedInvoiceUrl: null,
-      };
-    }
-
-    // Stripe open invoices and incomplete Stripe rows never block FastSpring checkout.
-    return {
-      blocked: false,
-      code: "none",
-      message: null,
-      bannerMessage: null,
-      blockingInvoice: null,
-      blockingInvoiceStripeId: null,
-      hostedInvoiceUrl: null,
-    };
-  }
+  // Mollie sole-provider: never fall back to retired FastSpring invoice-bypass path.
+  void (input.activeProvider ?? "mollie");
 
   const invoices = Array.isArray(input.invoices) ? input.invoices : [];
   const blockingInvoice =

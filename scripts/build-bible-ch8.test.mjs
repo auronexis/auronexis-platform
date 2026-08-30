@@ -82,13 +82,17 @@ test("public marketing pages use PAGE_SEO registry metadata", () => {
   const pages = listPageFiles(marketingRoot).filter((file) => !file.includes(`${join("industries", "[slug]")}`) || true);
   let checked = 0;
   for (const file of pages) {
+    const source = readFileSync(file, "utf8");
+    // Alias/redirect stubs must stay noindex — not PAGE_SEO public entries.
+    if (source.includes("permanentRedirect(")) {
+      assert.match(source, /createPrivateAppMetadata|createPageMetadataForPath/, file);
+      continue;
+    }
     if (file.includes("[slug]")) {
-      const source = readFileSync(file, "utf8");
       assert.match(source, /createPageMetadataForPath/);
       checked += 1;
       continue;
     }
-    const source = readFileSync(file, "utf8");
     assert.match(source, /createPageMetadataForPath/, file);
     checked += 1;
   }

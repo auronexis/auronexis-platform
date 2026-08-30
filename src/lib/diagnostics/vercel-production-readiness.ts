@@ -18,10 +18,6 @@ export type VercelProductionReadinessSnapshot = {
   developmentConfigured: boolean;
   /** Mollie billing env ready (sole active provider). */
   mollieEnvReady: boolean;
-  /**
-   * @deprecated Alias of mollieEnvReady for older dashboards.
-   */
-  fastspringEnvReady: boolean;
   oauthEnvReady: boolean;
   mailEnvReady: boolean;
   domainsDocumented: boolean;
@@ -101,7 +97,6 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
     previewConfigured,
     developmentConfigured,
     mollieEnvReady,
-    fastspringEnvReady: mollieEnvReady,
     oauthEnvReady,
     mailEnvReady,
     domainsDocumented,
@@ -114,8 +109,6 @@ export function getVercelProductionReadinessSnapshot(): VercelProductionReadines
 export const VERCEL_ENV_GROUPS = {
   core: CORE_ENV_KEYS,
   mollie: MOLLIE_ENV_KEYS,
-  /** @deprecated FastSpring retired — empty legacy group. */
-  fastspring: [] as const,
   oauth: OAUTH_ENV_KEYS,
   mail: MAIL_ENV_KEYS,
 } as const;

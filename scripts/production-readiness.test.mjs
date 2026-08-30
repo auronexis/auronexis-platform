@@ -70,9 +70,9 @@ test("health and ready probes remain production-safe", () => {
   const health = readSource("src/lib/observability/health.ts");
   assert.match(health, /isMollieApiConfigured/);
   assert.match(health, /mollie:/);
-  assert.match(health, /fastspring:/);
-  // Deprecated aliases retained for older monitors — never the active provider.
-  assert.match(health, /paddle:/);
+  assert.doesNotMatch(health, /fastspring:/);
+  assert.doesNotMatch(health, /paddle:/);
+  assert.doesNotMatch(health, /\bstripe:\s/);
   assert.match(health, /getPlatformHealthSnapshot/);
   const ready = readSource("src/app/api/ready/route.ts");
   assert.match(ready, /getPlatformHealthSnapshot/);
