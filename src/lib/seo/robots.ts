@@ -9,7 +9,7 @@ export function buildRobotsConfig(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: [...PRIVATE_ROUTE_PREFIXES, ...NOINDEX_ROUTES],
+      disallow: [...PRIVATE_ROUTE_PREFIXES, ...NOINDEX_ROUTES, "/internal"],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
     host: baseUrl.replace(/^https?:\/\//, ""),

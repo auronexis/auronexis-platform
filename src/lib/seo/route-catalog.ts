@@ -74,7 +74,7 @@ const CATEGORY_PREFIXES: ReadonlyArray<{ category: RouteCategory; prefixes: read
   },
   {
     category: "internal",
-    prefixes: ["/legal"],
+    prefixes: ["/legal", "/internal"],
   },
 ];
 

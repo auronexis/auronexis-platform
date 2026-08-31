@@ -42,6 +42,15 @@ function isPublicPath(pathname: string): boolean {
     return true;
   }
 
+  // Local/dev e-invoice viewer only — never treated as public on production runtime.
+  if (
+    pathname.startsWith("/internal/einvoice-preview") &&
+    process.env.NODE_ENV !== "production" &&
+    process.env.VERCEL_ENV !== "production"
+  ) {
+    return true;
+  }
+
   if (isApiRoute(pathname)) {
     return true;
   }

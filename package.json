@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test:final-live-billing-gate": "node --experimental-strip-types --import ./scripts/_test-helpers/register-ts-alias.mjs --test scripts/final-live-billing-activation-gate.test.mjs",
+    "test:einvoice-viewer": "node --experimental-strip-types --import ./scripts/_test-helpers/register-ts-alias.mjs --test scripts/einvoice-viewer.test.mjs",
     "test:e2e": "playwright test",
     "test:ai-copilot": "node --test scripts/ai-copilot-safety.test.mjs",
     "test:activation-prefs": "node --test scripts/activation-preferences-persistence.test.mjs",
