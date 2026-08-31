@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsm:CrossIndustryInvoice
+  xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
+  xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:100"
+  xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
+  xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
+  <rsm:ExchangedDocumentContext>
+    <ram:GuidelineSpecifiedDocumentContextParameter>
+      <ram:ID>urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931</ram:ID>
+    </ram:GuidelineSpecifiedDocumentContextParameter>
+  </rsm:ExchangedDocumentContext>
+  <rsm:ExchangedDocument>
+    <ram:ID>TEST-EINV-2026-000001</ram:ID>
+    <ram:TypeCode>380</ram:TypeCode>
+    <ram:IssueDateTime>
+      <udt:DateTimeString format="102">20260831</udt:DateTimeString>
+    </ram:IssueDateTime>
+    <ram:IncludedNote>
+      <ram:Content>DEMO/NOT LEGAL — synthetic sample for engineering review only.</ram:Content>
+    </ram:IncludedNote>
+    <ram:IncludedNote>
+      <ram:Content>German VAT (19%)</ram:Content>
+    </ram:IncludedNote>
+  </rsm:ExchangedDocument>
+  <rsm:SupplyChainTradeTransaction>
+    <ram:IncludedSupplyChainTradeLineItem>
+      <ram:AssociatedDocumentLineDocument>
+        <ram:LineID>1</ram:LineID>
+      </ram:AssociatedDocumentLineDocument>
+      <ram:SpecifiedTradeProduct>
+        <ram:Name>Auroranexis Business — DEMO subscription (synthetic)</ram:Name>
+      </ram:SpecifiedTradeProduct>
+      <ram:SpecifiedLineTradeAgreement>
+        <ram:NetPriceProductTradePrice>
+          <ram:ChargeAmount>503.36</ram:ChargeAmount>
+        </ram:NetPriceProductTradePrice>
+      </ram:SpecifiedLineTradeAgreement>
+      <ram:SpecifiedLineTradeDelivery>
+        <ram:BilledQuantity unitCode="C62">1</ram:BilledQuantity>
+      </ram:SpecifiedLineTradeDelivery>
+      <ram:SpecifiedLineTradeSettlement>
+        <ram:ApplicableTradeTax>
+          <ram:TypeCode>VAT</ram:TypeCode>
+          <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+        </ram:ApplicableTradeTax>
+        <ram:SpecifiedTradeSettlementLineMonetarySummation>
+          <ram:LineTotalAmount>503.36</ram:LineTotalAmount>
+        </ram:SpecifiedTradeSettlementLineMonetarySummation>
+      </ram:SpecifiedLineTradeSettlement>
+    </ram:IncludedSupplyChainTradeLineItem>
+    <ram:ApplicableHeaderTradeAgreement>
+      <ram:SellerTradeParty>
+        <ram:Name>Auroranexis AI Solutions</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:PostcodeCode>71566</ram:PostcodeCode>
+          <ram:LineOne>Im Malerwinkel 4</ram:LineOne>
+          <ram:CityName>Althütte</ram:CityName>
+          <ram:CountryID>DE</ram:CountryID>
+        </ram:PostalTradeAddress>
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="VA">DE449657077</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+      </ram:SellerTradeParty>
+      <ram:BuyerTradeParty>
+        <ram:Name>Demo GmbH (Synthetic)</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:PostcodeCode>10115</ram:PostcodeCode>
+          <ram:LineOne>Musterstraße 1</ram:LineOne>
+          <ram:CityName>Berlin</ram:CityName>
+          <ram:CountryID>DE</ram:CountryID>
+        </ram:PostalTradeAddress>
+        <ram:URIUniversalCommunication>
+          <ram:URIID schemeID="EM">demo-billing@example.test</ram:URIID>
+        </ram:URIUniversalCommunication>
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="VA">DE111111111</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+      </ram:BuyerTradeParty>
+    </ram:ApplicableHeaderTradeAgreement>
+    <ram:ApplicableHeaderTradeDelivery/>
+    <ram:ApplicableHeaderTradeSettlement>
+      <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
+      <ram:BillingSpecifiedPeriod>
+        <ram:StartDateTime>
+          <udt:DateTimeString format="102">20260801</udt:DateTimeString>
+        </ram:StartDateTime>
+        <ram:EndDateTime>
+          <udt:DateTimeString format="102">20260831</udt:DateTimeString>
+        </ram:EndDateTime>
+      </ram:BillingSpecifiedPeriod>
+      <ram:ApplicableTradeTax>
+        <ram:CalculatedAmount>95.64</ram:CalculatedAmount>
+        <ram:TypeCode>VAT</ram:TypeCode>
+        <ram:BasisAmount>503.36</ram:BasisAmount>
+        <ram:CategoryCode>S</ram:CategoryCode>
+        <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+      </ram:ApplicableTradeTax>
+      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+        <ram:LineTotalAmount>503.36</ram:LineTotalAmount>
+        <ram:TaxBasisTotalAmount>503.36</ram:TaxBasisTotalAmount>
+        <ram:TaxTotalAmount currencyID="EUR">95.64</ram:TaxTotalAmount>
+        <ram:GrandTotalAmount>599.00</ram:GrandTotalAmount>
+        <ram:DuePayableAmount>599.00</ram:DuePayableAmount>
+      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+    </ram:ApplicableHeaderTradeSettlement>
+  </rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>

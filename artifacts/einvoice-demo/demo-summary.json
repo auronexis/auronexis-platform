@@ -1,0 +1,27 @@
+{
+  "demoNotLegal": true,
+  "samples": [
+    {
+      "invoiceNumber": "TEST-EINV-2026-000001",
+      "taxPolicyOutcome": "STANDARD_DOMESTIC_VAT",
+      "validation": "VALID",
+      "xml": "TEST-EINV-2026-000001.xml",
+      "validationReport": "TEST-EINV-2026-000001.validation-report.md",
+      "mappingReport": "TEST-EINV-2026-000001.mapping-report.md",
+      "netMinor": 50336,
+      "vatMinor": 9564,
+      "grossMinor": 59900
+    },
+    {
+      "invoiceNumber": "TEST-EINV-RC-2026-000001",
+      "taxPolicyOutcome": "REVERSE_CHARGE",
+      "validation": "VALID",
+      "xml": "TEST-EINV-RC-2026-000001.xml",
+      "validationReport": "TEST-EINV-RC-2026-000001.validation-report.md",
+      "mappingReport": "TEST-EINV-RC-2026-000001.mapping-report.md",
+      "netMinor": 59900,
+      "vatMinor": 0,
+      "grossMinor": 59900
+    }
+  ]
+}
