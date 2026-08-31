@@ -87,6 +87,16 @@ test("billing production diagnostics are Mollie-first", () => {
   assert.doesNotMatch(diagnostics, /fastspringCheckoutBlocked/);
 });
 
+test("billing diagnostics UI does not expose status helper names as customer copy", () => {
+  const panel = readSource("src/components/settings/billing-diagnostics-panel.tsx");
+  assert.doesNotMatch(panel, /Status tone reference/);
+  assert.doesNotMatch(panel, /getBillingStatusLabel\(\)/);
+  assert.doesNotMatch(panel, /getInvoiceDisplayLabel\(\)/);
+  assert.doesNotMatch(panel, /getWebhookEventStatusLabel\(\)/);
+  assert.match(panel, /Latest billing_events/);
+  assert.match(panel, /getWebhookEventStatusLabel\(event\.status\)/);
+});
+
 test("platform status snapshot is Mollie-first — no FastSpring/Paddle operator tiles", () => {
   const status = readSource("src/lib/diagnostics/platform-status.ts");
   assert.match(status, /checkMollieApiConfigHealth/);

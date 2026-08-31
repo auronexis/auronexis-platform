@@ -555,13 +555,6 @@ export function BillingDiagnosticsPanel({ data }: BillingDiagnosticsPanelProps) 
           </div>
         )}
       </DiagnosticsSection>
-
-      <p className="text-xs text-muted">
-        Status tone reference: subscription labels use{" "}
-        <code className="font-mono">getBillingStatusLabel()</code>; invoice labels use{" "}
-        <code className="font-mono">getInvoiceDisplayLabel()</code>; webhook labels use{" "}
-        <code className="font-mono">getWebhookEventStatusLabel()</code>.
-      </p>
     </div>
   );
 }
