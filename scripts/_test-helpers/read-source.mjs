@@ -93,6 +93,7 @@ export const ENTERPRISE_REGRESSION_SUITE = [
   "scripts/profile-language-preference.test.mjs",
   "scripts/mollie-sole-provider.test.mjs",
   "scripts/mollie-billing-foundation.test.mjs",
+  "scripts/free-plan-workspace-truth.test.mjs",
   "scripts/technical-seo.test.mjs",
   "scripts/analytics-conversion.test.mjs",
   "scripts/workspace-currency.test.mjs",

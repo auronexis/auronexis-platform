@@ -24,7 +24,6 @@ import {
   MINIMAL_ENTITLEMENTS,
 } from "@/lib/entitlements/definitions";
 import type { ResolvedEntitlements } from "@/lib/entitlements/types";
-import { getDefaultPlanKey } from "@/lib/plans/features";
 import { getDevForcePlanOverride } from "@/lib/plans/dev-override";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
@@ -151,37 +150,31 @@ export async function resolveOrganizationEntitlements(
   const activeAccess = subscriptionAccess || overrideAccess;
   const mappedPlanKey = resolveMappedPlanKey(subscription, planOverride, activeProvider);
 
-  let fallbackPath: EntitlementFallbackPath = "minimal_access";
-
-  if (activeAccess) {
-    fallbackPath = mappedPlanKey ? "paid_plan" : "starter_default";
-  }
-
-  if (!activeAccess) {
+  // Paid access requires a mapped plan key (subscription price or active override).
+  // Usable-but-unmapped / malformed must fail closed — never invent starter/professional paid access.
+  if (!activeAccess || !mappedPlanKey) {
     return {
       planKey: null,
       resolvedPlanKey: mappedPlanKey,
-      planLabel: mappedPlanKey
-        ? (safeGetPlanByKey(mappedPlanKey)?.name ?? "No active subscription")
-        : "No active subscription",
+      planLabel: "Free",
       isPaidAccess: false,
       subscriptionStatus: status,
-      fallbackPath,
+      fallbackPath: "minimal_access",
       ...MINIMAL_ENTITLEMENTS,
     };
   }
 
-  const planKey = mappedPlanKey ?? getDefaultPlanKey();
+  const planKey = mappedPlanKey;
   const base = getEntitlementsForPlan(planKey);
   const effectiveLimits = getEffectiveLimits(planKey, planOverride);
 
   return {
     planKey,
-    resolvedPlanKey: mappedPlanKey ?? planKey,
+    resolvedPlanKey: planKey,
     planLabel: safeGetPlanByKey(planKey)?.name ?? "Plan",
     isPaidAccess: true,
     subscriptionStatus: status,
-    fallbackPath,
+    fallbackPath: "paid_plan",
     maxClients: effectiveLimits.maxClients ?? base.maxClients,
     maxSeats: effectiveLimits.seats ?? base.maxSeats,
     maxReportsPerMonth: base.maxReportsPerMonth,

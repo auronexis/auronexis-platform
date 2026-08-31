@@ -57,7 +57,7 @@ export async function getBillingProviderDetails(
 
   return {
     planLabel: management.statusLabel === "No active subscription"
-      ? "No active subscription"
+      ? "Free"
       : (plan?.name ?? "Subscription"),
     status: management.statusLabel,
     paymentStatus: getPaymentSummaryLabel(rawStatus),

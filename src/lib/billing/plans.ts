@@ -66,9 +66,10 @@ export const PUBLIC_SELF_SERVE_PLAN_KEYS = ["professional", "business", "enterpr
 export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
   buildPlanFromCatalog({
     key: "starter",
-    name: "Professional",
+    name: "Free",
     amountMinorFallback: 17_900,
-    description: "Internal fallback tier — Professional limits apply without an active subscription",
+    description:
+      "Internal unpaid baseline — Free limits and modules apply without an active paid subscription",
     order: 0,
     features: [
       "Client management",

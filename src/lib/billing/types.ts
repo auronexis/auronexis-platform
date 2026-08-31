@@ -248,7 +248,7 @@ export function buildBillingOverview(
     ? (currentPlanName ?? "Subscription")
     : hasPaymentProblem || paymentPending
       ? (currentPlanName ?? "Subscription")
-      : "No active subscription";
+      : "Free";
 
   const billingPeriodStart = formatBillingDate(displaySubscription?.current_period_start);
   const billingPeriodEnd = formatBillingDate(displaySubscription?.current_period_end);

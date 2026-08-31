@@ -150,11 +150,16 @@ test("pricing structured data matches canonical billing plan prices", () => {
     );
   }
 
-  // No FastSpring Starter product; starter PlanKey remains internal entitlement fallback only.
+  // No FastSpring Starter product; starter PlanKey remains internal unpaid Free baseline only.
   assert.doesNotMatch(catalog, /productPath:\s*"starter"/);
   assert.doesNotMatch(catalog, /"starter"/);
   assert.match(plans, /key: "starter"/);
-  assert.match(plans, /Internal fallback tier/);
+  assert.match(plans, /Internal unpaid baseline/);
+  assert.match(plans, /name: "Free"/);
+  assert.doesNotMatch(
+    plans,
+    /key: "starter",\s*name: "Professional"/,
+  );
   assert.doesNotMatch(
     plans,
     /PUBLIC_SELF_SERVE_PLAN_KEYS = \[[^\]]*starter/,
