@@ -82,6 +82,12 @@ export type CheckoutContractInput = {
   b2bEntrepreneurConfirmed: boolean;
   countryCode: string;
   vatId?: string;
+  /** Invoice recipient legal name — defaults to organization name when omitted. */
+  legalName?: string;
+  addressLine1: string;
+  addressLine2?: string;
+  postalCode: string;
+  city: string;
 };
 
 export type CheckoutActionResult = BillingActionState & {
@@ -95,15 +101,28 @@ export type CheckoutActionResult = BillingActionState & {
 
 const planKeySchema = z.enum(["starter", "professional", "business", "enterprise"]);
 
+const requiredTrimmed = (label: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, `${label} is required for the sales invoice.`)
+    .max(200);
+
 const checkoutContractSchema = z.object({
   termsAccepted: z.boolean().refine((value) => value === true, {
     message: "You must accept the Terms to continue.",
   }),
   b2bEntrepreneurConfirmed: z.boolean().refine((value) => value === true, {
-    message: "Business / professional purchase confirmation is required for B2B checkout.",
+    message:
+      "Auroranexis is currently available to business customers only. Confirm you are purchasing for business or professional purposes to continue, or contact sales for assistance.",
   }),
   countryCode: z.string().min(2).max(8),
   vatId: z.string().optional(),
+  legalName: z.string().trim().max(200).optional(),
+  addressLine1: requiredTrimmed("Billing street address"),
+  addressLine2: z.string().trim().max(200).optional(),
+  postalCode: requiredTrimmed("Postal code"),
+  city: requiredTrimmed("City"),
 });
 
 /** Build checkout contract summary before Mollie redirect. */
@@ -113,7 +132,15 @@ export async function prepareCheckoutContractSummaryAction(
   error?: string;
   summary?: CheckoutContractSummary;
   /** Prefill from persisted org billing identity — never from browser locale. */
-  identityDefaults?: { countryCode: string; vatId: string };
+  identityDefaults?: {
+    countryCode: string;
+    vatId: string;
+    legalName: string;
+    addressLine1: string;
+    addressLine2: string;
+    postalCode: string;
+    city: string;
+  };
 }> {
   const session = await requireSession();
   if (!canManageOrganizationSettings(session)) {
@@ -139,6 +166,11 @@ export async function prepareCheckoutContractSummaryAction(
     identityDefaults: {
       countryCode: ["DE", "AT", "NL", "FR", "BE"].includes(countryCode) ? countryCode : "OTHER",
       vatId: identity?.vatId ?? "",
+      legalName: identity?.legalName?.trim() || session.organization.name.trim() || "",
+      addressLine1: identity?.addressLine1 ?? "",
+      addressLine2: identity?.addressLine2 ?? "",
+      postalCode: identity?.postalCode ?? "",
+      city: identity?.city ?? "",
     },
   };
 }
@@ -188,22 +220,40 @@ async function enforceCheckoutContractAndTax(input: {
   });
 
   if (determination.blocksCheckout) {
+    const reason = determination.reasonCode;
+    if (reason === "b2b_confirmation_required") {
+      return {
+        error:
+          "Auroranexis is currently available to business customers only. Confirm you are purchasing for business or professional purposes to continue, or contact sales for assistance.",
+      };
+    }
+    if (reason === "customer_country_unknown") {
+      return {
+        error:
+          "Self-serve checkout currently supports Germany and listed EU countries with verified business VAT details. For other countries, contact sales for a manual review.",
+      };
+    }
     return {
       error:
-        "Checkout is blocked until billing country / VAT details can be confirmed. Contact sales for manual review.",
+        "Checkout is blocked until billing country / VAT details can be confirmed for business tax treatment. Contact sales for manual review.",
     };
   }
+
+  const legalName =
+    parsed.data.legalName?.trim() ||
+    input.organizationName.trim() ||
+    null;
 
   const existing = await getOrganizationBillingIdentity(input.organizationId);
   await upsertOrganizationBillingIdentity({
     organizationId: input.organizationId,
-    legalName: existing?.legalName?.trim() || input.organizationName.trim() || null,
+    legalName,
     billingEmail: existing?.billingEmail?.trim() || input.billingEmail.trim() || null,
     countryCode,
-    addressLine1: existing?.addressLine1 ?? null,
-    addressLine2: existing?.addressLine2 ?? null,
-    postalCode: existing?.postalCode ?? null,
-    city: existing?.city ?? null,
+    addressLine1: parsed.data.addressLine1,
+    addressLine2: parsed.data.addressLine2?.trim() || null,
+    postalCode: parsed.data.postalCode,
+    city: parsed.data.city,
     vatId: vatRaw,
     viesStatus: vies.status,
     viesCheckedAt: vies.checkedAt,

@@ -54,3 +54,21 @@ export function formatBuyerInvoiceAddressLines(snapshot: BuyerInvoiceSnapshot): 
   if (locality) lines.push(locality);
   return lines;
 }
+
+/**
+ * German B2B invoices require complete recipient name + address (§14 UStG).
+ * Fail closed — never issue a supported sales invoice with missing Anschrift.
+ */
+export function getMissingBuyerInvoiceFields(snapshot: BuyerInvoiceSnapshot): string[] {
+  const missing: string[] = [];
+  if (!snapshot.legalName?.trim()) missing.push("legalName");
+  if (!snapshot.addressLine1?.trim()) missing.push("addressLine1");
+  if (!snapshot.postalCode?.trim()) missing.push("postalCode");
+  if (!snapshot.city?.trim()) missing.push("city");
+  if (!snapshot.countryCode?.trim()) missing.push("countryCode");
+  return missing;
+}
+
+export function isBuyerInvoiceAddressComplete(snapshot: BuyerInvoiceSnapshot): boolean {
+  return getMissingBuyerInvoiceFields(snapshot).length === 0;
+}

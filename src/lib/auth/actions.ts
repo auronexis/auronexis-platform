@@ -27,7 +27,8 @@ const signupSchema = loginSchema.extend({
     message: "You must accept the Terms to create an account.",
   }),
   b2bEntrepreneurConfirmed: z.boolean().refine((value) => value === true, {
-    message: "Business / professional purchase confirmation is required for B2B registration.",
+    message:
+      "Auroranexis is currently available to business customers only. Confirm business / professional use to create a workspace.",
   }),
 });
 

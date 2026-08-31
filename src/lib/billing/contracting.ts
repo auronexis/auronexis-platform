@@ -155,3 +155,10 @@ export function buildCheckoutContractSummaryAcceptanceEvidence(input: {
 /** Neutral B2B purchase acknowledgement — factual, no consumer-rights waiver claim. */
 export const B2B_PURCHASE_ACKNOWLEDGEMENT_LABEL =
   "I confirm that I am purchasing Auroranexis for business or professional purposes on behalf of the organization shown above." as const;
+
+/** Customer-facing block when business status is not confirmed — no internal tax-engine jargon. */
+export const B2B_ONLY_CHECKOUT_BLOCK_MESSAGE =
+  "Auroranexis is currently available to business customers only. Confirm you are purchasing for business or professional purposes to continue, or contact sales for assistance." as const;
+
+export const B2B_ONLY_SIGNUP_BLOCK_MESSAGE =
+  "Auroranexis is currently available to business customers only. Confirm business / professional use to create a workspace." as const;

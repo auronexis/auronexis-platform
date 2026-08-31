@@ -16,6 +16,11 @@ export type CheckoutContractAcceptanceState = {
   b2bEntrepreneurConfirmed: boolean;
   countryCode: string;
   vatId: string;
+  legalName: string;
+  addressLine1: string;
+  addressLine2: string;
+  postalCode: string;
+  city: string;
 };
 
 type CheckoutContractSummaryDialogProps = {
@@ -44,6 +49,11 @@ export function CheckoutContractSummaryDialog({
   const b2bId = useId();
   const countryId = useId();
   const vatId = useId();
+  const legalNameId = useId();
+  const addressLine1Id = useId();
+  const addressLine2Id = useId();
+  const postalCodeId = useId();
+  const cityId = useId();
 
   if (!open || !summary) return null;
 
@@ -119,6 +129,102 @@ export function CheckoutContractSummaryDialog({
 
         <div className="mt-4 space-y-3">
           <div className="space-y-1">
+            <label htmlFor={legalNameId} className="block text-sm font-medium text-foreground">
+              Invoice recipient legal name
+            </label>
+            <input
+              id={legalNameId}
+              type="text"
+              autoComplete="organization"
+              value={acceptance.legalName}
+              onChange={(event) =>
+                onAcceptanceChange({ ...acceptance, legalName: event.target.value })
+              }
+              className={cn(
+                "h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground",
+                focusRing,
+              )}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor={addressLine1Id} className="block text-sm font-medium text-foreground">
+              Billing street address
+            </label>
+            <input
+              id={addressLine1Id}
+              type="text"
+              autoComplete="street-address"
+              value={acceptance.addressLine1}
+              onChange={(event) =>
+                onAcceptanceChange({ ...acceptance, addressLine1: event.target.value })
+              }
+              className={cn(
+                "h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground",
+                focusRing,
+              )}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor={addressLine2Id} className="block text-sm font-medium text-foreground">
+              Address line 2 <span className="font-normal text-muted-foreground">(optional)</span>
+            </label>
+            <input
+              id={addressLine2Id}
+              type="text"
+              autoComplete="address-line2"
+              value={acceptance.addressLine2}
+              onChange={(event) =>
+                onAcceptanceChange({ ...acceptance, addressLine2: event.target.value })
+              }
+              className={cn(
+                "h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground",
+                focusRing,
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label htmlFor={postalCodeId} className="block text-sm font-medium text-foreground">
+                Postal code
+              </label>
+              <input
+                id={postalCodeId}
+                type="text"
+                autoComplete="postal-code"
+                value={acceptance.postalCode}
+                onChange={(event) =>
+                  onAcceptanceChange({ ...acceptance, postalCode: event.target.value })
+                }
+                className={cn(
+                  "h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground",
+                  focusRing,
+                )}
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor={cityId} className="block text-sm font-medium text-foreground">
+                City
+              </label>
+              <input
+                id={cityId}
+                type="text"
+                autoComplete="address-level2"
+                value={acceptance.city}
+                onChange={(event) =>
+                  onAcceptanceChange({ ...acceptance, city: event.target.value })
+                }
+                className={cn(
+                  "h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground",
+                  focusRing,
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
             <label htmlFor={countryId} className="block text-sm font-medium text-foreground">
               Billing country
             </label>
@@ -138,12 +244,12 @@ export function CheckoutContractSummaryDialog({
               <option value="NL">Netherlands (NL)</option>
               <option value="FR">France (FR)</option>
               <option value="BE">Belgium (BE)</option>
-              <option value="OTHER">Other / outside listed EU</option>
+              <option value="OTHER">Other / outside listed countries</option>
             </select>
             <p className="text-xs text-muted-foreground">
-              Self-serve checkout currently completes for Germany domestic B2B. Other countries may
-              require manual review. Country must match organization billing identity — not browser
-              locale.
+              Self-serve checkout supports Germany (domestic B2B VAT) and listed EU countries with a
+              verified VAT ID (reverse charge). Other countries require sales review and are blocked
+              here. Country must match organization billing identity — not browser locale.
             </p>
           </div>
 

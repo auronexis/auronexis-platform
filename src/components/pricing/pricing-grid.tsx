@@ -59,6 +59,11 @@ const INITIAL_ACCEPTANCE: CheckoutContractAcceptanceState = {
   b2bEntrepreneurConfirmed: false,
   countryCode: "DE",
   vatId: "",
+  legalName: "",
+  addressLine1: "",
+  addressLine2: "",
+  postalCode: "",
+  city: "",
 };
 
 export function PricingGrid({
@@ -120,6 +125,11 @@ export function PricingGrid({
         ...INITIAL_ACCEPTANCE,
         countryCode: prepared.identityDefaults?.countryCode ?? INITIAL_ACCEPTANCE.countryCode,
         vatId: prepared.identityDefaults?.vatId ?? "",
+        legalName: prepared.identityDefaults?.legalName ?? "",
+        addressLine1: prepared.identityDefaults?.addressLine1 ?? "",
+        addressLine2: prepared.identityDefaults?.addressLine2 ?? "",
+        postalCode: prepared.identityDefaults?.postalCode ?? "",
+        city: prepared.identityDefaults?.city ?? "",
       });
       setContractOpen(true);
     });
@@ -134,6 +144,11 @@ export function PricingGrid({
         b2bEntrepreneurConfirmed: acceptance.b2bEntrepreneurConfirmed,
         countryCode: acceptance.countryCode,
         vatId: acceptance.vatId.trim() || undefined,
+        legalName: acceptance.legalName.trim() || undefined,
+        addressLine1: acceptance.addressLine1.trim(),
+        addressLine2: acceptance.addressLine2.trim() || undefined,
+        postalCode: acceptance.postalCode.trim(),
+        city: acceptance.city.trim(),
       });
       if (result?.error) {
         setContractError(

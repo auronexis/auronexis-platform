@@ -152,19 +152,24 @@ test("Checkout cannot bypass required Terms / B2B acceptance (server Zod)", () =
     actions,
     /b2bEntrepreneurConfirmed:\s*z\.boolean\(\)\.refine\(\(value\)\s*=>\s*value\s*===\s*true/,
   );
+  assert.match(actions, /business customers only/);
+  assert.match(actions, /addressLine1:\s*requiredTrimmed/);
   assert.match(actions, /buildDpaAcceptanceEvidence/);
   assert.match(actions, /persistContractAcceptance/);
   const dialog = readSource("src/components/billing/checkout-contract-summary-dialog.tsx");
   assert.doesNotMatch(dialog, /defaultChecked/);
   assert.match(dialog, /summary\.dpaVersion/);
+  assert.match(dialog, /Billing street address/);
 });
 
 test("RC issuance fail-closed without buyer/seller VAT IDs", () => {
   const invoiceSrc = readSource("src/lib/billing/sales-invoice.ts");
   assert.match(invoiceSrc, /Reverse Charge invoice blocked: seller VAT ID missing/);
   assert.match(invoiceSrc, /Reverse Charge invoice blocked: buyer VAT ID missing/);
+  assert.match(invoiceSrc, /buyer invoice address incomplete/);
   const fromMollie = readSource("src/lib/billing/sales-invoice-from-mollie.ts");
   assert.match(fromMollie, /Reverse Charge requires seller and buyer VAT IDs/);
+  assert.match(fromMollie, /B2B entrepreneur acceptance missing/);
 });
 
 test("Operator docs: refund runbook, e-invoice roadmap, subprocessor change", () => {

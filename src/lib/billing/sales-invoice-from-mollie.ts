@@ -8,7 +8,11 @@
 import "server-only";
 
 import { getOrganizationBillingIdentity } from "@/lib/billing/billing-identity";
-import { buildBuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
+import {
+  buildBuyerInvoiceSnapshot,
+  getMissingBuyerInvoiceFields,
+} from "@/lib/billing/buyer-invoice-snapshot";
+import { listContractAcceptancesForOrganization } from "@/lib/billing/contract-acceptance";
 import { issueSalesInvoice } from "@/lib/billing/sales-invoice";
 import {
   determineTaxPolicy,
@@ -63,6 +67,13 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
     return;
   }
 
+  const acceptances = await listContractAcceptancesForOrganization(input.organizationId);
+  const hasB2bEvidence = acceptances.some((row) => row.kind === "b2b_entrepreneur");
+  if (!hasB2bEvidence) {
+    console.warn("[billing][sales-invoice] skipped — B2B entrepreneur acceptance missing (fail-closed)");
+    return;
+  }
+
   const viesStatus =
     (identity?.viesStatus as
       | "valid"
@@ -113,6 +124,13 @@ export async function maybeIssueSalesInvoiceForPaidMolliePayment(input: {
 
   const sellerSnapshot = buildSellerInvoiceSnapshot();
   const buyerSnapshot = buildBuyerInvoiceSnapshot(identity);
+  const missingBuyerFields = getMissingBuyerInvoiceFields(buyerSnapshot);
+  if (missingBuyerFields.length > 0) {
+    console.warn("[billing][sales-invoice] skipped — buyer invoice address incomplete (fail-closed)", {
+      missingFields: missingBuyerFields,
+    });
+    return;
+  }
   const vatTechnicalState = resolveVatIdTechnicalState({
     vatId: identity?.vatId,
     viesStatus,

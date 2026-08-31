@@ -22,7 +22,10 @@ import {
 import type { TaxDecisionEvidenceSnapshot } from "@/lib/billing/tax-decision-evidence";
 import type { B2bTaxRelationshipClass } from "@/lib/billing/tax-classification";
 import type { BuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
-import { buildBuyerInvoiceSnapshot } from "@/lib/billing/buyer-invoice-snapshot";
+import {
+  buildBuyerInvoiceSnapshot,
+  getMissingBuyerInvoiceFields,
+} from "@/lib/billing/buyer-invoice-snapshot";
 import {
   buildGermanDomesticVatTaxNote,
   resolveCustomerInvoiceTaxNote,
@@ -225,6 +228,12 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
     sellerVatId: sellerSnapshot.vatId,
     buyerVatId: buyerSnapshot.vatId,
   });
+  const missingBuyerFields = getMissingBuyerInvoiceFields(buyerSnapshot);
+  if (missingBuyerFields.length > 0) {
+    throw new Error(
+      `Sales invoice blocked: buyer invoice address incomplete (${missingBuyerFields.join(", ")}).`,
+    );
+  }
   const reverseChargeApplied = input.taxPolicyOutcome === "REVERSE_CHARGE";
   const businessClassification =
     input.businessClassification ??
