@@ -36,14 +36,15 @@ Do **not** invent Search Console or Bing metrics. Mark each item complete only w
 - [ ] Add and verify `https://www.auroranexis.com`
 - [ ] Submit the same sitemap URL
 - [ ] Configure IndexNow when `INDEXNOW_KEY` is set in Production (server-only; never `NEXT_PUBLIC_`)
-- [ ] Confirm key file serves at `https://www.auroranexis.com/.well-known/{INDEXNOW_KEY}.txt`
+- [ ] Confirm key file serves at `https://www.auroranexis.com/{INDEXNOW_KEY}.txt` (Option 1 root; required for site-wide urlList)
 - [ ] Optional: cron/`/api/indexnow` already wired for authorized submission — do not fire on every pageview
 
 ---
 
 ## IndexNow (repository)
 
-- Implementation: `src/lib/seo/indexnow.ts`, `src/app/api/indexnow/route.ts`
+- Implementation: `src/lib/seo/indexnow.ts`, `src/app/api/indexnow/route.ts`, root key at `src/app/[file]/route.ts`
+- `keyLocation` must be host-root `/{INDEXNOW_KEY}.txt` (Option 1) — `/.well-known/` as keyLocation causes IndexNow 422 for site-wide URLs
 - Submits **canonical public indexable URLs only** (aligned with sitemap filters)
 - Skips gracefully when `INDEXNOW_KEY` is unset
 - Operator action: set Production secret + verify key file before relying on submissions

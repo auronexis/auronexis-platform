@@ -11,6 +11,19 @@ export function getIndexNowKey(): string | null {
   return value && value.length > 0 ? value : null;
 }
 
+/** Canonical IndexNow host (www only). */
+export function getIndexNowHost(): string {
+  return new URL(resolveCanonicalBaseUrl()).host;
+}
+
+/**
+ * Ownership key URL — must be host-root (Option 1).
+ * A key under /.well-known/ only authorizes URLs under that path prefix (422 otherwise).
+ */
+export function buildIndexNowKeyLocation(host: string, key: string): string {
+  return `https://${host}/${key}.txt`;
+}
+
 /** Absolute public URLs aligned with sitemap indexability filters (canonical www host). */
 export function listIndexNowUrls(): string[] {
   const base = resolveCanonicalBaseUrl().replace(/\/$/, "");
@@ -39,8 +52,8 @@ export async function submitIndexNowUrls(
     return { ok: true, submitted: 0, skipped: true, reason: "INDEXNOW_KEY not configured" };
   }
 
-  const host = new URL(resolveCanonicalBaseUrl()).host;
-  const keyLocation = `https://${host}/.well-known/${key}.txt`;
+  const host = getIndexNowHost();
+  const keyLocation = buildIndexNowKeyLocation(host, key);
   const unique = Array.from(new Set(urls)).slice(0, 10_000);
 
   if (unique.length === 0) {

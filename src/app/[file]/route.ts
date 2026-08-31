@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
+import { notFound } from "next/navigation";
 import { getIndexNowKey } from "@/lib/seo/indexnow";
 
 export const runtime = "nodejs";
 
 /**
- * Compatibility mirror of the IndexNow key at /.well-known/{key}.txt.
- * Submissions use host-root /{key}.txt (Option 1) as keyLocation — do not use this path
- * as keyLocation for site-wide urlList entries (IndexNow returns 422).
+ * IndexNow ownership file at /{key}.txt (protocol Option 1 — host root).
+ * Required so urlList entries under https://www.auroranexis.com/ are in scope.
  * See https://www.indexnow.org/documentation
  */
 export async function GET(
@@ -14,16 +13,13 @@ export async function GET(
   context: { params: Promise<{ file: string }> },
 ): Promise<Response> {
   const key = getIndexNowKey();
-  if (!key) {
-    return new NextResponse("Not Found", { status: 404 });
-  }
-
   const { file } = await context.params;
-  if (file !== `${key}.txt`) {
-    return new NextResponse("Not Found", { status: 404 });
+
+  if (!key || file !== `${key}.txt`) {
+    notFound();
   }
 
-  return new NextResponse(key, {
+  return new Response(key, {
     status: 200,
     headers: {
       "Content-Type": "text/plain; charset=utf-8",

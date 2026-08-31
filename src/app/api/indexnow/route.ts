@@ -11,7 +11,12 @@ async function handleIndexNow(request: Request): Promise<Response> {
 
   const result = await submitIndexNowUrls();
   if (!result.ok) {
-    return NextResponse.json(result, { status: 502 });
+    // Preserve upstream IndexNow status when present; 502 only for transport failures.
+    const status =
+      typeof result.status === "number" && result.status >= 400 && result.status <= 599
+        ? result.status
+        : 502;
+    return NextResponse.json(result, { status });
   }
 
   return NextResponse.json(result);

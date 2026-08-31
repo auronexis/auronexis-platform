@@ -257,18 +257,29 @@ test("Twitter and Open Graph share the same social preview image", () => {
 test("IndexNow submission and key file are wired for Bing discoverability", () => {
   const indexnow = readSource("src/lib/seo/indexnow.ts");
   const route = readSource("src/app/api/indexnow/route.ts");
-  const keyRoute = readSource("src/app/.well-known/[file]/route.ts");
+  const rootKeyRoute = readSource("src/app/[file]/route.ts");
+  const wellKnownKeyRoute = readSource("src/app/.well-known/[file]/route.ts");
   const envExample = readSource(".env.example");
   const vercel = readSource("vercel.json");
   assert.match(indexnow, /api\.indexnow\.org\/indexnow/);
   assert.match(indexnow, /INDEXNOW_KEY/);
-  assert.match(indexnow, /\.well-known\/\$\{key\}\.txt/);
+  assert.match(indexnow, /buildIndexNowKeyLocation/);
+  assert.match(indexnow, /https:\/\/\$\{host\}\/\$\{key\}\.txt/);
+  assert.doesNotMatch(indexnow, /keyLocation.*\.well-known/);
   assert.match(indexnow, /listPublicIndexableRoutes/);
   assert.match(route, /submitIndexNowUrls/);
   assert.match(route, /verifyCronAuthorization/);
-  assert.match(keyRoute, /getIndexNowKey/);
+  assert.match(rootKeyRoute, /getIndexNowKey/);
+  assert.match(rootKeyRoute, /\$\{key\}\.txt/);
+  assert.match(wellKnownKeyRoute, /getIndexNowKey/);
   assert.match(envExample, /INDEXNOW_KEY/);
   assert.match(vercel, /\/api\/indexnow/);
+});
+
+test("IndexNow API route preserves upstream status instead of blanketing 502", () => {
+  const route = readSource("src/app/api/indexnow/route.ts");
+  assert.match(route, /result\.status/);
+  assert.match(route, /502/);
 });
 
 test("interactive API docs HTML is noindex with canonical to /docs/api", () => {
