@@ -7,6 +7,7 @@
 import {
   EN16931_GUIDELINE_ID,
   DOCUMENT_TYPE_CODE_INVOICE,
+  VATEX_EU_AE,
 } from "@/lib/einvoice/profile";
 import {
   isoToCiiDate102,
@@ -312,6 +313,7 @@ export function adaptIssuedInvoiceToCanonical(
         taxableAmount: minorToDecimalString(snapshot.netMinor),
         taxAmount: minorToDecimalString(snapshot.vatMinor),
         exemptionReason,
+        exemptionReasonCode: vatCategoryCode === "AE" ? VATEX_EU_AE : null,
       },
     ],
     totals: {

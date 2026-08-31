@@ -101,18 +101,26 @@ export function validateEInvoice(input: {
     }
     if (tax.vatCategoryCode === "AE") {
       if (tax.taxAmount !== "0.00" || tax.vatRatePercent !== "0.00") {
-        push(findings, "BR-AE-01", "Reverse charge (AE) must have 0% rate and 0 tax amount");
+        push(findings, "BR-AE-09", "Reverse charge (AE) must have 0% rate and 0 tax amount");
       }
-      if (!tax.exemptionReason) {
-        push(findings, "BR-AE-02", "Reverse charge (AE) requires exemption/reason text");
+      if (!tax.exemptionReason && !tax.exemptionReasonCode) {
+        push(findings, "BR-AE-10", "Reverse charge (AE) requires exemption reason text and/or code");
       }
       if (!canonical.buyer.vatId) {
-        push(findings, "BR-AE-03", "Reverse charge (AE) requires buyer VAT ID");
+        push(findings, "BR-AE-02", "Reverse charge (AE) requires buyer VAT ID");
+      }
+      if (!tax.exemptionReasonCode) {
+        push(
+          findings,
+          "BR-AE-STRUCT",
+          "Reverse charge should emit structured ExemptionReasonCode (BT-121), not note-only",
+          "warning",
+        );
       }
       if (!xml.includes("Steuerschuldnerschaft") && !(tax.exemptionReason ?? "").includes("Steuerschuldnerschaft")) {
         push(
           findings,
-          "BR-AE-04",
+          "BR-AE-NOTE",
           "Reverse charge semantics (Steuerschuldnerschaft) missing from reason/XML",
           "warning",
         );
@@ -139,6 +147,26 @@ export function validateEInvoice(input: {
   // Reject MINIMUM / BASIC-WL markers if somehow present
   if (xml.includes("urn:factur-x.eu:1p0:minimum") || xml.includes("basicwl") || xml.includes("BASIC_WL")) {
     push(findings, "PROFILE-03", "MINIMUM/BASIC-WL profile is not allowed");
+  }
+
+  // PEPPOL-EN16931-R008 / R74: reject empty elements (e.g. <ram:ApplicableHeaderTradeDelivery/>)
+  if (/<[^>]+\/>/.test(xml.replace(/<\?xml[^?]*\?>/g, ""))) {
+    push(
+      findings,
+      "PEPPOL-EN16931-R008",
+      "Document must not contain empty self-closing elements (R74/R008)",
+    );
+  }
+
+  // HeaderTradeSettlement XSD order: ApplicableTradeTax before BillingSpecifiedPeriod
+  const taxIdx = xml.indexOf("<ram:ApplicableTradeTax>");
+  const periodIdx = xml.indexOf("<ram:BillingSpecifiedPeriod>");
+  if (periodIdx !== -1 && taxIdx !== -1 && periodIdx < taxIdx) {
+    push(
+      findings,
+      "XSD-ORDER-01",
+      "BillingSpecifiedPeriod must follow ApplicableTradeTax in HeaderTradeSettlement",
+    );
   }
 
   const errors = findings.filter((f) => f.severity === "error");

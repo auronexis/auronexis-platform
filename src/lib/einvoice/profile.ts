@@ -6,9 +6,15 @@
 export const ZUGFERD_VERSION = "2.5.2" as const;
 export const FACTUR_X_VERSION = "1.09.2" as const;
 
-/** Factur-X / ZUGFeRD EN 16931 guideline identifier (CII ExchangedDocumentContext). */
-export const EN16931_GUIDELINE_ID =
-  "urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931" as const;
+/**
+ * Factur-X 1.09.2 / ZUGFeRD 2.5.2 EN 16931 guideline identifier (BT-24).
+ * Official FeRD/FNFE codedb (cl id=1) enumerates only this URN for the EN16931 profile —
+ * not the older `#compliant#urn:factur-x.eu:1p0:en16931` form used by BASIC.
+ */
+export const EN16931_GUIDELINE_ID = "urn:cen.eu:en16931:2017" as const;
+
+/** VATEX code for VAT reverse charge (BT-121) — EN 16931 / Factur-X codedb. */
+export const VATEX_EU_AE = "VATEX-EU-AE" as const;
 
 export const EINVOICE_PROFILE = "EN16931" as const;
 

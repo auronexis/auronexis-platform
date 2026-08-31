@@ -1,6 +1,7 @@
 /**
  * Generate ZUGFeRD / Factur-X EN 16931 CII XML from CanonicalEInvoiceInput.
  * Representation mapping only — amounts copied from canonical (zero drift).
+ * Element order follows Factur-X 1.09.2 / ZUGFeRD 2.5.2 EN16931 XSD sequences.
  */
 
 import { escapeXml } from "@/lib/einvoice/money";
@@ -66,17 +67,25 @@ function lineXml(line: CanonicalEInvoiceInput["lines"][number]): string {
     </ram:IncludedSupplyChainTradeLineItem>`;
 }
 
+/**
+ * Header VAT breakdown (BG-23) — TradeTaxType XSD order:
+ * CalculatedAmount, TypeCode, ExemptionReason?, BasisAmount, CategoryCode,
+ * ExemptionReasonCode?, RateApplicablePercent
+ */
 function taxBreakdownXml(
   tax: CanonicalEInvoiceInput["taxBreakdown"][number],
 ): string {
   const reason = tax.exemptionReason
     ? `\n        <ram:ExemptionReason>${escapeXml(tax.exemptionReason)}</ram:ExemptionReason>`
     : "";
+  const reasonCode = tax.exemptionReasonCode
+    ? `\n        <ram:ExemptionReasonCode>${escapeXml(tax.exemptionReasonCode)}</ram:ExemptionReasonCode>`
+    : "";
   return `      <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>${tax.taxAmount}</ram:CalculatedAmount>
-        <ram:TypeCode>VAT</ram:TypeCode>
+        <ram:TypeCode>VAT</ram:TypeCode>${reason}
         <ram:BasisAmount>${tax.taxableAmount}</ram:BasisAmount>
-        <ram:CategoryCode>${tax.vatCategoryCode}</ram:CategoryCode>${reason}
+        <ram:CategoryCode>${tax.vatCategoryCode}</ram:CategoryCode>${reasonCode}
         <ram:RateApplicablePercent>${tax.vatRatePercent}</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>`;
 }
@@ -101,6 +110,10 @@ export function generateZugferdEn16931Xml(input: CanonicalEInvoiceInput): string
     )
     .join("\n");
 
+  // BT-72 delivery date: prefer billing period end, else issue date (never emit empty delivery — PEPPOL-EN16931-R008 / R74).
+  const deliveryDate =
+    input.billingPeriodEnd?.slice(0, 10).replaceAll("-", "") || input.issueDate;
+
   const periodXml =
     input.billingPeriodStart && input.billingPeriodEnd
       ? `
@@ -121,6 +134,7 @@ export function generateZugferdEn16931Xml(input: CanonicalEInvoiceInput): string
   const lines = input.lines.map(lineXml).join("\n");
   const taxes = input.taxBreakdown.map(taxBreakdownXml).join("\n");
 
+  // HeaderTradeSettlement XSD order: InvoiceCurrencyCode → … → ApplicableTradeTax → BillingSpecifiedPeriod → MonetarySummation
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rsm:CrossIndustryInvoice
   xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
@@ -146,10 +160,16 @@ ${lines}
 ${partyXml("SellerTradeParty", input.seller)}
 ${partyXml("BuyerTradeParty", input.buyer)}
     </ram:ApplicableHeaderTradeAgreement>
-    <ram:ApplicableHeaderTradeDelivery/>
+    <ram:ApplicableHeaderTradeDelivery>
+      <ram:ActualDeliverySupplyChainEvent>
+        <ram:OccurrenceDateTime>
+          <udt:DateTimeString format="102">${escapeXml(deliveryDate)}</udt:DateTimeString>
+        </ram:OccurrenceDateTime>
+      </ram:ActualDeliverySupplyChainEvent>
+    </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
-      <ram:InvoiceCurrencyCode>${escapeXml(input.currency)}</ram:InvoiceCurrencyCode>${periodXml}
-${taxes}
+      <ram:InvoiceCurrencyCode>${escapeXml(input.currency)}</ram:InvoiceCurrencyCode>
+${taxes}${periodXml}
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         <ram:LineTotalAmount>${input.totals.lineTotalAmount}</ram:LineTotalAmount>
         <ram:TaxBasisTotalAmount>${input.totals.taxBasisTotalAmount}</ram:TaxBasisTotalAmount>

@@ -86,7 +86,10 @@ export type CanonicalEInvoiceTaxBreakdown = {
   vatRatePercent: string;
   taxableAmount: string;
   taxAmount: string;
+  /** BT-120 — required for AE/O (and similar) per BR-AE-10 / BR-O. */
   exemptionReason: string | null;
+  /** BT-121 — structured exemption code (e.g. VATEX-EU-AE); preferred with AE. */
+  exemptionReasonCode: string | null;
 };
 
 /**

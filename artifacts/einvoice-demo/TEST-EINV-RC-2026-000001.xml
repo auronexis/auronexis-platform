@@ -6,7 +6,7 @@
   xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
   <rsm:ExchangedDocumentContext>
     <ram:GuidelineSpecifiedDocumentContextParameter>
-      <ram:ID>urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931</ram:ID>
+      <ram:ID>urn:cen.eu:en16931:2017</ram:ID>
     </ram:GuidelineSpecifiedDocumentContextParameter>
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
@@ -78,9 +78,24 @@
         </ram:SpecifiedTaxRegistration>
       </ram:BuyerTradeParty>
     </ram:ApplicableHeaderTradeAgreement>
-    <ram:ApplicableHeaderTradeDelivery/>
+    <ram:ApplicableHeaderTradeDelivery>
+      <ram:ActualDeliverySupplyChainEvent>
+        <ram:OccurrenceDateTime>
+          <udt:DateTimeString format="102">20260831</udt:DateTimeString>
+        </ram:OccurrenceDateTime>
+      </ram:ActualDeliverySupplyChainEvent>
+    </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
+      <ram:ApplicableTradeTax>
+        <ram:CalculatedAmount>0.00</ram:CalculatedAmount>
+        <ram:TypeCode>VAT</ram:TypeCode>
+        <ram:ExemptionReason>Steuerschuldnerschaft des Leistungsempfängers / Reverse charge — VAT to be accounted for by the recipient.</ram:ExemptionReason>
+        <ram:BasisAmount>599.00</ram:BasisAmount>
+        <ram:CategoryCode>AE</ram:CategoryCode>
+        <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
+        <ram:RateApplicablePercent>0.00</ram:RateApplicablePercent>
+      </ram:ApplicableTradeTax>
       <ram:BillingSpecifiedPeriod>
         <ram:StartDateTime>
           <udt:DateTimeString format="102">20260801</udt:DateTimeString>
@@ -89,14 +104,6 @@
           <udt:DateTimeString format="102">20260831</udt:DateTimeString>
         </ram:EndDateTime>
       </ram:BillingSpecifiedPeriod>
-      <ram:ApplicableTradeTax>
-        <ram:CalculatedAmount>0.00</ram:CalculatedAmount>
-        <ram:TypeCode>VAT</ram:TypeCode>
-        <ram:BasisAmount>599.00</ram:BasisAmount>
-        <ram:CategoryCode>AE</ram:CategoryCode>
-        <ram:ExemptionReason>Steuerschuldnerschaft des Leistungsempfängers / Reverse charge — VAT to be accounted for by the recipient.</ram:ExemptionReason>
-        <ram:RateApplicablePercent>0.00</ram:RateApplicablePercent>
-      </ram:ApplicableTradeTax>
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         <ram:LineTotalAmount>599.00</ram:LineTotalAmount>
         <ram:TaxBasisTotalAmount>599.00</ram:TaxBasisTotalAmount>

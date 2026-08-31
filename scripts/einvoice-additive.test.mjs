@@ -117,8 +117,10 @@ test("D — EU RC: map snapshot only; preserve Steuerschuldnerschaft / AE", () =
   assert.equal(result.canonical.taxBreakdown[0].taxAmount, "0.00");
   assert.equal(result.canonical.sourceMinor.vatMinor, 0);
   assert.match(result.canonical.taxBreakdown[0].exemptionReason ?? "", /Steuerschuldnerschaft/);
+  assert.equal(result.canonical.taxBreakdown[0].exemptionReasonCode, "VATEX-EU-AE");
   assert.match(result.xml, /CategoryCode>AE</);
   assert.match(result.xml, /Steuerschuldnerschaft/);
+  assert.match(result.xml, /ExemptionReasonCode>VATEX-EU-AE</);
   assert.equal(result.validation.status, "VALID");
 });
 
@@ -129,10 +131,14 @@ test("E — XML declares ZUGFeRD/Factur-X EN16931 profile (not MINIMUM/BASIC-WL)
 
   assert.match(result.xml, /CrossIndustryInvoice/);
   assert.equal(result.canonical.guidelineId, EN16931_GUIDELINE_ID);
-  assert.match(result.xml, new RegExp(EN16931_GUIDELINE_ID.replaceAll(".", "\\.")));
+  assert.equal(EN16931_GUIDELINE_ID, "urn:cen.eu:en16931:2017");
+  assert.match(result.xml, /urn:cen\.eu:en16931:2017<\/ram:ID>/);
+  assert.doesNotMatch(result.xml, /urn:factur-x\.eu:1p0:en16931/);
   assert.doesNotMatch(result.xml, /urn:factur-x\.eu:1p0:minimum/i);
   assert.doesNotMatch(result.xml, /basicwl/i);
   assert.match(result.xml, /TypeCode>380</);
+  assert.doesNotMatch(result.xml, /<ram:ApplicableHeaderTradeDelivery\s*\/>/);
+  assert.match(result.xml, /ActualDeliverySupplyChainEvent/);
 });
 
 test("F — validation VALID for demo samples; INVALID when totals drift", () => {
