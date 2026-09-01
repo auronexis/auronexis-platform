@@ -433,3 +433,13 @@ test("preview route is not an open production surface", () => {
   const robots = readSource("src/lib/seo/robots.ts");
   assert.match(robots, /\/internal/);
 });
+
+test("U — line items use responsive table + stacked cards (no horizontal scroll trap)", () => {
+  const lineItems = readSource("src/components/einvoice-viewer/InvoiceLineItems.tsx");
+  assert.match(lineItems, /md:hidden.*print:hidden/, "mobile cards hidden on md+ and print");
+  assert.match(lineItems, /hidden.*md:table.*print:table/, "desktop table from md and in print");
+  assert.doesNotMatch(lineItems, /overflow-x-auto/, "must not force horizontal scroll container");
+  assert.doesNotMatch(lineItems, /min-w-\[640px\]/, "must not enforce fixed min table width");
+  assert.match(lineItems, /break-words/, "description must wrap instead of clipping");
+  assert.match(lineItems, /table-fixed/, "desktop table uses fixed layout for flexible description");
+});

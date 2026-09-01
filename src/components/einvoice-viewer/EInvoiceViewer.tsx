@@ -89,7 +89,7 @@ export function EInvoiceViewer({ model, downloadHref, className }: EInvoiceViewe
         </ul>
       ) : null}
 
-      <article className="rounded-lg border border-border bg-background px-6 py-8 shadow-sm print:border-0 print:shadow-none print:px-0">
+      <article className="rounded-lg border border-border bg-background px-4 py-6 shadow-sm sm:px-6 sm:py-8 print:border-0 print:px-0 print:py-8 print:shadow-none">
         <InvoiceHeader model={model} />
 
         <div className="mt-8 grid gap-8 md:grid-cols-2">
