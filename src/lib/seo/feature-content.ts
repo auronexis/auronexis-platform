@@ -201,6 +201,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     ],
     faq: [
       {
+        question: "Which plans include the automation builder?",
+        answer:
+          "Professional and above include the Automation workspace, AI builder, connectors, and workflow builder. Business and Enterprise add the operational automation engine and higher automation limits.",
+      },
+      {
         question: "Do I need engineering resources to build automations?",
         answer:
           "No. Auroranexis provides a workflow builder for common operational triggers and actions. Complex integrations may require connector configuration.",
@@ -208,7 +213,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       {
         question: "Can automations react to incidents or SLA breaches?",
         answer:
-          "Yes. Workflows can respond to operational events such as incident creation or SLA threshold warnings where configured.",
+          "On Business and Enterprise, workflows can respond to incident creation or SLA threshold warnings where configured. Professional includes the automation builder and manual runs without incident or SLA event dispatch.",
       },
     ],
     relatedLinks: [
@@ -340,6 +345,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       "Links to incidents, reports, and automation workflows",
     ],
     faq: [
+      {
+        question: "Which plans include risk management?",
+        answer:
+          "Risk registers and portfolio risk views require Business or Enterprise. Professional includes reporting, portal, profitability, and automation builder features without risk modules.",
+      },
       {
         question: "Does Auroranexis replace an enterprise GRC platform?",
         answer:
@@ -621,9 +631,14 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     ],
     faq: [
       {
+        question: "Which plans include incident management?",
+        answer:
+          "Incident logging, SLA evaluation, and escalation workflows require Business or Enterprise. Professional supports client operations, reporting, and portal delivery without incident modules.",
+      },
+      {
         question: "Can incidents trigger automations?",
         answer:
-          "Yes. Auroranexis supports automation workflows that react to incident events where configured in your workspace.",
+          "Yes on Business and Enterprise, where incident modules and the operational automation engine are both enabled. Professional includes automation builder workflows without incident-triggered dispatch.",
       },
       {
         question: "Is this an on-call paging system?",

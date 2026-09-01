@@ -172,7 +172,8 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Which plans include automation?",
-        answer: "Automation workflows are available on Professional, Business, and Enterprise. Specific limits vary by plan tier.",
+        answer:
+          "Professional and above include the Automation workspace, AI builder, connectors, and workflow builder. Business and Enterprise also enable the operational automation engine for event-driven dispatch and raise automation limits. See Settings → Billing for your workspace entitlements.",
       },
     ],
   },
@@ -271,7 +272,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       {
         question: "Can I define SLA policies per client?",
         answer:
-          "Yes. Configure policies and monitor breaches from SLA workflows. Start at /solutions/sla-management and /docs/sla.",
+          "Yes, on Business and Enterprise plans. Configure policies in Settings → SLA, assign them per client, and monitor breaches from SLA workflows. Start at /solutions/sla-management and /docs/sla.",
       },
       {
         question: "How is SLA performance shared with clients?",

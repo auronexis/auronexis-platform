@@ -55,7 +55,13 @@ export const MARKETING_TESTIMONIALS = [
 
 export const PLAN_COMPARISON_ROWS = [
   { feature: "AI copilot", professional: true, business: true, enterprise: "Unlimited credits" },
-  { feature: "Automation workflows", professional: true, business: true, enterprise: true },
+  { feature: "Automation builder & connectors", professional: true, business: true, enterprise: true },
+  {
+    feature: "Operational automation engine",
+    professional: "—",
+    business: true,
+    enterprise: true,
+  },
   { feature: "Risk & incident modules", professional: "—", business: true, enterprise: true },
   { feature: "SLA tracking", professional: "—", business: true, enterprise: true },
   { feature: "Profitability", professional: true, business: true, enterprise: true },
@@ -116,7 +122,8 @@ export const FEATURES: readonly MarketingFeature[] = [
     enterpriseValue: "Repeatable automation with organization-scoped execution logs.",
     ctaLabel: "View automation features",
     ctaHref: "/features/automation",
-    planNote: "Available on Professional, Business, and Enterprise plans.",
+    planNote:
+      "Automation builder and connectors on Professional and above. Event-driven operational automation engine on Business and Enterprise.",
   },
   {
     title: "Integrations & Connectors",
@@ -173,7 +180,7 @@ export const PUBLIC_PRICING_PLANS = [
     period: "/ month",
     productPath: "professional" as const,
     description: "For growing agencies with client portal delivery, integrations, automation workflows, and AI-assisted reporting.",
-    highlights: ["Up to 25 clients", "Client portal", "Integrations", "Automation workflows", "AI report assistant"],
+    highlights: ["Up to 25 clients", "Client portal", "Integrations", "Automation builder", "AI report assistant"],
     featured: false,
   },
   {
@@ -182,7 +189,7 @@ export const PUBLIC_PRICING_PLANS = [
     period: "/ month",
     productPath: "business" as const,
     description: "For established agencies with compliance, white-label, and higher operational limits.",
-    highlights: ["Higher limits", "Automation workflows", "White label", "Compliance center"],
+    highlights: ["Higher limits", "Operational automation engine", "White label", "Compliance center"],
     featured: true,
   },
   {

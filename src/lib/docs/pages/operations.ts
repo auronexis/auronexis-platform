@@ -5,7 +5,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
   title: "Getting Started",
   description: "Sign up, onboarding, and first workspace setup.",
   intro:
-    "Auroranexis is an operations platform built for agencies that manage multiple clients. After you create an account, your team works inside an organization-scoped workspace where clients, reports, risks, incidents, monitoring, and billing are kept together. This guide covers account creation, role assignment, and the first operational steps that establish a reliable delivery baseline for your agency.",
+    "Auroranexis is an operations platform built for agencies that manage multiple clients. After you create an account, your team works inside an organization-scoped workspace where clients, reports, and billing are kept together. Risk, incident, and SLA modules are available on Business and Enterprise; Professional includes portal, reporting, profitability, and automation builder workflows.",
   callouts: [
     {
       variant: "tip",
@@ -97,7 +97,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
         "Role-based access control with owner, admin, staff, and viewer roles.",
         "Clients module for portfolio management, health scores, owners, and portal user administration.",
         "Reports with templates, schedules, draft and publish workflow, PDF export, and portal delivery.",
-        "Risks and Incidents with ownership, SLA timers, and optional portal visibility on incidents.",
+        "Risks and Incidents with ownership, SLA timers, and optional portal visibility on incidents (Business and Enterprise).",
         "Monitoring connectors linked to clients with event history and health impact.",
         "Mollie checkout, Auroranexis sales invoices, and subscription management in Settings → Billing.",
         "Usage meters for clients, monitoring connectors, and plan-specific limits.",

@@ -74,7 +74,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     metaDescription:
       "B2B risk management for agencies — risk registers, ownership, mitigation tracking, and audit logs in Auroranexis.",
     intro:
-      "Agencies need a consistent way to capture delivery risks before they become incidents. Auroranexis provides a risk register tied to clients, owners, and remediation workflows so teams can demonstrate control to customers and leadership.",
+      "Agencies on Business and Enterprise plans need a consistent way to capture delivery risks before they become incidents. Auroranexis provides a risk register tied to clients, owners, and remediation workflows so teams can demonstrate control to customers and leadership.",
     benefits: [
       {
         title: "Structured risk registers",
@@ -97,6 +97,11 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       "Export-friendly summaries for customer reviews",
     ],
     faq: [
+      {
+        question: "Which plans include risk management?",
+        answer:
+          "Risk registers require Business or Enterprise. Professional includes client operations, reporting, portal, and automation builder without risk modules.",
+      },
       {
         question: "Does Auroranexis replace a GRC platform?",
         answer:
@@ -171,7 +176,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     metaDescription:
       "SLA management for MSPs — policy definitions, breach tracking, and client reporting in Auroranexis.",
     intro:
-      "SLA performance is how agencies prove reliability. Auroranexis lets you define policies per client, monitor incidents and risks against those policies, and report outcomes without manual spreadsheet tracking.",
+      "SLA performance is how agencies prove reliability. On Business and Enterprise plans, Auroranexis lets you define policies per client, monitor incidents and risks against those policies, and report outcomes without manual spreadsheet tracking.",
     benefits: [
       {
         title: "Policy per client",
@@ -194,6 +199,11 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       "Audit logs for policy and assignment changes",
     ],
     faq: [
+      {
+        question: "Which plans include SLA management?",
+        answer:
+          "SLA policy configuration, client assignment, and breach tracking require Business or Enterprise. Professional includes reports, portal, and automation builder features without SLA modules.",
+      },
       {
         question: "What SLA metrics are supported?",
         answer: "Response and resolution targets tied to incident workflows; exact metrics depend on your configured policies.",

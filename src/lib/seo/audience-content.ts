@@ -212,7 +212,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     problem:
       "MSPs operate at scale with hundreds of endpoints and dozens of clients, yet operational visibility remains fragmented. Leadership cannot quickly answer which accounts are at risk, technicians lack context during handoffs, and QBR preparation pulls senior staff away from delivery.",
     solution:
-      "Auroranexis gives MSPs a portfolio command center designed for multi-client operators. Track health signals, incidents, risks, and SLA performance per client while providing transparent status through a branded portal — all from one workspace.",
+      "Auroranexis gives MSPs a portfolio command center designed for multi-client operators. Track health signals, incidents, risks, and SLA performance per client while providing transparent status through a branded portal — all from one workspace. Risk, incident, and SLA modules require Business or Enterprise; Professional supports client portal, reporting, profitability, and automation builder workflows.",
     businessValue:
       "Help teams identify at-risk accounts earlier with operational signals, support retention efforts through proactive operational transparency, and support delivery oversight across a growing client portfolio. MSPs compete on reliability — Auroranexis helps teams document operational performance with auditable records.",
     audience:
@@ -241,10 +241,10 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     capabilities: [
-      "Portfolio dashboards with health, incident, and risk summaries",
-      "Per-client SLA policies with breach indicators",
-      "Client portal with white-label options",
-      "Automation workflows triggered by operational events",
+      "Portfolio dashboards with health, incident, and risk summaries (Business and Enterprise for operational modules)",
+      "Per-client SLA policies with breach indicators (Business and Enterprise)",
+      "Client portal with white-label options (Professional and above)",
+      "Automation builder on Professional+; operational automation engine on Business and Enterprise",
       "Executive reports and export for QBR and leadership reviews",
     ],
     challenges: [
@@ -267,6 +267,11 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     ],
     faq: [
       {
+        question: "Which plan do MSPs need for SLA and incident modules?",
+        answer:
+          "Business or Enterprise. Professional supports up to 25 clients with portal, reporting, profitability, and automation builder workflows. Most MSPs managing SLA-backed portfolios upgrade to Business for risk, incident, SLA, and operational automation engine features.",
+      },
+      {
         question: "How many clients can an MSP manage in Auroranexis?",
         answer:
           "Professional supports up to 25 clients. Business and Enterprise plans offer higher limits, with custom allocations available through sales for large portfolios.",
@@ -279,7 +284,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       {
         question: "Can we automate responses to operational events?",
         answer:
-          "Yes. Automation workflows can react to incidents, health changes, and other operational signals where configured.",
+          "Yes on Business and Enterprise for event-driven operational automation. Professional includes the automation builder and connectors; upgrade when you need incident, risk, or SLA-triggered dispatch at scale.",
       },
     ],
     relatedLinks: [
