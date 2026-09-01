@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { acceptAllConsent, hasConsentDecision, rejectNonEssentialConsent } from "@/lib/consent/storage";
 import { LEGAL_ROUTES } from "@/lib/company";
+import { getCanonicalUrl } from "@/lib/company/company-seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 import { focusFirstElement, restoreFocus, trapFocus } from "@/lib/a11y/focus";
@@ -13,6 +14,32 @@ import { CookiePreferencesModal } from "@/components/consent/cookie-preferences-
 function isAuthenticatedShellMounted(): boolean {
   if (typeof document === "undefined") return false;
   return Boolean(document.getElementById("dashboard-root") || document.getElementById("portal-root"));
+}
+
+function ConsentLegalLink({
+  href,
+  className,
+  authenticatedSurface,
+  children,
+}: {
+  href: string;
+  className: string;
+  authenticatedSurface: boolean;
+  children: React.ReactNode;
+}) {
+  if (authenticatedSurface) {
+    return (
+      <a href={getCanonicalUrl(href).toString()} className={className}>
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  );
 }
 
 export function CookieConsentBanner() {
@@ -102,13 +129,21 @@ export function CookieConsentBanner() {
             <p className="mt-1">
               We use essential cookies for authentication and security. Analytics and marketing tools load only if you
               accept them. Read our{" "}
-              <Link href={LEGAL_ROUTES.cookies} className={cn("font-medium text-primary hover:underline", focusRing)}>
+              <ConsentLegalLink
+                href={LEGAL_ROUTES.cookies}
+                authenticatedSurface={authenticatedSurface}
+                className={cn("font-medium text-primary hover:underline", focusRing)}
+              >
                 Cookie Policy
-              </Link>{" "}
+              </ConsentLegalLink>{" "}
               and{" "}
-              <Link href={LEGAL_ROUTES.privacy} className={cn("font-medium text-primary hover:underline", focusRing)}>
+              <ConsentLegalLink
+                href={LEGAL_ROUTES.privacy}
+                authenticatedSurface={authenticatedSurface}
+                className={cn("font-medium text-primary hover:underline", focusRing)}
+              >
                 Privacy Policy
-              </Link>
+              </ConsentLegalLink>
               .
             </p>
           </div>

@@ -14,6 +14,7 @@ import {
   SUPPORT_EMAIL,
 } from "@/lib/company/contact";
 import { FOOTER_BRAND_DESCRIPTION } from "@/lib/company/company-links";
+import { getCanonicalUrl } from "@/lib/company/company-seo";
 
 import { AdaptiveBrandLogo, BrandLogo } from "@/components/branding/brand-logo";
 import { CookiePreferencesButton } from "@/components/consent/cookie-preferences-modal";
@@ -127,13 +128,13 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
           <nav aria-label="Legal and company" className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
             {FOOTER_LINKS.map((link) => (
-              <Link
+              <a
                 key={link.href}
-                href={link.href}
+                href={getCanonicalUrl(link.href).toString()}
                 className={cn("rounded text-muted hover:text-foreground hover:underline", focusRing)}
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
           </nav>
 
