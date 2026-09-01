@@ -75,6 +75,7 @@ const PRIMARY_NAV_ICON: Record<string, WorkspaceSearchAction["icon"]> = {
   Team: "team",
   Pricing: "pricing",
   Sales: "sales",
+  Compliance: "compliance",
   Settings: "settings",
 };
 
@@ -96,6 +97,7 @@ const PRIMARY_NAV_KEYWORDS: Record<string, string> = {
   Team: "team members invite users roles",
   Pricing: "pricing plans billing subscription tiers",
   Sales: "sales pipeline leads proposals outbound",
+  Compliance: "compliance governance audit gdpr dsgvo nis2 dora retention evidence security e-invoice archive",
   Settings: "settings preferences organization configuration",
 };
 
@@ -117,6 +119,7 @@ const PRIMARY_NAV_DESCRIPTIONS: Record<string, string> = {
   Team: "Manage members, roles, and invitations",
   Pricing: "Compare plans and manage subscription",
   Sales: "Pipeline, leads, proposals, and outbound",
+  Compliance: "Audit readiness, GDPR, retention, and evidence exports",
   Settings: "Organization and platform configuration",
 };
 
@@ -131,6 +134,7 @@ function entriesFromPrimaryNav(): SearchEntry[] {
     requiresRead: item.requiresRead,
     planFeature: item.planFeature,
     showLocked: item.showLocked,
+    roles: item.roles,
   }));
 }
 

@@ -28,6 +28,8 @@ export type NavItem = {
   planFeature?: PlanFeatureKey;
   /** When true, show a locked nav item instead of hiding it. */
   showLocked?: boolean;
+  /** Extra role allow-list used by surfaces that also require settings.write (owner/admin). */
+  roles?: readonly UserRole[];
 };
 
 export type NavItemView = NavItem & {
@@ -110,10 +112,20 @@ export const PRIMARY_NAV: NavItem[] = [
   { label: "Team", href: "/settings/team", module: "team", requiresRead: true },
   { label: "Pricing", href: "/settings/plans", module: "pricing", requiresRead: true },
   { label: "Sales", href: "/sales", module: "sales", requiresRead: true },
+  {
+    label: "Compliance",
+    href: "/dashboard/compliance",
+    module: "dashboard",
+    requiresRead: true,
+    roles: ["owner", "admin"],
+  },
   { label: "Settings", href: "/settings", module: "settings", requiresRead: true },
 ];
 
 function passesRoleFilter(item: NavItem, role: UserRole): boolean {
+  if (item.roles && !item.roles.includes(role)) {
+    return false;
+  }
   if (item.module === "profitability") {
     return canAccessProfitability(role);
   }

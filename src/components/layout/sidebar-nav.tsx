@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   Lock,
   Settings,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
   UserCog,
@@ -46,6 +47,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   Team: UserCog,
   Pricing: CreditCard,
   Sales: Handshake,
+  Compliance: ShieldCheck,
   Settings: Settings,
 };
 
@@ -167,10 +169,28 @@ function SidebarNavItem({ item, isActive, collapsed = false, onNavigate }: Sideb
   );
 }
 
+function longestMatchingNavHref(pathname: string, hrefs: readonly string[]): string | null {
+  let best: string | null = null;
+  for (const href of hrefs) {
+    const matches = pathname === href || pathname.startsWith(`${href}/`);
+    if (!matches) {
+      continue;
+    }
+    if (best === null || href.length > best.length) {
+      best = href;
+    }
+  }
+  return best;
+}
+
 /** Grouped sidebar navigation with premium active and locked states. */
 export function SidebarNav({ items, collapsed = false, onNavigate }: SidebarNavProps) {
   const pathname = usePathname();
   const itemsByLabel = new Map(items.map((item) => [item.label, item]));
+  const activeHref = longestMatchingNavHref(
+    pathname,
+    items.map((item) => item.href),
+  );
 
   return (
     <nav className="space-y-5 py-4" aria-label="Primary">
@@ -191,8 +211,7 @@ export function SidebarNav({ items, collapsed = false, onNavigate }: SidebarNavP
             collapsed={collapsed}
           >
             {sectionItems.map((item) => {
-              const isActive =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const isActive = item.href === activeHref;
 
               return (
                 <SidebarNavItem

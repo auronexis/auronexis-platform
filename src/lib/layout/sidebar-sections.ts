@@ -18,6 +18,6 @@ export const SIDEBAR_SECTIONS = [
   {
     id: "administration",
     label: "Administration",
-    itemLabels: ["Team", "Pricing", "Sales", "Settings"],
+    itemLabels: ["Team", "Pricing", "Sales", "Compliance", "Settings"],
   },
 ] as const;
