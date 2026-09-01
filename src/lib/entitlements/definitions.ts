@@ -11,10 +11,10 @@ const PROFESSIONAL_FEATURES = [
   "dashboard",
   "clients",
   "reports",
-  "sla_policies",
   "automations",
   "activity_history",
   "billing_portal",
+  "profitability",
 ] as const satisfies readonly EntitlementFeatureKey[];
 
 const BUSINESS_FEATURES = [
