@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { acceptAllConsent, hasConsentDecision, rejectNonEssentialConsent } from "@/lib/consent/storage";
 import { LEGAL_ROUTES } from "@/lib/company";
@@ -19,26 +18,16 @@ function isAuthenticatedShellMounted(): boolean {
 function ConsentLegalLink({
   href,
   className,
-  authenticatedSurface,
   children,
 }: {
   href: string;
   className: string;
-  authenticatedSurface: boolean;
   children: React.ReactNode;
 }) {
-  if (authenticatedSurface) {
-    return (
-      <a href={getCanonicalUrl(href).toString()} className={className}>
-        {children}
-      </a>
-    );
-  }
-
   return (
-    <Link href={href} className={className}>
+    <a href={getCanonicalUrl(href).toString()} className={className}>
       {children}
-    </Link>
+    </a>
   );
 }
 
@@ -131,7 +120,6 @@ export function CookieConsentBanner() {
               accept them. Read our{" "}
               <ConsentLegalLink
                 href={LEGAL_ROUTES.cookies}
-                authenticatedSurface={authenticatedSurface}
                 className={cn("font-medium text-primary hover:underline", focusRing)}
               >
                 Cookie Policy
@@ -139,7 +127,6 @@ export function CookieConsentBanner() {
               and{" "}
               <ConsentLegalLink
                 href={LEGAL_ROUTES.privacy}
-                authenticatedSurface={authenticatedSurface}
                 className={cn("font-medium text-primary hover:underline", focusRing)}
               >
                 Privacy Policy

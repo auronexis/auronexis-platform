@@ -95,13 +95,30 @@ test("6 marketing footer keeps relative next/link prefetch on www host", () => {
   assert.doesNotMatch(linkColumn, /getCanonicalUrl/);
 });
 
-test("7 authenticated cookie consent legal links use www anchors not next/link", () => {
+test("7 cookie consent legal links always use www anchors on first paint", () => {
   const banner = readSource("src/components/consent/cookie-consent-banner.tsx");
+  const consentLegalLink =
+    banner.match(/function ConsentLegalLink[\s\S]*?(?=\nexport function CookieConsentBanner)/)?.[0] ?? "";
 
-  assert.match(banner, /function ConsentLegalLink/);
-  assert.match(banner, /authenticatedSurface[\s\S]*getCanonicalUrl\(href\)\.toString\(\)/);
+  assert.ok(consentLegalLink.length > 0);
+  assert.match(consentLegalLink, /getCanonicalUrl\(href\)\.toString\(\)/);
+  assert.match(consentLegalLink, /<a href=\{getCanonicalUrl\(href\)\.toString\(\)\}/);
+  assert.doesNotMatch(consentLegalLink, /from "next\/link"/);
+  assert.doesNotMatch(consentLegalLink, /<Link/);
+  assert.doesNotMatch(banner, /from "next\/link"/);
   assert.match(banner, /href=\{LEGAL_ROUTES\.cookies\}/);
   assert.match(banner, /href=\{LEGAL_ROUTES\.privacy\}/);
   assert.match(banner, /Cookie Policy/);
   assert.match(banner, /Privacy Policy/);
+});
+
+test("8 cookie consent state and presentation logic remain unchanged", () => {
+  const banner = readSource("src/components/consent/cookie-consent-banner.tsx");
+
+  assert.match(banner, /hasConsentDecision/);
+  assert.match(banner, /acceptAllConsent\("banner"\)/);
+  assert.match(banner, /rejectNonEssentialConsent\("banner"\)/);
+  assert.match(banner, /data-consent-surface=\{authenticatedSurface \? "authenticated" : "public"\}/);
+  assert.match(banner, /setAuthenticatedSurface\(isAuthenticatedShellMounted\(\)\)/);
+  assert.match(banner, /CookiePreferencesModal/);
 });
