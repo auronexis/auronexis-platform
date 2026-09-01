@@ -21,9 +21,10 @@ type EInvoiceViewerProps = {
   model: EInvoiceViewModel;
   downloadHref?: string;
   className?: string;
+  archived?: boolean;
 };
 
-export function EInvoiceViewer({ model, downloadHref, className }: EInvoiceViewerProps) {
+export function EInvoiceViewer({ model, downloadHref, className, archived = false }: EInvoiceViewerProps) {
   const [showXml, setShowXml] = useState(false);
   const xmlPanelId = useId();
   const warnings = consistencyWarnings(model);
@@ -31,6 +32,15 @@ export function EInvoiceViewer({ model, downloadHref, className }: EInvoiceViewe
 
   return (
     <div className={cn("space-y-6", className)}>
+      {archived ? (
+        <div
+          role="status"
+          className="rounded-md border border-primary/40 bg-primary/10 px-4 py-3 text-sm text-foreground"
+        >
+          <p className="font-semibold tracking-wide">ARCHIVED E-INVOICE</p>
+          <p>Read-only compliance archive. Values are rendered from archived XML bytes, not live billing.</p>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <Button type="button" variant="outline" size="sm" onClick={() => window.print()}>
           Drucken

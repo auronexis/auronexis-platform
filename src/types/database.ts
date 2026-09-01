@@ -4339,6 +4339,111 @@ export type Database = {
           },
         ];
       };
+      einvoice_archive_artifacts: {
+        Row: {
+          id: string;
+          organization_id: string;
+          sales_invoice_id: string;
+          invoice_number_snapshot: string;
+          buyer_name_snapshot: string | null;
+          document_type: string;
+          format: string;
+          profile: string;
+          standard_version: string;
+          artifact_kind: string;
+          artifact_profile_version: string;
+          artifact_storage_key: string;
+          artifact_sha256: string;
+          artifact_size_bytes: number;
+          currency_snapshot: string;
+          gross_amount_minor_snapshot: number;
+          issue_date_snapshot: string | null;
+          issue_year: number | null;
+          seller_country_snapshot: string | null;
+          buyer_country_snapshot: string | null;
+          tax_treatment_snapshot: string;
+          archived_at: string;
+          created_at: string;
+          retention_policy_id: string;
+          retention_policy_version: string;
+          retention_legal_basis: string;
+          retention_jurisdiction: string;
+          retention_duration_years: number;
+          retention_start_at: string;
+          retention_start_basis: string;
+          retain_until: string;
+          legal_hold: boolean;
+          legal_hold_reason: string | null;
+          legal_hold_updated_at: string | null;
+          integrity_status: "stored" | "verified" | "failed";
+          last_verified_at: string | null;
+          last_verification_error_code: string | null;
+          generator_module: string;
+          generator_pipeline: string;
+          generator_standard_version: string;
+          validation_status: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          sales_invoice_id: string;
+          invoice_number_snapshot: string;
+          buyer_name_snapshot?: string | null;
+          document_type?: string;
+          format?: string;
+          profile?: string;
+          standard_version?: string;
+          artifact_kind?: string;
+          artifact_profile_version?: string;
+          artifact_storage_key: string;
+          artifact_sha256: string;
+          artifact_size_bytes: number;
+          currency_snapshot: string;
+          gross_amount_minor_snapshot: number;
+          issue_date_snapshot?: string | null;
+          issue_year?: number | null;
+          seller_country_snapshot?: string | null;
+          buyer_country_snapshot?: string | null;
+          tax_treatment_snapshot: string;
+          archived_at?: string;
+          created_at?: string;
+          retention_policy_id: string;
+          retention_policy_version: string;
+          retention_legal_basis: string;
+          retention_jurisdiction: string;
+          retention_duration_years: number;
+          retention_start_at: string;
+          retention_start_basis: string;
+          retain_until: string;
+          legal_hold?: boolean;
+          legal_hold_reason?: string | null;
+          legal_hold_updated_at?: string | null;
+          integrity_status?: "stored" | "verified" | "failed";
+          last_verified_at?: string | null;
+          last_verification_error_code?: string | null;
+          generator_module: string;
+          generator_pipeline: string;
+          generator_standard_version: string;
+          validation_status: string;
+        };
+        Update: {
+          legal_hold?: boolean;
+          legal_hold_reason?: string | null;
+          legal_hold_updated_at?: string | null;
+          integrity_status?: "stored" | "verified" | "failed";
+          last_verified_at?: string | null;
+          last_verification_error_code?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "einvoice_archive_artifacts_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       stripe_webhook_events: {
         Row: {
           id: string;
@@ -6086,6 +6191,8 @@ export type SecurityIncident = Database["public"]["Tables"]["security_incidents"
 export type ConsentRecord = Database["public"]["Tables"]["consent_records"]["Row"];
 export type GdprRequest = Database["public"]["Tables"]["gdpr_requests"]["Row"];
 export type LegalHold = Database["public"]["Tables"]["legal_holds"]["Row"];
+export type EInvoiceArchiveArtifact =
+  Database["public"]["Tables"]["einvoice_archive_artifacts"]["Row"];
 export type StripeWebhookEvent = Database["public"]["Tables"]["stripe_webhook_events"]["Row"];
 export type JobDefinition = Database["public"]["Tables"]["job_definitions"]["Row"];
 export type JobSchedule = Database["public"]["Tables"]["job_schedules"]["Row"];

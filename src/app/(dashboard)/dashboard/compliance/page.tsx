@@ -30,9 +30,14 @@ export default async function ComplianceDashboardPage() {
         title="Compliance & Governance"
         description="Audit readiness, GDPR requests, retention policies, security incidents, and evidence exports for enterprise procurement."
         action={
-          <Link href="/dashboard/compliance/audit" className="text-sm font-medium text-accent-blue hover:underline">
-            Audit explorer
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/dashboard/compliance/einvoice-archive" className="text-sm font-medium text-accent-blue hover:underline">
+              E-Invoice Archive
+            </Link>
+            <Link href="/dashboard/compliance/audit" className="text-sm font-medium text-accent-blue hover:underline">
+              Audit explorer
+            </Link>
+          </div>
         }
       />
       <ComplianceWorkspaceLazy

@@ -1,0 +1,35 @@
+{
+  "kind": "einvoice_archive_tax_audit_foundation",
+  "protocol": "NOT_FINANZAMT_SUBMISSION",
+  "generatedAt": "2026-09-01T07:51:57.200Z",
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "recordCount": 2,
+  "records": [
+    {
+      "archiveId": "d12aaf0b-4592-41c3-a0d7-66c44c77a217",
+      "invoiceNumberSnapshot": "TEST-EINV-2026-000001",
+      "issueDateSnapshot": "2026-08-31",
+      "taxTreatmentSnapshot": "STANDARD_DOMESTIC_VAT",
+      "sellerCountrySnapshot": "DE",
+      "buyerCountrySnapshot": "DE",
+      "artifactSha256": "0ba0f43350081c02f997fe18452304aedcb671ac66579f437f0889a28da247f7",
+      "artifactStorageKey": "tenant/00000000-0000-4000-8000-000000000001/year/2026/00000000-0000-4000-8000-0000000000de/0ba0f43350081c02f997fe18452304aedcb671ac66579f437f0889a28da247f7.xml",
+      "retainUntil": "2034-12-31",
+      "legalHold": false,
+      "integrityStatus": "stored"
+    },
+    {
+      "archiveId": "5c6f080b-1b28-4379-aa4d-47064dae6e4d",
+      "invoiceNumberSnapshot": "TEST-EINV-RC-2026-000001",
+      "issueDateSnapshot": "2026-08-31",
+      "taxTreatmentSnapshot": "REVERSE_CHARGE",
+      "sellerCountrySnapshot": "DE",
+      "buyerCountrySnapshot": "FR",
+      "artifactSha256": "77727e4b1b43762148bc193aa8ecb7bb277c93a6d7c6063a6882bdfb28deb3fc",
+      "artifactStorageKey": "tenant/00000000-0000-4000-8000-000000000001/year/2026/00000000-0000-4000-8000-0000000000rc/77727e4b1b43762148bc193aa8ecb7bb277c93a6d7c6063a6882bdfb28deb3fc.xml",
+      "retainUntil": "2034-12-31",
+      "legalHold": false,
+      "integrityStatus": "stored"
+    }
+  ]
+}

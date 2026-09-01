@@ -202,6 +202,16 @@ const SUPPLEMENTAL_SEARCH_REGISTRY: SearchEntry[] = [
     roles: ["owner", "admin"],
   },
   {
+    href: "/dashboard/compliance/einvoice-archive",
+    label: "E-Invoice Archive",
+    description: "Immutable archived e-invoice XML for compliance review",
+    keywords: "e-invoice archive zugferd xrechnung compliance integrity retention",
+    icon: "compliance",
+    module: "dashboard",
+    requiresRead: true,
+    roles: ["owner", "admin"],
+  },
+  {
     href: "/dashboard/insights",
     label: "Insights",
     description: "Operational insights and portfolio analytics",

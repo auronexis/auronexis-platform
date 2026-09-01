@@ -1,0 +1,19 @@
+{
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "invoices": [
+    {
+      "archiveId": "d12aaf0b-4592-41c3-a0d7-66c44c77a217",
+      "invoiceNumber": "TEST-EINV-2026-000001",
+      "sha256": "0ba0f43350081c02f997fe18452304aedcb671ac66579f437f0889a28da247f7",
+      "sizeBytes": 5215,
+      "taxTreatment": "STANDARD_DOMESTIC_VAT"
+    },
+    {
+      "archiveId": "5c6f080b-1b28-4379-aa4d-47064dae6e4d",
+      "invoiceNumber": "TEST-EINV-RC-2026-000001",
+      "sha256": "77727e4b1b43762148bc193aa8ecb7bb277c93a6d7c6063a6882bdfb28deb3fc",
+      "sizeBytes": 5542,
+      "taxTreatment": "REVERSE_CHARGE"
+    }
+  ]
+}
