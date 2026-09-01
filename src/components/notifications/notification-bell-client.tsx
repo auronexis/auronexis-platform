@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { NotificationList } from "@/components/notifications/notification-list";
-import type { Notification } from "@/types/database";
+import type { NotificationView } from "@/lib/notifications/types";
 import { cn } from "@/lib/utils/cn";
 import { topbarIconButton } from "@/lib/ui/motion";
 import { linkText } from "@/lib/ui/tokens";
@@ -11,7 +11,7 @@ import { restoreFocus } from "@/lib/a11y/focus";
 
 type NotificationBellClientProps = {
   unreadCount: number;
-  recent: Notification[];
+  recent: NotificationView[];
 };
 
 /** Interactive notification preview — click/touch primary; hover keeps one hit zone open. */

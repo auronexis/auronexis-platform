@@ -8,16 +8,15 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/components/ui/toast";
 import { markNotificationRead } from "@/lib/notifications/actions";
 import {
-  formatNotificationTimestamp,
   getNotificationHref,
   NOTIFICATION_TYPE_LABELS,
+  type NotificationView,
 } from "@/lib/notifications/types";
 import { focusRing, linkText, transitionInteractive } from "@/lib/ui/tokens";
-import type { Notification } from "@/types/database";
 import { cn } from "@/lib/utils/cn";
 
 type NotificationListProps = {
-  notifications: Notification[];
+  notifications: NotificationView[];
   compact?: boolean;
   emptyMessage?: string;
   emptyDescription?: string;
@@ -54,7 +53,7 @@ export function NotificationList({
 }
 
 type NotificationListItemProps = {
-  notification: Notification;
+  notification: NotificationView;
   compact?: boolean;
 };
 
@@ -99,7 +98,7 @@ function NotificationListItem({ notification, compact }: NotificationListItemPro
         <p className="mt-1 text-sm text-muted">{notification.message}</p>
       ) : null}
       <p className="mt-1 text-xs text-muted">
-        {formatNotificationTimestamp(notification.created_at)}
+        {notification.formattedCreatedAt}
       </p>
     </div>
   );

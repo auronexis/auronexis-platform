@@ -1,5 +1,6 @@
-import type { NotificationType } from "@/types/database";
-import { formatAppDateTime } from "@/lib/i18n";
+import type { Notification, NotificationType } from "@/types/database";
+import { formatAppDateTime, type FormatDateOptions } from "@/lib/i18n";
+import { DEFAULT_TIME_FORMAT, DEFAULT_TIMEZONE } from "@/lib/i18n/regional";
 
 export type NotificationEntityType =
   | "client"
@@ -69,7 +70,30 @@ export function getNotificationHref(
   }
 }
 
-export function formatNotificationTimestamp(value: string): string {
-  // Explicit UTC + en locale keeps SSR Client Component output identical across regions.
-  return formatAppDateTime(value, { locale: "en", timeZone: "UTC", timeFormat: "24h" });
+export function formatNotificationTimestamp(
+  value: string,
+  options?: FormatDateOptions,
+): string {
+  return formatAppDateTime(value, {
+    locale: options?.locale ?? "en",
+    timeZone: options?.timeZone ?? DEFAULT_TIMEZONE,
+    dateFormat: options?.dateFormat,
+    timeFormat: options?.timeFormat ?? DEFAULT_TIME_FORMAT,
+  });
+}
+
+/** Client-safe notification row — timestamps formatted on the server only. */
+export type NotificationView = Notification & {
+  formattedCreatedAt: string;
+};
+
+export function toNotificationView(notification: Notification): NotificationView {
+  return {
+    ...notification,
+    formattedCreatedAt: formatNotificationTimestamp(notification.created_at),
+  };
+}
+
+export function toNotificationViews(notifications: Notification[]): NotificationView[] {
+  return notifications.map(toNotificationView);
 }

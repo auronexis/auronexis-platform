@@ -1,5 +1,6 @@
 import type { SessionContext } from "@/lib/tenancy/context";
 import { NotificationBellClient } from "@/components/notifications/notification-bell-client";
+import { toNotificationViews } from "@/lib/notifications/types";
 
 type NotificationBellProps = {
   session: SessionContext;
@@ -18,7 +19,7 @@ export async function NotificationBell({
   }
 
   const { listNotifications } = await import("@/lib/notifications/queries");
-  const recent = await listNotifications(session, { limit: 5 });
+  const recent = toNotificationViews(await listNotifications(session, { limit: 5 }));
 
   return <NotificationBellClient unreadCount={unreadCount} recent={recent} />;
 }

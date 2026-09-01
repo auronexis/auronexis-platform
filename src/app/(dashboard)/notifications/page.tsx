@@ -5,6 +5,7 @@ import { NotificationList } from "@/components/notifications/notification-list";
 import { PlanFeatureGate } from "@/components/plans/plan-feature-gate";
 import { PageHeader } from "@/components/layout/page-header";
 import { listNotifications, getUnreadNotificationCount } from "@/lib/notifications/queries";
+import { toNotificationViews } from "@/lib/notifications/types";
 import { requireSession } from "@/lib/auth/session";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -39,7 +40,7 @@ export default async function NotificationsPage() {
       ) : null}
 
       <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-surface via-surface to-muted/5 p-6 shadow-sm">
-        <NotificationList notifications={notifications} />
+        <NotificationList notifications={toNotificationViews(notifications)} />
       </div>
 
       <p className="mt-4 text-sm text-muted">

@@ -27,7 +27,7 @@ export function TimeOfDayGreeting({
     setGreeting(getTimeGreeting());
   }, []);
 
-  const text = greeting ? `${greeting}, ${firstName}` : firstName;
+  const text = greeting ? `${greeting}, ${firstName}${trailing}` : firstName;
 
-  return <span className={className}>{`${text}${trailing}`}</span>;
+  return <span className={className}>{text}</span>;
 }
