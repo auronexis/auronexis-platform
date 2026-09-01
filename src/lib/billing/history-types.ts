@@ -31,6 +31,8 @@ export type BillingHistoryItem = {
   salesInvoiceId: string | null;
   /** True when an Auroranexis sales invoice PDF can be downloaded. */
   hasSalesInvoicePdf: boolean;
+  /** True when a structured E-Invoice XML archive exists for this sales invoice. */
+  hasArchivedEInvoice: boolean;
   /** Stored Mollie/provider payment receipt URL (not a tax invoice). */
   paymentReceiptUrl: string | null;
   /** True when a Mollie/provider payment receipt URL is available. */
@@ -102,4 +104,9 @@ export function hasPdfAvailableForStatus(
 /** Authenticated download path for an issued Auroranexis sales invoice PDF. */
 export function buildSalesInvoicePdfDownloadPath(salesInvoiceId: string): string {
   return `/api/billing/sales-invoices/${encodeURIComponent(salesInvoiceId)}/pdf`;
+}
+
+/** Authenticated download path for archived E-Invoice XML (immutable archive bytes). */
+export function buildSalesInvoiceEInvoiceDownloadPath(salesInvoiceId: string): string {
+  return `/api/billing/sales-invoices/${encodeURIComponent(salesInvoiceId)}/einvoice`;
 }

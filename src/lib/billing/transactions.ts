@@ -9,6 +9,7 @@ import {
   type BillingHistoryItem,
 } from "@/lib/billing/history-types";
 import { listSalesInvoiceIdsByProviderTransactionIds } from "@/lib/billing/sales-invoice";
+import { listEInvoiceArchiveIdsBySalesInvoiceIds } from "@/lib/einvoice-integration/queries";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { BillingProviderTransaction } from "@/types/database";
 
@@ -18,6 +19,7 @@ const TRANSACTION_SELECT =
 function toBillingHistoryItem(
   row: BillingProviderTransaction,
   salesInvoiceId: string | null,
+  hasArchivedEInvoice: boolean,
 ): BillingHistoryItem {
   const status = normalizeBillingHistoryStatus(row.status);
   const paymentReceiptUrl = row.invoice_url;
@@ -38,6 +40,7 @@ function toBillingHistoryItem(
     invoiceNumber: row.invoice_number,
     salesInvoiceId,
     hasSalesInvoicePdf: Boolean(salesInvoiceId),
+    hasArchivedEInvoice,
     paymentReceiptUrl,
     hasPaymentReceipt,
     invoicePdfUrl: paymentReceiptUrl,
@@ -76,9 +79,20 @@ export async function listOrganizationBillingTransactions(
     providerTransactionIds: rows.map((row) => row.provider_transaction_id),
   });
 
-  return rows.map((row) =>
-    toBillingHistoryItem(row, salesMap.get(row.provider_transaction_id) ?? null),
-  );
+  const salesInvoiceIds = [...salesMap.values()];
+  const archiveMap = await listEInvoiceArchiveIdsBySalesInvoiceIds({
+    organizationId: session.organization.id,
+    salesInvoiceIds,
+  });
+
+  return rows.map((row) => {
+    const salesInvoiceId = salesMap.get(row.provider_transaction_id) ?? null;
+    return toBillingHistoryItem(
+      row,
+      salesInvoiceId,
+      salesInvoiceId ? archiveMap.has(salesInvoiceId) : false,
+    );
+  });
 }
 
 /**
@@ -116,6 +130,17 @@ export async function getOrganizationBillingTransaction(
     organizationId: session.organization.id,
     providerTransactionIds: [row.provider_transaction_id],
   });
+  const salesInvoiceId = salesMap.get(row.provider_transaction_id) ?? null;
+  const archiveMap = salesInvoiceId
+    ? await listEInvoiceArchiveIdsBySalesInvoiceIds({
+        organizationId: session.organization.id,
+        salesInvoiceIds: [salesInvoiceId],
+      })
+    : new Map<string, string>();
 
-  return toBillingHistoryItem(row, salesMap.get(row.provider_transaction_id) ?? null);
+  return toBillingHistoryItem(
+    row,
+    salesInvoiceId,
+    salesInvoiceId ? archiveMap.has(salesInvoiceId) : false,
+  );
 }

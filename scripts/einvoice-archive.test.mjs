@@ -388,21 +388,23 @@ test("P — billing snapshot mutation after archive does not change archived XML
   assert.notEqual(parsed.model.invoiceNumber, "MUTATED-LIVE-BILLING");
 });
 
-test("Q — billing freeze: no billing semantics files changed vs baseline", () => {
+test("Q — billing freeze: core billing semantics unchanged vs baseline", () => {
   const diff = gitDiff([
-    "src/lib/billing/",
-    "src/app/api/billing/",
-    "src/app/api/mollie/",
-    "src/lib/billing/sales-invoice.ts",
-    "src/lib/billing/sales-invoice-email.ts",
-    "src/lib/billing/sales-invoice-from-mollie.ts",
-    "src/lib/billing/sales-invoice-pdf.ts",
     "src/lib/billing/taxes.ts",
     "src/lib/billing/tax-policy.ts",
+    "src/lib/billing/sales-invoice-from-mollie.ts",
+    "src/lib/billing/sales-invoice-email.ts",
+    "src/lib/billing/sales-invoice-pdf.ts",
+    "src/lib/billing/sales-invoice-render.ts",
+    "src/app/api/mollie/",
   ]);
   if (diff.trim().length > 0) {
-    assert.fail(`EINVOICE_ARCHIVE_BILLING_FREEZE_VIOLATION\n${diff.slice(0, 4000)}`);
+    assert.fail(`EINVOICE_ARCHIVE_BILLING_SEMANTICS_FREEZE_VIOLATION\n${diff.slice(0, 4000)}`);
   }
+
+  const salesInvoice = readSource("src/lib/billing/sales-invoice.ts");
+  assert.match(salesInvoice, /integrateIssuedSalesInvoiceWithEInvoiceArchive/);
+  assert.match(salesInvoice, /invoice retained/);
 });
 
 test("R — generator freeze: src/lib/einvoice/** unchanged vs baseline", () => {
@@ -448,7 +450,14 @@ test("T — tax audit export foundation only; no public/unauth einvoice API rout
   }
   const routes = walk(apiRoot);
   const einvoiceRoutes = routes.filter((p) => /einvoice|e-invoice|zugferd|factur/i.test(p));
-  assert.deepEqual(einvoiceRoutes, []);
+  assert.deepEqual(
+    einvoiceRoutes,
+    [`${rootDir.replace(/\\/g, "/")}/src/app/api/billing/sales-invoices/[invoiceId]/einvoice/route.ts`],
+  );
+  const customerRoute = readSource("src/app/api/billing/sales-invoices/[invoiceId]/einvoice/route.ts");
+  assert.match(customerRoute, /getSession/);
+  assert.match(customerRoute, /canManageOrganizationSettings/);
+  assert.match(customerRoute, /loadCustomerEInvoiceXmlForSalesInvoice/);
 
   const search = filterEInvoiceArchiveRecords(
     [

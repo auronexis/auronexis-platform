@@ -25,6 +25,7 @@ import { formatAppDate, formatMoneyFromCentsLocale } from "@/lib/i18n";
 import { formControl, formControlHeight, formLabel, nativeSelectControl } from "@/lib/ui/form-tokens";
 import { cn } from "@/lib/utils/cn";
 import type { EInvoiceArchiveIntegrityStatus } from "@/lib/einvoice-archive/types";
+import { EInvoiceIntegrationRetryForm } from "@/components/einvoice-archive/einvoice-integration-retry-form";
 
 export const metadata: Metadata = {
   title: "E-Invoice Archive",
@@ -68,6 +69,10 @@ export default async function EInvoiceArchiveListPage({ searchParams }: PageProp
           </Link>
         }
       />
+
+      <div className="mb-6">
+        <EInvoiceIntegrationRetryForm />
+      </div>
 
       <form method="get" className="mb-6 grid gap-4 rounded-xl border border-border/70 bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">
         <label className="space-y-1">

@@ -84,6 +84,55 @@ export async function openInvoicePdfAction(
 
 export type DownloadSalesInvoicePdfActionResult = { url: string } | { error: string };
 
+export type DownloadSalesInvoiceEInvoiceActionResult = { url: string } | { error: string };
+
+export async function downloadSalesInvoiceEInvoiceAction(input: {
+  salesInvoiceId?: string | null;
+}): Promise<DownloadSalesInvoiceEInvoiceActionResult> {
+  try {
+    const session = await requireSession();
+
+    if (!canManageOrganizationSettings(session)) {
+      throw new AuthorizationError();
+    }
+
+    const salesInvoiceId = input.salesInvoiceId?.trim();
+    if (!salesInvoiceId) {
+      return { error: "E-Invoice is not available for this invoice." };
+    }
+
+    const invoice = await getSalesInvoiceForOrganization({
+      organizationId: session.organization.id,
+      invoiceId: salesInvoiceId,
+    });
+    const issued = resolveIssuedSalesInvoiceForDownload({
+      invoice,
+      organizationId: session.organization.id,
+    });
+    if (!issued) {
+      return { error: "E-Invoice is not available for this invoice." };
+    }
+
+    const { findEInvoiceArchiveBySalesInvoiceId } = await import(
+      "@/lib/einvoice-integration/queries"
+    );
+    const archive = await findEInvoiceArchiveBySalesInvoiceId({
+      organizationId: session.organization.id,
+      salesInvoiceId: issued.id,
+    });
+    if (!archive) {
+      return { error: "E-Invoice is not available for this invoice." };
+    }
+
+    const { buildSalesInvoiceEInvoiceDownloadPath } = await import("@/lib/billing/history-types");
+    return { url: buildSalesInvoiceEInvoiceDownloadPath(issued.id) };
+  } catch (error) {
+    return {
+      error: sanitizeBillingCustomerError(error, "Unable to open the E-Invoice download."),
+    };
+  }
+}
+
 /**
  * Returns the authenticated Auroranexis sales invoice PDF download path.
  * Resolves only invoices belonging to the caller's organization.

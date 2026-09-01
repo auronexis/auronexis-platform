@@ -405,19 +405,25 @@ test("generator isolation — VIEWER_GENERATOR_EXECUTION = 0", () => {
   }
 });
 
-test("freeze proof — no billing/generator semantic diffs vs cdd03c5", () => {
+test("freeze proof — core billing/generator semantics unchanged vs cdd03c5", () => {
   const paths = [
-    "src/lib/billing",
+    "src/lib/billing/taxes.ts",
+    "src/lib/billing/tax-policy.ts",
+    "src/lib/billing/sales-invoice-from-mollie.ts",
+    "src/lib/billing/sales-invoice-email.ts",
+    "src/lib/billing/sales-invoice-pdf.ts",
+    "src/lib/billing/sales-invoice-render.ts",
     "src/lib/einvoice",
     "src/app/api/mollie",
-    "src/app/api/billing",
-    "supabase/migrations",
   ];
   const diff = execSync(`git diff cdd03c5 -- ${paths.join(" ")}`, {
     cwd: rootDir,
     encoding: "utf8",
   });
-  assert.equal(diff.trim(), "", `Freeze violation:\n${diff.slice(0, 2000)}`);
+  assert.equal(diff.trim(), "", `Semantic freeze violation:\n${diff.slice(0, 2000)}`);
+
+  const salesInvoice = readSource("src/lib/billing/sales-invoice.ts");
+  assert.match(salesInvoice, /integrateIssuedSalesInvoiceWithEInvoiceArchive/);
 });
 
 test("preview route is not an open production surface", () => {

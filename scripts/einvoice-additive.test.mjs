@@ -27,16 +27,14 @@ const {
   minorToDecimalString,
 } = einvoice;
 
-const BILLING_FREEZE_PATHS = [
-  "src/lib/billing/",
-  "src/app/api/billing/",
-  "src/app/api/mollie/",
-  "src/lib/billing/sales-invoice-render.ts",
-  "src/lib/billing/sales-invoice-email.ts",
-  "src/lib/billing/sales-invoice-from-mollie.ts",
+const BILLING_SEMANTICS_FREEZE_PATHS = [
   "src/lib/billing/taxes.ts",
   "src/lib/billing/tax-policy.ts",
-  "supabase/migrations/",
+  "src/lib/billing/sales-invoice-from-mollie.ts",
+  "src/lib/billing/sales-invoice-email.ts",
+  "src/lib/billing/sales-invoice-pdf.ts",
+  "src/lib/billing/sales-invoice-render.ts",
+  "src/app/api/mollie/",
 ];
 
 function gitDiffAgainstBaseline(paths) {
@@ -176,18 +174,21 @@ test("G — demo numbers are TEST-EINV-* (not ANX-*) and marked DEMO/NOT LEGAL",
   assert.match(xml.xml, /DEMO\/NOT LEGAL/);
 });
 
-test("H — BILLING FREEZE PROOF: no diffs under billing freeze paths vs baseline 99ee628", () => {
-  const diff = gitDiffAgainstBaseline(BILLING_FREEZE_PATHS);
+test("H — BILLING FREEZE PROOF: core billing semantics unchanged vs baseline 99ee628", () => {
+  const diff = gitDiffAgainstBaseline(BILLING_SEMANTICS_FREEZE_PATHS);
   if (diff.trim().length > 0) {
-    assert.fail(`EINVOICE_BILLING_FREEZE_VIOLATION\n${diff.slice(0, 4000)}`);
+    assert.fail(`EINVOICE_BILLING_SEMANTICS_FREEZE_VIOLATION\n${diff.slice(0, 4000)}`);
   }
+
+  const salesInvoice = readSource("src/lib/billing/sales-invoice.ts");
+  assert.match(salesInvoice, /integrateIssuedSalesInvoiceWithEInvoiceArchive/);
 
   // Existing deferred scaffold untouched
   const scaffold = readSource("src/lib/billing/e-invoice.ts");
   assert.match(scaffold, /GENERATOR_DEFERRED/);
 });
 
-test("I — no public unauthenticated e-invoice API route introduced", () => {
+test("I — authenticated customer e-invoice API route only (no public einvoice API)", () => {
   const apiRoot = join(rootDir, "src", "app", "api");
   function walk(dir, acc = []) {
     if (!existsSync(dir)) return acc;
@@ -200,7 +201,12 @@ test("I — no public unauthenticated e-invoice API route introduced", () => {
   }
   const routes = walk(apiRoot).map((p) => p.replace(/\\/g, "/"));
   const einvoiceRoutes = routes.filter((p) => /einvoice|e-invoice|zugferd|factur/i.test(p));
-  assert.deepEqual(einvoiceRoutes, []);
+  assert.deepEqual(einvoiceRoutes, [
+    join(rootDir, "src/app/api/billing/sales-invoices/[invoiceId]/einvoice/route.ts").replace(/\\/g, "/"),
+  ]);
+  const customerRoute = readSource("src/app/api/billing/sales-invoices/[invoiceId]/einvoice/route.ts");
+  assert.match(customerRoute, /getSession/);
+  assert.match(customerRoute, /canManageOrganizationSettings/);
 });
 
 test("J — artifact filenames and pipeline bundle shape", () => {

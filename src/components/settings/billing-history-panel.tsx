@@ -5,6 +5,7 @@ import type { BillingHistoryItem } from "@/lib/billing/history-types";
 import {
   openInvoicePdfAction,
   downloadSalesInvoicePdfAction,
+  downloadSalesInvoiceEInvoiceAction,
   getBillingHistoryAction,
 } from "@/lib/billing/invoice-actions";
 import { formatMoneyFromCents } from "@/lib/billing/status";
@@ -59,6 +60,26 @@ export function BillingHistoryPanel({
     });
   };
 
+  const downloadEInvoice = (item: BillingHistoryItem) => {
+    if (!canManage || !item.salesInvoiceId) {
+      return;
+    }
+    const key = `einvoice:${item.id}`;
+    setError(null);
+    setPendingKey(key);
+    startTransition(async () => {
+      const result = await downloadSalesInvoiceEInvoiceAction({
+        salesInvoiceId: item.salesInvoiceId,
+      });
+      setPendingKey(null);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      window.open(result.url, "_blank", "noopener,noreferrer");
+    });
+  };
+
   const downloadInvoice = (item: BillingHistoryItem) => {
     if (!canManage) {
       return;
@@ -102,7 +123,7 @@ export function BillingHistoryPanel({
     <PageSurface>
       <PageSurfaceHeading
         title="Billing history"
-        description="Auroranexis sales invoices (Net, VAT, Total) are distinct from Mollie payment receipts. Download invoice opens the Auroranexis PDF; Payment receipt opens the Mollie checkout receipt when available."
+        description="Auroranexis sales invoices (Net, VAT, Total) are distinct from Mollie payment receipts. Download invoice opens the Auroranexis PDF; Download E-Invoice (XML) opens the archived structured invoice when available; Payment receipt opens the Mollie checkout receipt when available."
       />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -213,7 +234,19 @@ export function BillingHistoryPanel({
                             Payment receipt
                           </Button>
                         ) : null}
-                        {!item.hasSalesInvoicePdf && !item.hasPaymentReceipt ? (
+                        {item.hasArchivedEInvoice ? (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={isPending && pendingKey === `einvoice:${item.id}`}
+                            loading={isPending && pendingKey === `einvoice:${item.id}`}
+                            onClick={() => downloadEInvoice(item)}
+                          >
+                            Download E-Invoice (XML)
+                          </Button>
+                        ) : null}
+                        {!item.hasSalesInvoicePdf && !item.hasArchivedEInvoice && !item.hasPaymentReceipt ? (
                           <span className="text-xs text-muted">—</span>
                         ) : null}
                       </div>

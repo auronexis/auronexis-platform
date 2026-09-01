@@ -87,9 +87,11 @@ export class MemoryMetadataStore implements ArchiveMetadataStorePort {
       this.failNextInsert = false;
       return { ok: false as const, code: "METADATA_FAILED" as const, message: "metadata unavailable" };
     }
-    const existing = await this.findByIdempotencyKey(record);
-    if (existing) {
-      return { ok: false as const, code: "UNIQUE_CONFLICT" as const, message: "duplicate archive" };
+    const key = this.idempotencyKey(record);
+    for (const row of this.rows.values()) {
+      if (this.idempotencyKey(row) === key) {
+        return { ok: false as const, code: "UNIQUE_CONFLICT" as const, message: "duplicate archive" };
+      }
     }
     this.rows.set(record.id, {
       ...record,

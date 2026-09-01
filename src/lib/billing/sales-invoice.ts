@@ -309,6 +309,20 @@ export async function issueSalesInvoice(input: IssueSalesInvoiceInput): Promise<
     });
   }
 
+  // Phase 10: after ISSUED persist — e-invoice archive failure must never roll back the invoice.
+  try {
+    const { integrateIssuedSalesInvoiceWithEInvoiceArchive } = await import(
+      "@/lib/einvoice-integration/post-issuance"
+    );
+    await integrateIssuedSalesInvoiceWithEInvoiceArchive(invoice);
+  } catch {
+    console.error("[einvoice-integration] unexpected failure (invoice retained)", {
+      invoiceId: invoice.id,
+      organizationId: invoice.organizationId,
+      invoiceNumber: invoice.invoiceNumber,
+    });
+  }
+
   return invoice;
 }
 
