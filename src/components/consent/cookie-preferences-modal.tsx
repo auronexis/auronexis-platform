@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import Link from "next/link";
 import { LEGAL_ROUTES } from "@/lib/company";
+import { getCanonicalUrl } from "@/lib/company/company-seo";
 import {
   getConsentPreferences,
   writeConsent,
@@ -78,9 +78,12 @@ export function CookiePreferencesModal({ open, onClose, onSaved }: CookiePrefere
         </h2>
         <p id={descriptionId} className="mt-2 text-sm text-muted">
           Choose which optional tools may run. Essential cookies are always active. See{" "}
-          <Link href={LEGAL_ROUTES.cookies} className={cn("text-primary hover:underline", focusRing)}>
+          <a
+            href={getCanonicalUrl(LEGAL_ROUTES.cookies).toString()}
+            className={cn("text-primary hover:underline", focusRing)}
+          >
             Cookie Policy
-          </Link>
+          </a>
           .
         </p>
 

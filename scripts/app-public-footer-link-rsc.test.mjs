@@ -122,3 +122,15 @@ test("8 cookie consent state and presentation logic remain unchanged", () => {
   assert.match(banner, /setAuthenticatedSurface\(isAuthenticatedShellMounted\(\)\)/);
   assert.match(banner, /CookiePreferencesModal/);
 });
+
+test("9 cookie preferences modal legal link uses www anchor not next/link", () => {
+  const modal = readSource("src/components/consent/cookie-preferences-modal.tsx");
+
+  assert.match(modal, /getCanonicalUrl\(LEGAL_ROUTES\.cookies\)\.toString\(\)/);
+  assert.match(modal, /<a[\s\S]*href=\{getCanonicalUrl\(LEGAL_ROUTES\.cookies\)\.toString\(\)\}/);
+  assert.doesNotMatch(modal, /from "next\/link"/);
+  assert.doesNotMatch(modal, /<Link/);
+  assert.match(modal, /Cookie Policy/);
+  assert.match(modal, /writeConsent\(prefs, "modal"\)/);
+  assert.match(modal, /CookiePreferencesButton/);
+});
