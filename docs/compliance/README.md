@@ -65,7 +65,7 @@ Confirmed from repository/legal content:
 - Germany-based B2B SaaS (`src/lib/company/company-information.ts`)
 - Multi-tenant organizations, RBAC, Supabase RLS
 - Browser-accessed cloud software (Next.js / Vercel)
-- Billing via FastSpring Merchant of Record (active); Paddle historical only
+- Billing via Mollie as PSP only (Auroranexis remains the seller; **not** Merchant of Record). FastSpring / Paddle / Stripe are **HISTORICAL** archive only
 - Optional AI features via OpenAI when enabled
 - Public legal pages: privacy, terms, security policy, subprocessors, DPA, refund policy, cookies, imprint
 

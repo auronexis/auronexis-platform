@@ -41,7 +41,7 @@ Last verified: 2026-08-10 (repository path inspection)
 | EVD-A11Y-002 | EAA-A11Y-001 | `src/lib/a11y/focus.ts`, `src/lib/ui/tokens.ts` (`focusRing`) | A11y helpers | 2026-08-10 | VERIFIED_PATH |
 | EVD-PRIV-001 | COOKIE-001 | `src/lib/analytics/**`, `src/components/analytics/**`, `docs/13_BUILD_BIBLE_V2_CHAPTER_11_ANALYTICS.md` | Consent-gated analytics architecture | 2026-08-10 | VERIFIED_PATH |
 | EVD-CI-001 | CRA-SEC-001, PLD-EVID-001 | `.github/workflows/ci.yml` (lint, typecheck, readiness, build) | Automated quality gates | 2026-08-10 | VERIFIED_PATH |
-| EVD-BILL-001 | GDPR-SUB-001 | FastSpring billing modules; legal MoR disclosures | Billing subprocessors | 2026-08-10 | VERIFIED_PATH |
+| EVD-BILL-001 | GDPR-SUB-001 | Mollie PSP billing modules + public subprocessors inventory; FastSpring MoR disclosures are **HISTORICAL_ONLY** | Billing subprocessors | 2026-09-02 | VERIFIED_PATH |
 
 ---
 

@@ -155,7 +155,7 @@ The following are **engineering-complete or draft** and remain **not** counsel-a
 
 | Issue | Location | Counsel/operator note |
 |-------|----------|----------------------|
-| FastSpring still named as active MoR | `docs/compliance/README.md` product context; `compliance-evidence-index.md` EVD-BILL-001 | Runtime billing is Mollie PSP — treat FastSpring mentions as **stale documentation** |
+| FastSpring MoR wording in internal compliance docs | Was: `README.md` / EVD-BILL-001 / data-act baseline | **REMEDIATED 2026-09-02** (docs now Mollie PSP / HISTORICAL FastSpring); runtime remains Mollie PSP |
 | Older P1-002 tax packs may list older email/subprocessor state | `docs/p1-002-*.md` | Prefer `subprocessors-inventory.ts` as canonical |
 | Evidence index “security.txt missing” | `compliance-evidence-index.md` | Route exists: `src/app/.well-known/security.txt/route.ts` — index may be outdated |
 

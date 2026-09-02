@@ -24,7 +24,7 @@
 | Account / membership | Platform + user | Emails, roles, org membership |
 | Customer-entered operational data | Customer organization | Clients, risks, incidents, reports, knowledge, automation configs |
 | Audit / security logs | Platform controller interests + customer visibility | Compliance center exports |
-| Billing identifiers | MoR (FastSpring) + platform | Payment details primarily at MoR |
+| Billing identifiers | Platform seller + Mollie PSP (**HISTORICAL:** FastSpring MoR era) | Payment details primarily at Mollie PSP; Auroranexis remains contractual seller |
 | AI inputs/outputs | Customer + platform processing | When AI enabled |
 
 ---
@@ -48,7 +48,7 @@
 | Proprietary data model | Multi-tenant Postgres schema | Export needs schema documentation |
 | Automation/connectors | Integration secrets & workflows | Switching friction |
 | AI context | Prompt/history not a portable standard | Clarify non-portability where appropriate |
-| Billing MoR | FastSpring owns payment rails | Account closure ≠ data export |
+| Billing PSP / seller | Mollie processes payments; Auroranexis sells access (**HISTORICAL:** FastSpring MoR rails) | Account closure ≠ data export |
 | Contractual terms | Terms/DPA in legal content | Counsel to review unfair switching terms under Data Act if applicable |
 
 ---
