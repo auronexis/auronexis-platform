@@ -11,12 +11,9 @@ async function handleIndexNow(request: Request): Promise<Response> {
 
   const result = await submitIndexNowUrls();
   if (!result.ok) {
-    // Preserve upstream IndexNow status when present; 502 only for transport failures.
-    const status =
-      typeof result.status === "number" && result.status >= 400 && result.status <= 599
-        ? result.status
-        : 502;
-    return NextResponse.json(result, { status });
+    // Auth already succeeded — never echo IndexNow protocol 401/403 as the gateway
+    // status (Vercel Cron monitors misread those as route auth failures). Use 502.
+    return NextResponse.json(result, { status: 502 });
   }
 
   return NextResponse.json(result);
@@ -25,7 +22,8 @@ async function handleIndexNow(request: Request): Promise<Response> {
 /**
  * IndexNow ping — submits public sitemap URLs to participating search engines.
  * Requires Bearer CRON_SECRET. Safe no-op when INDEXNOW_KEY is unset.
- * GET supports Vercel Cron; POST supports manual ops.
+ * Primary schedule runs via `/api/cron/run` (`runIndexNowForCron`); this route is
+ * for manual ops (GET/POST).
  */
 export async function GET(request: Request): Promise<Response> {
   return handleIndexNow(request);

@@ -106,6 +106,7 @@ test("cron authorization fails closed outside development", () => {
   // Vercel Cron invokes GET; authorized GET must dispatch (not health-only).
   assert.match(cronRoute, /export async function GET/);
   assert.match(cronRoute, /dispatchDueJobs/);
+  assert.match(cronRoute, /runIndexNowForCron/);
   assert.match(cronRoute, /probe/);
 });
 

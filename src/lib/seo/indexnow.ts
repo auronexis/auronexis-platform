@@ -40,6 +40,35 @@ export type IndexNowSubmitResult =
   | { ok: true; submitted: number; status: number }
   | { ok: false; error: string; status?: number };
 
+export type IndexNowCronRunResult = {
+  status: "completed" | "failed" | "skipped";
+  reason?: string;
+  result?: IndexNowSubmitResult;
+};
+
+/**
+ * Daily UTC window matching former vercel.json schedule `0 6 * * *`.
+ * `/api/cron/run` fires every 5 minutes, so minutes 0–4 at hour 6 run once per day.
+ */
+export function isIndexNowDailyCronWindow(now: Date = new Date()): boolean {
+  return now.getUTCHours() === 6 && now.getUTCMinutes() < 5;
+}
+
+/** Invoke IndexNow from the authenticated cron dispatcher when due. */
+export async function runIndexNowForCron(
+  now: Date = new Date(),
+): Promise<IndexNowCronRunResult> {
+  if (!isIndexNowDailyCronWindow(now)) {
+    return { status: "skipped", reason: "outside_daily_window" };
+  }
+
+  const result = await submitIndexNowUrls();
+  if (!result.ok) {
+    return { status: "failed", result };
+  }
+  return { status: "completed", result };
+}
+
 /**
  * Notify IndexNow (Bing and participating engines) of public URLs.
  * No-op when INDEXNOW_KEY is unset. Batches to IndexNow limits (max 10k).

@@ -7,7 +7,7 @@ import {
   isMarketingPublicPath,
   isPortalLoginPath,
 } from "@/lib/deployment/domain-routing";
-import { isApiRoute, shouldBypassSessionMiddleware } from "@/lib/deployment/middleware-routing";
+import { isApiRoute, isIndexNowKeyFilePath, shouldBypassSessionMiddleware } from "@/lib/deployment/middleware-routing";
 import { isPrivateRoute } from "@/lib/seo/private-routes";
 import type { Database } from "@/types/database";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
@@ -37,7 +37,9 @@ function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/.well-known/") ||
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||
-    pathname.startsWith("/invite/")
+    pathname.startsWith("/invite/") ||
+    // IndexNow Option 1 key file — must not hard-404 before the route handler.
+    isIndexNowKeyFilePath(pathname)
   ) {
     return true;
   }

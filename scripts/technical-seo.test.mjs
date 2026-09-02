@@ -262,8 +262,11 @@ test("Twitter and Open Graph share the same social preview image", () => {
 test("IndexNow submission and key file are wired for Bing discoverability", () => {
   const indexnow = readSource("src/lib/seo/indexnow.ts");
   const route = readSource("src/app/api/indexnow/route.ts");
+  const cronRoute = readSource("src/app/api/cron/run/route.ts");
   const rootKeyRoute = readSource("src/app/[file]/route.ts");
   const wellKnownKeyRoute = readSource("src/app/.well-known/[file]/route.ts");
+  const routing = readSource("src/lib/deployment/middleware-routing.ts");
+  const sessionMw = readSource("src/lib/supabase/middleware.ts");
   const envExample = readSource(".env.example");
   const vercel = readSource("vercel.json");
   assert.match(indexnow, /api\.indexnow\.org\/indexnow/);
@@ -272,21 +275,72 @@ test("IndexNow submission and key file are wired for Bing discoverability", () =
   assert.match(indexnow, /https:\/\/\$\{host\}\/\$\{key\}\.txt/);
   assert.doesNotMatch(indexnow, /keyLocation.*\.well-known/);
   assert.match(indexnow, /listPublicIndexableRoutes/);
+  assert.match(indexnow, /runIndexNowForCron/);
+  assert.match(indexnow, /isIndexNowDailyCronWindow/);
   assert.match(route, /submitIndexNowUrls/);
   assert.match(route, /verifyCronAuthorization/);
+  assert.match(cronRoute, /runIndexNowForCron/);
+  assert.match(cronRoute, /verifyCronAuthorization/);
   assert.match(rootKeyRoute, /getIndexNowKey/);
   assert.match(rootKeyRoute, /\$\{key\}\.txt/);
   assert.match(wellKnownKeyRoute, /getIndexNowKey/);
   assert.match(envExample, /INDEXNOW_KEY/);
-  assert.match(vercel, /\/api\/indexnow/);
+  // Single Vercel Cron entrypoint — IndexNow runs inside /api/cron/run, not a parallel target.
+  assert.match(vercel, /\/api\/cron\/run/);
+  assert.doesNotMatch(vercel, /\/api\/indexnow/);
+  // Option 1 key file must bypass session hard-404 (IndexNow 403 when key not found).
+  assert.match(routing, /isIndexNowKeyFilePath/);
+  assert.match(routing, /isIndexNowKeyFilePath\(pathname\)/);
+  assert.match(sessionMw, /isIndexNowKeyFilePath/);
 });
 
-test("IndexNow API route preserves upstream status instead of blanketing 502", () => {
+test("IndexNow API route keeps Bearer auth and maps protocol failures to 502", () => {
   const route = readSource("src/app/api/indexnow/route.ts");
-  assert.match(route, /result\.status/);
-  assert.match(route, /502/);
+  assert.match(route, /verifyCronAuthorization/);
+  assert.match(route, /status:\s*401/);
+  assert.match(route, /status:\s*502/);
+  // Must not echo IndexNow 403 as the gateway HTTP status after successful cron auth.
+  assert.doesNotMatch(route, /result\.status\s*>=\s*400/);
 });
 
+test("IndexNow cron auth contracts reject unauthorized and accept established cron path", () => {
+  const route = readSource("src/app/api/indexnow/route.ts");
+  const cronRoute = readSource("src/app/api/cron/run/route.ts");
+  const env = readSource("src/lib/env.ts");
+  const indexnow = readSource("src/lib/seo/indexnow.ts");
+  const sitemap = readSource("src/lib/seo/sitemap.ts");
+
+  // 1) Unauthorized arbitrary request rejected (401, not public).
+  assert.match(route, /verifyCronAuthorization/);
+  assert.match(route, /Unauthorized/);
+  assert.match(route, /status:\s*401/);
+
+  // 2) Valid authorized IndexNow allowed (same Bearer helper as cron).
+  assert.match(env, /verifyCronAuthorization/);
+  assert.match(env, /Bearer /);
+  assert.match(env, /getCronSecret/);
+
+  // 3) Intended Vercel Cron path accepted — /api/cron/run invokes IndexNow when due.
+  assert.match(cronRoute, /verifyCronAuthorization/);
+  assert.match(cronRoute, /runIndexNowForCron/);
+
+  // 4) Invalid cron auth rejected on both routes.
+  assert.match(cronRoute, /status:\s*401/);
+
+  // 5) IndexNow submission reached when expected (daily window + submit helper).
+  assert.match(indexnow, /isIndexNowDailyCronWindow/);
+  assert.match(indexnow, /submitIndexNowUrls/);
+  assert.match(indexnow, /getUTCHours\(\)\s*===\s*6/);
+
+  // 6) No payment/billing touched — IndexNow module stays SEO-only.
+  assert.doesNotMatch(indexnow, /mollie|paddle|stripe|billing/i);
+  assert.doesNotMatch(route, /mollie|paddle|stripe|billing/i);
+
+  // 7) No public/private route leakage — IndexNow uses sitemap indexability filters.
+  assert.match(indexnow, /listPublicIndexableRoutes/);
+  assert.match(sitemap, /isIndexablePublicRoute/);
+  assert.match(sitemap, /isPrivateRoute/);
+});
 test("interactive API docs HTML is noindex with canonical to /docs/api", () => {
   const html = readSource("src/lib/api/docs/public-api-docs-html.ts");
   const links = readSource("src/lib/company/company-links.ts");

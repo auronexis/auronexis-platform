@@ -13,6 +13,14 @@ export function isApiRoute(pathname: string): boolean {
   return pathname === "/api" || pathname.startsWith("/api/");
 }
 
+/**
+ * IndexNow Option 1 ownership file at /{key}.txt (protocol: 8–128 [A-Za-z0-9-]).
+ * Must bypass session hard-404 — otherwise IndexNow sees HTML 404 and returns 403.
+ */
+export function isIndexNowKeyFilePath(pathname: string): boolean {
+  return /^\/[A-Za-z0-9-]{8,128}\.txt$/.test(pathname);
+}
+
 /** Static assets and metadata routes that must never redirect to login. */
 export function isStaticPublicAssetPath(pathname: string): boolean {
   return (
@@ -22,7 +30,8 @@ export function isStaticPublicAssetPath(pathname: string): boolean {
     pathname === "/llms.txt" ||
     pathname === "/favicon.ico" ||
     pathname === "/favicon.svg" ||
-    pathname.startsWith("/.well-known/")
+    pathname.startsWith("/.well-known/") ||
+    isIndexNowKeyFilePath(pathname)
   );
 }
 

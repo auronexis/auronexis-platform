@@ -3,6 +3,7 @@ import { verifyCronAuthorization } from "@/lib/env";
 import { dispatchDueJobs, dispatchJob } from "@/lib/jobs/dispatcher";
 import type { JobId } from "@/lib/jobs/types";
 import { listRegisteredJobIds } from "@/lib/jobs/registry";
+import { runIndexNowForCron } from "@/lib/seo/indexnow";
 
 export const runtime = "nodejs";
 
@@ -11,6 +12,7 @@ export const runtime = "nodejs";
  * GET is the Vercel Cron entrypoint; POST supports manual ops.
  * Optional `?job=<id>` forces a single registered job.
  * Optional `?probe=1` lists registered job IDs without execution.
+ * Daily IndexNow submission runs in-process during the UTC 06:00–06:04 window.
  */
 async function handleCron(request: Request): Promise<Response> {
   if (!verifyCronAuthorization(request)) {
@@ -38,7 +40,8 @@ async function handleCron(request: Request): Promise<Response> {
     }
 
     const results = await dispatchDueJobs();
-    return NextResponse.json({ ok: true, results });
+    const indexNow = await runIndexNowForCron();
+    return NextResponse.json({ ok: true, results, indexNow });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Cron dispatch failed.";
     return NextResponse.json({ error: message }, { status: 500 });
