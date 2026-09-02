@@ -36,7 +36,7 @@
 | 15 | AI UI | “AI-assisted” / “AI-generated · Verify before use” | `PROVEN` (presence) | `AiDisclosure` — Art.50 **legal sufficiency** = `COUNSEL_REVIEW` |
 | 16 | Privacy retention | Must not claim automatic deletion | `PROVEN` alignment target | Retention module simulation-only; P1-07 |
 | 17 | Security | Vulnerability disclosure / security@ contact | `PROVEN` | `security.txt` route + CVD pages |
-| 18 | Older docs / stale | FastSpring as active MoR in some **internal** compliance README/evidence rows | `REMOVE_IF_UNVERIFIED` (stale internal docs) | Prefer Mollie — **public inventory already Mollie**; fix internal docs in a later docs pass (out of scope if not in this pack’s required files) |
+| 18 | Older docs / stale | FastSpring as **current** active MoR in internal compliance rows | `REMOVE_IF_UNVERIFIED` → **REMEDIATED 2026-09-02** (`CURRENT_FALSE=0`); historical FastSpring MoR era remains labeled HISTORICAL_ONLY | See operator execution Phase 12 + [`p1-002-live-billing-tax-gate-2026-09-02.md`](./p1-002-live-billing-tax-gate-2026-09-02.md); public inventory Mollie PSP / Auroranexis seller |
 | 19 | Marketing “encryption” short bullets | Enterprise content encryption bullets | `CONDITIONALLY_SUPPORTED` | Align with Security Policy nuance |
 | 20 | Compliance dashboard scores | Maturity % / framework readiness | `PROVEN` as **gap analysis only** | `docs/compliance.md` warns not SOC/ISO/GDPR certification |
 
