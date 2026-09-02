@@ -27,10 +27,11 @@ test("technical debt catalog exists with severity matrix", () => {
   assert.match(debt, /Completed in Chapter 15/);
 });
 
-test("architecture doc is FastSpring-only", () => {
+test("architecture doc is Mollie-only with historical FastSpring", () => {
   const architecture = readSource("docs/architecture.md");
+  assert.match(architecture, /Mollie/);
+  assert.match(architecture, /\/api\/mollie\/webhook/);
   assert.match(architecture, /FastSpring/);
-  assert.match(architecture, /\/api\/fastspring\/webhook/);
   assert.doesNotMatch(architecture, /API --> Stripe/);
   assert.doesNotMatch(architecture, /API --> Paddle/);
   assert.doesNotMatch(architecture, /Checkout and customer portal use Stripe/);
