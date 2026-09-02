@@ -31,8 +31,26 @@ function registerSinksOnce(): void {
 
 let posthogInitialized = false;
 
+function disablePostHog(): void {
+  if (typeof window === "undefined") return;
+  const posthog = (window as Window & { posthog?: { opt_out_capturing?: () => void; reset?: () => void } })
+    .posthog;
+  try {
+    posthog?.opt_out_capturing?.();
+    posthog?.reset?.();
+  } catch {
+    // Fail-silent — analytics must never break the app.
+  }
+  posthogInitialized = false;
+}
+
 function initPostHog(): void {
-  if (!ANALYTICS_CONFIG.posthog.enabled || !hasAnalyticsConsent() || posthogInitialized) return;
+  if (!ANALYTICS_CONFIG.posthog.enabled) return;
+  if (!hasAnalyticsConsent()) {
+    disablePostHog();
+    return;
+  }
+  if (posthogInitialized) return;
 
   const key = ANALYTICS_CONFIG.posthog.key;
   const host = ANALYTICS_CONFIG.posthog.host;
@@ -41,7 +59,7 @@ function initPostHog(): void {
 
   void import("posthog-js").then(({ default: posthog }) => {
     // Guard against overlapping dynamic imports before the first init settles.
-    if (posthogInitialized) return;
+    if (posthogInitialized || !hasAnalyticsConsent()) return;
 
     posthog.init(key, {
       api_host: host,
@@ -59,8 +77,26 @@ function initPostHog(): void {
   });
 }
 
+function removeGa4Scripts(): void {
+  document.getElementById("ga4-script")?.remove();
+  document.getElementById("ga4-inline")?.remove();
+  const win = window as Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
+  if (win.dataLayer) {
+    win.dataLayer.length = 0;
+  }
+  try {
+    delete win.gtag;
+  } catch {
+    win.gtag = undefined;
+  }
+}
+
 function initGa4(): void {
-  if (!ANALYTICS_CONFIG.ga4.enabled || !hasMarketingConsent()) return;
+  if (!ANALYTICS_CONFIG.ga4.enabled) return;
+  if (!hasMarketingConsent()) {
+    removeGa4Scripts();
+    return;
+  }
 
   const measurementId = ANALYTICS_CONFIG.ga4.measurementId;
   if (!measurementId) return;
@@ -88,7 +124,7 @@ type AnalyticsProviderProps = {
   children: React.ReactNode;
 };
 
-/** Privacy-first analytics orchestration — scripts load only after consent. */
+/** Privacy-first analytics orchestration — scripts load only after consent; tear down on withdraw. */
 export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
   useEffect(() => {
     loadConfiguredAnalytics();

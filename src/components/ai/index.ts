@@ -6,3 +6,5 @@ export type { AIGenerationPhase } from "@/components/ai/ai-generation-progress";
 export { AIErrorAlert } from "@/components/ai/ai-error-alert";
 export { AIEmptyState } from "@/components/ai/ai-empty-state";
 export type { AIEmptyStateKind } from "@/components/ai/ai-empty-state";
+export { AiDisclosure, DISCLOSURE_COPY } from "@/components/ai/ai-disclosure";
+export type { AiDisclosureVariant } from "@/components/ai/ai-disclosure";

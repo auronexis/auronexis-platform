@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ExecutiveIntelligenceSnapshot } from "@/lib/executive-intelligence/types";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 import { Brain } from "lucide-react";
@@ -38,6 +39,14 @@ export function ExecutiveIntelligenceSummaryPanel({
             {snapshot.priorityClients.length} priority clients · {snapshot.criticalChanges.length} critical changes
           </span>
         </div>
+        {(topFinding?.generatedBy === "ai_assisted" ||
+          snapshot.topFindings.some((finding) => finding.generatedBy === "ai_assisted")) ? (
+          <AiDisclosure variant="assisted" />
+        ) : (
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+            Deterministic findings
+          </p>
+        )}
         {topFinding ? (
           <div className="rounded-lg border border-border/70 px-3 py-3">
             <p className="text-xs font-semibold uppercase text-danger">{topFinding.severity}</p>

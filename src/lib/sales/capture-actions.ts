@@ -14,6 +14,12 @@ import {
 import { evaluatePilotApplicationEligibility } from "@/lib/sales/pilot-eligibility";
 import { resolvePlatformSalesOrganizationId } from "@/lib/sales/platform-org";
 import { sendLeadNotificationEmail } from "@/lib/sales/notify";
+import { recordConsent } from "@/lib/compliance/consent";
+import {
+  MARKETING_CONSENT_PURPOSE,
+  MARKETING_CONSENT_PURPOSE_VERSION,
+  MARKETING_CONSENT_TYPE,
+} from "@/lib/marketing/marketing-consent";
 import type { SalesInboxKey, SalesLeadSource } from "@/types/database";
 import type { Database } from "@/types/database";
 
@@ -40,11 +46,60 @@ type CaptureInput = {
   utmMedium?: string | null;
   utmCampaign?: string | null;
   scheduleDiscovery?: boolean;
+  /** Optional marketing email consent evidence to persist with the lead. */
+  marketingConsent?: {
+    granted: boolean;
+    purposeVersion: string;
+    purpose: string;
+  } | null;
 };
 
 type PersistResult =
   | { ok: true; leadId: string | null; persisted: boolean; emailed: boolean }
   | { ok: false; error: string };
+
+function isMarketingConsentGranted(formData: FormData): boolean {
+  const raw = formData.get("marketingConsent");
+  return raw === "on" || raw === "true" || raw === "1";
+}
+
+function formatMarketingConsentNote(consent: NonNullable<CaptureInput["marketingConsent"]>): string {
+  return [
+    "[marketing_consent]",
+    `granted=${consent.granted}`,
+    `version=${consent.purposeVersion}`,
+    `purpose=${consent.purpose}`,
+    `recorded_at=${new Date().toISOString()}`,
+  ].join(" ");
+}
+
+async function persistMarketingConsentEvidence(input: {
+  organizationId: string;
+  email: string;
+  source: SalesLeadSource;
+  granted: boolean;
+}): Promise<void> {
+  try {
+    await recordConsent({
+      organizationId: input.organizationId,
+      subjectEmail: input.email,
+      consentType: MARKETING_CONSENT_TYPE,
+      granted: input.granted,
+      subjectType: "marketing_lead",
+      metadata: {
+        purpose: MARKETING_CONSENT_PURPOSE,
+        purpose_version: MARKETING_CONSENT_PURPOSE_VERSION,
+        source: input.source,
+        channel: "public_form",
+      },
+    });
+  } catch (error) {
+    console.error(
+      `[sales] Marketing consent evidence write failed (source=${input.source}):`,
+      error instanceof Error ? error.message : "unknown error",
+    );
+  }
+}
 
 /**
  * Persist inbound lead then notify Sales.
@@ -73,6 +128,8 @@ async function persistInboundLead(input: CaptureInput): Promise<PersistResult> {
       `[sales] Lead persist skipped: platform organization unresolved (${correlationId}, source=${input.source})`,
     );
   } else {
+    const consentNote =
+      input.marketingConsent != null ? formatMarketingConsentNote(input.marketingConsent) : null;
     const payload: Database["public"]["Tables"]["sales_leads"]["Insert"] = {
       organization_id: organizationId,
       pipeline_stage: pipelineStage,
@@ -87,6 +144,7 @@ async function persistInboundLead(input: CaptureInput): Promise<PersistResult> {
       employee_count: input.employeeCount ?? null,
       pain_points: input.painPoints ?? null,
       message: input.message ?? null,
+      notes: consentNote,
       mrr_estimate: input.mrrEstimate ?? null,
       referral_code: input.referralCode ?? null,
       utm_source: input.utmSource ?? null,
@@ -109,6 +167,14 @@ async function persistInboundLead(input: CaptureInput): Promise<PersistResult> {
     } else {
       persisted = true;
       leadId = data.id;
+      if (input.marketingConsent?.granted) {
+        await persistMarketingConsentEvidence({
+          organizationId,
+          email: input.contactEmail,
+          source: input.source,
+          granted: true,
+        });
+      }
       const { error: activityError } = await admin.from("sales_lead_activities").insert({
         organization_id: organizationId,
         lead_id: data.id,
@@ -180,6 +246,7 @@ const contactSchema = z.object({
   email: z.string().email("Enter a valid email address."),
   company: z.string().trim().optional(),
   message: z.string().trim().min(10, "Message must be at least 10 characters."),
+  marketingConsent: z.string().optional(),
 });
 
 const pilotSchema = z.object({
@@ -192,6 +259,7 @@ const pilotSchema = z.object({
   employees: z.string().trim().optional(),
   painPoints: z.string().trim().min(10, "Tell us about your operations goals."),
   message: z.string().trim().optional(),
+  marketingConsent: z.string().optional(),
 });
 
 const demoSchema = z.object({
@@ -204,6 +272,7 @@ const demoSchema = z.object({
 const newsletterSchema = z.object({
   email: z.string().email("Enter a valid email address."),
   name: z.string().trim().optional(),
+  marketingConsent: z.string().optional(),
 });
 
 const referralSchema = z.object({
@@ -223,6 +292,7 @@ export async function submitContactLead(_prev: CaptureActionState, formData: For
   const blocked = await validatePublicSubmission(parsed.data.email);
   if (blocked) return blocked;
 
+  const marketingGranted = isMarketingConsentGranted(formData);
   const result = await persistInboundLead({
     source: "contact",
     inboxKey: "info",
@@ -230,6 +300,13 @@ export async function submitContactLead(_prev: CaptureActionState, formData: For
     contactEmail: parsed.data.email,
     companyName: parsed.data.company ?? null,
     message: parsed.data.message,
+    marketingConsent: marketingGranted
+      ? {
+          granted: true,
+          purposeVersion: MARKETING_CONSENT_PURPOSE_VERSION,
+          purpose: MARKETING_CONSENT_PURPOSE,
+        }
+      : null,
   });
 
   return result.ok ? { success: true } : { error: result.error };
@@ -259,6 +336,7 @@ export async function submitPilotApplication(_prev: CaptureActionState, formData
   const blocked = await validatePublicSubmission(parsed.data.email);
   if (blocked) return blocked;
 
+  const marketingGranted = isMarketingConsentGranted(formData);
   const result = await persistInboundLead({
     source: "pilot",
     inboxKey: "sales",
@@ -271,6 +349,13 @@ export async function submitPilotApplication(_prev: CaptureActionState, formData
     employeeCount: parsed.data.employees ? Number(parsed.data.employees) || null : null,
     painPoints: parsed.data.painPoints,
     message: parsed.data.message ?? null,
+    marketingConsent: marketingGranted
+      ? {
+          granted: true,
+          purposeVersion: MARKETING_CONSENT_PURPOSE_VERSION,
+          purpose: MARKETING_CONSENT_PURPOSE,
+        }
+      : null,
   });
 
   return result.ok ? { success: true } : { error: result.error };
@@ -304,6 +389,13 @@ export async function submitNewsletterSignup(_prev: CaptureActionState, formData
     return { error: parsed.error.issues[0]?.message ?? "Invalid form data." };
   }
 
+  // Fail-closed: newsletter is marketing-only — explicit consent required.
+  if (!isMarketingConsentGranted(formData)) {
+    return {
+      error: "Please confirm marketing consent to subscribe to product updates.",
+    };
+  }
+
   const blocked = await validatePublicSubmission(parsed.data.email);
   if (blocked) return blocked;
 
@@ -312,6 +404,11 @@ export async function submitNewsletterSignup(_prev: CaptureActionState, formData
     inboxKey: "info",
     contactName: parsed.data.name?.trim() || "Newsletter subscriber",
     contactEmail: parsed.data.email,
+    marketingConsent: {
+      granted: true,
+      purposeVersion: MARKETING_CONSENT_PURPOSE_VERSION,
+      purpose: MARKETING_CONSENT_PURPOSE,
+    },
   });
 
   return result.ok ? { success: true } : { error: result.error };

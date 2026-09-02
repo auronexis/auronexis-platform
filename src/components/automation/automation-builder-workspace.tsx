@@ -24,6 +24,7 @@ import {
 } from "@/lib/automation/builder/types";
 import { cn } from "@/lib/utils/cn";
 import { auroraSurface } from "@/lib/ui/aurora";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 
 type BuilderMode = "visual" | "ai";
 type VisualStep = "trigger" | "conditions" | "actions" | "review";
@@ -231,6 +232,7 @@ export function AutomationBuilderWorkspace({ initialWorkflow }: AutomationBuilde
 
       {mode === "ai" ? (
         <section aria-label="AI builder" className={cn(auroraSurface, "space-y-4 p-5")}>
+          <AiDisclosure variant="assisted" hint="Review translated workflows before enabling" />
           <Textarea
             id="automation-natural-language"
             name="naturalLanguage"
@@ -317,6 +319,9 @@ export function AutomationBuilderWorkspace({ initialWorkflow }: AutomationBuilde
                     options={actionOptions}
                   />
                 ))}
+                {workflow.actions.some((action) => action.type === "generate_ai_summary") ? (
+                  <AiDisclosure variant="generated" hint="Outputs require human review before customer use" />
+                ) : null}
                 <Button type="button" variant="outline" size="sm" onClick={addAction}>
                   Add action
                 </Button>

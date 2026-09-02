@@ -54,7 +54,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
     items: [
       {
         question: "How do you handle encryption?",
-        answer: "Data is encrypted in transit with TLS. Platform data stores use encryption at rest. See the security page for access controls and operational practices.",
+        answer: "Data is encrypted in transit with TLS. Underlying cloud platform stores (for example database and object storage providers) typically provide encryption at rest as configured for the production project — see the Security Policy for access controls and operational practices. We do not claim application-layer encryption at rest beyond provider platform controls.",
       },
       {
         question: "How do I report a security issue?",
@@ -75,8 +75,8 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
         answer: "Production deployments use EU-capable infrastructure (Supabase, Vercel). Specific residency is confirmed during enterprise onboarding.",
       },
       {
-        question: "Is Auroranexis GDPR-ready?",
-        answer: `Yes. The platform supports data subject requests, retention controls, and includes a standard DPA. See ${MARKETING_ROUTES.compliance} and the privacy policy.`,
+        question: "Does Auroranexis support GDPR workflows?",
+        answer: `The platform provides operational support for data subject request tracking, retention policy simulation, a published DPA draft for external legal review, and related privacy documentation. This is not a certification that your organization is GDPR-compliant. See ${MARKETING_ROUTES.compliance} and the privacy policy.`,
       },
       {
         question: "Who can access client data?",

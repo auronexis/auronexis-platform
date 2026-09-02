@@ -209,7 +209,7 @@ export const PUBLIC_PRICING_NOTE =
 export const INVITE_ONLY_PROGRAMS_NOTE = "Pilot and Founding programs are invite-only.";
 
 export const SECURITY_HIGHLIGHTS = [
-  "Encryption in transit (TLS) and at rest for platform data stores.",
+  "Encryption in transit (TLS). Platform cloud stores typically provide provider-managed encryption at rest as configured for production.",
   "Role-based access control with organization-scoped permissions.",
   "Audit logging for sensitive actions and compliance workflows.",
   "Auroranexis uses EU-capable infrastructure. Specific data-residency requirements are confirmed for applicable enterprise arrangements.",
@@ -313,6 +313,7 @@ export const STATUS_COMPONENTS_STATIC = [
 
 export const HELP_TOPICS = [
   { title: "FAQ", href: MARKETING_ROUTES.faq, description: "Billing, security, AI, reports, and enterprise questions." },
+  { title: "AI literacy", href: "/docs/ai-literacy", description: "How generative, deterministic, and predictive AI features work — and their limits." },
   { title: "Getting started", href: "/docs/getting-started", description: "Account setup and first workspace." },
   { title: "Documentation hub", href: "/docs", description: "Module guides and API reference." },
   { title: "Release notes", href: "/docs/release-notes", description: "Product updates and changes." },

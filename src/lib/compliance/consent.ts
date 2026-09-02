@@ -8,6 +8,7 @@ export async function recordConsent(input: {
   consentType: string;
   granted: boolean;
   subjectType?: string;
+  metadata?: Record<string, unknown>;
 }) {
   const admin = createAdminClient();
   const { error } = await admin.from("consent_records").insert({
@@ -17,6 +18,7 @@ export async function recordConsent(input: {
     consent_type: input.consentType,
     granted: input.granted,
     withdrawn_at: input.granted ? null : new Date().toISOString(),
+    metadata: input.metadata ?? {},
   } as never);
 
   if (error) {

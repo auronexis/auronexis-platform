@@ -100,7 +100,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Retention",
         body:
-          "We retain personal data for the duration of the subscription and as required for support, billing records, security logs, and legal retention obligations. Deletion or return of customer data follows contract termination and your offboarding instructions, subject to statutory retention periods.",
+          "We retain personal data for the duration of the subscription and as required for support, billing records, security logs, and legal retention obligations. Automated retention rules in the product currently run in simulation mode only — they document intended periods without automatic deletion. Deletion or return of customer data follows contract termination and your offboarding instructions, subject to statutory retention periods (including accounting and e-invoice archive records where applicable).",
       },
       {
         heading: "Sub-processors and transfers",
@@ -333,7 +333,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Encryption and access control",
         body:
-          "Data is encrypted in transit using TLS. Access to production systems is limited to authorized personnel on a need-to-know basis with role-based controls, authentication requirements, and audit logging. Customer workspaces are logically isolated.",
+          "Data is encrypted in transit using TLS. Underlying cloud platform stores (database and object storage) typically provide provider-managed encryption at rest as configured for the production project; Auroranexis does not claim additional application-layer encryption at rest beyond those platform controls. Access to production systems is limited to authorized personnel on a need-to-know basis with role-based controls, authentication requirements, and audit logging. Customer workspaces are logically isolated.",
       },
       {
         heading: "Monitoring and incident response",

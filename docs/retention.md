@@ -1,8 +1,21 @@
 # Retention Policies
 
-Retention policies define how long different data categories should be kept. Sprint 9 implements **simulation only** — no automatic deletion.
+Retention policies define how long different data categories should be kept. The platform implements **simulation only** — **no automatic deletion**.
 
-## Data categories
+Public Privacy Policy language must stay aligned: do **not** claim that automatic deletion currently occurs.
+
+## Operator categories (process view)
+
+| Operator category | Examples | Auto-delete? |
+|-------------------|----------|--------------|
+| `LEGAL_HOLD_STATUTORY` | Legal holds, sales invoices, E-Invoice archive, mandatory accounting records | **Never** via retention job — counsel/statutory only |
+| `CUSTOMER_DATA` | Client CRM operational records | Simulation only; offboarding / DSAR playbooks |
+| `SECURITY_LOG` | Audit events, security incident evidence | Simulation only; retain while investigations require |
+| `AI_LOG` | AI request logs / generation history | Simulation only |
+| `MARKETING_LEAD` | Newsletter/contact leads + consent evidence | Manual suppression/erasure via DSAR/ops — no blind purge |
+| `OPERATIONAL` | Notifications, connector sync history, executions | Simulation only |
+
+## Product data categories (DB rules)
 
 | Category | Label |
 |----------|-------|
@@ -12,7 +25,7 @@ Retention policies define how long different data categories should be kept. Spr
 | `connector_sync_history` | Connector sync history |
 | `executions` | Workflow/automation executions |
 | `api_logs` | API request logs |
-| `invoices` | Invoices |
+| `invoices` | Invoices (**do not enable destructive auto-delete**) |
 | `notifications` | Notifications |
 | `knowledge_entries` | Knowledge entries |
 | `portal_activity` | Portal activity |
@@ -23,7 +36,15 @@ Retention policies define how long different data categories should be kept. Spr
 
 ## Simulation mode
 
-All default rules have `simulation_only: true`. The platform calculates coverage and displays policy status without deleting data.
+All default rules have `simulation_only: true`. The platform calculates coverage and displays policy status without deleting data. Cron `retention_cleanup` remains impact simulation (`autoDeleteEnabled: false`).
+
+## Operator process (until enforcement exists)
+
+1. Review `/dashboard/compliance` retention overview for intended periods.
+2. For offboarding or DSAR erasure, follow `docs/compliance/dsar-operator-playbooks.md`.
+3. Never purge sales invoices, E-Invoice archive rows, or legally retained accounting records through ad-hoc scripts without verified statutory analysis.
+4. Record legal holds in `legal_holds` when deletion must be blocked in a future enforcement sprint.
+5. Revisit Privacy Policy copy if/when auto-deletion is safely enabled.
 
 ## Coverage metric
 
@@ -46,7 +67,7 @@ Table: `retention_rules`
 
 ## Future work
 
-Automatic purge jobs and hold-aware deletion are out of scope for Sprint 9.
+Automatic purge jobs and hold-aware deletion remain out of scope until explicitly engineered, tested, and disclosed.
 
 ## Client lifecycle (TARGET_MODEL: ARCHIVE_PLUS_RESTRICTED_HARD_DELETE)
 

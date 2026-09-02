@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ExecutiveIntelligenceSnapshot, ExecutiveBriefing } from "@/lib/executive-intelligence/types";
 import { Card } from "@/components/ui/card";
 import { SectionTitle } from "@/components/ui/typography";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -36,6 +37,9 @@ export function ExecutiveIntelligenceHub({
             {briefing.generatedBy === "ai_assisted" ? "AI-assisted briefing" : "Deterministic briefing"}
             {!aiEnabled ? " · AI narrative locked on plan" : ""}
           </span>
+          {briefing.generatedBy === "ai_assisted" ? (
+            <AiDisclosure variant="assisted" className="mt-2" hint="Verify before use" />
+          ) : null}
         </div>
       </header>
 

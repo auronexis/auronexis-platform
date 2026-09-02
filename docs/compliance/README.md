@@ -36,6 +36,11 @@
 | [cra-reporting-role-matrix.md](./cra-reporting-role-matrix.md) | Role / escalation matrix for CRA reporting |
 | [security-incident-evidence-checklist.md](./security-incident-evidence-checklist.md) | Evidence preservation checklist |
 | [cra-reporting-tabletop.md](./cra-reporting-tabletop.md) | Three-scenario CRA reporting tabletop |
+| [personal-data-breach-runbook.md](./personal-data-breach-runbook.md) | GDPR personal-data-breach operator runbook |
+| [dsar-operator-playbooks.md](./dsar-operator-playbooks.md) | DSAR fulfillment playbooks (operator-assisted) |
+| [dpia-screening.md](./dpia-screening.md) | DPIA screening preparation |
+| [ropa-processing-inventory.md](./ropa-processing-inventory.md) | Art. 30 RoPA groundwork inventory |
+| [gdpr-ai-act-p1-remediation-report.md](./gdpr-ai-act-p1-remediation-report.md) | P1 GDPR + AI Act remediation re-audit |
 
 ## Authoritative sources used in Part 1
 

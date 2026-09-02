@@ -39,7 +39,7 @@ export const ENTERPRISE_CONTENT = {
   ] satisfies readonly MarketingBenefit[],
   securityHighlights: [
     "Multi-tenant isolation with organization-scoped queries",
-    "Encryption in transit and at rest",
+    "Encryption in transit (TLS); provider-managed at-rest encryption where configured by cloud platforms",
     "Audit-friendly activity and usage metadata",
     "Optional AI providers documented as sub-processors",
     "Cookie consent architecture for analytics and marketing tags",

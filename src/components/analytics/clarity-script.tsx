@@ -4,9 +4,17 @@ import { useEffect } from "react";
 import { ANALYTICS_CONFIG } from "@/lib/analytics/config";
 import { hasAnalyticsConsent, subscribeToConsentChanges } from "@/lib/consent/storage";
 
+function removeClarity(): void {
+  document.getElementById("clarity-script")?.remove();
+}
+
 function injectClarity(): void {
   const projectId = ANALYTICS_CONFIG.clarity.projectId;
-  if (!projectId || !hasAnalyticsConsent()) return;
+  if (!projectId) return;
+  if (!hasAnalyticsConsent()) {
+    removeClarity();
+    return;
+  }
   if (document.getElementById("clarity-script")) return;
 
   const inline = document.createElement("script");
@@ -15,7 +23,7 @@ function injectClarity(): void {
   document.head.appendChild(inline);
 }
 
-/** Microsoft Clarity — loads only after analytics consent. */
+/** Microsoft Clarity — loads only after analytics consent; removes on withdraw. */
 export function ClarityScript() {
   useEffect(() => {
     if (!ANALYTICS_CONFIG.clarity.enabled) return;

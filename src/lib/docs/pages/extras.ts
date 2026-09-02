@@ -662,8 +662,79 @@ export const DOCS_HUB_DOC: DocPageInput = {
     { href: "/docs/billing", label: "Billing" },
     { href: "/docs/security", label: "Security" },
     { href: "/docs/compliance", label: "Compliance" },
+    { href: "/docs/ai-literacy", label: "AI literacy" },
     { href: "/docs/white-label", label: "White label" },
     { href: "/docs/predictive", label: "Predictive intelligence" },
     { href: "/docs/api", label: "API" },
+  ],
+};
+
+/** EU AI Act Art. 4 literacy — proportionate operator/user guidance. Not training certification. */
+export const AI_LITERACY_DOC: DocPageInput = {
+  slug: "ai-literacy",
+  title: "AI literacy",
+  description:
+    "How Auroranexis uses generative, deterministic, and predictive systems — limitations, human review, and safe use.",
+  intro:
+    "This guide supports AI literacy for operators and workspace users. It explains which features use generative models, which are rule-based or predictive scoring, and how to use outputs responsibly. It is not a training completion certificate, compliance badge, or legal opinion.",
+  callouts: [
+    {
+      variant: "warning",
+      title: "No certification claims",
+      body: "Reading this page does not certify AI Act compliance, GDPR compliance, or completed staff training. Organizations remain responsible for their own literacy measures and policies.",
+    },
+    {
+      variant: "info",
+      title: "Human review",
+      body: "Generative outputs are labeled AI-assisted or AI-generated. Verify material decisions, customer-facing text, and operational actions before relying on them.",
+    },
+  ],
+  sections: [
+    {
+      title: "Overview",
+      paragraphs: [
+        "Auroranexis mixes three classes of assistance: generative AI (large language models that draft text), deterministic logic (rules, SQL aggregates, fixed thresholds), and predictive scoring (models or heuristics that rank risk, health, or retention signals). Only generative surfaces require EU AI Act Article 50-style transparency disclosures in the product UI.",
+        "Optional AI features send prompts and trusted operational context to configured providers (for example OpenAI) when enabled. Deterministic dashboards and many executive intelligence findings do not call generative models even if they appear under an “intelligence” heading.",
+      ],
+    },
+    {
+      title: "Core Concepts",
+      bullets: [
+        "Generative AI — drafts or transforms text (Copilot, Report Assistant, executive summary drafts, risk/incident AI analysis, knowledge generation, automation NL translation).",
+        "Deterministic — fixed rules and calculations (many metrics, filters, workflow engines without LLM calls).",
+        "Predictive — scores or rankings that estimate likelihoods; may be heuristic or model-based but are not free-form text generation.",
+        "Hallucination risk — generative models can invent facts not present in verified context; always check citations and source records.",
+        "Human review — required before publishing customer reports, enabling automations, or acting on risk/incident recommendations.",
+        "Personal data — do not paste unnecessary personal data into prompts; treat AI logs as potentially sensitive.",
+        "Unsafe reliance — do not use AI outputs as sole basis for legal, medical, employment, or high-stakes contractual decisions.",
+        "Security — treat model providers as sub-processors when enabled; escalate suspected data leakage to security/legal contacts.",
+      ],
+    },
+    {
+      title: "Best Practices",
+      ordered: [
+        "Confirm whether a surface shows an AI-assisted / AI-generated disclosure before treating the output as authoritative.",
+        "Prefer verified workspace records and citations over free-form model prose.",
+        "Keep prompts free of secrets, passwords, API keys, and unnecessary personal data.",
+        "Require a human to accept AI drafts before they are saved as customer-facing content.",
+        "Escalate AI-related incidents (unexpected data exposure, unsafe automation) through security incident and GDPR breach processes.",
+        "Review the Privacy Policy, DPA, and sub-processor list for optional AI providers.",
+      ],
+    },
+    {
+      title: "Troubleshooting",
+      bullets: [
+        "Missing AI features usually means the plan does not include the entitlement or the provider is not configured.",
+        "Low-confidence answers or insufficient-data messages mean you should rely on primary records instead of the draft.",
+        "If disclosure labels are missing on a generative surface, report it to product/engineering — do not claim AI Act compliance based on marketing copy alone.",
+      ],
+    },
+  ],
+  relatedLinks: [
+    { href: "/docs/compliance", label: "Compliance" },
+    { href: "/docs/security", label: "Security" },
+    { href: "/privacy", label: "Privacy Policy" },
+    { href: "/subprocessors", label: "Sub-processors" },
+    { href: "/help", label: "Help center" },
   ],
 };

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CopilotAnswer, CopilotRecommendation } from "@/lib/ai/copilot/types";
 import { buildSourceHref } from "@/lib/ai/copilot/types";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
@@ -35,9 +36,7 @@ export function CopilotAnswerPanel({ answer, onCopy, className }: CopilotAnswerP
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
-            AI-generated · Verify important decisions
-          </p>
+          <AiDisclosure variant="generated" />
           <p className="mt-2 text-sm font-medium text-foreground">{answer.summary}</p>
         </div>
         <div className="flex items-center gap-2">

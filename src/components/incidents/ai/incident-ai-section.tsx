@@ -7,6 +7,7 @@ import { IncidentAIRecommendations } from "@/components/incidents/ai/incident-ai
 import { IncidentAIRootCauseCard } from "@/components/incidents/ai/incident-ai-root-cause-card";
 import { IncidentAISummaryCard } from "@/components/incidents/ai/incident-ai-summary-card";
 import { DetailSection } from "@/components/layout/detail-page";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 import type { IncidentAIAnalysis } from "@/lib/ai-incidents/types";
 import { formatIncidentAITimestamp } from "@/lib/ai-incidents/types";
 import { linkText } from "@/lib/ui/tokens";
@@ -53,6 +54,7 @@ export function IncidentAISection({
         </div>
       ) : latestAnalysis ? (
         <div className="space-y-4">
+          <AiDisclosure variant="generated" hint="Human review expected" />
           <div className="flex flex-wrap items-center gap-3">
             <IncidentAIConfidenceBadge confidence={latestAnalysis.confidence} />
             <span className="text-xs text-muted">

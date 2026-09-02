@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { generateExecutiveSummaryAction } from "@/lib/ai/executive-summary/action";
 import { trackAITelemetryEvent } from "@/lib/analytics/ai-telemetry";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 import { cn } from "@/lib/utils/cn";
 
 type ExecutiveSummaryGeneratorProps = {
@@ -143,7 +144,8 @@ export function ExecutiveSummaryGenerator({
     <div className={cn("space-y-3 rounded-lg border border-border/60 bg-muted/5 p-4", className)}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-foreground">AI-assisted executive summary</p>
+          <AiDisclosure variant="assisted" />
+          <p className="mt-1 text-sm font-medium text-foreground">Executive summary draft</p>
           <p className="text-xs text-muted">
             Generates a reviewable draft. Nothing is saved or published automatically.
           </p>
@@ -170,7 +172,7 @@ export function ExecutiveSummaryGenerator({
       {state === "preview" && previewDraft ? (
         <div className="space-y-3">
           <FormAlert variant="warning">
-            AI-generated draft — review before saving.{" "}
+            AI-generated · Verify before use.{" "}
             {existingSummary.trim() ? "Your existing summary was not overwritten." : ""}
             {modelLabel ? ` Model: ${modelLabel}.` : ""}
           </FormAlert>

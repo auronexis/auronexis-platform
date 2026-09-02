@@ -49,14 +49,18 @@ function sanitizeServerProps(props?: AnalyticsEventProps): AnalyticsEventProps |
 
 /**
  * Fire a server-side conversion to GA4 Measurement Protocol — optional, fail-silent.
- * Integration point for billing lifecycle / server conversions (see billing-lifecycle.ts).
+ * Fail-closed on marketing consent: callers must pass marketingConsentGranted=true
+ * when a recorded marketing consent decision exists. Billing lifecycle events do not
+ * invent consent and therefore do not emit to GA4 MP by default.
  * Never include organization, customer, or secret identifiers.
  */
 export async function trackServerAnalyticsEvent(
   name: string,
   props?: AnalyticsEventProps,
+  options?: { marketingConsentGranted?: boolean },
 ): Promise<void> {
   if (!GA4_MEASUREMENT_ID || !GA4_API_SECRET) return;
+  if (!options?.marketingConsentGranted) return;
 
   const canonicalName = resolveCanonicalEventName(name);
   const category = getEventCategory(canonicalName);

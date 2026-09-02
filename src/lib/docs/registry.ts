@@ -11,6 +11,7 @@ import {
   DOCS_HUB_DOC as DOCS_HUB_DOC_INPUT,
   PREDICTIVE_DOC as PREDICTIVE_DOC_INPUT,
   WHITE_LABEL_DOC as WHITE_LABEL_DOC_INPUT,
+  AI_LITERACY_DOC as AI_LITERACY_DOC_INPUT,
 } from "@/lib/docs/pages/extras";
 import {
   CLIENTS_DOC as CLIENTS_DOC_INPUT,
@@ -55,6 +56,7 @@ export const PROFITABILITY_DOC = buildDocPage(PROFITABILITY_DOC_INPUT);
 export const CUSTOMER_SUCCESS_DOC = buildDocPage(CUSTOMER_SUCCESS_DOC_INPUT);
 export const ACTIVITY_DOC = buildDocPage(ACTIVITY_DOC_INPUT);
 export const DOCS_HUB_DOC = buildDocPage(DOCS_HUB_DOC_INPUT);
+export const AI_LITERACY_DOC = buildDocPage(AI_LITERACY_DOC_INPUT);
 
 export const DOC_PAGES: DocPageContent[] = [
   GETTING_STARTED_DOC,
@@ -78,6 +80,7 @@ export const DOC_PAGES: DocPageContent[] = [
   COMPLIANCE_DOC,
   WHITE_LABEL_DOC,
   PREDICTIVE_DOC,
+  AI_LITERACY_DOC,
 ];
 
 const DOC_PAGE_MAP = new Map<string, DocPageContent>(
@@ -221,6 +224,12 @@ export const DOC_HUB_CARDS: DocHubCard[] = [
     slug: "compliance",
     title: "Compliance documentation",
     description: COMPLIANCE_DOC.description,
+    module: "settings",
+  },
+  {
+    slug: "ai-literacy",
+    title: "AI literacy",
+    description: AI_LITERACY_DOC.description,
     module: "settings",
   },
   {

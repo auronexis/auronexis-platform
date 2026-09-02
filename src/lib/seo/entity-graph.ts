@@ -96,7 +96,7 @@ export const CANONICAL_CAPABILITIES = [
     id: "compliance",
     name: "Compliance",
     description:
-      "GDPR-ready workflows, audit trails, and governance tooling without certification claims.",
+      "GDPR workflow tooling, audit trails, and governance features — not a certification claim.",
     path: MARKETING_ROUTES.compliance,
   },
 ] as const;

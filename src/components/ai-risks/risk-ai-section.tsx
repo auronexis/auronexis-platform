@@ -8,6 +8,7 @@ import { RiskAIReasoningCard } from "@/components/ai-risks/risk-ai-reasoning-car
 import { RiskAIRecommendations } from "@/components/ai-risks/risk-ai-recommendations";
 import { RiskAISummaryCard } from "@/components/ai-risks/risk-ai-summary-card";
 import { DetailSection } from "@/components/layout/detail-page";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 import { RiskSeverityBadge } from "@/components/risks/risk-severity-badge";
 import type { RiskAIAnalysis } from "@/lib/ai-risks/types";
 import { formatRiskAITimestamp } from "@/lib/ai-risks/types";
@@ -55,6 +56,7 @@ export function RiskAISection({
         </div>
       ) : latestAnalysis ? (
         <div className="space-y-4">
+          <AiDisclosure variant="generated" hint="Human review expected" />
           <div className="flex flex-wrap items-center gap-3">
             <RiskAIConfidenceBadge confidence={latestAnalysis.confidence} />
             <span className="text-xs text-muted">

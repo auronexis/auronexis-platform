@@ -21,6 +21,7 @@ import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 import { restoreFocus, trapFocus } from "@/lib/a11y/focus";
 import { useReportAI } from "@/components/reports/ai/report-ai-provider";
 import { AIUpgradeCard, AIUsageCard } from "@/components/ai/ai-usage-card";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 import { ReportAIDiffPreview } from "@/components/reports/ai/report-ai-diff-preview";
 import { ReportAIContextPanel } from "@/components/reports/ai/report-ai-context-panel";
 import { ReportAIChecklist } from "@/components/reports/ai/report-ai-checklist";
@@ -198,6 +199,7 @@ const ReportAssistantPanelShell = forwardRef<HTMLElement, ReportAssistantPanelSh
             <p className="mt-1 break-words text-sm text-muted">
               Generate MSP reports from verified operational context.
             </p>
+            <AiDisclosure variant="assisted" className="mt-1" />
           </div>
           {layoutMode === "overlay" || panelOpen ? (
             <button

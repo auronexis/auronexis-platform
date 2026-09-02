@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { KnowledgeHealthCard } from "@/components/knowledge/knowledge-health-card";
 import { AIErrorAlert } from "@/components/ai/ai-error-alert";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { Input } from "@/components/ui/input";
@@ -304,7 +305,8 @@ export function KnowledgeHubWorkspace({
 
         {answer ? (
           <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-4" role="region" aria-label="AI answer">
-            <p className="text-sm font-semibold text-foreground">
+            <AiDisclosure variant="generated" />
+            <p className="mt-2 text-sm font-semibold text-foreground">
               AI answer · confidence {answer.confidence}%
             </p>
             <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{answer.summary}</p>
@@ -374,6 +376,7 @@ export function KnowledgeHubWorkspace({
           </div>
           {generatedPlaybook ? (
             <div className="mt-4 rounded-lg border border-border p-4">
+              <AiDisclosure variant="generated" className="mb-2" />
               <p className="font-semibold text-foreground">{generatedPlaybook.title}</p>
               <p className="mt-1 text-sm text-muted">{generatedPlaybook.summary}</p>
               <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-foreground">
@@ -388,6 +391,7 @@ export function KnowledgeHubWorkspace({
 
       {generatedArticle ? (
         <section className="rounded-2xl border border-border bg-surface/80 p-5" aria-label="Generated article">
+          <AiDisclosure variant="generated" className="mb-2" />
           <p className="text-lg font-semibold text-foreground">{generatedArticle.title}</p>
           <p className="mt-2 text-sm text-muted">{generatedArticle.summary}</p>
           <p className="mt-4 text-sm text-foreground">{generatedArticle.recommendations}</p>

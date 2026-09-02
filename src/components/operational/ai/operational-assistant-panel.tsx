@@ -24,6 +24,7 @@ import {
   AIUpgradeCard,
   AIUsageCard,
 } from "@/components/ai/ai-usage-card";
+import { AiDisclosure } from "@/components/ai/ai-disclosure";
 
 const RISK_SUMMARY_ACTIONS: RiskAIActionKey[] = [
   "summarize_risk",
@@ -207,6 +208,7 @@ export function OperationalAssistantPanel({
             <p className="mt-1 text-sm text-muted">
               Investigate, prioritize, and document from verified workspace data.
             </p>
+            <AiDisclosure variant="assisted" className="mt-1" />
           </div>
           <button
             type="button"
