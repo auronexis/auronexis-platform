@@ -132,11 +132,22 @@ test("AI literacy doc is registered and discoverable", () => {
   const registry = readSource("src/lib/docs/registry.ts");
   const help = readSource("src/lib/marketing/content.ts");
   const literacy = readSource("src/lib/docs/pages/extras.ts");
+  const allowlist = readSource("src/lib/seo/public-dynamic-slug-allowlist.ts");
+  const docsPage = readSource("src/app/docs/[slug]/page.tsx");
+  const seoRoutes = readSource("src/lib/seo/routes.ts");
   const literacyBlock =
     literacy.match(/export const AI_LITERACY_DOC[\s\S]*?(?=export const |\n$)/)?.[0] ?? "";
-  assert.match(registry, /ai-literacy/);
+  const docsSlugBlock =
+    allowlist.match(/const DOC_SLUGS = new Set\(\[([\s\S]*?)\]\)/)?.[1] ?? "";
+  assert.match(registry, /AI_LITERACY_DOC/);
+  assert.match(registry, /slug:\s*"ai-literacy"/);
+  assert.match(docsPage, /getAllDocSlugs\(\)/);
+  assert.match(docsPage, /dynamicParams = false/);
   assert.match(help, /\/docs\/ai-literacy/);
+  assert.match(seoRoutes, /DOC_PAGES/);
   assert.match(literacy, /slug:\s*"ai-literacy"/);
+  assert.match(docsSlugBlock, /"ai-literacy"/);
+  assert.doesNotMatch(docsSlugBlock, /"not-a-real-doc-slug"/);
   assert.match(literacyBlock, /not a training completion certificate/i);
   assert.doesNotMatch(literacyBlock, /you are now certified/i);
 });

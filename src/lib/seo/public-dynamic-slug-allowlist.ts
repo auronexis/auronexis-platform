@@ -84,6 +84,7 @@ const DOC_SLUGS = new Set([
   "api",
   "enterprise",
   "compliance",
+  "ai-literacy",
   "white-label",
   "predictive",
   "knowledge",
