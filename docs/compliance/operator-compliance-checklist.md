@@ -1,6 +1,7 @@
 # Operator Compliance Checklist — sole proprietorship / small SaaS
 
-**Status:** `OPERATOR_REVIEW_REQUIRED`  
+**Status:** `OPERATOR_COMPLIANCE_CLOSURE_COMPLETE` (2026-09-02) — ongoing cadence still applies  
+**Closure record:** [`operator-final-closure-2026-09-02.md`](./operator-final-closure-2026-09-02.md)  
 **Entity scale:** Auroranexis AI Solutions — German Einzelunternehmen  
 **Principle:** Proportionate cadence. Not an enterprise GRC platform mandate.
 
