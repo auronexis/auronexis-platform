@@ -49,7 +49,7 @@ ${capabilityLines}
 - Incident management: ${base}${SOLUTION_ROUTES.incidentManagement}
 - SLA management: ${base}${SOLUTION_ROUTES.slaManagement}
 - Executive dashboard: ${base}${SOLUTION_ROUTES.executiveDashboard}
-- AI reporting: ${base}${SOLUTION_ROUTES.aiReporting}
+- Automated client reporting: ${base}${SOLUTION_ROUTES.aiReporting}
 
 ## API and integrations
 

@@ -38,10 +38,10 @@ export const CANONICAL_CAPABILITIES = [
   },
   {
     id: "executive-reporting",
-    name: "Executive Reporting",
+    name: "Automated Client Reporting",
     description:
-      "Structured executive summaries and client reports derived from verified operational data.",
-    path: FEATURE_ROUTES.aiExecutiveReports,
+      "Client reports generated from workspace data with templates, schedules, PDF export, portal delivery, and optional AI-assisted summaries with human review.",
+    path: SOLUTION_ROUTES.aiReporting,
   },
   {
     id: "client-portal",
@@ -129,7 +129,7 @@ export const CANONICAL_SOLUTIONS = [
   },
   {
     id: "ai-reporting",
-    name: "AI Reporting",
+    name: "Automated Client Reporting",
     path: SOLUTION_ROUTES.aiReporting,
   },
 ] as const;

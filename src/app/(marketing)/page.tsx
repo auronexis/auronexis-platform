@@ -128,7 +128,27 @@ export default async function MarketingHomePage() {
           </li>
           <li>
             <Link href="/solutions/ai-reporting" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
-              AI reporting
+              Automated client reporting
+            </Link>
+          </li>
+          <li>
+            <Link href="/solutions/incident-management" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Incident management with SLA tracking
+            </Link>
+          </li>
+          <li>
+            <Link href="/use-cases/msps" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              MSP portfolio operations
+            </Link>
+          </li>
+          <li>
+            <Link href="/features/profitability" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Client and portfolio profitability reporting
+            </Link>
+          </li>
+          <li>
+            <Link href="/features/automation" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Agency operations automation
             </Link>
           </li>
           <li>

@@ -8,6 +8,7 @@ import { isIndexablePublicRoute } from "@/lib/seo/route-catalog";
 function resolvePriority(route: string): number {
   if (route === "/") return 1;
   if (route === "/pilot-program" || route === "/pricing") return 0.9;
+  if (route === "/solutions/ai-reporting") return 0.9;
   if (route.startsWith("/solutions/")) return 0.85;
   if (route.startsWith("/templates/")) return 0.8;
   if (route.startsWith("/docs")) return 0.75;
@@ -41,7 +42,9 @@ export function listPublicIndexableRoutes(): string[] {
   return uniquePublicRoutes();
 }
 
-/** Build the public sitemap — authenticated routes are excluded by design. */
+/** Build the public sitemap — authenticated routes are excluded by design.
+ * lastmod is omitted: we do not have per-URL editorial timestamps, and injecting `new Date()` would be untruthful.
+ */
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const baseUrl = getSeoBaseUrl();
 

@@ -23,7 +23,7 @@ const SOLUTION_LINKS = [
   { label: "Incident management", href: SOLUTION_ROUTES.incidentManagement },
   { label: "SLA management", href: SOLUTION_ROUTES.slaManagement },
   { label: "Executive dashboard", href: SOLUTION_ROUTES.executiveDashboard },
-  { label: "AI reporting", href: SOLUTION_ROUTES.aiReporting },
+  { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
 ] as const;
 
 export default function FeaturesPage() {

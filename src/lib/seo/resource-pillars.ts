@@ -73,11 +73,12 @@ export const RESOURCE_PILLARS: readonly ResourcePillar[] = [
     id: "sla-and-reporting",
     title: "SLA management & client reporting",
     description:
-      "Track service commitments and produce executive-ready client narratives from verified operational data.",
-    primaryHref: SOLUTION_ROUTES.slaManagement,
+      "Track service commitments and produce client-ready reports from verified operational data — two related but distinct intents.",
+    primaryHref: SOLUTION_ROUTES.aiReporting,
     links: [
-      { label: "AI reporting", href: SOLUTION_ROUTES.aiReporting },
-      { label: "Executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "SLA management", href: SOLUTION_ROUTES.slaManagement },
+      { label: "AI-assisted executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
       { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
     ],
   },

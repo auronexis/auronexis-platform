@@ -208,7 +208,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     description:
       "Monitor multi-client health, track and report SLA performance with auditable records, and standardize delivery across your managed services portfolio.",
     metaDescription:
-      "MSP client operations — portfolio health, SLA tracking, incident management, and client portal in Auroranexis.",
+      "Managed services portfolio operations for MSPs — client health, SLA tracking, incidents, reporting, and portal delivery in Auroranexis.",
     problem:
       "MSPs operate at scale with hundreds of endpoints and dozens of clients, yet operational visibility remains fragmented. Leadership cannot quickly answer which accounts are at risk, technicians lack context during handoffs, and QBR preparation pulls senior staff away from delivery.",
     solution:
@@ -291,6 +291,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       { label: "IT industry", href: INDUSTRY_ROUTES.it },
       { label: "IT service providers", href: USE_CASE_ROUTES.itServiceProviders },
       { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
       { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     ],
     primaryCta: "startFreeTrial",
@@ -756,7 +757,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       { label: "Software agencies", href: USE_CASE_ROUTES.softwareAgencies },
       { label: "Automation", href: FEATURE_ROUTES.automation },
       { label: "Monitoring", href: FEATURE_ROUTES.monitoring },
-      { label: "AI reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "seePricing",

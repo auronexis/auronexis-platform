@@ -55,7 +55,7 @@ test("landing and solution views emit graph JSON-LD with GEO definition sections
   assert.match(landing, /title="Definition"/);
   assert.match(landing, /<dfn/);
   assert.match(solution, /solutionPageGraphJsonLd/);
-  assert.match(solution, /title="Definition"/);
+  assert.match(solution, /title="What this solution covers"/);
 });
 
 test("homepage and pricing use unified knowledge graph builders", () => {

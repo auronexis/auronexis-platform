@@ -71,7 +71,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.solutions]: {
     title: "Operational Solutions for Multi-Client Delivery",
     description:
-      "Solution pages for customer health, risk management, incidents, SLA tracking, executive dashboards, and AI reporting for service teams.",
+      "Solution pages for customer health, risk, incidents, SLA tracking, executive dashboards, and automated client reporting for agencies and MSPs.",
   },
   [MARKETING_ROUTES.templates]: {
     title: "Operational Templates for Service Delivery Teams",
@@ -129,14 +129,14 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
       "Connect Auroranexis with Slack, email, REST API, webhooks, and AI providers for agency operations.",
   },
   [MARKETING_ROUTES.documentation]: {
-    title: "Documentation",
+    title: "Public Product Documentation Index",
     description:
-      "Product documentation for Auroranexis — getting started, clients, reports, security, and API reference.",
+      "Marketing documentation index that routes to the Auroranexis docs hub — getting started, clients, reports, security, and API reference.",
   },
   [MARKETING_ROUTES.contact]: {
-    title: "Contact",
+    title: "Contact Auroranexis Sales, Support, and Security",
     description:
-      "Contact Auroranexis for sales, support, and security inquiries for agency and MSP operations teams.",
+      "Contact Auroranexis for sales, support, and security inquiries. Use this page for agency and MSP operations questions — not the authenticated workspace.",
   },
   [MARKETING_ROUTES.pilotProgram]: {
     title: "Pilot Partner Program",
@@ -148,9 +148,9 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description: "Current operational status and availability of the Auroranexis platform.",
   },
   [MARKETING_ROUTES.about]: {
-    title: "About",
+    title: "About Auroranexis — Agency Operations Command Center",
     description:
-      "About Auroranexis — the Operations Command Center for AI automation agencies, MSPs, and service providers.",
+      "About Auroranexis: a B2B operations platform for AI automation agencies and MSPs covering client health, risk, incidents, reporting, and delivery transparency.",
   },
   [MARKETING_ROUTES.careers]: {
     title: "Careers",
@@ -158,14 +158,14 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
       "Careers at Auroranexis — build enterprise operations software for agencies and managed service providers.",
   },
   [MARKETING_ROUTES.help]: {
-    title: "Help Center",
+    title: "Help Center for Auroranexis Workspace Users",
     description:
-      "Help resources for Auroranexis customers — documentation, support, and platform guidance.",
+      "Help resources for signed-in Auroranexis customers — documentation, support, and platform guidance. Distinct from the public docs hub.",
   },
   [MARKETING_ROUTES.support]: {
-    title: "Support",
+    title: "Customer Support for Auroranexis Workspaces",
     description:
-      "Customer support for Auroranexis workspace users — documentation, status, and contact options.",
+      "Customer support options for Auroranexis workspace users — documentation, status, and contact routes.",
   },
   [LEGAL_ROUTES.privacy]: {
     title: "Privacy Policy",

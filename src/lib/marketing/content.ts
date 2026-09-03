@@ -19,7 +19,7 @@ export const MARKETING_NAV = [
 ] as const;
 
 export const MARKETING_STATS = [
-  { value: "6", label: "Solution areas", detail: "Health, risk, incident, SLA, executive, and AI reporting." },
+  { value: "6", label: "Solution areas", detail: "Health, risk, incident, SLA, executive dashboard, and automated client reporting." },
   { value: "3", label: "Public plan tiers", detail: "Professional, Business, and Enterprise subscriptions." },
   { value: "EU", label: "Deployment posture", detail: "EU-capable hosting with enterprise security controls." },
   { value: "24/7", label: "Portfolio visibility", detail: "Continuous operational dashboards — not 24/7 human support." },
@@ -99,8 +99,8 @@ export const FEATURES: readonly MarketingFeature[] = [
     workflow: "Draft, generate, publish, and schedule reports with client portal visibility controls.",
     outcome: "Predictable delivery and a published record of value for every client.",
     enterpriseValue: "Client-ready reporting with version history and portal-only publication rules.",
-    ctaLabel: "See reporting features",
-    ctaHref: "/features/reports",
+    ctaLabel: "See automated client reporting",
+    ctaHref: "/solutions/ai-reporting",
   },
   {
     title: "Risk & Incident Management",

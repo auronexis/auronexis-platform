@@ -53,21 +53,25 @@ function faqPage(items: ReadonlyArray<{ question: string; answer: string }>) {
 }
 
 function landingAboutEntity(content: LandingPageContent) {
-  const schemaType =
-    content.category === "feature"
-      ? "SoftwareApplication"
-      : content.category === "industry" || content.category === "audience"
-        ? "Service"
-        : "Thing";
+  if (content.category === "industry" || content.category === "audience") {
+    return {
+      "@type": "Service",
+      "@id": `${pageEntityId(content.path)}/topic`,
+      name: content.title,
+      description: content.metaDescription,
+      url: getCanonicalUrl(content.path).toString(),
+      provider: { "@id": GRAPH_ENTITY_IDS.organization },
+      isPartOf: { "@id": GRAPH_ENTITY_IDS.softwareApplication },
+    };
+  }
 
   return {
-    "@type": schemaType,
+    "@type": "DefinedTerm",
     "@id": `${pageEntityId(content.path)}/topic`,
     name: content.title,
     description: content.metaDescription,
     url: getCanonicalUrl(content.path).toString(),
-    provider: { "@id": GRAPH_ENTITY_IDS.organization },
-    isPartOf: { "@id": GRAPH_ENTITY_IDS.softwareApplication },
+    inDefinedTermSet: { "@id": GRAPH_ENTITY_IDS.softwareApplication },
   };
 }
 
@@ -112,6 +116,7 @@ export function solutionPageGraphJsonLd(input: SolutionGraphInput) {
       inLanguage: "en",
       isPartOf: { "@id": GRAPH_ENTITY_IDS.website },
       publisher: { "@id": GRAPH_ENTITY_IDS.organization },
+      about: { "@id": `${pageEntityId(content.path)}/service` },
     },
     {
       "@type": "Service",

@@ -38,18 +38,6 @@ export function resolveMetadataBase(): URL {
   return new URL(resolveCanonicalBaseUrl());
 }
 
-const DEFAULT_KEYWORDS = [
-  "B2B SaaS",
-  "client intelligence",
-  "risk management",
-  "incident management",
-  "SLA management",
-  "executive reporting",
-  "operations platform",
-  "MSP software",
-  "agency operations",
-] as const;
-
 /** Resolve whether a path should be excluded from search indexing. */
 export function shouldNoIndex(path: string): boolean {
   return (
@@ -106,7 +94,7 @@ export function createPageMetadata({
     creator: COMPANY_INFORMATION.legalName,
     publisher: COMPANY_INFORMATION.legalName,
     category: "technology",
-    keywords: keywords ?? [...DEFAULT_KEYWORDS],
+    keywords: keywords && keywords.length > 0 ? keywords : undefined,
     alternates: {
       canonical: url.toString(),
       languages: {

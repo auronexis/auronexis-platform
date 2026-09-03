@@ -1,4 +1,10 @@
-import { FEATURE_ROUTES, MARKETING_ROUTES, SOLUTION_ROUTES, TEMPLATE_ROUTES } from "@/lib/company/company-links";
+import {
+  FEATURE_ROUTES,
+  MARKETING_ROUTES,
+  SOLUTION_ROUTES,
+  TEMPLATE_ROUTES,
+  USE_CASE_ROUTES,
+} from "@/lib/company/company-links";
 
 export type SolutionPageContent = {
   slug: string;
@@ -8,6 +14,13 @@ export type SolutionPageContent = {
   description: string;
   metaDescription: string;
   intro: string;
+  /** Visible definition term; defaults to title. */
+  definitionTerm?: string;
+  /** Shorter breadcrumb label when the H1 is long. */
+  breadcrumbName?: string;
+  problem?: string;
+  audience?: string;
+  howItWorks?: ReadonlyArray<{ title: string; description: string }>;
   benefits: ReadonlyArray<{ title: string; description: string }>;
   capabilities: ReadonlyArray<string>;
   faq: ReadonlyArray<{ question: string; answer: string }>;
@@ -26,6 +39,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       "Customer health scoring for MSPs and agencies — portfolio signals, risk indicators, and operational visibility in Auroranexis.",
     intro:
       "Auroranexis helps agencies track customer health using operational signals from reports, incidents, risks, and SLA performance. Instead of relying on spreadsheets or subjective check-ins, teams get a structured view of which clients need attention and why.",
+    problem:
+      "Account teams often judge client health from memory, last-week tickets, or a spreadsheet that is already stale. At-risk retainers surface too late — after a missed QBR, a surprise churn notice, or an SLA dispute.",
+    audience:
+      "Customer success, account leadership, and operations leads at agencies and MSPs who need a portfolio view of which clients need attention and why.",
     benefits: [
       {
         title: "Portfolio-wide visibility",
@@ -61,7 +78,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     relatedLinks: [
       { label: "Health monitoring", href: FEATURE_ROUTES.healthMonitoring },
       { label: "Health score template", href: TEMPLATE_ROUTES.customerHealthScore },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
       { label: "Risk management", href: SOLUTION_ROUTES.riskManagement },
     ],
   },
@@ -75,6 +92,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       "B2B risk management for agencies — risk registers, ownership, mitigation tracking, and audit logs in Auroranexis.",
     intro:
       "Agencies on Business and Enterprise plans need a consistent way to capture delivery risks before they become incidents. Auroranexis provides a risk register tied to clients, owners, and remediation workflows so teams can demonstrate control to customers and leadership.",
+    problem:
+      "Delivery risks live in chat threads and personal notes. When ownership is unclear, the same exposure repeats across clients and never appears in executive reporting.",
+    audience:
+      "Operations and delivery owners at agencies who need a client-scoped risk register — not a full enterprise GRC suite.",
     benefits: [
       {
         title: "Structured risk registers",
@@ -114,9 +135,9 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     ],
     relatedLinks: [
       { label: "Risk intelligence", href: FEATURE_ROUTES.riskIntelligence },
-      { label: "Incident management", href: SOLUTION_ROUTES.incidentManagement },
+      { label: "Incident management with SLA tracking", href: SOLUTION_ROUTES.incidentManagement },
       { label: "Risk register template", href: TEMPLATE_ROUTES.riskRegister },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
     ],
   },
   "incident-management": {
@@ -129,6 +150,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       "Agency incident management — timelines, SLA tracking, client transparency, and audit logs in Auroranexis.",
     intro:
       "When operations break, agencies need fast coordination and clear customer communication. Auroranexis centralizes incident records, response timelines, and SLA evaluation so teams resolve issues with accountability.",
+    problem:
+      "Incidents are logged in tickets, email, and chat without a shared client timeline. SLA impact is reconstructed after the fact, which weakens both response and client communication.",
+    audience:
+      "Delivery and operations leads at MSPs and agencies who coordinate client-impacting incidents against contractual response and resolution targets.",
     benefits: [
       {
         title: "Single incident workspace",
@@ -162,9 +187,9 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     ],
     relatedLinks: [
       { label: "Incidents feature", href: FEATURE_ROUTES.incidents },
-      { label: "SLA management", href: SOLUTION_ROUTES.slaManagement },
+      { label: "SLA management for multi-client agencies", href: SOLUTION_ROUTES.slaManagement },
       { label: "Incident response template", href: TEMPLATE_ROUTES.incidentResponse },
-      { label: "Contact", href: MARKETING_ROUTES.contact },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
     ],
   },
   "sla-management": {
@@ -177,6 +202,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       "SLA management for MSPs — policy definitions, breach tracking, and client reporting in Auroranexis.",
     intro:
       "SLA performance is how agencies prove reliability. On Business and Enterprise plans, Auroranexis lets you define policies per client, monitor incidents and risks against those policies, and report outcomes without manual spreadsheet tracking.",
+    problem:
+      "SLA targets live in contracts while delivery work lives in another system. Breach evidence is assembled manually when a client asks for proof.",
+    audience:
+      "Service delivery managers at MSPs and agencies who assign response and resolution policies per client and need breach visibility on operational records.",
     benefits: [
       {
         title: "Policy per client",
@@ -216,8 +245,8 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     relatedLinks: [
       { label: "SLA documentation", href: "/docs/sla" },
       { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
-      { label: "Executive dashboard", href: SOLUTION_ROUTES.executiveDashboard },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "Executive dashboard for agency operations", href: SOLUTION_ROUTES.executiveDashboard },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
     ],
   },
   "executive-dashboard": {
@@ -230,6 +259,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       "Executive operations dashboard for agencies — portfolio health, incidents, risks, and reporting in Auroranexis.",
     intro:
       "Operations leaders need a concise view of what matters across the client portfolio. Auroranexis aggregates signals from clients, incidents, risks, and SLAs into an executive-ready dashboard without building custom BI projects.",
+    problem:
+      "Leadership reviews pull screenshots from five tools. Portfolio questions — open incidents, health, overdue reports — cannot be answered from one workspace.",
+    audience:
+      "COOs, delivery directors, and operations VPs who need a live command-center view of the client portfolio, distinct from scheduled client-facing reports.",
     benefits: [
       {
         title: "Portfolio at a glance",
@@ -262,58 +295,114 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Executive dashboards feature", href: FEATURE_ROUTES.executiveDashboards },
+      { label: "Portfolio KPI dashboards", href: FEATURE_ROUTES.executiveDashboards },
       { label: "AI Copilot", href: FEATURE_ROUTES.aiCopilot },
-      { label: "AI reporting", href: SOLUTION_ROUTES.aiReporting },
-      { label: "Features", href: MARKETING_ROUTES.features },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Platform features", href: MARKETING_ROUTES.features },
     ],
   },
   "ai-reporting": {
     slug: "ai-reporting",
     path: SOLUTION_ROUTES.aiReporting,
     eyebrow: "Solution",
-    title: "AI-assisted reporting for client delivery",
-    description: "Generate structured client reports with templates, schedules, and optional AI assistance.",
+    title: "Automated client reporting for agencies and MSPs",
+    breadcrumbName: "Automated client reporting",
+    definitionTerm: "Automated client reporting",
+    description:
+      "Create, generate, review, and publish client reports from operational data — templates, schedules, PDF export, and portal delivery, with optional AI-assisted summaries.",
     metaDescription:
-      "AI-assisted client reporting for agencies — templates, PDF export, scheduling, and portal delivery in Auroranexis.",
+      "Automated client reporting for agencies and MSPs: templates, scheduled drafts, generate-from-workspace data, PDF export, and portal delivery. Optional AI-assisted summaries with human review.",
     intro:
-      "Agencies spend too much time assembling client reports. Auroranexis combines report templates, operational data, and optional AI-assisted summaries so teams deliver consistent, professional reports faster.",
+      "Automated client reporting in Auroranexis is the workflow that turns delivery records into client-ready reports without rebuilding decks from scratch each period. Each report is linked to one client and a reporting period. Templates define the structure. Generate fills metrics and default narrative from workspace data such as health signals, SLA outcomes, related incidents, and open risks. Your team reviews and edits before publish. Published reports can go to the client portal, PDF export, and email where configured. Recurring schedules can create draft shells so cadence does not depend on someone remembering to start the report. Optional AI-assisted executive summaries are available when enabled; they do not replace human review, and reporting works without AI.",
+    problem:
+      "Agencies still assemble client reports from spreadsheets, ticket exports, and last month's slides. Delivery is late or inconsistent, metrics do not match the live workspace, and there is no durable record of what the client actually received.",
+    audience:
+      "Account, delivery, and operations teams at AI automation agencies, MSPs, and multi-client service firms who publish recurring client reports and QBR packs.",
+    howItWorks: [
+      {
+        title: "Start from a template",
+        description:
+          "Reuse an agency template so every client report includes the same sections — typically executive summary, wins, risks, next actions, and operational metrics.",
+      },
+      {
+        title: "Generate for a reporting period",
+        description:
+          "Run Generate on a draft so metrics and default narrative reflect the selected period and the linked client's operational records.",
+      },
+      {
+        title: "Review, then publish",
+        description:
+          "Edit the draft internally. Publishing finalizes the report for portal users on that client, PDF export, and email delivery where Settings allow it.",
+      },
+      {
+        title: "Schedule the next draft",
+        description:
+          "Where your plan includes scheduling, recurring cadences create draft shells. You still generate, review, and publish — schedules do not auto-send unreviewed reports to clients.",
+      },
+    ],
     benefits: [
       {
-        title: "Template-driven delivery",
-        description: "Standardize report structure across clients and service lines.",
+        title: "Operational data in the report",
+        description:
+          "Generated sections can include health, SLA, incident, and risk context from the same client record your team already operates — not a disconnected BI export.",
       },
       {
-        title: "Operational data included",
-        description: "Pull incidents, risks, and health signals into report narratives automatically.",
+        title: "Predictable client cadence",
+        description:
+          "Templates plus optional schedules reduce last-minute assembly so retainers receive a consistent reporting rhythm.",
       },
       {
-        title: "Portal and PDF delivery",
-        description: "Publish to the client portal or export PDFs for QBRs and email delivery.",
+        title: "Controlled delivery channels",
+        description:
+          "Publish to the client portal, export PDF for QBRs, or email with attachment where configured — after internal review.",
       },
     ],
     capabilities: [
-      "Report templates and scheduled generation",
-      "PDF export with branding options on higher plans",
-      "Client portal publication workflows",
-      "Optional AI-assisted summaries when enabled",
-      "Audit trail for published reports",
+      "Client-linked reports with draft, generated, published, and archived statuses",
+      "Reusable templates and reporting periods",
+      "Generate step that populates metrics and default narrative from workspace data",
+      "Scheduled draft creation where the plan includes report schedules",
+      "PDF export and client portal publication after review",
+      "Email delivery with PDF where organization email settings are configured",
+      "Optional AI-assisted executive summaries with human-in-the-loop review",
+      "Version history and activity logging on the report record",
     ],
     faq: [
       {
-        question: "Is AI required?",
-        answer: "No. Reporting works without AI; AI features are optional and must be explicitly enabled in your workspace.",
+        question: "What is automated client reporting in Auroranexis?",
+        answer:
+          "It is the product workflow for turning operational client data into recurring reports: template, generate for a period, human review, then publish to portal, PDF, or email. Automation means structured generation and optional schedules — not unattended client-facing publication.",
       },
       {
-        question: "Where is data processed for AI features?",
-        answer: "See our Sub-processors page and DPA for optional AI provider details.",
+        question: "Is AI required for automated client reporting?",
+        answer:
+          "No. Templates, generate, schedules, PDF export, and portal delivery work without AI. AI-assisted summaries are optional and must be enabled in the workspace; reviewers still approve content before publish.",
+      },
+      {
+        question: "Can reports include incidents, risks, and SLA data?",
+        answer:
+          "Yes, depending on the template and which modules your plan includes. Generated reports can surface health scores, SLA metrics, and related open risks and incidents for the linked client.",
+      },
+      {
+        question: "How do clients receive reports?",
+        answer:
+          "Published reports can appear in that client's portal for active portal users, be exported as PDF, and be emailed with a PDF attachment where Settings → Email is configured.",
+      },
+      {
+        question: "Where is data processed for optional AI features?",
+        answer:
+          "See the Sub-processors page and Data Processing Agreement for optional AI provider details. Do not enable AI features if your contracts forbid that processing.",
       },
     ],
     relatedLinks: [
-      { label: "AI executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
-      { label: "AI Copilot", href: FEATURE_ROUTES.aiCopilot },
+      { label: "Report templates and schedules", href: FEATURE_ROUTES.reports },
+      { label: "AI-assisted executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
       { label: "Reports documentation", href: "/docs/reports" },
-      { label: "Executive report template", href: TEMPLATE_ROUTES.executiveReport },
+      { label: "Executive report outline", href: TEMPLATE_ROUTES.executiveReport },
+      { label: "Client portal delivery", href: FEATURE_ROUTES.clientPortal },
+      { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
+      { label: "Portfolio profitability visibility", href: FEATURE_ROUTES.profitability },
     ],
   },
 };

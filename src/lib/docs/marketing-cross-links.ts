@@ -13,7 +13,7 @@ const DOC_MARKETING_LINKS: Record<string, readonly DocRelatedLink[]> = {
   ],
   reports: [
     { href: FEATURE_ROUTES.aiExecutiveReports, label: "AI executive reports" },
-    { href: SOLUTION_ROUTES.aiReporting, label: "AI reporting solution" },
+    { href: SOLUTION_ROUTES.aiReporting, label: "Automated client reporting" },
   ],
   risks: [
     { href: FEATURE_ROUTES.riskIntelligence, label: "Risk intelligence" },

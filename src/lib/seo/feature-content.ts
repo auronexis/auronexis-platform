@@ -16,11 +16,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "AI executive reports for client delivery teams",
+    title: "AI-assisted executive reports for leadership briefings",
     description:
-      "Generate structured executive summaries from verified operational data — with clear separation between facts and recommendations.",
+      "Draft structured executive summaries from verified operational data — with a clear split between facts and recommendations, and human review before publication.",
     metaDescription:
-      "AI executive reports for MSPs and agencies — portfolio summaries, client narratives, and leadership-ready briefings in Auroranexis.",
+      "AI-assisted executive reports for agencies: leadership briefings from incidents, risks, and SLA data, with reviewer validation before client or exec delivery.",
     problem:
       "Leadership briefings are assembled manually from spreadsheets, ticket exports, and email threads. By the time a report reaches a client or executive, the narrative is outdated and hard to defend.",
     solution:
@@ -72,9 +72,9 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Reports", href: FEATURE_ROUTES.reports },
-      { label: "Executive dashboards", href: FEATURE_ROUTES.executiveDashboards },
-      { label: "AI reporting solution", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Report templates and schedules", href: FEATURE_ROUTES.reports },
+      { label: "Portfolio KPI dashboards", href: FEATURE_ROUTES.executiveDashboards },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
       { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     ],
     primaryCta: "startFreeTrial",
@@ -156,11 +156,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Automation workflows for agency operations",
+    title: "Automation software for agency operations workflows",
     description:
       "Define triggers, actions, and execution history to reduce manual follow-up across your client portfolio.",
     metaDescription:
-      "Operations automation for MSPs — triggers, actions, execution logs, and delivery event workflows in Auroranexis.",
+      "Agency operations automation: workflow builder, triggers, execution logs, and event-driven follow-up inside the Auroranexis workspace.",
     problem:
       "Repeatable operational tasks — escalation reminders, status updates, report notifications — still depend on individuals remembering to act. Manual coordination does not scale across dozens of clients.",
     solution:
@@ -219,8 +219,8 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     relatedLinks: [
       { label: "Integrations", href: FEATURE_ROUTES.integrations },
       { label: "Incidents", href: FEATURE_ROUTES.incidents },
-      { label: "Monitoring", href: FEATURE_ROUTES.monitoring },
-      { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
+      { label: "Portfolio monitoring", href: FEATURE_ROUTES.monitoring },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "contactSales",
@@ -661,11 +661,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Profitability visibility for client portfolios",
+    title: "Client and portfolio profitability reporting",
     description:
-      "Connect delivery effort to client revenue context so leaders understand which accounts drive margin and which need attention.",
+      "Connect delivery effort to client revenue context so leaders see which accounts drive margin and which need commercial attention.",
     metaDescription:
-      "Client profitability for MSPs — delivery cost visibility, margin context, and portfolio financial oversight in Auroranexis.",
+      "Client and portfolio profitability reporting for agencies: delivery effort, margin context, and operational signals in one workspace — not a replacement accounting system.",
     problem:
       "Agencies grow revenue without clear visibility into which clients consume disproportionate delivery effort. Profitability conversations happen in finance spreadsheets disconnected from operational reality.",
     solution:
@@ -718,9 +718,9 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     ],
     relatedLinks: [
       { label: "Profitability docs", href: "/docs/profitability" },
-      { label: "Executive dashboards", href: FEATURE_ROUTES.executiveDashboards },
+      { label: "Portfolio KPI dashboards", href: FEATURE_ROUTES.executiveDashboards },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
       { label: "Customer success", href: FEATURE_ROUTES.customerSuccess },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "contactSales",
@@ -801,11 +801,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Client reporting with schedules and portal delivery",
+    title: "Report templates, schedules, and publication workflows",
     description:
-      "Create, schedule, and publish client reports with templates, PDF export, and controlled portal distribution.",
+      "Operate the Reports module: templates, draft shells, generate, review, publish, PDF export, and portal distribution — the how behind automated client reporting.",
     metaDescription:
-      "Client reporting for MSPs — templates, schedules, PDF export, and portal delivery in Auroranexis.",
+      "How Auroranexis reports work: templates, schedules, generate-and-review, PDF export, and portal publication. Outcome page: automated client reporting.",
     problem:
       "Recurring client reports are assembled manually from multiple data sources. Delivery is inconsistent, late, and difficult to prove when clients question the value of your services.",
     solution:
@@ -857,10 +857,10 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "AI executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
-      { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
-      { label: "AI reporting solution", href: SOLUTION_ROUTES.aiReporting },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "AI-assisted executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
+      { label: "Client portal delivery", href: FEATURE_ROUTES.clientPortal },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Reports documentation", href: "/docs/reports" },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "contactSales",

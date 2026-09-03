@@ -11,7 +11,7 @@ export default function SolutionsHubPage() {
     <LandingHubView
       eyebrow="Solutions"
       title="Operational solutions for agency delivery"
-      description="Capability-focused pages for customer health, risk, incidents, SLA management, executive dashboards, and AI reporting."
+      description="Capability-focused pages for customer health, risk, incidents, SLA tracking, executive dashboards, and automated client reporting."
       entries={SOLUTION_HUB_ENTRIES}
       hubPath={MARKETING_ROUTES.solutions}
       secondaryHref={MARKETING_ROUTES.features}

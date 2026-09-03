@@ -15,10 +15,11 @@ type SolutionPageViewProps = {
 };
 
 export function SolutionPageView({ content }: SolutionPageViewProps) {
+  const definitionTerm = content.definitionTerm ?? content.title;
   const breadcrumbs = [
     { name: "Home", path: "/" },
     { name: "Solutions", path: MARKETING_ROUTES.solutions },
-    { name: content.title, path: content.path },
+    { name: content.breadcrumbName ?? content.title, path: content.path },
   ] as const;
 
   return (
@@ -35,14 +36,38 @@ export function SolutionPageView({ content }: SolutionPageViewProps) {
         secondaryLabel="View pricing"
       />
 
-      <MarketingSection title="Definition">
+      <MarketingSection title="What this solution covers">
         <p className="max-w-3xl text-base leading-relaxed text-primary-foreground/80">
-          <dfn className="font-semibold text-white">{content.title}</dfn> — {content.description}
+          <dfn className="font-semibold text-white">{definitionTerm}</dfn> — {content.description}
         </p>
       </MarketingSection>
 
-      <MarketingSection title="Overview">
+      {content.problem ? (
+        <MarketingSection title="The problem" className="border-t border-white/10">
+          <p className="max-w-3xl text-base leading-relaxed text-primary-foreground/80">{content.problem}</p>
+        </MarketingSection>
+      ) : null}
+
+      {content.audience ? (
+        <MarketingSection title="Who it is for" className="border-t border-white/10">
+          <p className="max-w-3xl text-base leading-relaxed text-primary-foreground/80">{content.audience}</p>
+        </MarketingSection>
+      ) : null}
+
+      <MarketingSection title="How it works in Auroranexis" className="border-t border-white/10">
         <p className="max-w-3xl text-base leading-relaxed text-primary-foreground/80">{content.intro}</p>
+        {content.howItWorks && content.howItWorks.length > 0 ? (
+          <ol className="mt-8 grid max-w-3xl gap-4">
+            {content.howItWorks.map((step, index) => (
+              <li key={step.title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <h3 className="text-base font-semibold text-white">
+                  {index + 1}. {step.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">{step.description}</p>
+              </li>
+            ))}
+          </ol>
+        ) : null}
       </MarketingSection>
 
       <MarketingSection title="Key benefits" className="border-t border-white/10">

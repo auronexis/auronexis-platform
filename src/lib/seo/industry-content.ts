@@ -399,7 +399,7 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
       { label: "Consultancies use case", href: USE_CASE_ROUTES.consultancies },
       { label: "Legal", href: INDUSTRY_ROUTES.legal },
       { label: "Executive dashboard", href: SOLUTION_ROUTES.executiveDashboard },
-      { label: "AI reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "seePricing",
