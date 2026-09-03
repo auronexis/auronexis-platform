@@ -88,6 +88,7 @@ export const ENTERPRISE_REGRESSION_SUITE = [
   "scripts/enterprise-production-golive.test.mjs",
   "scripts/enterprise-regression-matrix.test.mjs",
   "scripts/auth-no-captcha.test.mjs",
+  "scripts/users-self-update-privilege-lock.test.mjs",
   "scripts/signup-email-confirm-redirect.test.mjs",
   "scripts/organization-settings-persistence.test.mjs",
   "scripts/profile-language-preference.test.mjs",

@@ -7,9 +7,22 @@ export function resolveSafeRedirectPath(
     return fallback;
   }
 
-  const trimmed = next.trim();
+  let trimmed = next.trim();
+  try {
+    trimmed = decodeURIComponent(trimmed);
+  } catch {
+    return fallback;
+  }
 
-  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) {
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.includes("//") ||
+    trimmed.includes("\\") ||
+    trimmed.includes("://") ||
+    trimmed.includes("@") ||
+    /[\u0000-\u001f\u007f]/.test(trimmed)
+  ) {
     return fallback;
   }
 

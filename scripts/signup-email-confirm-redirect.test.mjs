@@ -92,6 +92,8 @@ describe("production signup without email confirmation UX", () => {
     const source = safeRedirect();
     assert.match(source, /trimmed\.startsWith\("\/"\)/);
     assert.match(source, /trimmed\.startsWith\("\/\/"\)/);
+    assert.ok(source.includes('includes("\\\\")') || source.includes("includes(\"\\\\\")"));
+    assert.match(source, /decodeURIComponent/);
     assert.match(source, /fallback/);
   });
 
