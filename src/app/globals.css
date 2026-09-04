@@ -95,6 +95,26 @@
       radial-gradient(ellipse 60% 40% at 100% 0%, rgb(37 99 235 / 0.04), transparent);
   }
 
+  /*
+   * Authenticated app shell scroll ownership:
+   * #main-content is the only vertical scroller. Lock html/body to the viewport so
+   * document overflow (siblings, UA chaining, focus scroll) cannot translate the shell
+   * off-screen (P0 double-scroll / root document scroll leak).
+   * Portal keeps document scroll (min-h-screen) — do not include #portal-root here.
+   */
+  html:has(#dashboard-root) {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: clip;
+  }
+
+  html:has(#dashboard-root) body {
+    height: 100%;
+    max-height: 100%;
+    overflow: clip;
+    overscroll-behavior: none;
+  }
+
   /* Marketing shell is dark — prevent light body gradients bleeding through overscroll. */
   html:has(.marketing-theme) body {
     background-color: var(--color-secondary);

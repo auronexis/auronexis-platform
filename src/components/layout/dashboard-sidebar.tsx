@@ -32,7 +32,7 @@ export function DashboardSidebar({ navItems, organizationName, branding }: Dashb
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex h-full shrink-0 flex-col overflow-hidden border-r text-primary-foreground transition-[width,transform] duration-150 ease-out lg:relative lg:z-auto lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-r text-primary-foreground transition-[width,transform] duration-150 ease-out lg:relative lg:z-auto lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
           sidebarCollapsed ? "w-[4.5rem]" : "w-64",
         )}
@@ -66,7 +66,7 @@ export function DashboardMain({ children }: DashboardMainProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      className="dashboard-main min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-6 lg:px-8 lg:py-8"
+      className="dashboard-main min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-4 py-6 lg:px-8 lg:py-8"
     >
       {children}
     </main>

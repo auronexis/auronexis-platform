@@ -52,7 +52,7 @@ async function captureGeometry(page: Page): Promise<GeometrySnapshot> {
   return page.evaluate(() => {
     const main = document.querySelector("#main-content") as HTMLElement | null;
     const sidebar = document.querySelector("aside") as HTMLElement | null;
-    const shell = document.querySelector(".flex.h-screen") as HTMLElement | null;
+    const shell = document.querySelector(".flex.h-dvh, .flex.h-screen, .flex.h-full.overflow-hidden") as HTMLElement | null;
     const routeContent =
       (main?.querySelector("[data-route-content]") as HTMLElement | null) ??
       (main?.firstElementChild as HTMLElement | null);

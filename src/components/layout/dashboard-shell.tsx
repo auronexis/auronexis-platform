@@ -41,7 +41,7 @@ export function DashboardShell({
   const showSettings = canAccessSettings(userRole as UserRole);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-dvh max-h-dvh min-h-0 overflow-hidden bg-background">
       <SkipLink />
       <DashboardSidebar
         navItems={navItems}
