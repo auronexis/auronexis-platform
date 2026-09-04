@@ -267,7 +267,13 @@ export default async function DashboardPage() {
     (complianceSummary?.openGdprRequests ?? 0) + (complianceSummary?.openSecurityIncidents ?? 0);
   const opsTaskCount = operationalTasks?.tasks?.length ?? 0;
 
-  const opsPanelGrid = "grid gap-2 lg:grid-cols-12";
+  /**
+   * Ops tab grids: 2-col from md, 12-col from lg.
+   * Without md:, viewports below 1024 single-stacked all Overview panels
+   * (~2413px Overview / ~6358px #main-content) — remaining scrollspace after
+   * inactive-tab unmount.
+   */
+  const opsPanelGrid = "grid gap-2 md:grid-cols-2 lg:grid-cols-12";
 
   return (
     <div className="space-y-6">
@@ -311,8 +317,8 @@ export default async function DashboardPage() {
           <CustomerSuccessCenterPanel categories={executiveIntelligence.successCategories} />
         </DashboardPanel>
 
-        <div className="grid gap-3 lg:grid-cols-12">
-          <div className="lg:col-span-7">
+        <div className="grid gap-3 md:grid-cols-12">
+          <div className="md:col-span-7">
             <DashboardPanel
               title="Priority clients"
               description="Top accounts ranked by deterministic operational priority."
@@ -322,7 +328,7 @@ export default async function DashboardPage() {
             </DashboardPanel>
           </div>
 
-          <div className="lg:col-span-5">
+          <div className="md:col-span-5">
             <DashboardPanel
               title="Portfolio health"
               description="Distribution across healthy, watch, risk, and critical bands."
@@ -459,11 +465,11 @@ export default async function DashboardPage() {
         {guidanceNeedsAttention ? (
           <>
             <SectionTitle>Get started</SectionTitle>
-            <div className="grid gap-3 lg:grid-cols-12">
-              <div className="lg:col-span-8">
+            <div className="grid gap-3 md:grid-cols-12">
+              <div className="md:col-span-8">
                 <DashboardQuickActions compact />
               </div>
-              <div className="lg:col-span-4 space-y-3">
+              <div className="md:col-span-4 space-y-3">
                 {guidanceMode === "activation_primary" ? (
                   <ActivationPanel activation={activation} canDismiss={canDismissActivation} compact />
                 ) : guidanceMode === "adoption_risk" ? (
@@ -486,7 +492,7 @@ export default async function DashboardPage() {
                   </>
                 ) : null}
               </div>
-              <div className="lg:col-span-12">
+              <div className="md:col-span-12">
                 <details className="group rounded-xl border border-border/70 bg-surface/50">
                   <summary
                     className={cn(
@@ -522,8 +528,8 @@ export default async function DashboardPage() {
             </summary>
             <div className="space-y-3 border-t border-border/70 px-3 pb-3 pt-3 sm:px-4">
               <DashboardQuickActions compact={guidanceCompact} />
-              <div className="grid gap-3 lg:grid-cols-12">
-                <div className="lg:col-span-4 space-y-3">
+              <div className="grid gap-3 md:grid-cols-12">
+                <div className="md:col-span-4 space-y-3">
                   <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
                   {customerSuccessMode === "summary" && customerSuccessPortfolio ? (
                     <>
@@ -547,7 +553,7 @@ export default async function DashboardPage() {
                     </>
                   ) : null}
                 </div>
-                <div className="lg:col-span-8">
+                <div className="md:col-span-8">
                   <SmartRecommendations recommendations={smartRecommendations} />
                 </div>
               </div>
@@ -589,7 +595,7 @@ export default async function DashboardPage() {
               badge: opsOverviewBadge > 0 ? opsOverviewBadge : null,
               urgent: opsOverviewBadge > 0,
               content: (
-                <div className="grid gap-2 lg:grid-cols-12">
+                <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-12">
                   <div className="lg:col-span-4">
                     <DashboardPanel
                       title="System health"
@@ -668,7 +674,7 @@ export default async function DashboardPage() {
               label: "Intelligence",
               badge: opsTaskCount > 0 ? opsTaskCount : null,
               content: (
-                <div className="grid gap-2 lg:grid-cols-12">
+                <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-12">
                   <div className="lg:col-span-8">
                     <DashboardPanel
                       title="AI Insights"
