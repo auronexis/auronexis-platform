@@ -55,3 +55,18 @@ test("cookie consent uses fixed chrome; authenticated shell is not a full-width 
     banner.match(/authenticatedSurface\s*\?\s*\[([\s\S]*?)\]\s*:\s*\[/)?.[1] ?? "";
   assert.doesNotMatch(authBranch, /inset-x-0/);
 });
+
+test("authenticated shell never mounts marketing SEO layout structures", () => {
+  const shell = readSource("src/components/layout/dashboard-shell.tsx");
+  const dashboardLayout = readSource("src/app/(dashboard)/layout.tsx");
+  const marketingShell = readSource("src/components/marketing/marketing-shell.tsx");
+
+  assert.doesNotMatch(shell, /MarketingShell/);
+  assert.doesNotMatch(shell, /marketing-theme/);
+  assert.doesNotMatch(shell, /SiteFooter variant="marketing"/);
+  assert.doesNotMatch(shell, /SiteFooter variant="default"/);
+  assert.doesNotMatch(dashboardLayout, /MarketingShell/);
+  assert.doesNotMatch(dashboardLayout, /marketing-theme/);
+  assert.match(marketingShell, /marketing-theme/);
+  assert.match(marketingShell, /SiteFooter variant="marketing"/);
+});
