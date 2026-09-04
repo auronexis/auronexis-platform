@@ -10,7 +10,7 @@ type PageTransitionProps = {
   className?: string;
 };
 
-/** Subtle dashboard page entrance — opacity fade, 150ms. */
+/** Subtle dashboard page entrance — opacity fade, 150ms. Height is content-driven. */
 export function PageTransition({ children, className }: PageTransitionProps) {
   const pathname = usePathname();
 

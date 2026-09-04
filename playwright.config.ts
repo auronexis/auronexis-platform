@@ -67,7 +67,7 @@ export default defineConfig({
     {
       name: "chromium-auth",
       testMatch:
-        /(flows|staging|z-logout|public-nav-authenticated|authenticated-qa|authenticated-nav-layout|dashboard-ux-density)\.spec\.ts/,
+        /(flows|staging|z-logout|public-nav-authenticated|authenticated-qa|authenticated-nav-layout|dashboard-ux-density|dashboard-motion-wrapper-height)\.spec\.ts/,
       dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],

@@ -85,6 +85,20 @@ test.describe("Dashboard UX density remediation", () => {
     expect(before!.tabCount).toBeGreaterThanOrEqual(3);
     expect(before!.activeTab).toBe("overview");
     expect(before!.scrollHeight).toBeLessThanOrEqual(SCROLL_HEIGHT_CEILING);
+
+    const inactiveOps = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-operations-center] [role='tabpanel']")]
+        .filter((el) => el.getAttribute("data-operations-tab-active") !== "true")
+        .map((el) => ({
+          tab: el.getAttribute("data-operations-tab"),
+          offsetHeight: (el as HTMLElement).offsetHeight,
+          childCount: el.childElementCount,
+        })),
+    );
+    for (const tab of inactiveOps) {
+      expect(tab.offsetHeight, `inactive ops tab ${tab.tab}`).toBe(0);
+      expect(tab.childCount, `inactive ops tab ${tab.tab} must unmount content`).toBe(0);
+    }
     expect(
       before!.opsHeight ?? 99999,
       `Operations default height should stay well below legacy ~3981px (was ${before!.opsHeight})`,

@@ -29,9 +29,12 @@ type OperationsCenterProps = {
 
 /**
  * Progressive-disclosure Operations Center — one tab panel visible at a time.
- * All tab content is still mounted in the DOM for SEO-less app routes and
- * to keep feature reachability without remounting heavy server-fed trees.
- * Inactive panels use `hidden` (not unmounted) so state/links stay intact.
+ *
+ * Inactive tab *shells* stay in the accessibility tree (`role="tabpanel"` + `hidden`),
+ * but inactive tab *content* is not mounted. Mounting every tab's full panel tree while
+ * relying only on the HTML `hidden` attribute previously allowed ~3kpx of stacked
+ * Operations markup to remain in document flow when `hidden`/`display:none` failed to
+ * apply, inflating `#main-content` / `.motion-page-enter` to ~6800px (operator P0).
  */
 export function OperationsCenter({
   tabs,
@@ -78,7 +81,11 @@ export function OperationsCenter({
   }
 
   return (
-    <div className={cn("space-y-4", className)} data-operations-center>
+    <div
+      className={cn("space-y-4", className)}
+      data-operations-center
+      data-ops-mount="active-only"
+    >
       {summary ? (
         <div
           className="rounded-xl border border-border/70 bg-surface/60 px-4 py-3"
@@ -145,9 +152,9 @@ export function OperationsCenter({
             hidden={!selected}
             data-operations-tab={tab.id}
             data-operations-tab-active={selected ? "true" : "false"}
-            className={selected ? "space-y-4" : undefined}
+            className={cn(selected ? "space-y-4" : "hidden")}
           >
-            {tab.content}
+            {selected ? tab.content : null}
           </div>
         );
       })}
