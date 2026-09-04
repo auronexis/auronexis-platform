@@ -22,6 +22,7 @@ export function SmartTimelinePanel({ events }: SmartTimelinePanelProps) {
   if (events.length === 0) {
     return (
       <EmptyState
+        density="compact"
         icon={Clock3}
         title="No executive timeline events yet"
         description="Published reports, risks, incidents, and health changes will appear here as your workspace becomes active."

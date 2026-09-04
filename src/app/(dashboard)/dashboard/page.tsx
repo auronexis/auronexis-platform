@@ -63,6 +63,7 @@ import { IntegrationRuntimeHubCard } from "@/components/automation/integration-r
 import { PredictiveForecastHubCard } from "@/components/predictive/predictive-forecast-hub-card";
 import { KnowledgeHubCard } from "@/components/knowledge/knowledge-hub-card";
 import { OperationalTasksCard } from "@/components/dashboard/operational-tasks-card";
+import { OperationsCenter } from "@/components/dashboard/operations-center";
 import { buildOperationalTasks } from "@/lib/ai/operational/tasks";
 import { getKnowledgeHubData } from "@/lib/ai/knowledge/get-hub";
 import { getOperationalIntelligence } from "@/lib/ai/insights/get-intelligence";
@@ -98,7 +99,7 @@ import { getStoredOrganizationCurrency } from "@/lib/i18n";
 import { getOrganizationPlanContextForSession } from "@/lib/plans/queries";
 import { listPendingInvitations, listTeamMembers } from "@/lib/team/queries";
 import { cn } from "@/lib/utils/cn";
-import { linkText } from "@/lib/ui/tokens";
+import { focusRing, linkText } from "@/lib/ui/tokens";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -251,9 +252,25 @@ export default async function DashboardPage() {
   }));
 
   const showCriticalAlerts = data.features.risks || data.features.incidents;
+  const guidanceNeedsAttention =
+    guidanceMode === "activation_primary" ||
+    guidanceMode === "adoption_risk" ||
+    customerSuccessMode === "critical" ||
+    executiveIntelligenceMode === "critical";
+  const guidanceCompact = !guidanceNeedsAttention;
+  const opsAlertCount = data.criticalAlerts.length;
+  const opsOpenRisks = data.openRiskCount;
+  const opsOverviewBadge = opsAlertCount + opsOpenRisks + data.openIncidentCount;
+  const opsAutomationBadge =
+    (integrationRuntimeSummary?.failed ?? 0) + (integrationRuntimeSummary?.retrying ?? 0);
+  const opsComplianceBadge =
+    (complianceSummary?.openGdprRequests ?? 0) + (complianceSummary?.openSecurityIncidents ?? 0);
+  const opsTaskCount = operationalTasks?.tasks?.length ?? 0;
+
+  const opsPanelGrid = "grid gap-2 lg:grid-cols-12";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <ActivationTracker
         organizationId={session.organization.id}
         event={activation.firstValueReached ? "workspace_activated" : "onboarding_started"}
@@ -286,12 +303,19 @@ export default async function DashboardPage() {
           <ExecutiveBriefEmptyState />
         )}
 
-        <div className="grid gap-4 lg:grid-cols-12">
+        <DashboardPanel
+          title="Customer Success Center"
+          description="High-risk, opportunity, follow-up, and reporting signals."
+          contentClassName="p-3 sm:p-4"
+        >
+          <CustomerSuccessCenterPanel categories={executiveIntelligence.successCategories} />
+        </DashboardPanel>
+
+        <div className="grid gap-3 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <DashboardPanel
               title="Priority clients"
               description="Top accounts ranked by deterministic operational priority."
-              className="min-h-[320px]"
               variant="glass"
             >
               <PriorityClientsPanel clients={executiveIntelligence.priorityClients} />
@@ -302,44 +326,42 @@ export default async function DashboardPage() {
             <DashboardPanel
               title="Portfolio health"
               description="Distribution across healthy, watch, risk, and critical bands."
-              className="min-h-[320px]"
             >
               <PortfolioHealthDistributionPanel distribution={executiveIntelligence.portfolioHealth} />
             </DashboardPanel>
           </div>
+        </div>
 
-          <div className="lg:col-span-12">
+        <details className="group rounded-2xl border border-border/70 bg-surface/50 open:bg-surface/80">
+          <summary
+            className={cn(
+              "cursor-pointer list-none px-5 py-3 text-sm font-semibold text-foreground",
+              "marker:content-none [&::-webkit-details-marker]:hidden",
+              focusRing,
+            )}
+          >
+            <span className="flex items-center justify-between gap-3">
+              <span>More executive intelligence</span>
+              <span className="text-xs font-medium text-muted group-open:hidden">
+                Insights · Health trends · Timeline
+              </span>
+              <span className="hidden text-xs font-medium text-muted group-open:inline">Hide</span>
+            </span>
+          </summary>
+          <div className="space-y-3 border-t border-border/70 px-3 pb-3 pt-3 sm:px-4">
             <DashboardPanel
               title="Executive insights"
               description="Rule-based signals for leadership action across the portfolio."
-              className="min-h-[280px]"
               variant="glass"
             >
               <ExecutiveInsightsPanel insights={executiveIntelligence.insights} />
             </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12">
-            <DashboardPanel
-              title="Customer Success Center"
-              description="Categorized accounts linked to existing workspace workflows."
-              className="min-h-[280px]"
-            >
-              <CustomerSuccessCenterPanel categories={executiveIntelligence.successCategories} />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12">
             <DashboardPanel
               title="Health trends"
               description="Portfolio health movement across 7, 30, and 90-day windows."
-              className="min-h-[280px]"
             >
               <HealthTrendsPanel trends={executiveIntelligence.healthTrends} />
             </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12">
             <DashboardPanel
               title="Smart timeline"
               description="Recent executive events across reports, risks, incidents, and health."
@@ -348,82 +370,16 @@ export default async function DashboardPage() {
                   View all
                 </Link>
               }
-              className="min-h-[360px]"
             >
               <SmartTimelinePanel events={executiveIntelligence.timeline} />
             </DashboardPanel>
           </div>
-        </div>
+        </details>
       </section>
 
-      <section aria-label="Workspace guidance" className="space-y-4">
-        <SectionTitle>Get started</SectionTitle>
-        <AdoptionTracker
-          event="adoption_summary_viewed"
-          snapshot={adoption}
-          sourceRoute="/dashboard"
-        />
-        <div className="grid gap-4 lg:grid-cols-12">
-          <div className="lg:col-span-8">
-            <DashboardQuickActions />
-          </div>
-          <div className="lg:col-span-4 space-y-4">
-            {guidanceMode === "activation_primary" ? (
-              <ActivationPanel activation={activation} canDismiss={canDismissActivation} />
-            ) : guidanceMode === "adoption_risk" ? (
-              <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
-            ) : customerSuccessMode === "critical" && customerSuccessPortfolio ? (
-              <>
-                <CustomerSuccessTracker
-                  event="customer_success_summary_viewed"
-                  organizationId={session.organization.id}
-                />
-                <CustomerSuccessSummaryPanel portfolio={customerSuccessPortfolio} mode="critical" />
-              </>
-            ) : executiveIntelligenceMode === "critical" && executiveSnapshot ? (
-              <>
-                <ExecutiveIntelligenceTracker
-                  event="executive_intelligence_viewed"
-                  organizationId={session.organization.id}
-                />
-                <ExecutiveIntelligenceSummaryPanel snapshot={executiveSnapshot} mode="critical" />
-              </>
-            ) : (
-              <>
-                <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
-                {customerSuccessMode === "summary" && customerSuccessPortfolio ? (
-                  <>
-                    <CustomerSuccessTracker
-                      event="customer_success_summary_viewed"
-                      organizationId={session.organization.id}
-                    />
-                    <CustomerSuccessSummaryPanel
-                      portfolio={customerSuccessPortfolio}
-                      mode="summary"
-                    />
-                  </>
-                ) : null}
-                {executiveIntelligenceMode === "summary" && executiveSnapshot ? (
-                  <>
-                    <ExecutiveIntelligenceTracker
-                      event="executive_intelligence_viewed"
-                      organizationId={session.organization.id}
-                    />
-                    <ExecutiveIntelligenceSummaryPanel snapshot={executiveSnapshot} mode="summary" />
-                  </>
-                ) : null}
-              </>
-            )}
-          </div>
-          <div className="lg:col-span-12">
-            <SmartRecommendations recommendations={smartRecommendations} />
-          </div>
-        </div>
-      </section>
-
-      <section aria-label="Operational metrics" className="space-y-4">
-        <SectionTitle>Operational metrics</SectionTitle>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Workspace pulse" className="space-y-3">
+        <SectionTitle>Workspace pulse</SectionTitle>
+        <section aria-label="Operational metrics" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {operationalMetrics.map((metric) => (
             <DashboardMetricCard
               key={metric.key}
@@ -432,14 +388,11 @@ export default async function DashboardPage() {
               icon={metric.icon}
               trend={metric.trend}
               tone={metric.tone}
+              size="compact"
             />
           ))}
-        </div>
-      </section>
-
-      <section aria-label="Business performance" className="space-y-4">
-        <SectionTitle>Business performance</SectionTitle>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        </section>
+        <section aria-label="Business performance" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {data.canViewFinancial && data.businessMetrics ? (
             <>
               <DashboardMetricCard
@@ -448,6 +401,7 @@ export default async function DashboardPage() {
                 icon={DollarSign}
                 trend="+8% this quarter"
                 tone="success"
+                size="compact"
               />
               <DashboardMetricCard
                 label="Monthly profit"
@@ -455,6 +409,7 @@ export default async function DashboardPage() {
                 icon={TrendingUp}
                 trend="Tracking upward"
                 tone="success"
+                size="compact"
               />
               <DashboardMetricCard
                 label="Average margin"
@@ -462,6 +417,7 @@ export default async function DashboardPage() {
                 icon={Percent}
                 trend="Stable this period"
                 tone="info"
+                size="compact"
               />
             </>
           ) : (
@@ -489,453 +445,575 @@ export default async function DashboardPage() {
             icon={FileText}
             trend="In progress"
             tone="info"
+            size="compact"
           />
-        </div>
+        </section>
       </section>
 
-      <section aria-label="Operations" className="space-y-4">
+      <section aria-label="Workspace guidance" className="space-y-3">
+        <AdoptionTracker
+          event="adoption_summary_viewed"
+          snapshot={adoption}
+          sourceRoute="/dashboard"
+        />
+        {guidanceNeedsAttention ? (
+          <>
+            <SectionTitle>Get started</SectionTitle>
+            <div className="grid gap-3 lg:grid-cols-12">
+              <div className="lg:col-span-8">
+                <DashboardQuickActions compact />
+              </div>
+              <div className="lg:col-span-4 space-y-3">
+                {guidanceMode === "activation_primary" ? (
+                  <ActivationPanel activation={activation} canDismiss={canDismissActivation} compact />
+                ) : guidanceMode === "adoption_risk" ? (
+                  <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
+                ) : customerSuccessMode === "critical" && customerSuccessPortfolio ? (
+                  <>
+                    <CustomerSuccessTracker
+                      event="customer_success_summary_viewed"
+                      organizationId={session.organization.id}
+                    />
+                    <CustomerSuccessSummaryPanel portfolio={customerSuccessPortfolio} mode="critical" />
+                  </>
+                ) : executiveIntelligenceMode === "critical" && executiveSnapshot ? (
+                  <>
+                    <ExecutiveIntelligenceTracker
+                      event="executive_intelligence_viewed"
+                      organizationId={session.organization.id}
+                    />
+                    <ExecutiveIntelligenceSummaryPanel snapshot={executiveSnapshot} mode="critical" />
+                  </>
+                ) : null}
+              </div>
+              <div className="lg:col-span-12">
+                <details className="group rounded-xl border border-border/70 bg-surface/50">
+                  <summary
+                    className={cn(
+                      "cursor-pointer list-none px-4 py-2.5 text-sm font-medium text-foreground",
+                      "marker:content-none [&::-webkit-details-marker]:hidden",
+                      focusRing,
+                    )}
+                  >
+                    Smart recommendations
+                  </summary>
+                  <div className="border-t border-border/70 px-2 pb-2 pt-2">
+                    <SmartRecommendations recommendations={smartRecommendations} />
+                  </div>
+                </details>
+              </div>
+            </div>
+          </>
+        ) : (
+          <details className="group rounded-2xl border border-border/70 bg-surface/50 open:bg-surface/80">
+            <summary
+              className={cn(
+                "cursor-pointer list-none px-5 py-3 text-sm font-semibold text-foreground",
+                "marker:content-none [&::-webkit-details-marker]:hidden",
+                focusRing,
+              )}
+            >
+              <span className="flex items-center justify-between gap-3">
+                <span>Quick actions &amp; workspace guidance</span>
+                <span className="text-xs font-medium text-muted group-open:hidden">
+                  Expand when needed
+                </span>
+              </span>
+            </summary>
+            <div className="space-y-3 border-t border-border/70 px-3 pb-3 pt-3 sm:px-4">
+              <DashboardQuickActions compact={guidanceCompact} />
+              <div className="grid gap-3 lg:grid-cols-12">
+                <div className="lg:col-span-4 space-y-3">
+                  <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
+                  {customerSuccessMode === "summary" && customerSuccessPortfolio ? (
+                    <>
+                      <CustomerSuccessTracker
+                        event="customer_success_summary_viewed"
+                        organizationId={session.organization.id}
+                      />
+                      <CustomerSuccessSummaryPanel
+                        portfolio={customerSuccessPortfolio}
+                        mode="summary"
+                      />
+                    </>
+                  ) : null}
+                  {executiveIntelligenceMode === "summary" && executiveSnapshot ? (
+                    <>
+                      <ExecutiveIntelligenceTracker
+                        event="executive_intelligence_viewed"
+                        organizationId={session.organization.id}
+                      />
+                      <ExecutiveIntelligenceSummaryPanel snapshot={executiveSnapshot} mode="summary" />
+                    </>
+                  ) : null}
+                </div>
+                <div className="lg:col-span-8">
+                  <SmartRecommendations recommendations={smartRecommendations} />
+                </div>
+              </div>
+            </div>
+          </details>
+        )}
+      </section>
+
+      <section aria-label="Operations" className="space-y-3">
         <SectionTitle>Operations</SectionTitle>
 
         {data.features.showBusinessUpgrade ? (
-          <div className="mb-4">
-            <DashboardBusinessUpgradeCard />
-          </div>
+          <DashboardBusinessUpgradeCard />
         ) : null}
 
-        <div className="grid gap-4 lg:grid-cols-12">
-          <div className="lg:col-span-5 xl:col-span-4">
-            <DashboardPanel
-              title="System health"
-              description="Composite operational posture."
-              className="min-h-[320px]"
-              variant="glass"
-            >
-              <SystemHealthCard data={data} />
-            </DashboardPanel>
-          </div>
-
-          {platformStatus ? (
-            <div className="lg:col-span-7 xl:col-span-4">
-              <DashboardPanel
-                title="Platform status"
-                description="Infrastructure, cron, queue, and observability."
-                className="min-h-[320px]"
-                variant="glass"
-              >
-                <PlatformStatusWidget snapshot={platformStatus} />
-              </DashboardPanel>
+        <OperationsCenter
+          defaultTabId="overview"
+          summary={
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">
+              <span>
+                <span className="font-semibold text-foreground">{opsOverviewBadge}</span> urgent
+                signals
+              </span>
+              <span>
+                <span className="font-semibold text-foreground">{data.draftReportsCount}</span> drafts
+              </span>
+              <span>
+                <span className="font-semibold text-foreground">{opsTaskCount}</span> AI tasks
+              </span>
+              <span className="text-muted">
+                Open a tab for health, intelligence, automation, or governance detail.
+              </span>
             </div>
-          ) : null}
-
-          <div className={cn("lg:col-span-7 xl:col-span-4", !platformStatus && "lg:col-span-7")}>
-            <DashboardPanel
-              title="Client health"
-              description="Portfolio health scores from the health engine."
-              className="min-h-[320px]"
-            >
-              <DashboardHealthEngine metrics={data.healthMetrics} />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-7 xl:col-span-4">
-            <DashboardPanel
-              title="Risks overview"
-              description="Open client risks tracked by the risks engine."
-              className="min-h-[320px]"
-            >
-              <DashboardRisksOverview summary={data.riskSummary} heatmap={data.riskHeatmap} />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-7 xl:col-span-4">
-            <DashboardPanel
-              title="Reports overview"
-              description="Publishing activity and report quality metrics."
-              className="min-h-[320px]"
-            >
-              <DashboardReportsOverview metrics={data.reportsMetrics} />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-7 xl:col-span-4">
-            <DashboardPanel
-              title="Health distribution"
-              description="Profitability-based health bands."
-              className="min-h-[320px]"
-            >
-              <ClientHealthOverview counts={data.clientHealth} />
-            </DashboardPanel>
-          </div>
-
-          {showCriticalAlerts ? (
-            <div className="lg:col-span-6 xl:col-span-4">
-              <DashboardPanel
-                title="Recent alerts"
-                description="Critical risks and incidents requiring attention."
-                className="min-h-[320px]"
-              >
-                <DashboardCriticalAlerts alerts={data.criticalAlerts} />
-              </DashboardPanel>
-            </div>
-          ) : null}
-
-          <div
-            className={cn(
-              showCriticalAlerts ? "lg:col-span-6 xl:col-span-4" : "lg:col-span-12 xl:col-span-4",
-            )}
-          >
-            <DashboardPanel
-              title="Reports queue"
-              description="Draft work and upcoming delivery."
-              className="min-h-[320px]"
-            >
-              <ReportsQueueCard
-                draftReportsCount={data.draftReportsCount}
-                upcomingSchedules={data.upcomingSchedules}
-                schedulingEnabled={data.features.scheduling}
-              />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12 xl:col-span-8">
-            <DashboardPanel
-              title="AI Insights"
-              description="Operational trends, risks, and recommended actions from verified data."
-              action={
-                aiAccess.allowed ? (
-                  <Link href="/dashboard/insights" className={cn(linkText, "text-xs")}>
-                    View all
-                  </Link>
-                ) : null
-              }
-              className="min-h-[320px]"
-              variant="glass"
-            >
-              <AIInsightsCard
-                insights={intelligence?.insights ?? []}
-                aiEnabled={aiAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_report_assistant")}
-                requiredPlanLabel={getRequiredPlanLabel("ai_report_assistant")}
-              />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12 xl:col-span-4">
-            <DashboardPanel
-              title="Customer Success"
-              description="Accounts requiring follow-up and reporting attention."
-              action={
-                successAccess.allowed ? (
-                  <Link href="/clients/success" className={cn(linkText, "text-xs")}>
-                    View all
-                  </Link>
-                ) : null
-              }
-              className="min-h-[320px]"
-            >
-              <CustomerSuccessDashboardCard
-                highlights={successPortfolio?.highlights ?? []}
-                aiEnabled={successAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_client_analysis")}
-                requiredPlanLabel={getRequiredPlanLabel("ai_client_analysis")}
-              />
-            </DashboardPanel>
-          </div>
-
-          {data.features.risks || data.features.incidents ? (
-            <div className="lg:col-span-12 xl:col-span-4">
-              <DashboardPanel
-                title="AI Operational Tasks"
-                description="Incidents and risks requiring analyst attention."
-                className="min-h-[320px]"
-                variant="glass"
-              >
-                <OperationalTasksCard
-                  tasks={operationalTasks?.tasks ?? []}
-                  aiEnabled={operationalAiAccess.allowed}
-                  upgradeMessage={getFeatureUpgradeMessage("ai_risk_assistant")}
-                  requiredPlanLabel={getRequiredPlanLabel("ai_risk_assistant")}
-                />
-              </DashboardPanel>
-            </div>
-          ) : null}
-
-          <div className="lg:col-span-12 xl:col-span-4">
-            <DashboardPanel
-              title="Automation Center"
-              description="Running workflows, errors, and recent triggers."
-              action={
-                automationAccess.allowed ? (
-                  <Link href="/automation" className={cn(linkText, "text-xs")}>
-                    View all
-                  </Link>
-                ) : null
-              }
-              className="min-h-[320px]"
-              variant="glass"
-            >
-              <AutomationCenterDashboardClient
-                organizationId={session.organization.id}
-                aiEnabled={automationAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_automation_builder")}
-                requiredPlanLabel={getRequiredPlanLabel("ai_automation_builder")}
-              />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12 xl:col-span-4">
-            <DashboardPanel
-              title="Enterprise Integrations"
-              description="Configured providers, readiness, and simulation status."
-              action={
-                automationAccess.allowed ? (
-                  <Link href="/automation/integrations" className={cn(linkText, "text-xs")}>
-                    View all
-                  </Link>
-                ) : null
-              }
-              className="min-h-[320px]"
-              variant="glass"
-            >
-              <IntegrationsHubCard
-                summary={
-                  integrationsSummary ?? {
-                    registeredCount: 0,
-                    configuredCount: 0,
-                    readyCount: 0,
-                    simulationStatus: "disabled",
-                    workflowIntegrationActionCount: 0,
-                  }
-                }
-                aiEnabled={automationAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_automation_builder")}
-                requiredPlanLabel={getRequiredPlanLabel("ai_automation_builder")}
-              />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12 xl:col-span-4">
-            <DashboardPanel
-              title="Integration Runtime"
-              description="Live delivery status, retries, and latency."
-              action={
-                automationAccess.allowed ? (
-                  <Link href="/automation/integrations/logs" className={cn(linkText, "text-xs")}>
-                    View logs
-                  </Link>
-                ) : null
-              }
-              className="min-h-[320px]"
-              variant="glass"
-            >
-              <IntegrationRuntimeHubCard
-                summary={
-                  integrationRuntimeSummary ?? {
-                    running: 0,
-                    failed: 0,
-                    retrying: 0,
-                    deliveredToday: 0,
-                    averageLatencyMs: null,
-                  }
-                }
-                aiEnabled={automationAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_automation_builder")}
-                requiredPlanLabel={getRequiredPlanLabel("ai_automation_builder")}
-              />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12 xl:col-span-4">
-            <DashboardPanel
-              title="Predictive Intelligence"
-              description="Clients declining, incident and breach forecasts, churn risk, confidence."
-              action={
-                predictiveAccess.allowed ? (
-                  <Link href="/predictive" className={cn(linkText, "text-xs")}>
-                    View all
-                  </Link>
-                ) : null
-              }
-              className="min-h-[320px]"
-              variant="glass"
-            >
-              <PredictiveForecastHubCard
-                summary={
-                  predictiveSummary ?? {
-                    customersAtRisk: 0,
-                    predictedSlaBreaches: 0,
-                    predictedIncidents: 0,
-                    revenueTrend: "unknown",
-                    averageConfidence: 0,
-                    clientsDeclining: 0,
-                    highChurnRisk: 0,
-                    forecastAccuracy: null,
-                  }
-                }
-                aiEnabled={predictiveAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_predictive_intelligence")}
-                requiredPlanLabel={getRequiredPlanLabel("ai_predictive_intelligence")}
-              />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-12 xl:col-span-4">
-            <DashboardPanel
-              title="Knowledge Hub"
-              description="Articles, playbooks, and knowledge gaps from verified history."
-              action={
-                knowledgeAccess.allowed ? (
-                  <Link href="/knowledge" className={cn(linkText, "text-xs")}>
-                    View all
-                  </Link>
-                ) : null
-              }
-              className="min-h-[320px]"
-              variant="glass"
-            >
-              <KnowledgeHubCard
-                data={knowledgeHub}
-                aiEnabled={knowledgeAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_knowledge_search")}
-                requiredPlanLabel={getRequiredPlanLabel("ai_knowledge_search")}
-              />
-            </DashboardPanel>
-          </div>
-
-          {canManageCompliance && complianceSummary ? (
-            <div className="lg:col-span-12 xl:col-span-4">
-              <DashboardPanel
-                title="Compliance & Governance"
-                description="Workspace maturity and audit activity — not certification status."
-                action={
-                  <Link href="/dashboard/compliance" className={cn(linkText, "text-xs")}>
-                    Open center
-                  </Link>
-                }
-                className="min-h-[320px]"
-                variant="glass"
-              >
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-lg border border-border/70 bg-surface/60 p-4">
-                    <div className="flex items-center gap-2 text-sm text-muted">
-                      <ShieldCheck className="h-4 w-4 text-primary" aria-hidden />
-                      Framework maturity
+          }
+          tabs={[
+            {
+              id: "overview",
+              label: "Overview",
+              badge: opsOverviewBadge > 0 ? opsOverviewBadge : null,
+              urgent: opsOverviewBadge > 0,
+              content: (
+                <div className="grid gap-2 lg:grid-cols-12">
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="System health"
+                      description="Composite operational posture."
+                      variant="glass"
+                      contentClassName="p-3"
+                    >
+                      <SystemHealthCard data={data} />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Client health"
+                      description="Portfolio health scores from the health engine."
+                      contentClassName="p-3"
+                    >
+                      <DashboardHealthEngine metrics={data.healthMetrics} />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Risks overview"
+                      description="Open client risks tracked by the risks engine."
+                      contentClassName="p-3"
+                    >
+                      <DashboardRisksOverview summary={data.riskSummary} heatmap={data.riskHeatmap} />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Reports overview"
+                      description="Publishing activity and report quality metrics."
+                      contentClassName="p-3"
+                    >
+                      <DashboardReportsOverview metrics={data.reportsMetrics} />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Health distribution"
+                      description="Profitability-based health bands."
+                      contentClassName="p-3"
+                    >
+                      <ClientHealthOverview counts={data.clientHealth} />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Reports queue"
+                      description="Draft work and upcoming delivery."
+                      contentClassName="p-3"
+                    >
+                      <ReportsQueueCard
+                        draftReportsCount={data.draftReportsCount}
+                        upcomingSchedules={data.upcomingSchedules}
+                        schedulingEnabled={data.features.scheduling}
+                      />
+                    </DashboardPanel>
+                  </div>
+                  {showCriticalAlerts ? (
+                    <div className="lg:col-span-12">
+                      <DashboardPanel
+                        title="Recent alerts"
+                        description="Critical risks and incidents requiring attention."
+                        contentClassName="p-3"
+                      >
+                        <DashboardCriticalAlerts alerts={data.criticalAlerts} />
+                      </DashboardPanel>
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {complianceSummary.frameworkReadinessPercent}%
-                    </p>
-                    <p className="mt-1 text-xs text-muted">
-                      Workspace evidence coverage — not certification
-                    </p>
+                  ) : null}
+                </div>
+              ),
+            },
+            {
+              id: "intelligence",
+              label: "Intelligence",
+              badge: opsTaskCount > 0 ? opsTaskCount : null,
+              content: (
+                <div className="grid gap-2 lg:grid-cols-12">
+                  <div className="lg:col-span-8">
+                    <DashboardPanel
+                      title="AI Insights"
+                      description="Operational trends, risks, and recommended actions from verified data."
+                      action={
+                        aiAccess.allowed ? (
+                          <Link href="/dashboard/insights" className={cn(linkText, "text-xs")}>
+                            View all
+                          </Link>
+                        ) : null
+                      }
+                      variant="glass"
+                    >
+                      <AIInsightsCard
+                        insights={intelligence?.insights ?? []}
+                        aiEnabled={aiAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_report_assistant")}
+                        requiredPlanLabel={getRequiredPlanLabel("ai_report_assistant")}
+                      />
+                    </DashboardPanel>
                   </div>
-                  <div className="rounded-lg border border-border/70 bg-surface/60 p-4">
-                    <div className="flex items-center gap-2 text-sm text-muted">
-                      <Shield className="h-4 w-4 text-primary" aria-hidden />
-                      Audit events
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Customer Success"
+                      description="Accounts requiring follow-up and reporting attention."
+                      action={
+                        successAccess.allowed ? (
+                          <Link href="/clients/success" className={cn(linkText, "text-xs")}>
+                            View all
+                          </Link>
+                        ) : null
+                      }
+                    >
+                      <CustomerSuccessDashboardCard
+                        highlights={successPortfolio?.highlights ?? []}
+                        aiEnabled={successAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_client_analysis")}
+                        requiredPlanLabel={getRequiredPlanLabel("ai_client_analysis")}
+                      />
+                    </DashboardPanel>
+                  </div>
+                  {data.features.risks || data.features.incidents ? (
+                    <div className="lg:col-span-4">
+                      <DashboardPanel
+                        title="AI Operational Tasks"
+                        description="Incidents and risks requiring analyst attention."
+                        variant="glass"
+                      >
+                        <OperationalTasksCard
+                          tasks={operationalTasks?.tasks ?? []}
+                          aiEnabled={operationalAiAccess.allowed}
+                          upgradeMessage={getFeatureUpgradeMessage("ai_risk_assistant")}
+                          requiredPlanLabel={getRequiredPlanLabel("ai_risk_assistant")}
+                        />
+                      </DashboardPanel>
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {complianceSummary.auditEventsTotal}
-                    </p>
-                    <p className="mt-1 text-xs text-muted">
-                      +{complianceSummary.auditGrowth7d} in the last 7 days
-                    </p>
+                  ) : null}
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Predictive Intelligence"
+                      description="Clients declining, incident and breach forecasts, churn risk, confidence."
+                      action={
+                        predictiveAccess.allowed ? (
+                          <Link href="/predictive" className={cn(linkText, "text-xs")}>
+                            View all
+                          </Link>
+                        ) : null
+                      }
+                      variant="glass"
+                    >
+                      <PredictiveForecastHubCard
+                        summary={
+                          predictiveSummary ?? {
+                            customersAtRisk: 0,
+                            predictedSlaBreaches: 0,
+                            predictedIncidents: 0,
+                            revenueTrend: "unknown",
+                            averageConfidence: 0,
+                            clientsDeclining: 0,
+                            highChurnRisk: 0,
+                            forecastAccuracy: null,
+                          }
+                        }
+                        aiEnabled={predictiveAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_predictive_intelligence")}
+                        requiredPlanLabel={getRequiredPlanLabel("ai_predictive_intelligence")}
+                      />
+                    </DashboardPanel>
                   </div>
-                  <div className="rounded-lg border border-border/70 bg-surface/60 p-4">
-                    <p className="text-sm text-muted">Open GDPR requests</p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {complianceSummary.openGdprRequests}
-                    </p>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Executive Reports"
+                      description="Leadership deliverables, confidence, and compliance trends."
+                    >
+                      <DashboardExecutiveReportsOverview metrics={data.executiveReportMetrics} />
+                    </DashboardPanel>
                   </div>
-                  <div className="rounded-lg border border-border/70 bg-surface/60 p-4">
-                    <p className="text-sm text-muted">Security incidents</p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {complianceSummary.openSecurityIncidents}
-                    </p>
+                  <div className="lg:col-span-6">
+                    <DashboardPanel
+                      title="AI Insights"
+                      description="Incident assistant analyses and confidence trends."
+                    >
+                      <DashboardIncidentAIOverview
+                        metrics={data.incidentAIMetrics}
+                        aiEnabled={incidentAiAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_incident_assistant")}
+                      />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-6">
+                    <DashboardPanel
+                      title="AI Risk Insights"
+                      description="Risk assistant analyses and mitigation confidence."
+                    >
+                      <DashboardRiskAIOverview
+                        metrics={data.riskAIMetrics}
+                        aiEnabled={riskAiAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_risk_assistant")}
+                      />
+                    </DashboardPanel>
                   </div>
                 </div>
-              </DashboardPanel>
-            </div>
-          ) : null}
-
-          <div className="lg:col-span-12 xl:col-span-8">
-            <DashboardPanel
-              title="Recent activity"
-              description="Latest movement across your workspace."
-              action={
-                <Link href="/activity" className={cn(linkText, "text-xs")}>
-                  View all
-                </Link>
-              }
-              className="min-h-[360px]"
-            >
-              <DashboardActivityTimeline events={data.recentActivity} />
-            </DashboardPanel>
-          </div>
-
-          {data.features.sla ? (
-            <div className="lg:col-span-6 xl:col-span-6">
-              <DashboardPanel title="SLA overview" className="min-h-[320px]">
-                <DashboardSlaOverview metrics={data.slaMetrics} />
-              </DashboardPanel>
-            </div>
-          ) : null}
-
-          <div className="lg:col-span-6 xl:col-span-6">
-            <DashboardPanel
-              title="Monitoring"
-              description="Connector health and operational signals."
-              className="min-h-[320px]"
-            >
-              <DashboardMonitoringOverview metrics={data.monitoringMetrics} />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-6 xl:col-span-6">
-            <DashboardPanel
-              title="AI Insights"
-              description="Incident assistant analyses and confidence trends."
-              className="min-h-[320px]"
-            >
-              <DashboardIncidentAIOverview
-                metrics={data.incidentAIMetrics}
-                aiEnabled={incidentAiAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_incident_assistant")}
-              />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-6 xl:col-span-6">
-            <DashboardPanel
-              title="AI Risk Insights"
-              description="Risk assistant analyses and mitigation confidence."
-              className="min-h-[320px]"
-            >
-              <DashboardRiskAIOverview
-                metrics={data.riskAIMetrics}
-                aiEnabled={riskAiAccess.allowed}
-                upgradeMessage={getFeatureUpgradeMessage("ai_risk_assistant")}
-              />
-            </DashboardPanel>
-          </div>
-
-          <div className="lg:col-span-6 xl:col-span-6">
-            <DashboardPanel
-              title="Executive Reports"
-              description="Leadership deliverables, confidence, and compliance trends."
-              className="min-h-[320px]"
-            >
-              <DashboardExecutiveReportsOverview metrics={data.executiveReportMetrics} />
-            </DashboardPanel>
-          </div>
-
-          {data.features.escalation ? (
-            <div className="lg:col-span-6 xl:col-span-6">
-              <DashboardPanel title="Escalation overview" className="min-h-[320px]">
-                <DashboardEscalationOverview metrics={data.escalationMetrics} />
-              </DashboardPanel>
-            </div>
-          ) : null}
-        </div>
+              ),
+            },
+            {
+              id: "automation",
+              label: "Automation",
+              badge: opsAutomationBadge > 0 ? opsAutomationBadge : null,
+              urgent: opsAutomationBadge > 0,
+              content: (
+                <div className={opsPanelGrid}>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Automation Center"
+                      description="Running workflows, errors, and recent triggers."
+                      action={
+                        automationAccess.allowed ? (
+                          <Link href="/automation" className={cn(linkText, "text-xs")}>
+                            View all
+                          </Link>
+                        ) : null
+                      }
+                      variant="glass"
+                    >
+                      <AutomationCenterDashboardClient
+                        organizationId={session.organization.id}
+                        aiEnabled={automationAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_automation_builder")}
+                        requiredPlanLabel={getRequiredPlanLabel("ai_automation_builder")}
+                      />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Enterprise Integrations"
+                      description="Configured providers, readiness, and simulation status."
+                      action={
+                        automationAccess.allowed ? (
+                          <Link href="/automation/integrations" className={cn(linkText, "text-xs")}>
+                            View all
+                          </Link>
+                        ) : null
+                      }
+                      variant="glass"
+                    >
+                      <IntegrationsHubCard
+                        summary={
+                          integrationsSummary ?? {
+                            registeredCount: 0,
+                            configuredCount: 0,
+                            readyCount: 0,
+                            simulationStatus: "disabled",
+                            workflowIntegrationActionCount: 0,
+                          }
+                        }
+                        aiEnabled={automationAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_automation_builder")}
+                        requiredPlanLabel={getRequiredPlanLabel("ai_automation_builder")}
+                      />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-4">
+                    <DashboardPanel
+                      title="Integration Runtime"
+                      description="Live delivery status, retries, and latency."
+                      action={
+                        automationAccess.allowed ? (
+                          <Link href="/automation/integrations/logs" className={cn(linkText, "text-xs")}>
+                            View logs
+                          </Link>
+                        ) : null
+                      }
+                      variant="glass"
+                    >
+                      <IntegrationRuntimeHubCard
+                        summary={
+                          integrationRuntimeSummary ?? {
+                            running: 0,
+                            failed: 0,
+                            retrying: 0,
+                            deliveredToday: 0,
+                            averageLatencyMs: null,
+                          }
+                        }
+                        aiEnabled={automationAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_automation_builder")}
+                        requiredPlanLabel={getRequiredPlanLabel("ai_automation_builder")}
+                      />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-6">
+                    <DashboardPanel
+                      title="Knowledge Hub"
+                      description="Articles, playbooks, and knowledge gaps from verified history."
+                      action={
+                        knowledgeAccess.allowed ? (
+                          <Link href="/knowledge" className={cn(linkText, "text-xs")}>
+                            View all
+                          </Link>
+                        ) : null
+                      }
+                      variant="glass"
+                    >
+                      <KnowledgeHubCard
+                        data={knowledgeHub}
+                        aiEnabled={knowledgeAccess.allowed}
+                        upgradeMessage={getFeatureUpgradeMessage("ai_knowledge_search")}
+                        requiredPlanLabel={getRequiredPlanLabel("ai_knowledge_search")}
+                      />
+                    </DashboardPanel>
+                  </div>
+                  <div className="lg:col-span-6">
+                    <DashboardPanel
+                      title="Monitoring"
+                      description="Connector health and operational signals."
+                    >
+                      <DashboardMonitoringOverview metrics={data.monitoringMetrics} />
+                    </DashboardPanel>
+                  </div>
+                </div>
+              ),
+            },
+            {
+              id: "governance",
+              label: "Governance",
+              badge: opsComplianceBadge > 0 ? opsComplianceBadge : null,
+              urgent: opsComplianceBadge > 0,
+              content: (
+                <div className={opsPanelGrid}>
+                  {platformStatus ? (
+                    <div className="lg:col-span-4">
+                      <DashboardPanel
+                        title="Platform status"
+                        description="Infrastructure, cron, queue, and observability."
+                        variant="glass"
+                      >
+                        <PlatformStatusWidget snapshot={platformStatus} />
+                      </DashboardPanel>
+                    </div>
+                  ) : null}
+                  {canManageCompliance && complianceSummary ? (
+                    <div className="lg:col-span-8">
+                      <DashboardPanel
+                        title="Compliance & Governance"
+                        description="Workspace maturity and audit activity — not certification status."
+                        action={
+                          <Link href="/dashboard/compliance" className={cn(linkText, "text-xs")}>
+                            Open center
+                          </Link>
+                        }
+                        variant="glass"
+                      >
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-lg border border-border/70 bg-surface/60 p-3">
+                            <div className="flex items-center gap-2 text-sm text-muted">
+                              <ShieldCheck className="h-4 w-4 text-primary" aria-hidden />
+                              Framework maturity
+                            </div>
+                            <p className="mt-2 text-2xl font-semibold text-foreground">
+                              {complianceSummary.frameworkReadinessPercent}%
+                            </p>
+                            <p className="mt-1 text-xs text-muted">
+                              Workspace evidence coverage — not certification
+                            </p>
+                          </div>
+                          <div className="rounded-lg border border-border/70 bg-surface/60 p-3">
+                            <div className="flex items-center gap-2 text-sm text-muted">
+                              <Shield className="h-4 w-4 text-primary" aria-hidden />
+                              Audit events
+                            </div>
+                            <p className="mt-2 text-2xl font-semibold text-foreground">
+                              {complianceSummary.auditEventsTotal}
+                            </p>
+                            <p className="mt-1 text-xs text-muted">
+                              +{complianceSummary.auditGrowth7d} in the last 7 days
+                            </p>
+                          </div>
+                          <div className="rounded-lg border border-border/70 bg-surface/60 p-3">
+                            <p className="text-sm text-muted">Open GDPR requests</p>
+                            <p className="mt-2 text-2xl font-semibold text-foreground">
+                              {complianceSummary.openGdprRequests}
+                            </p>
+                          </div>
+                          <div className="rounded-lg border border-border/70 bg-surface/60 p-3">
+                            <p className="text-sm text-muted">Security incidents</p>
+                            <p className="mt-2 text-2xl font-semibold text-foreground">
+                              {complianceSummary.openSecurityIncidents}
+                            </p>
+                          </div>
+                        </div>
+                      </DashboardPanel>
+                    </div>
+                  ) : null}
+                  {data.features.sla ? (
+                    <div className="lg:col-span-6">
+                      <DashboardPanel title="SLA overview">
+                        <DashboardSlaOverview metrics={data.slaMetrics} />
+                      </DashboardPanel>
+                    </div>
+                  ) : null}
+                  {data.features.escalation ? (
+                    <div className="lg:col-span-6">
+                      <DashboardPanel title="Escalation overview">
+                        <DashboardEscalationOverview metrics={data.escalationMetrics} />
+                      </DashboardPanel>
+                    </div>
+                  ) : null}
+                  <div className="lg:col-span-12">
+                    <DashboardPanel
+                      title="Recent activity"
+                      description="Latest movement across your workspace."
+                      action={
+                        <Link href="/activity" className={cn(linkText, "text-xs")}>
+                          View all
+                        </Link>
+                      }
+                    >
+                      <DashboardActivityTimeline events={data.recentActivity} />
+                    </DashboardPanel>
+                  </div>
+                </div>
+              ),
+            },
+          ]}
+        />
       </section>
     </div>
   );

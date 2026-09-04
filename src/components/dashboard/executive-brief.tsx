@@ -22,15 +22,15 @@ export function ExecutiveBriefPanel({ brief, aiBriefEnabled = false }: Executive
   return (
     <section
       aria-label="Today's executive brief"
-      className="relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-1 px-5 py-6 shadow-sm sm:px-6"
+      className="relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-1 px-5 py-4 shadow-sm sm:px-6"
     >
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-transparent"
         aria-hidden
       />
 
-      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 space-y-4">
+      <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 space-y-3">
           <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
             <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
             Today&apos;s Executive Brief
@@ -38,17 +38,17 @@ export function ExecutiveBriefPanel({ brief, aiBriefEnabled = false }: Executive
           <ExecutiveBriefAiLink enabled={aiBriefEnabled} />
 
           <div>
-            <p className="text-lg font-medium text-foreground sm:text-xl">
+            <p className="text-base font-medium text-foreground sm:text-lg">
               <TimeOfDayGreeting userName={brief.firstName} trailing="." />
             </p>
-            <ul className="mt-3 space-y-1.5 text-sm text-muted">
+            <ul className="mt-2 space-y-1 text-sm text-muted">
               {brief.summaryLines.map((line) => (
                 <li key={line}>{line}</li>
               ))}
             </ul>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             <BriefStat label="Clients requiring attention" value={brief.clientsRequiringAttention} />
             <BriefStat label="Reports overdue" value={brief.overdueReportsCount} />
             <BriefStat label="Critical incidents" value={brief.criticalIncidentCount} />
@@ -93,24 +93,27 @@ export function ExecutiveBriefPanel({ brief, aiBriefEnabled = false }: Executive
 
 function BriefStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-surface/60 px-4 py-3">
-      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{label}</p>
-      <p className="mt-1 text-xl font-semibold tracking-tight text-foreground">{value}</p>
+    <div className="rounded-lg border border-border/70 bg-surface/60 px-3 py-2">
+      <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted">{label}</p>
+      <p className="mt-0.5 text-lg font-semibold tracking-tight text-foreground">{value}</p>
     </div>
   );
 }
 
 export function ExecutiveBriefEmptyState() {
   return (
-    <section className="rounded-2xl border border-dashed border-border-strong bg-muted/5 px-6 py-10 text-center">
-      <Sparkles className="mx-auto h-8 w-8 text-primary" aria-hidden />
-      <p className="mt-4 text-sm font-medium text-foreground">Your executive brief will appear here</p>
-      <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+    <section
+      className="rounded-2xl border border-dashed border-border-strong bg-muted/5 px-4 py-6 text-center sm:px-6"
+      role="status"
+    >
+      <Sparkles className="mx-auto h-6 w-6 text-primary" aria-hidden />
+      <p className="mt-3 text-sm font-medium text-foreground">Your executive brief will appear here</p>
+      <p className="mx-auto mt-1 max-w-md text-xs text-muted">
         Add clients, publish reports, and track operational signals to unlock portfolio intelligence.
       </p>
       <Link
         href="/clients/new"
-        className={cn(linkText, "mt-5 inline-flex items-center gap-1 text-sm font-medium", focusRing, transitionInteractive)}
+        className={cn(linkText, "mt-4 inline-flex items-center gap-1 text-sm font-medium", focusRing, transitionInteractive)}
       >
         Add your first client
         <ArrowRight className="h-4 w-4" aria-hidden />

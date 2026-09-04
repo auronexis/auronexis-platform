@@ -26,6 +26,7 @@ export function PriorityClientsPanel({ clients }: PriorityClientsPanelProps) {
   if (clients.length === 0) {
     return (
       <EmptyState
+        density="compact"
         icon={Users}
         title="No priority clients yet"
         description="Once clients are active in your workspace, the highest-priority accounts will appear here."

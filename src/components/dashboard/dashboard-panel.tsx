@@ -58,6 +58,8 @@ type DashboardMetricCardProps = {
   trend?: string;
   tone?: "default" | "success" | "warning" | "danger" | "info";
   className?: string;
+  /** Compact executive density for dashboard pulse rows. */
+  size?: "default" | "compact";
 };
 
 const toneStyles = {
@@ -75,12 +77,16 @@ export function DashboardMetricCard({
   trend = "Stable this period",
   tone = "default",
   className,
+  size = "default",
 }: DashboardMetricCardProps) {
+  const compact = size === "compact";
+
   return (
     <article
       className={cn(
         auroraSurfaceElevated,
-        "group aurora-glow p-6",
+        "group aurora-glow",
+        compact ? "p-4" : "p-6",
         transitionInteractive,
         "hover:-translate-y-0.5 hover:border-border-strong hover:shadow-interactive",
         focusRing,
@@ -90,16 +96,26 @@ export function DashboardMetricCard({
       <div className="flex items-start justify-between gap-3">
         <span
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-xl border",
+            "flex items-center justify-center rounded-xl border",
+            compact ? "h-8 w-8" : "h-10 w-10",
             toneStyles[tone],
           )}
         >
-          <Icon icon={icon} size="md" />
+          <Icon icon={icon} size={compact ? "sm" : "md"} />
         </span>
         <span className="text-[11px] font-medium text-muted">{trend}</span>
       </div>
-      <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{value}</p>
-      <p className="mt-2 text-sm font-medium text-muted">{label}</p>
+      <p
+        className={cn(
+          "font-semibold tracking-tight text-foreground",
+          compact ? "mt-3 text-2xl" : "mt-6 text-4xl",
+        )}
+      >
+        {value}
+      </p>
+      <p className={cn("font-medium text-muted", compact ? "mt-1 text-xs" : "mt-2 text-sm")}>
+        {label}
+      </p>
     </article>
   );
 }

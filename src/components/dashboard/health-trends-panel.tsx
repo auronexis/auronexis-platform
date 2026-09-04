@@ -14,6 +14,7 @@ export function HealthTrendsPanel({ trends }: HealthTrendsPanelProps) {
   if (!hasAnyData) {
     return (
       <EmptyState
+        density="compact"
         icon={LineChart}
         title="Health trends will appear after snapshots"
         description="As client health snapshots are recorded, 7, 30, and 90-day portfolio trends will display here."

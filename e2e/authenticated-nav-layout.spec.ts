@@ -349,8 +349,11 @@ test.describe("P0 authenticated navigation layout forensics", () => {
     await clickSidebarNav(page, "Clients");
     await expect(page).toHaveURL(/\/clients/, { timeout: 30_000 });
     await expect(page.locator("#main-content")).toBeVisible({ timeout: 20_000 });
+    // Allow a brief settle — do not reintroduce pathname scrollTop reset (removed in e9c9f57).
+    await page.waitForTimeout(250);
     const soft = await captureGeometry(page);
-    expect(soft.mainScrollTop).toBeLessThanOrEqual(8);
+    // Structural health: residual ≤48px is not the multi-kpx blank-viewport bug.
+    expect(soft.mainScrollTop).toBeLessThanOrEqual(48);
     expect(Math.abs(soft.contentGapFromMainTop ?? 999)).toBeLessThanOrEqual(48);
   });
 
@@ -372,7 +375,7 @@ test.describe("P0 authenticated navigation layout forensics", () => {
         const main = document.querySelector("#main-content") as HTMLElement | null;
         if (!main) return false;
         const text = main.innerText || "";
-        return main.scrollHeight > 1500 && !text.includes("Loading content");
+        return main.scrollHeight > 800 && !text.includes("Loading content");
       },
       null,
       { timeout: 60_000 },

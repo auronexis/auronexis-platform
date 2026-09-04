@@ -22,6 +22,7 @@ export function PortfolioHealthDistributionPanel({
   if (distribution.total === 0) {
     return (
       <EmptyState
+        density="compact"
         icon={Activity}
         title="No portfolio health data yet"
         description="Health distribution appears once clients are tracked in your workspace."

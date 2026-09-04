@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HeartHandshake } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { CustomerSuccessCategory } from "@/lib/intelligence/types";
 import { cn } from "@/lib/utils/cn";
 import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
@@ -16,31 +17,49 @@ const toneStyles: Record<CustomerSuccessCategory["tone"], string> = {
   info: "border-primary/20 bg-primary/5 hover:border-primary/30",
 };
 
+const valueTone: Record<CustomerSuccessCategory["tone"], string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger",
+  info: "text-primary",
+};
+
+/**
+ * Compact Customer Success KPI grid — label + count in 1–2 rows.
+ * Descriptions stay available via tooltip; links preserve workflows.
+ */
 export function CustomerSuccessCenterPanel({ categories }: CustomerSuccessCenterPanelProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div
+      className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6"
+      data-customer-success-center
+    >
       {categories.map((category) => (
-        <Link
-          key={category.id}
-          href={category.href}
-          className={cn(
-            "rounded-xl border p-4",
-            toneStyles[category.tone],
-            transitionInteractive,
-            "hover:-translate-y-0.5 hover:shadow-interactive",
-            focusRing,
-          )}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">{category.label}</p>
-              <p className="mt-1 text-xs leading-relaxed text-muted">{category.description}</p>
-            </div>
-            <span className="shrink-0 text-2xl font-semibold tracking-tight text-foreground">
+        <Tooltip key={category.id} content={category.description} side="bottom">
+          <Link
+            href={category.href}
+            title={category.description}
+            aria-label={`${category.label}: ${category.count}. ${category.description}`}
+            className={cn(
+              "flex min-h-14 flex-col justify-center rounded-lg border px-3 py-2.5",
+              toneStyles[category.tone],
+              transitionInteractive,
+              "hover:shadow-sm",
+              focusRing,
+            )}
+          >
+            <span className="truncate text-[11px] font-medium text-muted">{category.label}</span>
+            <span
+              className={cn(
+                "mt-0.5 text-xl font-semibold tabular-nums tracking-tight",
+                valueTone[category.tone],
+              )}
+            >
               {category.count}
             </span>
-          </div>
-        </Link>
+          </Link>
+        </Tooltip>
       ))}
     </div>
   );
@@ -48,10 +67,15 @@ export function CustomerSuccessCenterPanel({ categories }: CustomerSuccessCenter
 
 export function CustomerSuccessCenterEmptyState() {
   return (
-    <div className="rounded-xl border border-dashed border-border-strong bg-muted/5 px-6 py-10 text-center">
-      <HeartHandshake className="mx-auto h-8 w-8 text-primary" aria-hidden />
-      <p className="mt-4 text-sm font-medium text-foreground">Customer success signals will populate here</p>
-      <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+    <div
+      className="rounded-xl border border-dashed border-border-strong bg-muted/5 px-4 py-6 text-center"
+      role="status"
+    >
+      <HeartHandshake className="mx-auto h-6 w-6 text-primary" aria-hidden />
+      <p className="mt-3 text-sm font-medium text-foreground">
+        Customer success signals will populate here
+      </p>
+      <p className="mx-auto mt-1 max-w-md text-xs text-muted">
         Track reports, risks, and client activity to unlock categorized success workflows.
       </p>
     </div>
