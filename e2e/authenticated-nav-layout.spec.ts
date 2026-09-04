@@ -353,4 +353,112 @@ test.describe("P0 authenticated navigation layout forensics", () => {
     expect(soft.mainScrollTop).toBeLessThanOrEqual(8);
     expect(Math.abs(soft.contentGapFromMainTop ?? 999)).toBeLessThanOrEqual(48);
   });
+
+  test("dashboard: scrollHeight trailing gap past last legitimate content stays within tolerance", async ({
+    page,
+  }, testInfo) => {
+    /**
+     * Structural regression for P0 excessive trailing blank space.
+     * Tolerance covers #main-content bottom padding (lg:py-8 → 32px) only.
+     * Multi-thousand-pixel gaps past the footer / last section are failures.
+     */
+    const TRAILING_GAP_TOLERANCE_PX = 96;
+
+    await page.goto("/dashboard");
+    await waitForAppRoute(page, "/dashboard");
+    await dismissCookieConsentIfPresent(page);
+    await page.waitForFunction(
+      () => {
+        const main = document.querySelector("#main-content") as HTMLElement | null;
+        if (!main) return false;
+        const text = main.innerText || "";
+        return main.scrollHeight > 1500 && !text.includes("Loading content");
+      },
+      null,
+      { timeout: 60_000 },
+    );
+
+    const metrics = await page.evaluate(() => {
+      const main = document.querySelector("#main-content");
+      if (!main) {
+        return null;
+      }
+      const mainRect = main.getBoundingClientRect();
+      const footer = main.querySelector("footer");
+      const sections = [...main.querySelectorAll("section[aria-label]")];
+      const lastSection = sections.at(-1) ?? null;
+      const bottomOf = (el: Element | null) => {
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return Math.round(r.bottom - mainRect.top + main.scrollTop);
+      };
+      const footerBottom = bottomOf(footer);
+      const lastSectionBottom = bottomOf(lastSection);
+      const lastLegitimateBottom = Math.max(footerBottom ?? 0, lastSectionBottom ?? 0);
+      return {
+        clientHeight: main.clientHeight,
+        scrollHeight: main.scrollHeight,
+        scrollTop: main.scrollTop,
+        footerBottom,
+        lastSectionLabel: lastSection?.getAttribute("aria-label") ?? null,
+        lastSectionBottom,
+        lastLegitimateBottom,
+        unexplainedExcess: main.scrollHeight - lastLegitimateBottom,
+        sectionMap: sections.map((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            label: el.getAttribute("aria-label"),
+            top: Math.round(r.top - mainRect.top + main.scrollTop),
+            bottom: Math.round(r.bottom - mainRect.top + main.scrollTop),
+            height: Math.round(r.height),
+          };
+        }),
+      };
+    });
+
+    expect(metrics, "dashboard metrics must be measurable").not.toBeNull();
+    await testInfo.attach("dashboard-scrollheight-metrics", {
+      body: JSON.stringify(metrics, null, 2),
+      contentType: "application/json",
+    });
+
+    expect(metrics!.scrollHeight).toBeGreaterThan(metrics!.clientHeight);
+    expect(metrics!.lastLegitimateBottom).toBeGreaterThan(500);
+    expect(
+      metrics!.unexplainedExcess,
+      `Unexplained trailing gap past last legitimate content must be ≤ ${TRAILING_GAP_TOLERANCE_PX}px (was ${metrics!.unexplainedExcess}px; scrollHeight=${metrics!.scrollHeight}, lastBottom=${metrics!.lastLegitimateBottom})`,
+    ).toBeLessThanOrEqual(TRAILING_GAP_TOLERANCE_PX);
+
+    // Sibling authenticated routes must not invent multi-kpx trailing voids either.
+    for (const path of ["/clients", "/settings", "/settings/plans", "/sales", "/dashboard/compliance"]) {
+      await page.goto(path);
+      await waitForAppRoute(page, path);
+      await dismissCookieConsentIfPresent(page);
+      await page.waitForTimeout(400);
+      const routeGap = await page.evaluate(() => {
+        const main = document.querySelector("#main-content");
+        if (!main) return null;
+        const mainRect = main.getBoundingClientRect();
+        const footer = main.querySelector("footer");
+        const contentRoot = main.firstElementChild;
+        const bottomOf = (el: Element | null) => {
+          if (!el) return 0;
+          const r = el.getBoundingClientRect();
+          return Math.round(r.bottom - mainRect.top + main.scrollTop);
+        };
+        const lastBottom = Math.max(bottomOf(footer), bottomOf(contentRoot));
+        return {
+          path: location.pathname,
+          scrollHeight: main.scrollHeight,
+          lastBottom,
+          excess: main.scrollHeight - lastBottom,
+        };
+      });
+      expect(routeGap).not.toBeNull();
+      expect(
+        routeGap!.excess,
+        `${path}: trailing gap ${routeGap!.excess}px exceeds tolerance`,
+      ).toBeLessThanOrEqual(TRAILING_GAP_TOLERANCE_PX);
+    }
+  });
 });
