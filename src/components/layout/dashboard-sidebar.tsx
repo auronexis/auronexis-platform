@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+import { useLayoutEffect, useRef } from "react";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { useMobileNav } from "@/components/layout/mobile-nav-context";
@@ -62,8 +64,24 @@ type DashboardMainProps = {
 };
 
 export function DashboardMain({ children }: DashboardMainProps) {
+  const pathname = usePathname();
+  const mainRef = useRef<HTMLElement>(null);
+
+  // App Router keeps this layout mounted across sidebar Link navigations.
+  // Scroll lives on this element (not window), so Next.js window scroll
+  // restoration never resets it — retained scrollTop paints a viewport-sized
+  // blank band of the main background with route content above/below view.
+  useLayoutEffect(() => {
+    const main = mainRef.current;
+    if (!main) {
+      return;
+    }
+    main.scrollTop = 0;
+  }, [pathname]);
+
   return (
     <main
+      ref={mainRef}
       id="main-content"
       tabIndex={-1}
       className="dashboard-main min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-6 lg:px-8 lg:py-8"
