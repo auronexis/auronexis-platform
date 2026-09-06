@@ -10,18 +10,20 @@ function readSource(relativePath) {
   return readFileSync(join(rootDir, relativePath), "utf8");
 }
 
-test("phase 31 feature pages registry has 15 static routes", () => {
+test("phase 31 feature pages registry has 14 static routes", () => {
   const features = readSource("src/lib/seo/feature-content.ts");
   const page = readSource("src/app/(marketing)/features/[slug]/page.tsx");
+  const integrationsRedirect = readSource("src/app/(marketing)/features/integrations/page.tsx");
   assert.match(features, /FEATURE_PAGES/);
   assert.match(features, /ai-executive-reports/);
   assert.match(features, /activity-timeline/);
-  assert.match(features, /integrations/);
+  assert.doesNotMatch(features, /slug: "integrations"/);
+  assert.match(integrationsRedirect, /permanentRedirect\("\/integrations"\)/);
   assert.match(page, /generateStaticParams/);
   assert.match(page, /dynamicParams = false/);
   assert.match(page, /LandingPageView/);
   const slugCount = (features.match(/slug: "/g) ?? []).length;
-  assert.equal(slugCount, 15);
+  assert.equal(slugCount, 14);
 });
 
 test("phase 31 audience and industry pages use static generation", () => {

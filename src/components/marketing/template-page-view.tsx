@@ -20,7 +20,7 @@ export function TemplatePageView({ content }: TemplatePageViewProps) {
         data={[
           breadcrumbJsonLd([
             { name: "Home", path: "/" },
-            { name: "Templates", path: MARKETING_ROUTES.documentation },
+            { name: "Templates", path: MARKETING_ROUTES.templates },
             { name: content.title, path: content.path },
           ]),
           faqJsonLd(content.faq),
@@ -75,7 +75,7 @@ export function TemplatePageView({ content }: TemplatePageViewProps) {
             Create a workspace
           </Link>{" "}
           or explore{" "}
-          <Link href="/documentation" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+          <Link href={MARKETING_ROUTES.documentation} className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
             documentation
           </Link>
           .

@@ -31,7 +31,8 @@ export const MARKETING_ROUTES = {
   vulnerabilityDisclosure: "/security/vulnerability-disclosure",
   compliance: "/compliance",
   integrations: "/integrations",
-  documentation: "/documentation",
+  /** Canonical docs hub — /documentation permanently redirects here. */
+  documentation: "/docs",
   contact: "/contact",
   pilotProgram: "/pilot-program",
   status: "/status",
@@ -58,7 +59,6 @@ export const FEATURE_ROUTES = {
   customerSuccess: "/features/customer-success",
   reports: "/features/reports",
   activityTimeline: "/features/activity-timeline",
-  integrations: "/features/integrations",
 } as const;
 
 export const USE_CASE_ROUTES = {

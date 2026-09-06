@@ -178,7 +178,6 @@ export const SEARCH_INTENT_CLUSTERS: readonly SearchIntentCluster[] = [
     supportingPaths: [
       MARKETING_ROUTES.templates,
       MARKETING_ROUTES.documentation,
-      "/docs",
     ],
     persona: "Operators researching workflows",
     funnelStage: "enablement",

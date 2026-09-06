@@ -82,7 +82,7 @@ export const MARKETING_CTA_PRESETS = {
   viewDocumentation: {
     id: "view_documentation",
     label: "View documentation",
-    href: "/documentation",
+    href: "/docs",
     variant: "outline",
     analyticsEvent: "cta_clicked",
     analyticsProps: { intent: "documentation" },

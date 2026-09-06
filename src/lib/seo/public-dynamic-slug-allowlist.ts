@@ -23,6 +23,7 @@ const FEATURE_SLUGS = new Set([
   "customer-success",
   "reports",
   "activity-timeline",
+  /** Legacy loser hub — served by features/integrations permanentRedirect to /integrations. */
   "integrations",
 ]);
 

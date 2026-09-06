@@ -10,7 +10,7 @@ export const REQUIRED_PUBLIC_MARKETING_PATHS = [
   "/features",
   "/use-cases",
   "/security",
-  "/documentation",
+  "/docs",
   "/contact",
   "/support",
   "/help",

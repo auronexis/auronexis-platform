@@ -217,7 +217,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Integrations", href: FEATURE_ROUTES.integrations },
+      { label: "Integrations", href: MARKETING_ROUTES.integrations },
       { label: "Incidents", href: FEATURE_ROUTES.incidents },
       { label: "Portfolio monitoring", href: FEATURE_ROUTES.monitoring },
       { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
@@ -1007,76 +1007,6 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       { label: "Predictive docs", href: "/docs/predictive" },
       { label: "Pricing", href: MARKETING_ROUTES.pricing },
       { label: "FAQ", href: MARKETING_ROUTES.faq },
-    ],
-    primaryCta: "startFreeTrial",
-    secondaryCta: "contactSales",
-  }),
-
-  integrations: buildLandingPage({
-    slug: "integrations",
-    pathPrefix: "/features",
-    category: "feature",
-    eyebrow: "Feature",
-    title: "Integrations and connectors for your stack",
-    description:
-      "Authorize OAuth connectors, store secrets, and drive workflow actions into CRM, ticketing, messaging, and productivity tools.",
-    metaDescription:
-      "MSP integrations — OAuth connectors, webhooks, secrets, and workflow actions in Auroranexis.",
-    problem:
-      "Client and delivery data lives in external systems that operations teams reconcile manually. Swivel-chair work between tools creates delays, errors, and incomplete portfolio views.",
-    solution:
-      "Auroranexis connectors authorize approved external systems via OAuth where configured, store API secrets when needed, and unlock workflow actions for notifications and operational writes. Sync jobs record connector health and diagnostics — treat v1 sync as scaffolding, not guaranteed CRM/ticketing replication.",
-    businessValue:
-      "Reduce manual copy-paste into chat, tickets, and CRM activity logs. Teams keep Auroranexis as the operational source of truth while pushing events into tools they already monitor.",
-    audience:
-      "Technical operations leads, integration administrators, and delivery managers at MSPs connecting Auroranexis to existing client and service management tools.",
-    enterpriseAdvantages: [
-      "OAuth-based connector authentication for supported systems when provider apps are configured",
-      "Organization-scoped integration inventory and status monitoring",
-      "Connector sync diagnostics with execution history (v1 scaffolding)",
-      "Role-based access for integration administration",
-    ],
-    benefits: [
-      {
-        title: "Less manual handoff",
-        description:
-          "Push incidents, SLA events, and operational updates into connected ticketing and messaging tools from workflows.",
-      },
-      {
-        title: "Connector visibility",
-        description:
-          "Monitor connection status, OAuth health, and delivery failures from Automation → Connectors and integration logs.",
-      },
-      {
-        title: "Controlled connector access",
-        description:
-          "Manage OAuth credentials and integration permissions at the organization level.",
-      },
-    ],
-    capabilities: [
-      "Connector catalog with OAuth authorization flows for supported providers",
-      "Webhook and secret-backed delivery for messaging and custom endpoints",
-      "Integration status and error visibility",
-      "Workflow actions unlocked after connector authorization",
-      "Organization-scoped connector administration",
-    ],
-    faq: [
-      {
-        question: "Which systems can I connect?",
-        answer:
-          "Auroranexis ships OAuth connector modules for CRM, ticketing, messaging, and productivity providers. Availability depends on workspace plan and whether OAuth app credentials are configured for each provider. See the integrations page and Automation → Connectors for current options.",
-      },
-      {
-        question: "Do integrations require custom development?",
-        answer:
-          "Supported connectors use OAuth and/or stored secrets plus workflow actions. Sync in v1 is diagnostic scaffolding, not guaranteed bidirectional CRM replication. Custom integrations may require Enterprise plan discussion or the REST API.",
-      },
-    ],
-    relatedLinks: [
-      { label: "Automation", href: FEATURE_ROUTES.automation },
-      { label: "Monitoring", href: FEATURE_ROUTES.monitoring },
-      { label: "Integrations overview", href: MARKETING_ROUTES.integrations },
-      { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     ],
     primaryCta: "startFreeTrial",
     secondaryCta: "contactSales",

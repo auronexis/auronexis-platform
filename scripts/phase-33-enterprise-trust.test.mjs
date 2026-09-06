@@ -75,10 +75,10 @@ test("about page exposes company identity for enterprise evaluation", () => {
   assert.match(about, /aboutPageJsonLd/);
 });
 
-test("documentation path clarifies marketing entry vs docs hub", () => {
+test("documentation path permanently redirects to docs hub", () => {
   const documentation = readSource("src/app/(marketing)/documentation/page.tsx");
-  assert.match(documentation, /href="\/docs"/);
-  assert.match(documentation, /marketing entry point/i);
+  assert.match(documentation, /permanentRedirect\("\/docs"\)/);
+  assert.match(documentation, /createPrivateAppMetadata/);
 });
 
 test("all documentation slugs are in sitemap and PAGE_SEO registry", () => {

@@ -73,6 +73,15 @@ test("sitemap contains critical public routes", () => {
   for (const route of ["/pricing", "/features", "/enterprise", "/integrations", "/status", "/docs"]) {
     assert.match(links, new RegExp(route.replace("/", "\\/")));
   }
+  assert.match(links, /documentation: "\/docs"/);
+  assert.doesNotMatch(links, /documentation: "\/documentation"/);
+  assert.doesNotMatch(links, /integrations: "\/features\/integrations"/);
+});
+
+test("documentation permanently redirects to /docs", () => {
+  const redirect = readSource("src/app/(marketing)/documentation/page.tsx");
+  assert.match(redirect, /permanentRedirect\("\/docs"\)/);
+  assert.match(redirect, /createPrivateAppMetadata/);
 });
 
 test("robots references sitemap and does not block assets", () => {
@@ -672,12 +681,18 @@ test("integrations catalog does not bury live Teams or Enterprise API under Comi
   assert.match(catalog, /id: "zapier"[\s\S]{0,220}section: "coming_soon"/);
 });
 
-test("features/integrations copy does not overclaim production CRM sync replication", () => {
-  const feature = readSource("src/lib/seo/feature-content.ts");
-  assert.match(feature, /v1 sync as scaffolding/);
-  assert.match(feature, /not guaranteed CRM\/ticketing replication/);
+test("features/integrations permanently redirects; winner copy does not overclaim CRM sync replication", () => {
+  const redirect = readSource("src/app/(marketing)/features/integrations/page.tsx");
+  const winner = readSource("src/app/(marketing)/integrations/page.tsx");
+  const links = readSource("src/lib/company/company-links.ts");
+  assert.match(redirect, /permanentRedirect\("\/integrations"\)/);
+  assert.match(redirect, /createPrivateAppMetadata/);
+  assert.match(links, /integrations: "\/integrations"/);
+  assert.doesNotMatch(links, /integrations: "\/features\/integrations"/);
+  assert.match(winner, /v1 sync as scaffolding/);
+  assert.match(winner, /not guaranteed CRM\/ticketing replication/);
   assert.doesNotMatch(
-    feature,
+    winner,
     /Operational records stay aligned with your CRM, ticketing, and productivity tools without constant manual export and import/,
   );
 });

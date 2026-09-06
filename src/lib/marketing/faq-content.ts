@@ -241,7 +241,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Where is documentation?",
-        answer: `Product guides are at ${MARKETING_ROUTES.documentation} and /docs. Release notes are published at /docs/release-notes.`,
+        answer: `Product guides are at ${MARKETING_ROUTES.documentation}. Release notes are published at /docs/release-notes.`,
       },
       {
         question: "Is priority support available?",

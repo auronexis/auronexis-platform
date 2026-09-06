@@ -54,7 +54,7 @@ export function getPilotAcquisitionSnapshot(): PilotAcquisitionSnapshot {
   ];
 
   const supportChecks = [
-    HELP_LINKS.documentation === "/documentation",
+    HELP_LINKS.documentation === "/docs",
     HELP_LINKS.support === "/support",
     HELP_LINKS.statusPage === "/status",
     HELP_LINKS.pilotProgram === "/pilot-program",

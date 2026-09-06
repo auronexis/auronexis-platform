@@ -14,9 +14,9 @@ import { focusRing } from "@/lib/ui/tokens";
 export const metadata: Metadata = createPageMetadataForPath("/integrations");
 
 const RELATED_LINKS = [
-  { label: "Integrations feature", href: FEATURE_ROUTES.integrations },
   { label: "Automation", href: FEATURE_ROUTES.automation },
   { label: "API documentation", href: "/docs/api" },
+  { label: "Integrations docs", href: "/docs/integrations" },
   { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
   { label: "FAQ", href: MARKETING_ROUTES.faq },
 ] as const;
@@ -39,7 +39,8 @@ export default function IntegrationsPage() {
       >
         <IntegrationCatalogGrid />
         <p className="mt-10 text-sm text-primary-foreground/75">
-          Configure live connectors after signup in Automation → Connectors. See{" "}
+          Configure live connectors after signup in Automation → Connectors. Treat v1 sync as scaffolding,
+          not guaranteed CRM/ticketing replication. See{" "}
           <Link href="/docs/integrations" className="font-medium text-white hover:underline">
             documentation
           </Link>{" "}

@@ -128,11 +128,6 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description:
       "Connect Auroranexis with Slack, email, REST API, webhooks, and AI providers for agency operations.",
   },
-  [MARKETING_ROUTES.documentation]: {
-    title: "Public Product Documentation Index",
-    description:
-      "Marketing documentation index that routes to the Auroranexis docs hub — getting started, clients, reports, security, and API reference.",
-  },
   [MARKETING_ROUTES.contact]: {
     title: "Contact Auroranexis Sales, Support, and Security",
     description:
