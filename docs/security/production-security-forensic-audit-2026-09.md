@@ -27,7 +27,7 @@
 Application trust boundaries for session APIs, public API keys, cron Bearer auth, Mollie re-fetch reconciliation, entitlements, outbound URL controls, and open-redirect hardening are **largely sound in source**. However:
 
 1. **Production application of P0 RLS privilege/tenant locks is UNVERIFIED.** Prior God Mode report (`docs/security/AURORANEXIS_GOD_MODE_SECURITY_ASSURANCE_REPORT.md`, 2026-09-03) documented that remediating migrations were **in-repo and not applied to production**. This audit confirms the lock migrations remain present and committed (`4a01eba`) but **cannot prove** live Supabase policy state. Until operators confirm both migrations on production, authenticated PostgREST self-update remains a **conditional CRITICAL** risk (privilege escalation + tenant escape).
-2. Abuse controls that rely on **process-local in-memory rate limit maps** are weak on multi-instance serverless (auth + public API).
+2. Abuse controls that relied on **process-local in-memory rate limit maps** are **remediated in code** (FINDING-002 shared Upstash store) — **production Redis env still OPERATOR CONFIG REQUIRED / unverified**.
 3. Several defense-in-depth observations (CSP `unsafe-inline`, PDF logo fetch without `validateOutboundUrl`, white-label CSS injection surface for admins) require hardening but are not proven unauthenticated remote compromise paths.
 
 **Evidence of compromise (active breach):** **INCONCLUSIVE** — no live compromise indicators were investigated; this is a source/architecture forensic, not an IR engagement.
@@ -37,7 +37,7 @@ Application trust boundaries for session APIs, public API keys, cron Bearer auth
 | Severity | Count | Notes |
 |----------|------:|-------|
 | CRITICAL | 0 open | FINDING-001 **CLOSED** production-verified 2026-09-08 |
-| HIGH | 2 | Serverless-local rate limits; CRON_SECRET / operator blast radius if secret leaks |
+| HIGH | 2 | FINDING-002 remediating in code (prod Redis pending); CRON_SECRET / operator blast radius if secret leaks |
 | MEDIUM | 5 | Mollie classic webhook auth model; CSP unsafe-inline; PDF SSRF observation; status/health info; white-label CSS |
 | LOW | 5 | Job catalog `USING (TRUE)`; npm toolchain advisories; OpenAPI public; demo e-invoice internal gate; API scope↔RBAC bridge unused |
 | INFO / PASS observations | multiple | Documented non-issues |
@@ -45,7 +45,7 @@ Application trust boundaries for session APIs, public API keys, cron Bearer auth
 ### Top 5 risks
 
 1. ~~**CRITICAL (conditional):** production RLS locks unverified~~ → **CLOSED 2026-09-08** (users lock already live; portal tenant lock applied & verified).
-2. **HIGH:** In-memory rate limiting ineffective across Vercel isolates — credential stuffing / API cost abuse easier than limits imply.
+2. **HIGH (code remediating):** In-memory rate limiting replaced with shared store in code — **production Upstash config still required** (FINDING-002).
 3. **HIGH:** Compromise of `CRON_SECRET` unlocks `/api/cron/run` (force jobs), `/api/indexnow`, operator Mollie recovery (when live charging off), and connectivity probes.
 4. **MEDIUM:** Mollie classic webhooks authenticate by payment id + API re-fetch (no HMAC) — correct for Mollie, but payment-id knowledge becomes a trigger oracle.
 5. **MEDIUM:** CSP allows `'unsafe-inline'` scripts/styles — XSS impact amplified if any reflected/stored XSS is later introduced.
@@ -159,9 +159,9 @@ Application trust boundaries for session APIs, public API keys, cron Bearer auth
 |---------|--------|----------|
 | Session via Supabase SSR cookies + `getUser()` | **PASS** | `src/lib/auth/session.ts:21-28` — uses `getUser()`, not trust-only `getSession()` JWT claim |
 | Disabled users blocked | **PASS** | `appUser.is_disabled` → null session (`session.ts:38-40`) |
-| Login throttle | **PASS WITH OBSERVATIONS** | 10 / 15 min per email (`login-throttle.ts:22-34`); **in-memory** only |
-| Signup throttle | **PASS WITH OBSERVATIONS** | 5 / hour (`:37-50`) |
-| Password reset throttle | **PASS WITH OBSERVATIONS** | 30s cooldown + 5/hour (`:56-84`) |
+| Login throttle | **PASS WITH OBSERVATIONS** | 10 / 15 min per hashed email (shared store; prod Redis pending) |
+| Signup throttle | **PASS WITH OBSERVATIONS** | 5 / hour (shared store; prod Redis pending) |
+| Password reset throttle | **PASS WITH OBSERVATIONS** | 30s cooldown + 5/hour (shared store; prod Redis pending) |
 | E2E rate-limit bypass | **PASS** | Forced off when `NODE_ENV === "production"` (`e2e-bypass.ts:6-8`) |
 | API keys | **PASS** | Format check, hash lookup, constant-time compare, expiry (`api/auth/validator.ts`) |
 | Auth callback | **PASS** | Code exchange + safe `next` (`auth/callback/route.ts`) |
@@ -530,20 +530,21 @@ API unknown paths: Next default 404 (not remapped to privileged handlers).
 | **Migration history** | `20260903160000` + `20260903170000` recorded applied via `supabase migration repair --status applied --linked` on 2026-09-08 — **no migration SQL re-executed**; post-check policies unchanged |
 | **Confidence** | HIGH (live `pg_policies` re-read after mutation) |
 
-### FINDING-002 — HIGH
+### FINDING-002 — HIGH — REMEDIATED IN CODE — PRODUCTION VERIFICATION PENDING
 
 | Field | Content |
 |-------|---------|
 | **ID** | FINDING-002 |
-| **Severity** | HIGH |
+| **Severity** | HIGH (code remediations shipped; production shared authority **not yet verified**) |
+| **Status** | **REMEDIATED IN CODE — PRODUCTION VERIFICATION PENDING** (not CLOSED; not FIXED — PRODUCTION VERIFIED) |
 | **CWE** | CWE-770 |
-| **Files** | `src/lib/security/rate-limit.ts`; `src/lib/security/login-throttle.ts`; `src/lib/api/rate-limit/limits.ts` |
-| **Prerequisite** | Attacker distributes requests across instances / cold starts |
-| **Trust boundary** | Edge/serverless process memory ≠ global enforcement |
-| **Scenario** | Credential stuffing / API hammering exceeds intended caps |
-| **Impact** | Account takeover attempts, AI/API cost amplification |
-| **Mitigation** | Shared store (Upstash/Redis/Vercel KV) or edge WAF rate rules |
-| **Confidence** | HIGH |
+| **Files** | `src/lib/security/rate-limit/**`; `src/lib/security/login-throttle.ts`; `src/lib/api/rate-limit/limits.ts`; portal/API/integration/EI/health/PDF callers |
+| **Remediation (code)** | Process-local Maps replaced with shared sliding-window store. Production uses Upstash Redis (`UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`, server-only). Dev/test use memory. Security-sensitive buckets **fail_closed** (no silent memory fallback in production). `/api/health` **fail_open**. Email identifiers hashed (SHA-256 of trim+lowercase) before keying. Portal login throttle added. API plan RPM preserved (30/60/120/300). |
+| **Failure matrix** | `fail_closed`: Redis missing/error → deny (auth, portal, API key RPM, integrations, EI, exports). `fail_open`: Redis missing/error → allow (`/api/health`, invalid-API-key IP companion). Exceeded limits return generic 429; backend unavailable returns generic 503 where applicable — no Redis secrets/stack traces. |
+| **Operator env (required for production shared authority)** | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` on Vercel Production (never `NEXT_PUBLIC_`). |
+| **Remaining blockers / residuals** | (1) Production Upstash provisioning + Vercel env unset/unverified at remediation time. (2) IP companion buckets only when `VERCEL=1` trusted forwarded IP — Server Actions without trusted IP skip IP companions (email-global still mandatory). (3) Invalid API-key IP abuse only on trusted Vercel IP (else residual). (4) Mollie webhook / cron / `/api/ready` / `/api/status` intentionally Redis-free. |
+| **Prerequisite (original)** | Attacker distributes requests across instances / cold starts |
+| **Confidence** | HIGH (code path); production enforcement **UNVERIFIED** until operator configures Redis |
 
 ### FINDING-003 — HIGH
 

@@ -41,3 +41,11 @@ export function apiRateLimited(retryAfterSeconds: number, limit: number): NextRe
     "Retry-After": String(retryAfterSeconds),
   });
 }
+
+export function apiServiceUnavailable(
+  message = "Service temporarily unavailable. Please try again.",
+): NextResponse {
+  return apiError(503, "service_unavailable", message, {
+    "Retry-After": "60",
+  });
+}

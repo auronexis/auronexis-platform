@@ -58,7 +58,7 @@ export async function generateGroundedExecutiveNarrative(input: {
     return fallback;
   }
 
-  const rate = checkExecutiveIntelligenceRateLimit(
+  const rate = await checkExecutiveIntelligenceRateLimit(
     input.session.organization.id,
     input.session.user.id,
   );

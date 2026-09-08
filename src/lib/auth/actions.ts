@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
+import { authThrottleUserMessage, checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
 import { sendWelcomeEmailAfterSignup } from "@/lib/email/welcome";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createWritableClient } from "@/lib/supabase/server";
@@ -52,10 +52,10 @@ export async function signIn(
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
   }
 
-  const throttle = checkLoginThrottle(parsed.data.email);
+  const throttle = await checkLoginThrottle(parsed.data.email);
   if (!throttle.allowed) {
     return {
-      error: `Too many sign-in attempts. Try again in ${throttle.retryAfterSeconds} seconds.`,
+      error: authThrottleUserMessage(throttle),
     };
   }
 
@@ -103,10 +103,10 @@ export async function signUp(
     return { error: parsed.error.issues[0]?.message ?? "Invalid registration data." };
   }
 
-  const throttle = checkSignupThrottle(parsed.data.email);
+  const throttle = await checkSignupThrottle(parsed.data.email);
   if (!throttle.allowed) {
     return {
-      error: `Too many registration attempts. Try again in ${throttle.retryAfterSeconds} seconds.`,
+      error: authThrottleUserMessage(throttle),
     };
   }
 

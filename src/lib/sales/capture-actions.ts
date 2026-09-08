@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { SALES_EMAIL } from "@/lib/company";
 import { resolveOrganizationEntitlements } from "@/lib/entitlements/resolver";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { checkPublicFormThrottle } from "@/lib/security/login-throttle";
+import { authThrottleUserMessage, checkPublicFormThrottle } from "@/lib/security/login-throttle";
 import { buildCalendlyLink, buildDiscoveryMeetLink } from "@/lib/sales/calendar";
 import {
   defaultInboxForSource,
@@ -232,10 +232,13 @@ async function persistInboundLead(input: CaptureInput): Promise<PersistResult> {
   };
 }
 
-async function validatePublicSubmission(email: string): Promise<CaptureActionState | null> {
-  const throttle = checkPublicFormThrottle(email);
+async function validatePublicSubmission(
+  email: string,
+  route: string,
+): Promise<CaptureActionState | null> {
+  const throttle = await checkPublicFormThrottle(email, route);
   if (!throttle.allowed) {
-    return { error: `Too many submissions. Try again in ${throttle.retryAfterSeconds} seconds.` };
+    return { error: authThrottleUserMessage(throttle) };
   }
 
   return null;
@@ -289,7 +292,7 @@ export async function submitContactLead(_prev: CaptureActionState, formData: For
     return { error: parsed.error.issues[0]?.message ?? "Invalid form data." };
   }
 
-  const blocked = await validatePublicSubmission(parsed.data.email);
+  const blocked = await validatePublicSubmission(parsed.data.email, "contact");
   if (blocked) return blocked;
 
   const marketingGranted = isMarketingConsentGranted(formData);
@@ -333,7 +336,7 @@ export async function submitPilotApplication(_prev: CaptureActionState, formData
     }
   }
 
-  const blocked = await validatePublicSubmission(parsed.data.email);
+  const blocked = await validatePublicSubmission(parsed.data.email, "pilot");
   if (blocked) return blocked;
 
   const marketingGranted = isMarketingConsentGranted(formData);
@@ -367,7 +370,7 @@ export async function submitDemoRequest(_prev: CaptureActionState, formData: For
     return { error: parsed.error.issues[0]?.message ?? "Invalid form data." };
   }
 
-  const blocked = await validatePublicSubmission(parsed.data.email);
+  const blocked = await validatePublicSubmission(parsed.data.email, "demo");
   if (blocked) return blocked;
 
   const result = await persistInboundLead({
@@ -396,7 +399,7 @@ export async function submitNewsletterSignup(_prev: CaptureActionState, formData
     };
   }
 
-  const blocked = await validatePublicSubmission(parsed.data.email);
+  const blocked = await validatePublicSubmission(parsed.data.email, "newsletter");
   if (blocked) return blocked;
 
   const result = await persistInboundLead({
@@ -420,7 +423,7 @@ export async function submitReferralLead(_prev: CaptureActionState, formData: Fo
     return { error: parsed.error.issues[0]?.message ?? "Invalid form data." };
   }
 
-  const blocked = await validatePublicSubmission(parsed.data.email);
+  const blocked = await validatePublicSubmission(parsed.data.email, "referral");
   if (blocked) return blocked;
 
   const result = await persistInboundLead({
