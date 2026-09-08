@@ -204,7 +204,7 @@ Application trust boundaries for session APIs, public API keys, cron Bearer auth
 - Tenant pattern: `organization_id = public.current_organization_id()` across modules.
 - **P0 history:** weak `users_update_self` / portal self-update (see §6).
 
-**Tenant-isolation verdict:** **PASS (application)** / **PASS (production RLS locks verified live 2026-09-08)** — migration-history bookkeeping for `2026090316/170000` remains outstanding separately.
+**Tenant-isolation verdict:** **PASS (application)** / **PASS (production RLS locks verified live 2026-09-08)** — migration history for `20260903160000` / `20260903170000` reconciled 2026-09-08 (`migration repair --status applied`; SQL not re-executed).
 
 ---
 
