@@ -221,9 +221,9 @@ Application trust boundaries for session APIs, public API keys, cron Bearer auth
 | Invoice counters | RLS enabled, no authenticated policies (defense in depth) |
 | Admin client | `server-only`; PostgREST uses `apikey` without Bearer secret JWT mistake (`admin.ts:19-50`) |
 
-**Known prior P0 relevance:** **CLOSED in production** (users lock already live; portal lock applied 2026-09-08). Source remediation exists (`4a01eba`). Migration history still misaligned.
+**Known prior P0 relevance:** **CLOSED in production** (users lock already live; portal lock applied 2026-09-08). Source remediation exists (`4a01eba`). Migration history reconciled 2026-09-08.
 
-**Domain verdict: PASS (live policies)** — bookkeeping of `schema_migrations` remains a separate ops item.
+**Domain verdict: PASS (live policies + schema_migrations aligned for both lock versions).**
 
 ---
 
@@ -527,7 +527,7 @@ API unknown paths: Next default 404 (not remapped to privileged handlers).
 | **Competing portal UPDATE** | `client_portal_users_update_agency` remains owner/admin-only — not a portal-user bypass |
 | **Users regression** | `users_update_self` unchanged and still locked after portal remediation |
 | **Mutation test** | NOT PERFORMED — SAFETY CONSTRAINT (no disposable portal identity) |
-| **Migration history** | Neither `20260903160000` nor `20260903170000` recorded in `schema_migrations` — **bookkeeping still outstanding** (separate from enforcement) |
+| **Migration history** | `20260903160000` + `20260903170000` recorded applied via `supabase migration repair --status applied --linked` on 2026-09-08 — **no migration SQL re-executed**; post-check policies unchanged |
 | **Confidence** | HIGH (live `pg_policies` re-read after mutation) |
 
 ### FINDING-002 — HIGH
@@ -758,7 +758,7 @@ Webhook without matching paid Mollie payment + ownership should ignore/fail; no 
 |------|-----------|--------|
 | **A** | No unauthenticated privileged execution (cron/admin) | **PASS** (source) |
 | **B** | Tenant isolation Org A ↛ Org B on app APIs | **PASS** |
-| **C** | Production RLS privilege/tenant locks confirmed applied | **PASS** (live 2026-09-08; migration-history bookkeeping still outstanding) |
+| **C** | Production RLS privilege/tenant locks confirmed applied | **PASS** (live 2026-09-08; history repaired same day) |
 | **D** | Entitlements not client-controlled | **PASS** |
 | **E** | Webhook authenticity model sound | **PASS** |
 | **F** | Secrets not in client/git | **PASS** |
@@ -768,7 +768,7 @@ Webhook without matching paid Mollie payment + ownership should ignore/fail; no 
 
 ### Prioritized remediation plan (DO NOT IMPLEMENT IN THIS AUDIT)
 
-1. ~~**P0 ops:** apply portal/users RLS locks~~ → **DONE 2026-09-08** for live enforcement; optional: reconcile `schema_migrations` for `2026090316/170000` without re-applying users SQL.  
+1. ~~**P0 ops:** apply portal/users RLS locks~~ → **DONE 2026-09-08** for live enforcement; ~~reconcile `schema_migrations`~~ → **DONE 2026-09-08** (`migration repair --status applied` for `2026090316/170000` only; SQL not re-run).  
 3. **P1:** Replace in-memory rate limits with shared limiter + WAF rules for `/login`, signup, reset, `/api/v1/*`.  
 4. **P1:** Treat `CRON_SECRET` as tier-0; rotate; consider split secrets for operator vs cron; restrict probe.  
 5. **P2:** CSP nonces; PDF logo through `validateOutboundUrl`; tighten public `/api/status` fields.  
