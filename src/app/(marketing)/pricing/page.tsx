@@ -33,13 +33,28 @@ export default async function PublicPricingPage() {
       <MarketingHero
         eyebrow="Pricing"
         title="Professional, Business, and Enterprise"
-        description="Transparent plans for agencies scaling client operations. Compare capabilities and choose the right tier."
+        description="EUR catalog pricing for MSPs and agencies running multi-client operations — client portal, reporting, automation, and plan-gated risk, incident, and SLA modules. Choose the tier that matches your portfolio size."
         primaryHref="/signup"
         primaryLabel="Get started"
         secondaryHref="/login"
         secondaryLabel="Sign in"
       />
       <MarketingSection title="Plans">
+        <p className="mb-6 max-w-3xl text-sm text-muted">
+          Built for multi-client operators evaluating{" "}
+          <AuthAwareMarketingLink href="/use-cases/msps" className="font-medium text-primary hover:underline">
+            MSP portfolio operations
+          </AuthAwareMarketingLink>
+          ,{" "}
+          <AuthAwareMarketingLink href="/solutions/ai-reporting" className="font-medium text-primary hover:underline">
+            automated client reporting
+          </AuthAwareMarketingLink>
+          , and{" "}
+          <AuthAwareMarketingLink href="/features/profitability" className="font-medium text-primary hover:underline">
+            portfolio profitability reporting
+          </AuthAwareMarketingLink>
+          .
+        </p>
         <div className="grid gap-4 lg:grid-cols-3">
           {plans.map((plan) => (
             <article

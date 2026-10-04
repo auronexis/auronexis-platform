@@ -15,11 +15,11 @@ function assertUnique(values, label) {
 test("priority page owns automated client reporting intent in title, H1 source, and meta", () => {
   const solution = readSource("src/lib/seo/landing-content.ts");
   assert.match(solution, /slug: "ai-reporting"/);
-  assert.match(solution, /title: "Automated client reporting for agencies and MSPs"/);
+  assert.match(solution, /title: "Automated Client Reporting Software for MSPs & Agencies"/);
   assert.match(solution, /definitionTerm: "Automated client reporting"/);
   assert.match(
     solution,
-    /metaDescription:\s*\n\s*"Automated client reporting for agencies and MSPs:/,
+    /metaDescription:\s*\n\s*"Automated client reporting software for MSPs and agencies:/,
   );
   assert.match(solution, /What is automated client reporting in Auroranexis\?/);
   assert.match(solution, /Is AI required for automated client reporting\?/);
@@ -30,7 +30,7 @@ test("supporting report pages do not use the primary solution H1", () => {
   const feature = readSource("src/lib/seo/feature-content.ts");
   assert.match(feature, /title: "Report templates, schedules, and publication workflows"/);
   assert.match(feature, /title: "AI-assisted executive reports for leadership briefings"/);
-  assert.doesNotMatch(feature, /title: "Automated client reporting for agencies and MSPs"/);
+  assert.doesNotMatch(feature, /title: "Automated Client Reporting Software for MSPs & Agencies"/);
   assert.match(feature, /href: SOLUTION_ROUTES\.aiReporting/);
 });
 
@@ -80,7 +80,7 @@ test("solution and feature page titles used as metadata remain unique", () => {
       );
     }
   }
-  assert.ok(titles.includes("Automated client reporting for agencies and MSPs"));
+  assert.ok(titles.includes("Automated Client Reporting Software for MSPs & Agencies"));
   assertUnique(titles, "public page title");
   assertUnique(metas.filter(Boolean), "meta description");
 });
@@ -94,6 +94,8 @@ test("homepage and hubs link to automated client reporting with descriptive anch
   assert.match(home, /href="\/solutions\/ai-reporting"/);
   assert.match(home, /Incident management with SLA tracking/);
   assert.match(home, /MSP portfolio operations/);
+  assert.match(home, /secondaryHref=\{MARKETING_ROUTES\.pricing\}/);
+  assert.match(home, /secondaryLabel="See pricing"/);
   assert.match(features, /Automated client reporting/);
   assert.match(solutions, /automated client reporting/);
   assert.match(marketing, /ctaHref: "\/solutions\/ai-reporting"/);

@@ -59,9 +59,9 @@ function buildLandingPageSeo(): Record<string, { title: string; description: str
 
 const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = {
   [MARKETING_ROUTES.home]: {
-    title: "Operations Command Center for AI Agencies & MSPs",
+    title: "MSP & Agency Client Operations Software",
     description:
-      "Auroranexis is a B2B operations platform for AI automation agencies and MSPs — client health, risk, incidents, monitoring, reporting, and delivery transparency in one workspace.",
+      "Client health, SLA, incidents, and reporting for multi-client MSPs and agencies — one operations workspace for portfolio delivery, not a generic CRM.",
   },
   [MARKETING_ROUTES.features]: {
     title: "Client Operations Features for Agencies & MSPs",
@@ -99,9 +99,9 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
       "Frequently asked questions about Auroranexis — billing, security, AI, client portal, reports, integrations, and enterprise plans.",
   },
   [MARKETING_ROUTES.pricing]: {
-    title: "B2B SaaS Pricing for Agency Operations",
+    title: "MSP & Agency Operations Pricing (EUR)",
     description:
-      "Transparent EUR catalog pricing for Professional, Business, and Enterprise plans — tax confirmed from billing context at checkout.",
+      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — client operations platform for MSPs and agencies. Tax confirmed from billing context at checkout.",
   },
   [MARKETING_ROUTES.enterprise]: {
     title: "Enterprise Client Operations for MSPs & Agencies",
@@ -109,9 +109,9 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
       "Enterprise-grade client operations for MSPs and agencies — security, scale, AI copilot, and dedicated support.",
   },
   [MARKETING_ROUTES.security]: {
-    title: "Platform Security for Agency Operations",
+    title: "Security & Trust for Agency Operations Software",
     description:
-      "Security practices, encryption, access controls, and responsible disclosure for the Auroranexis B2B SaaS platform.",
+      "Encryption, role-based access, audit logging, and responsible disclosure for MSP and agency operations software — without inventing SOC 2 or ISO certifications.",
   },
   [MARKETING_ROUTES.vulnerabilityDisclosure]: {
     title: "Vulnerability Disclosure Policy",

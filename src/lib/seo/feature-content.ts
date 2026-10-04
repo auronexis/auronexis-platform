@@ -2,6 +2,7 @@ import {
   MARKETING_ROUTES,
   FEATURE_ROUTES,
   SOLUTION_ROUTES,
+  USE_CASE_ROUTES,
 } from "@/lib/company/company-links";
 import {
   buildLandingPage,
@@ -18,15 +19,15 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     eyebrow: "Feature",
     title: "AI-assisted executive reports for leadership briefings",
     description:
-      "Draft structured executive summaries from verified operational data — with a clear split between facts and recommendations, and human review before publication.",
+      "Draft structured leadership briefings from verified operational data — with a clear split between facts and recommendations, and human review before publication.",
     metaDescription:
-      "AI-assisted executive reports for agencies: leadership briefings from incidents, risks, and SLA data, with reviewer validation before client or exec delivery.",
+      "AI-assisted leadership briefings for agencies: executive summaries from incidents, risks, and SLA data, with reviewer validation. Automated client reporting lives on the solution page.",
     problem:
       "Leadership briefings are assembled manually from spreadsheets, ticket exports, and email threads. By the time a report reaches a client or executive, the narrative is outdated and hard to defend.",
     solution:
-      "Auroranexis drafts executive reports from live client data — incidents, risks, SLA outcomes, and delivery activity. AI assists with narrative structure while keeping source signals visible so reviewers can validate claims before publication.",
+      "Auroranexis drafts executive leadership briefings from live client data — incidents, risks, SLA outcomes, and delivery activity. AI assists with narrative structure while keeping source signals visible so reviewers can validate claims before publication. Recurring client report cadence (templates, schedules, portal PDF) is owned by automated client reporting.",
     businessValue:
-      "Reduce hours spent on recurring executive reporting while improving consistency across your portfolio. Teams publish briefings faster and with a clearer audit trail of what data informed each summary.",
+      "Reduce hours spent on recurring leadership briefings while improving consistency across your portfolio. Teams publish briefings faster and with a clearer audit trail of what data informed each summary.",
     audience:
       "Operations leaders, client success directors, and delivery managers at MSPs and agencies who produce recurring executive updates for clients or internal leadership.",
     enterpriseAdvantages: [
@@ -66,15 +67,20 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
           "No. Auroranexis is designed for human-in-the-loop review. AI assists with structure and narrative; your team approves content before publication.",
       },
       {
+        question: "Is this the same as automated client reporting?",
+        answer:
+          "No. This feature supports AI-assisted leadership briefings. Automated client reporting — templates, schedules, generate, PDF, and portal delivery — is the primary outcome page for recurring client reports.",
+      },
+      {
         question: "What data sources feed executive reports?",
         answer:
           "Reports draw from operational records in your workspace — clients, incidents, risks, SLA performance, and delivery activity — depending on your configured templates.",
       },
     ],
     relatedLinks: [
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
       { label: "Report templates and schedules", href: FEATURE_ROUTES.reports },
       { label: "Portfolio KPI dashboards", href: FEATURE_ROUTES.executiveDashboards },
-      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
       { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
     ],
     primaryCta: "startFreeTrial",
@@ -156,15 +162,15 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Automation software for agency operations workflows",
+    title: "Agency Operations Automation Software",
     description:
       "Define triggers, actions, and execution history to reduce manual follow-up across your client portfolio.",
     metaDescription:
-      "Agency operations automation: workflow builder, triggers, execution logs, and event-driven follow-up inside the Auroranexis workspace.",
+      "Agency operations automation software: workflow builder, triggers, execution logs, and event-driven follow-up inside the Auroranexis workspace — not RPA or receptionist tooling.",
     problem:
       "Repeatable operational tasks — escalation reminders, status updates, report notifications — still depend on individuals remembering to act. Manual coordination does not scale across dozens of clients.",
     solution:
-      "Auroranexis lets you build automation workflows with defined triggers and actions inside your operations workspace. Monitor execution history, connect delivery events, and standardize responses without leaving the platform.",
+      "Auroranexis lets you build agency operations automation workflows with defined triggers and actions inside your operations workspace. Monitor execution history, connect delivery events, and standardize responses without leaving the platform.",
     businessValue:
       "Free delivery teams from repetitive coordination while improving consistency. Automations run with organization-scoped logs so leaders can audit what fired and when.",
     audience:
@@ -206,6 +212,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
           "Professional and above include the Automation workspace, AI builder, connectors, and workflow builder. Business and Enterprise add the operational automation engine and higher automation limits.",
       },
       {
+        question: "Is this RPA or a virtual receptionist product?",
+        answer:
+          "No. Auroranexis focuses on agency operations automation inside the client operations workspace — triggers, actions, and execution logs for delivery workflows — not robotic process automation or receptionist automation products.",
+      },
+      {
         question: "Do I need engineering resources to build automations?",
         answer:
           "No. Auroranexis provides a workflow builder for common operational triggers and actions. Complex integrations may require connector configuration.",
@@ -217,13 +228,14 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Automation agencies use case", href: USE_CASE_ROUTES.automationAgencies },
       { label: "Integrations", href: MARKETING_ROUTES.integrations },
-      { label: "Incidents", href: FEATURE_ROUTES.incidents },
       { label: "Portfolio monitoring", href: FEATURE_ROUTES.monitoring },
       { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
-    secondaryCta: "contactSales",
+    secondaryCta: "seePricing",
   }),
 
   monitoring: buildLandingPage({
@@ -378,13 +390,13 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     eyebrow: "Feature",
     title: "Client health monitoring across your portfolio",
     description:
-      "Combine operational signals into client health indicators so teams know which accounts need attention and why.",
+      "Combine operational signals into client health indicators so teams know which accounts need attention and why — supporting the customer health score solution.",
     metaDescription:
-      "Client health monitoring for MSPs — portfolio health signals, threshold alerts, and account oversight in Auroranexis.",
+      "How Auroranexis monitors client health signals across a portfolio. Outcome ownership: customer health score software for agencies and MSPs.",
     problem:
       "Account health is assessed subjectively during QBRs or when a client threatens to churn. Without structured health signals, teams intervene too late to protect delivery quality and revenue.",
     solution:
-      "Auroranexis derives client health indicators from operational data — incident volume, open risks, SLA performance, and delivery activity. Teams see which clients are stable, which are declining, and what signals drive the assessment.",
+      "Auroranexis derives client health indicators from operational data — incident volume, open risks, SLA performance, and delivery activity. Teams see which clients are stable, which are declining, and what signals drive the assessment. For the outcome-oriented health score page, see customer health score software.",
     businessValue:
       "Enable proactive account management with evidence-backed health views. Leadership allocates retention and delivery resources based on current portfolio signals, not gut feel.",
     audience:
@@ -426,19 +438,24 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
           "No. Health indicators reflect operational signals in your workspace — such as incident volume, open risks, and SLA outcomes — with visible underlying data.",
       },
       {
+        question: "Where should I start for health score outcomes?",
+        answer:
+          "Use the customer health score solution page for outcome framing. This feature page explains how monitoring signals are assembled in the workspace.",
+      },
+      {
         question: "Can clients see their health status?",
         answer:
           "You control portal visibility. Share appropriate health context with clients based on your delivery and contractual policies.",
       },
     ],
     relatedLinks: [
-      { label: "Customer success", href: FEATURE_ROUTES.customerSuccess },
+      { label: "Customer health score software", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Customer success tools", href: FEATURE_ROUTES.customerSuccess },
       { label: "Monitoring", href: FEATURE_ROUTES.monitoring },
-      { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
       { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
-    secondaryCta: "contactSales",
+    secondaryCta: "seePricing",
   }),
 
   "executive-dashboards": buildLandingPage({
@@ -661,11 +678,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Client and portfolio profitability reporting",
+    title: "Client & Portfolio Profitability Reporting for Agencies",
     description:
-      "Connect delivery effort to client revenue context so leaders see which accounts drive margin and which need commercial attention.",
+      "Connect delivery effort to client revenue context so leaders see which accounts drive margin and which need commercial attention — not a replacement accounting system.",
     metaDescription:
-      "Client and portfolio profitability reporting for agencies: delivery effort, margin context, and operational signals in one workspace — not a replacement accounting system.",
+      "Client and portfolio profitability reporting for agencies and MSPs: delivery effort, margin context, and operational signals in one workspace — not a replacement accounting system.",
     problem:
       "Agencies grow revenue without clear visibility into which clients consume disproportionate delivery effort. Profitability conversations happen in finance spreadsheets disconnected from operational reality.",
     solution:
@@ -717,13 +734,14 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Profitability docs", href: "/docs/profitability" },
-      { label: "Portfolio KPI dashboards", href: FEATURE_ROUTES.executiveDashboards },
+      { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
       { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
-      { label: "Customer success", href: FEATURE_ROUTES.customerSuccess },
+      { label: "Portfolio KPI dashboards", href: FEATURE_ROUTES.executiveDashboards },
+      { label: "Profitability docs", href: "/docs/profitability" },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
-    secondaryCta: "contactSales",
+    secondaryCta: "seePricing",
   }),
 
   "customer-success": buildLandingPage({
@@ -731,15 +749,15 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Customer success tools for agency portfolios",
+    title: "Customer Success Tools for Agencies & MSPs",
     description:
-      "Track adoption, engagement, and delivery outcomes to support retention and proactive account management.",
+      "Track adoption, engagement, and delivery outcomes to support retention and proactive account management — without replacing the customer health score solution.",
     metaDescription:
-      "Customer success for MSPs — adoption tracking, account oversight, and retention-focused delivery in Auroranexis.",
+      "Customer success tools for agencies and MSPs: account review context, adoption signals, and retention-focused delivery inside Auroranexis. Health score outcomes live on the solution page.",
     problem:
       "Customer success teams lack operational visibility into how clients use delivered services. Retention conversations happen without evidence of adoption gaps or delivery friction.",
     solution:
-      "Auroranexis connects customer success workflows to operational data — health indicators, report engagement, incident patterns, and delivery activity. Account teams see which clients are thriving and which need structured intervention.",
+      "Auroranexis connects customer success workflows to operational data — health indicators, report engagement, incident patterns, and delivery activity. Account teams see which clients are thriving and which need structured intervention. Portfolio health-score outcomes are owned by the customer health score solution.",
     businessValue:
       "Improve retention with evidence-backed account reviews. Align customer success outreach with actual delivery signals instead of calendar-driven check-ins alone.",
     audience:
@@ -781,19 +799,25 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
           "It provides operational customer success context within your command center. Teams may integrate with CRM tools via connectors for broader sales workflows.",
       },
       {
+        question: "How does this relate to customer health score?",
+        answer:
+          "This feature page covers CS workflows and account tools. Customer health score software is the outcome owner for portfolio health scoring.",
+      },
+      {
         question: "How are adoption signals measured?",
         answer:
           "Signals reflect operational activity in your workspace — report engagement, portal usage, incident patterns, and configured health indicators.",
       },
     ],
     relatedLinks: [
-      { label: "Customer success docs", href: "/docs/customer-success" },
-      { label: "Health monitoring", href: FEATURE_ROUTES.healthMonitoring },
+      { label: "Customer health score software", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Health monitoring feature", href: FEATURE_ROUTES.healthMonitoring },
       { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
-      { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
-    secondaryCta: "contactSales",
+    secondaryCta: "seePricing",
   }),
 
   reports: buildLandingPage({

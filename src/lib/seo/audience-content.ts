@@ -204,15 +204,15 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/use-cases",
     category: "audience",
     eyebrow: "Use case",
-    title: "Portfolio operations built for MSPs",
+    title: "MSP Client Portfolio Management Software",
     description:
       "Monitor multi-client health, track and report SLA performance with auditable records, and standardize delivery across your managed services portfolio.",
     metaDescription:
-      "Managed services portfolio operations for MSPs — client health, SLA tracking, incidents, reporting, and portal delivery in Auroranexis.",
+      "MSP client portfolio management software — client health, SLA monitoring, incidents, automated reporting, profitability context, and portal delivery for managed services portfolios.",
     problem:
       "MSPs operate at scale with hundreds of endpoints and dozens of clients, yet operational visibility remains fragmented. Leadership cannot quickly answer which accounts are at risk, technicians lack context during handoffs, and QBR preparation pulls senior staff away from delivery.",
     solution:
-      "Auroranexis gives MSPs a portfolio command center designed for multi-client operators. Track health signals, incidents, risks, and SLA performance per client while providing transparent status through a branded portal — all from one workspace. Risk, incident, and SLA modules require Business or Enterprise; Professional supports client portal, reporting, profitability, and automation builder workflows.",
+      "Auroranexis gives MSPs client portfolio management software designed for multi-client operators. Track health signals, incidents, risks, and SLA performance per client while providing transparent status through a branded portal — all from one workspace. Risk, incident, and SLA modules require Business or Enterprise; Professional supports client portal, reporting, profitability, and automation builder workflows. Auroranexis is not an RMM or PSA replacement — it is the operations layer for portfolio visibility, reporting, and delivery accountability.",
     businessValue:
       "Help teams identify at-risk accounts earlier with operational signals, support retention efforts through proactive operational transparency, and support delivery oversight across a growing client portfolio. MSPs compete on reliability — Auroranexis helps teams document operational performance with auditable records.",
     audience:
@@ -246,6 +246,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       "Client portal with white-label options (Professional and above)",
       "Automation builder on Professional+; operational automation engine on Business and Enterprise",
       "Executive reports and export for QBR and leadership reviews",
+      "Client and portfolio profitability reporting context alongside delivery records",
     ],
     challenges: [
       "Portfolio health is assessed subjectively during account reviews instead of continuously",
@@ -277,9 +278,9 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
           "Professional supports up to 25 clients. Business and Enterprise plans offer higher limits, with custom allocations available through sales for large portfolios.",
       },
       {
-        question: "Does this integrate with ConnectWise, Datto, or other MSP tools?",
+        question: "Does this replace ConnectWise, Datto, or other RMM/PSA tools?",
         answer:
-          "Auroranexis provides integration connectors and API access. Specific connector availability depends on your plan and configured integrations.",
+          "No. Auroranexis is client portfolio operations software — health, SLA, incidents, reporting, portal, and profitability context. It provides connectors and API access where configured; it does not claim to replace RMM or PSA platforms.",
       },
       {
         question: "Can we automate responses to operational events?",
@@ -288,14 +289,16 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "IT industry", href: INDUSTRY_ROUTES.it },
-      { label: "IT service providers", href: USE_CASE_ROUTES.itServiceProviders },
       { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "SLA monitoring software", href: SOLUTION_ROUTES.slaManagement },
+      { label: "Incident management", href: SOLUTION_ROUTES.incidentManagement },
       { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
-      { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
+      { label: "Portfolio profitability reporting", href: FEATURE_ROUTES.profitability },
+      { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
     primaryCta: "startFreeTrial",
-    secondaryCta: "contactSales",
+    secondaryCta: "seePricing",
   }),
 
   consultancies: buildLandingPage({
