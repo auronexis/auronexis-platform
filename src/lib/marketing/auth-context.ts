@@ -57,7 +57,11 @@ const PUBLIC_SIGNUP_LABELS = [
 const PUBLIC_SIGNIN_LABELS = [/^sign in$/i, /^login$/i];
 
 export function remapPublicHrefForAuthenticated(href: string): string {
-  if (href === MARKETING_ROUTES.contact || href === "/contact") {
+  if (
+    href === MARKETING_ROUTES.contact ||
+    href === "/contact" ||
+    href.startsWith("/contact#")
+  ) {
     return SUPPORT_BILLING_CONTACT_PATH;
   }
 
@@ -99,6 +103,7 @@ export function resolveMarketingHeroActions(
   const secondaryIsContactSales =
     props.secondaryHref === MARKETING_ROUTES.contact ||
     props.secondaryHref === "/contact" ||
+    (typeof props.secondaryHref === "string" && props.secondaryHref.startsWith("/contact#")) ||
     props.secondaryLabel === "Contact sales";
 
   let primaryHref = props.primaryHref;

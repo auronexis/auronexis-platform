@@ -8,6 +8,7 @@ type MarketingCtaSectionProps = {
   description: string;
   primaryPreset?: keyof typeof MARKETING_CTA_PRESETS;
   secondaryPreset?: keyof typeof MARKETING_CTA_PRESETS;
+  tertiaryPreset?: keyof typeof MARKETING_CTA_PRESETS;
   className?: string;
 };
 
@@ -17,10 +18,12 @@ export function MarketingCtaSection({
   description,
   primaryPreset = "startFreeTrial",
   secondaryPreset = "seePricing",
+  tertiaryPreset,
   className,
 }: MarketingCtaSectionProps) {
   const primary = MARKETING_CTA_PRESETS[primaryPreset];
   const secondary = MARKETING_CTA_PRESETS[secondaryPreset];
+  const tertiary = tertiaryPreset ? MARKETING_CTA_PRESETS[tertiaryPreset] : null;
 
   return (
     <section
@@ -57,6 +60,17 @@ export function MarketingCtaSection({
           >
             {secondary.label}
           </MarketingButton>
+          {tertiary ? (
+            <MarketingButton
+              href={tertiary.href}
+              variant={tertiary.variant === "primary" ? "outline" : tertiary.variant}
+              ctaId={tertiary.id}
+              analyticsEvent={tertiary.analyticsEvent}
+              analyticsProps={tertiary.analyticsProps}
+            >
+              {tertiary.label}
+            </MarketingButton>
+          ) : null}
         </div>
       </div>
     </section>

@@ -203,102 +203,110 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     slug: "msps",
     pathPrefix: "/use-cases",
     category: "audience",
-    eyebrow: "Use case",
+    eyebrow: "Use case · MSPs",
     title: "MSP Client Portfolio Management Software",
     description:
-      "Monitor multi-client health, track and report SLA performance with auditable records, and standardize delivery across your managed services portfolio.",
+      "For MSP owners and service delivery managers: monitor multi-client health, track and report SLA performance with auditable records, run incidents and risks per account, and publish multi-client reporting across your managed services portfolio.",
     metaDescription:
-      "MSP client portfolio management software — client health, SLA monitoring, incidents, automated reporting, profitability context, and portal delivery for managed services portfolios.",
+      "MSP client portfolio management software for managed services portfolios — client health, SLA monitoring, incidents, risk registers, automated reporting, profitability context, and portal delivery.",
     problem:
-      "MSPs operate at scale with hundreds of endpoints and dozens of clients, yet operational visibility remains fragmented. Leadership cannot quickly answer which accounts are at risk, technicians lack context during handoffs, and QBR preparation pulls senior staff away from delivery.",
+      "MSPs run dozens of clients with technicians, account managers, and leadership sharing fragmented status. Without a shared operations layer, teams cannot quickly see which accounts need attention, SLA and incident context is scattered across PSA exports and chat, and QBR preparation pulls senior staff away from delivery.",
     solution:
-      "Auroranexis gives MSPs client portfolio management software designed for multi-client operators. Track health signals, incidents, risks, and SLA performance per client while providing transparent status through a branded portal — all from one workspace. Risk, incident, and SLA modules require Business or Enterprise; Professional supports client portal, reporting, profitability, and automation builder workflows. Auroranexis is not an RMM or PSA replacement — it is the operations layer for portfolio visibility, reporting, and delivery accountability.",
+      "Auroranexis is client portfolio management software for multi-client MSPs — not an RMM or PSA replacement. Use health and customer-success signals to prioritize accounts; on Business or Enterprise, manage incidents, risk registers, and per-client SLA policies with breach indicators; publish report templates, schedules, and portal updates from one workspace. Professional (up to 25 clients) includes client portal with white-label options, reporting, profitability tracking, and automation builder. Business adds risk, incident, SLA, escalation rules, and the operational automation engine (higher client limits); Enterprise adds custom limits, dedicated onboarding, and priority support.",
     businessValue:
       "Help teams identify at-risk accounts earlier with operational signals, support retention efforts through proactive operational transparency, and support delivery oversight across a growing client portfolio. MSPs compete on reliability — Auroranexis helps teams document operational performance with auditable records.",
     audience:
-      "Managed service providers of all sizes — from boutique MSPs to regional operators — who need portfolio visibility, SLA accountability, and client-facing transparency at scale.",
+      "Managed service providers — boutique MSPs through regional operators — whose owners, service delivery managers, and account leads need portfolio visibility, SLA accountability, and client-facing transparency without replacing existing RMM/PSA tooling.",
     enterpriseAdvantages: [
-      "High client limits on Business and Enterprise plans for large portfolios",
-      "White-label portal branding for client-facing delivery",
-      "Escalation rule integration for critical incident routing",
-      "Dedicated onboarding and custom limits on Enterprise plans",
+      "Business: up to 100 clients with risk, incident, SLA, escalation rules, and automation engine",
+      "Enterprise: custom client limits, dedicated onboarding, priority support, and plan overrides",
+      "White-label portal branding on Professional and above for client-facing delivery",
+      "Invite-only Pilot Partner path for qualified operators evaluating with sales guidance",
     ],
     benefits: [
       {
-        title: "Multi-client health monitoring",
+        title: "Portfolio health and account attention",
         description:
-          "Aggregate operational signals across your portfolio to surface accounts that need attention before renewal conversations.",
+          "Use operational health and customer-success signals across the managed services portfolio to surface accounts that need attention before renewals and QBRs.",
       },
       {
-        title: "SLA performance reporting",
+        title: "SLA, incidents, and risk on the right plan",
         description:
-          "Track and report SLA outcomes per client with auditable records suitable for contract reviews and QBRs.",
+          "On Business or Enterprise, assign SLA policies by client tier, track incidents against those policies, and keep risk registers with owners — then track and report SLA performance with auditable records.",
       },
       {
-        title: "Standardized delivery",
+        title: "Multi-client reporting and portal delivery",
         description:
-          "Apply consistent incident, risk, and reporting workflows across all clients regardless of team size.",
+          "Standardize report templates, scheduled drafts, PDF export, and branded portal updates so every client gets a consistent delivery story from the same workspace.",
       },
     ],
     capabilities: [
-      "Portfolio dashboards with health, incident, and risk summaries (Business and Enterprise for operational modules)",
-      "Per-client SLA policies with breach indicators (Business and Enterprise)",
-      "Client portal with white-label options (Professional and above)",
-      "Automation builder on Professional+; operational automation engine on Business and Enterprise",
-      "Executive reports and export for QBR and leadership reviews",
-      "Client and portfolio profitability reporting context alongside delivery records",
+      "Health and customer-success signals on Professional and above for portfolio attention workflows",
+      "Risk registers, incidents, SLA tracking, and escalation rules on Business and Enterprise",
+      "Client portal with white-label options on Professional and above",
+      "Report templates, scheduling, AI report assistant, and profitability tracking on Professional and above",
+      "Automation builder on Professional; operational automation engine on Business and Enterprise",
+      "Enterprise: custom limits, dedicated onboarding, priority support, and API readiness where configured",
     ],
     challenges: [
       "Portfolio health is assessed subjectively during account reviews instead of continuously",
-      "SLA data lives in PSA exports that are outdated by the time leadership sees them",
-      "Client communication is inconsistent — some accounts get proactive updates, others do not",
-      "Growing the client base increases reporting burden linearly",
+      "SLA and incident data lives in PSA exports that are stale by leadership review",
+      "Risk and delivery commitments are tracked inconsistently across technicians and account managers",
+      "Growing the client base increases QBR and status-reporting burden linearly",
     ],
     workflowImprovements: [
-      "Configure health thresholds and review portfolio dashboards on a fixed cadence",
-      "Assign SLA policies by client tier at onboarding and monitor breaches automatically",
-      "Deliver status updates through the client portal as standard practice",
-      "Use report templates for QBRs instead of building decks from scratch each quarter",
+      "Onboard clients into one workspace; review health and portfolio attention on a fixed cadence",
+      "On Business or Enterprise, assign SLA policies by tier, log incidents against policies, and maintain open risks with owners",
+      "Publish status and reports through the client portal as standard practice instead of ad-hoc email threads",
+      "Generate QBR drafts from report templates and schedules, then review before client delivery",
+      "Next action: book an MSP demo for SLA-backed portfolio evaluation, compare plans on pricing, or create a workspace for self-serve registration",
     ],
     expectedOutcomes: [
-      "Proactive account management driven by operational data, not gut feel",
-      "Documented SLA performance that strengthens renewal negotiations",
-      "Consistent client experience across the entire portfolio",
-      "Operational reporting that supports a growing client portfolio",
+      "Shared portfolio visibility for owners and service delivery managers",
+      "Documented operational and SLA records suitable for contract and QBR conversations",
+      "Consistent client communication via portal and report cadences",
+      "Clear Professional vs Business/Enterprise module path as the portfolio grows",
     ],
     faq: [
       {
-        question: "Which plan do MSPs need for SLA and incident modules?",
+        question: "Which plan do MSPs need for SLA, incident, and risk modules?",
         answer:
-          "Business or Enterprise. Professional supports up to 25 clients with portal, reporting, profitability, and automation builder workflows. Most MSPs managing SLA-backed portfolios upgrade to Business for risk, incident, SLA, and operational automation engine features.",
+          "Business or Enterprise. Professional supports up to 25 clients with portal, white-label options, reporting, profitability, and automation builder workflows. Most MSPs managing SLA-backed portfolios choose Business for risk, incident, SLA, escalation rules, and the operational automation engine (up to 100 clients). Enterprise is for custom limits and priority support.",
       },
       {
         question: "How many clients can an MSP manage in Auroranexis?",
         answer:
-          "Professional supports up to 25 clients. Business and Enterprise plans offer higher limits, with custom allocations available through sales for large portfolios.",
+          "Professional supports up to 25 clients. Business supports up to 100 clients. Enterprise supports custom client limits through sales.",
       },
       {
         question: "Does this replace ConnectWise, Datto, or other RMM/PSA tools?",
         answer:
-          "No. Auroranexis is client portfolio operations software — health, SLA, incidents, reporting, portal, and profitability context. It provides connectors and API access where configured; it does not claim to replace RMM or PSA platforms.",
+          "No. Auroranexis is client portfolio operations software — health, SLA, incidents, risk, reporting, portal, and profitability context. It provides connectors and API access where configured; it does not replace RMM or PSA platforms.",
       },
       {
-        question: "Can we automate responses to operational events?",
+        question: "What should an MSP do next?",
         answer:
-          "Yes on Business and Enterprise for event-driven operational automation. Professional includes the automation builder and connectors; upgrade when you need incident, risk, or SLA-triggered dispatch at scale.",
+          "Book an MSP demo to walk portfolio health, SLA, incident, risk, and reporting workflows; compare Professional vs Business/Enterprise on the pricing page; or create a workspace for self-serve registration. Pilot Partner remains invite-only for qualified operators.",
       },
     ],
     relatedLinks: [
       { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
       { label: "SLA monitoring software", href: SOLUTION_ROUTES.slaManagement },
       { label: "Incident management", href: SOLUTION_ROUTES.incidentManagement },
+      { label: "Operational risk management", href: SOLUTION_ROUTES.riskManagement },
       { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
       { label: "Portfolio profitability reporting", href: FEATURE_ROUTES.profitability },
       { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "Compare plans", href: MARKETING_ROUTES.pricing },
+      { label: "Create workspace", href: "/signup" },
+      { label: "Pilot Partner (invite-only)", href: MARKETING_ROUTES.pilotProgram },
     ],
-    primaryCta: "startFreeTrial",
-    secondaryCta: "seePricing",
+    primaryCta: "bookMspDemo",
+    secondaryCta: "comparePlans",
+    tertiaryCta: "startFreeTrial",
+    ctaTitle: "Evaluate Auroranexis for your MSP portfolio",
+    ctaDescription:
+      "Book an MSP demo for qualified discovery, compare Professional vs Business/Enterprise on pricing, or create a workspace for legitimate self-serve registration. Pilot Partner remains invite-only.",
   }),
 
   consultancies: buildLandingPage({

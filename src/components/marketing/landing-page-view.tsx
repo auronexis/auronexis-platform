@@ -143,10 +143,14 @@ export function LandingPageView({ content, breadcrumbParent }: LandingPageViewPr
       </MarketingSection>
 
       <MarketingCtaSection
-        title="Run client operations from one command center"
-        description="Create your workspace, connect clients, and standardize delivery with enterprise-grade controls."
+        title={content.ctaTitle ?? "Run client operations from one command center"}
+        description={
+          content.ctaDescription ??
+          "Create your workspace, connect clients, and standardize delivery with enterprise-grade controls."
+        }
         primaryPreset={content.primaryCta ?? "startFreeTrial"}
         secondaryPreset={content.secondaryCta ?? "contactSales"}
+        tertiaryPreset={content.tertiaryCta}
       />
     </MarketingShell>
   );

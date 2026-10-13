@@ -31,6 +31,14 @@ export const MARKETING_CTA_PRESETS = {
     analyticsEvent: "demo_requested",
     analyticsProps: { source: "cta" },
   },
+  bookMspDemo: {
+    id: "book_msp_demo",
+    label: "Book an MSP demo",
+    href: "/contact#demo",
+    variant: "primary",
+    analyticsEvent: "demo_requested",
+    analyticsProps: { source: "msp_use_case", surface: "use_cases_msps" },
+  },
   requestEnterpriseDemo: {
     id: "request_enterprise_demo",
     label: "Request enterprise demo",
