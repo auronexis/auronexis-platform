@@ -9,10 +9,17 @@ import {
 import { ApiScopeError, hasApiScope, type ApiContext } from "@/lib/api/auth/context";
 import { recordApiRequestLog } from "@/lib/api/audit";
 import { checkApiRateLimit, getRateLimitForPlan } from "@/lib/api/rate-limit/limits";
-import { apiError, apiRateLimited } from "@/lib/api/responses/json";
+import { apiError, apiRateLimited, apiServiceUnavailable } from "@/lib/api/responses/json";
 import type { ApiScope } from "@/lib/api/types";
+import {
+  apiInvalidKeyIpKey,
+  checkSlidingWindowRateLimit,
+  extractTrustedIpFromRequest,
+} from "@/lib/security/rate-limit";
 
 export type ApiHandler = (ctx: ApiContext, request: Request) => Promise<NextResponse>;
+
+const INVALID_KEY_IP_LIMIT_PER_MINUTE = 60;
 
 export async function withApiHandler(
   request: Request,
@@ -29,9 +36,9 @@ export async function withApiHandler(
   try {
     ctx = await authenticateApiRequest(request);
 
-    const rate = checkApiRateLimit({ apiKeyId: ctx.apiKeyId, planKey: ctx.planKey });
+    const rate = await checkApiRateLimit({ apiKeyId: ctx.apiKeyId, planKey: ctx.planKey });
     if (!rate.allowed) {
-      statusCode = 429;
+      statusCode = rate.backendUnavailable ? 503 : 429;
       await recordApiRequestLog({
         organizationId: ctx.organization.id,
         apiKeyId: ctx.apiKeyId,
@@ -39,8 +46,11 @@ export async function withApiHandler(
         path,
         statusCode,
         durationMs: Date.now() - startedAt,
-        rateLimited: true,
+        rateLimited: !rate.backendUnavailable,
       });
+      if (rate.backendUnavailable) {
+        return apiServiceUnavailable();
+      }
       return apiRateLimited(rate.retryAfterSeconds, rate.limit);
     }
 
@@ -73,6 +83,21 @@ export async function withApiHandler(
   } catch (error) {
     if (error instanceof ApiAuthenticationError) {
       statusCode = 401;
+      // Residual: invalid-key IP abuse only when Vercel provides a trusted forwarded IP.
+      const trustedIp = extractTrustedIpFromRequest(request);
+      if (trustedIp) {
+        const abuse = await checkSlidingWindowRateLimit({
+          key: apiInvalidKeyIpKey(trustedIp),
+          limit: INVALID_KEY_IP_LIMIT_PER_MINUTE,
+          windowMs: 60_000,
+          failurePolicy: "fail_open",
+          bucketClass: "api.invalid_key.ip",
+        });
+        if (!abuse.allowed) {
+          statusCode = 429;
+          return apiRateLimited(abuse.retryAfterSeconds, abuse.limit);
+        }
+      }
       return apiError(401, "unauthorized", error.message);
     }
     if (error instanceof ApiFeatureError) {

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { AUTH_MESSAGES, isBenignPasswordResetError, sanitizeAuthError } from "@/lib/auth/messages";
 import { validatePasswordPolicy } from "@/lib/auth/password-policy";
-import { checkPasswordResetThrottle } from "@/lib/security/login-throttle";
+import { authThrottleUserMessage, checkPasswordResetThrottle } from "@/lib/security/login-throttle";
 import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import { createWritableClient } from "@/lib/supabase/server";
@@ -68,10 +68,12 @@ export async function requestPasswordResetAction(
     return { error: parsed.error.issues[0]?.message ?? AUTH_MESSAGES.INVALID_EMAIL };
   }
 
-  const throttle = checkPasswordResetThrottle(parsed.data.email);
+  const throttle = await checkPasswordResetThrottle(parsed.data.email);
   if (!throttle.allowed) {
     return {
-      error: AUTH_MESSAGES.RATE_LIMITED,
+      error: throttle.backendUnavailable
+        ? authThrottleUserMessage(throttle)
+        : AUTH_MESSAGES.RATE_LIMITED,
       retryAfterSeconds: throttle.retryAfterSeconds,
     };
   }

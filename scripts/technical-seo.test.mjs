@@ -96,7 +96,7 @@ test("PAGE_SEO registry has unique titles for critical pages", () => {
   const routes = readSource("src/lib/seo/routes.ts");
   const titles = [...routes.matchAll(/title:\s*"([^"]+)"/g)].map((match) => match[1]);
   const critical = [
-    "B2B SaaS Pricing for Agency Operations",
+    "MSP & Agency Operations Pricing (EUR)",
     "Client Operations Features for Agencies & MSPs",
     "Enterprise Client Operations for MSPs & Agencies",
     "Integrations for Agency Operations Platforms",
@@ -539,7 +539,7 @@ test("operator SEO checklist documents GSC Bing and IndexNow without fabricated 
 test("marketing and docs SEO titles do not cannibalize Security/Compliance/Integrations", () => {
   const routes = readSource("src/lib/seo/routes.ts");
   const registry = readSource("src/lib/docs/registry.ts");
-  assert.match(routes, /Platform Security for Agency Operations/);
+  assert.match(routes, /Security & Trust for Agency Operations Software/);
   assert.match(routes, /Compliance Workflows for Client Operations/);
   assert.match(routes, /Integrations for Agency Operations Platforms/);
   assert.match(registry, /Security documentation/);

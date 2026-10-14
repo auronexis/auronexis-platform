@@ -10,6 +10,7 @@ import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManagePortalUsers } from "@/lib/client-portal/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient, createWritableClient } from "@/lib/supabase/server";
+import { authThrottleUserMessage, checkPortalLoginThrottle } from "@/lib/security/login-throttle";
 import type { Database } from "@/types/database";
 
 type ClientPortalUserInsert = Database["public"]["Tables"]["client_portal_users"]["Insert"];
@@ -50,6 +51,10 @@ export async function signInPortal(
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
   }
 
+  const throttle = await checkPortalLoginThrottle(parsed.data.email);
+  if (!throttle.allowed) {
+    return { error: authThrottleUserMessage(throttle) };
+  }
   const supabase = await createWritableClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,

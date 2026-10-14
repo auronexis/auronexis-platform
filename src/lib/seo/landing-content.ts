@@ -32,13 +32,13 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     slug: "customer-health-score",
     path: SOLUTION_ROUTES.customerHealthScore,
     eyebrow: "Solution",
-    title: "Customer health score for agency portfolios",
+    title: "Customer Health Score Software for Agencies & MSPs",
     description:
       "Monitor client health across your portfolio with signals, thresholds, and executive-ready visibility.",
     metaDescription:
-      "Customer health scoring for MSPs and agencies — portfolio signals, risk indicators, and operational visibility in Auroranexis.",
+      "Customer health score software for agencies and MSPs — portfolio signals, thresholds, risk indicators, and operational visibility in Auroranexis.",
     intro:
-      "Auroranexis helps agencies track customer health using operational signals from reports, incidents, risks, and SLA performance. Instead of relying on spreadsheets or subjective check-ins, teams get a structured view of which clients need attention and why.",
+      "Auroranexis helps agencies and MSPs track customer health using operational signals from reports, incidents, risks, and SLA performance. Instead of relying on spreadsheets or subjective check-ins, teams get a structured view of which clients need attention and why.",
     problem:
       "Account teams often judge client health from memory, last-week tickets, or a spreadsheet that is already stale. At-risk retainers surface too late — after a missed QBR, a surprise churn notice, or an SLA dispute.",
     audience:
@@ -76,10 +76,12 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Health monitoring", href: FEATURE_ROUTES.healthMonitoring },
+      { label: "Health monitoring feature", href: FEATURE_ROUTES.healthMonitoring },
+      { label: "Customer success tools", href: FEATURE_ROUTES.customerSuccess },
       { label: "Health score template", href: TEMPLATE_ROUTES.customerHealthScore },
       { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
-      { label: "Risk management", href: SOLUTION_ROUTES.riskManagement },
+      { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
   },
   "risk-management": {
@@ -187,7 +189,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     ],
     relatedLinks: [
       { label: "Incidents feature", href: FEATURE_ROUTES.incidents },
-      { label: "SLA management for multi-client agencies", href: SOLUTION_ROUTES.slaManagement },
+      { label: "SLA monitoring software", href: SOLUTION_ROUTES.slaManagement },
       { label: "Incident response template", href: TEMPLATE_ROUTES.incidentResponse },
       { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
     ],
@@ -196,10 +198,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     slug: "sla-management",
     path: SOLUTION_ROUTES.slaManagement,
     eyebrow: "Solution",
-    title: "SLA management for multi-client agencies",
+    title: "SLA Monitoring Software for Multi-Client Agencies",
     description: "Define SLA policies, monitor breaches, and prove performance to clients.",
     metaDescription:
-      "SLA management for MSPs — policy definitions, breach tracking, and client reporting in Auroranexis.",
+      "SLA monitoring software for multi-client agencies and MSPs — policy definitions, breach visibility, and client reporting in Auroranexis.",
     intro:
       "SLA performance is how agencies prove reliability. On Business and Enterprise plans, Auroranexis lets you define policies per client, monitor incidents and risks against those policies, and report outcomes without manual spreadsheet tracking.",
     problem:
@@ -243,10 +245,12 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
+      { label: "Incident management with SLA tracking", href: SOLUTION_ROUTES.incidentManagement },
       { label: "SLA documentation", href: "/docs/sla" },
       { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
-      { label: "Executive dashboard for agency operations", href: SOLUTION_ROUTES.executiveDashboard },
       { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
   },
   "executive-dashboard": {
@@ -305,13 +309,13 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     slug: "ai-reporting",
     path: SOLUTION_ROUTES.aiReporting,
     eyebrow: "Solution",
-    title: "Automated client reporting for agencies and MSPs",
+    title: "Automated Client Reporting Software for MSPs & Agencies",
     breadcrumbName: "Automated client reporting",
     definitionTerm: "Automated client reporting",
     description:
       "Create, generate, review, and publish client reports from operational data — templates, schedules, PDF export, and portal delivery, with optional AI-assisted summaries.",
     metaDescription:
-      "Automated client reporting for agencies and MSPs: templates, scheduled drafts, generate-from-workspace data, PDF export, and portal delivery. Optional AI-assisted summaries with human review.",
+      "Automated client reporting software for MSPs and agencies: templates, scheduled drafts, generate-from-workspace data, PDF export, and portal delivery. Optional AI-assisted summaries with human review.",
     intro:
       "Automated client reporting in Auroranexis is the workflow that turns delivery records into client-ready reports without rebuilding decks from scratch each period. Each report is linked to one client and a reporting period. Templates define the structure. Generate fills metrics and default narrative from workspace data such as health signals, SLA outcomes, related incidents, and open risks. Your team reviews and edits before publish. Published reports can go to the client portal, PDF export, and email where configured. Recurring schedules can create draft shells so cadence does not depend on someone remembering to start the report. Optional AI-assisted executive summaries are available when enabled; they do not replace human review, and reporting works without AI.",
     problem:
@@ -396,13 +400,14 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     ],
     relatedLinks: [
       { label: "Report templates and schedules", href: FEATURE_ROUTES.reports },
-      { label: "AI-assisted executive reports", href: FEATURE_ROUTES.aiExecutiveReports },
+      { label: "AI executive leadership briefings", href: FEATURE_ROUTES.aiExecutiveReports },
       { label: "Reports documentation", href: "/docs/reports" },
       { label: "Executive report outline", href: TEMPLATE_ROUTES.executiveReport },
       { label: "Client portal delivery", href: FEATURE_ROUTES.clientPortal },
       { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
       { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
-      { label: "Portfolio profitability visibility", href: FEATURE_ROUTES.profitability },
+      { label: "Portfolio profitability reporting", href: FEATURE_ROUTES.profitability },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
   },
 };

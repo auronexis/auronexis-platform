@@ -38,6 +38,10 @@ export type LandingPageContent = {
   relatedLinks: ReadonlyArray<LandingPageLink>;
   primaryCta?: MarketingCtaPresetKey;
   secondaryCta?: MarketingCtaPresetKey;
+  /** Optional third CTA (e.g. keep self-serve signup reachable when primary is demo). */
+  tertiaryCta?: MarketingCtaPresetKey;
+  ctaTitle?: string;
+  ctaDescription?: string;
 };
 
 export type LandingHubEntry = {

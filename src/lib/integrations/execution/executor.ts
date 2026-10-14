@@ -216,7 +216,7 @@ export async function executeLiveIntegration(
     };
   }
 
-  const rateLimit = checkIntegrationRateLimit(input.organizationId, provider.id);
+  const rateLimit = await checkIntegrationRateLimit(input.organizationId, provider.id);
   if (!rateLimit.allowed) {
     const logId = await createDeliveryLog({
       organizationId: input.organizationId,

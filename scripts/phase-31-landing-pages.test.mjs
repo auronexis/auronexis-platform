@@ -41,14 +41,19 @@ test("phase 31 audience and industry pages use static generation", () => {
   assert.equal(industrySlugs, 9);
 });
 
-test("marketing navigation includes solutions and industries hubs", () => {
+test("marketing navigation includes solutions hub; industries remain publicly linked", () => {
   const content = readSource("src/lib/marketing/content.ts");
   const links = readSource("src/lib/company/company-links.ts");
   assert.match(content, /Solutions/);
-  assert.match(content, /Industries/);
   assert.match(links, /solutions: "\/solutions"/);
   assert.match(links, /industries: "\/industries"/);
+  assert.match(links, /label: "Industries", href: MARKETING_ROUTES\.industries/);
   assert.match(links, /faq: "\/faq"/);
+  assert.doesNotMatch(
+    content,
+    /MARKETING_NAV = \[[\s\S]*label: "Industries"/,
+    "Industries demoted from primary nav to concentrate authority on commercial hubs",
+  );
 });
 
 test("PAGE_SEO registry includes new hub routes and landing registries", () => {

@@ -57,7 +57,11 @@ export default function ContactPage() {
       </MarketingSection>
       ) : null}
       <HideWhenAuthenticated>
-        <MarketingSection title="Book a demo" className="border-t border-border/70 bg-surface-2/30">
+        <MarketingSection
+          id="demo"
+          title="Book a demo"
+          className="border-t border-border/70 bg-surface-2/30"
+        >
           <div className="max-w-2xl">
             <DemoBookingForm />
           </div>

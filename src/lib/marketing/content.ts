@@ -11,7 +11,6 @@ export const MARKETING_NAV = [
   { label: "Features", href: MARKETING_ROUTES.features },
   { label: "Solutions", href: MARKETING_ROUTES.solutions },
   { label: "Use cases", href: MARKETING_ROUTES.useCases },
-  { label: "Industries", href: MARKETING_ROUTES.industries },
   { label: "Enterprise", href: MARKETING_ROUTES.enterprise },
   { label: "Pricing", href: MARKETING_ROUTES.pricing },
   { label: "Security", href: MARKETING_ROUTES.security },

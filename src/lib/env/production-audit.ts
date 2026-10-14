@@ -55,6 +55,13 @@ export function auditProductionEnvironment(): ProductionEnvAudit {
       note: "Keep false until explicit LIVE go-live approval — presence optional",
     },
     {
+      key: "UPSTASH_REDIS_REST_URL",
+      label: "Upstash Redis (shared rate limits)",
+      severity: "recommended",
+      configured: isSet("UPSTASH_REDIS_REST_URL") && isSet("UPSTASH_REDIS_REST_TOKEN"),
+      note: "Required for production shared rate limiting (FINDING-002); server-only REST URL + token",
+    },
+    {
       key: "CRON_SECRET",
       label: "Cron bearer secret",
       severity: "required",

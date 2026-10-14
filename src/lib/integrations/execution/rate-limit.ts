@@ -1,12 +1,11 @@
 import "server-only";
 
 import type { IntegrationProviderId } from "@/lib/integrations/types";
-
-type RateLimitBucket = {
-  timestamps: number[];
-};
-
-const buckets = new Map<string, RateLimitBucket>();
+import {
+  checkSlidingWindowRateLimit,
+  integrationOrgProviderKey,
+  resetRateLimitBucketsForTests,
+} from "@/lib/security/rate-limit";
 
 /** Per-provider limits (requests per rolling minute). */
 const PROVIDER_LIMITS: Partial<Record<IntegrationProviderId, number>> = {
@@ -19,38 +18,32 @@ const PROVIDER_LIMITS: Partial<Record<IntegrationProviderId, number>> = {
 const DEFAULT_LIMIT = 30;
 const WINDOW_MS = 60_000;
 
-function bucketKey(organizationId: string, providerId: IntegrationProviderId): string {
-  return `${organizationId}:${providerId}`;
-}
-
-function pruneBucket(bucket: RateLimitBucket, now: number): void {
-  bucket.timestamps = bucket.timestamps.filter((timestamp) => now - timestamp < WINDOW_MS);
-}
-
 export type RateLimitResult =
   | { allowed: true }
-  | { allowed: false; retryAfterMs: number; limit: number };
+  | { allowed: false; retryAfterMs: number; limit: number; backendUnavailable?: boolean };
 
-export function checkIntegrationRateLimit(
+export async function checkIntegrationRateLimit(
   organizationId: string,
   providerId: IntegrationProviderId,
-): RateLimitResult {
+): Promise<RateLimitResult> {
   const limit = PROVIDER_LIMITS[providerId] ?? DEFAULT_LIMIT;
-  const key = bucketKey(organizationId, providerId);
-  const now = Date.now();
-  const bucket = buckets.get(key) ?? { timestamps: [] };
+  const result = await checkSlidingWindowRateLimit({
+    key: integrationOrgProviderKey(organizationId, providerId),
+    limit,
+    windowMs: WINDOW_MS,
+    failurePolicy: "fail_closed",
+    bucketClass: "integration.provider",
+  });
 
-  pruneBucket(bucket, now);
-
-  if (bucket.timestamps.length >= limit) {
-    const oldest = bucket.timestamps[0] ?? now;
-    const retryAfterMs = Math.max(WINDOW_MS - (now - oldest), 1_000);
-    buckets.set(key, bucket);
-    return { allowed: false, retryAfterMs, limit };
+  if (!result.allowed) {
+    return {
+      allowed: false,
+      retryAfterMs: Math.max(result.retryAfterSeconds * 1000, 1_000),
+      limit: result.limit,
+      backendUnavailable: result.backendUnavailable,
+    };
   }
 
-  bucket.timestamps.push(now);
-  buckets.set(key, bucket);
   return { allowed: true };
 }
 
@@ -59,5 +52,5 @@ export function getRateLimitForProvider(providerId: IntegrationProviderId): numb
 }
 
 export function resetRateLimitsForTests(): void {
-  buckets.clear();
+  resetRateLimitBucketsForTests();
 }

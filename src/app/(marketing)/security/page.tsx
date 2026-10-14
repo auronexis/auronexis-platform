@@ -20,12 +20,12 @@ export default function SecurityPage() {
       <JsonLdScript data={faqJsonLd(SECURITY_FAQ)} />
       <MarketingHero
         eyebrow="Security"
-        title="Security-first operations platform"
-        description="Administrative, technical, and organizational controls for B2B SaaS workloads."
-        primaryHref={LEGAL_ROUTES.securityPolicy}
-        primaryLabel="Security policy"
-        secondaryHref={MARKETING_ROUTES.status}
-        secondaryLabel="Platform status"
+        title="Security and trust for agency operations software"
+        description="Administrative, technical, and organizational controls for B2B SaaS workloads used by MSPs and agencies — encryption, RBAC, and audit logging. We do not claim SOC 2, ISO, or pentest certifications on this page."
+        primaryHref={MARKETING_ROUTES.pricing}
+        primaryLabel="See pricing"
+        secondaryHref={MARKETING_ROUTES.contact}
+        secondaryLabel="Contact sales"
       />
       <MarketingSection title="Security highlights">
         <ul className="space-y-3">
@@ -36,24 +36,36 @@ export default function SecurityPage() {
           ))}
         </ul>
         <p className="mt-6 text-sm text-muted">
-          Report vulnerabilities to{" "}
+          Procurement and enterprise evaluation: review{" "}
+          <Link href={MARKETING_ROUTES.pricing} className="font-medium text-primary hover:underline">
+            pricing
+          </Link>
+          ,{" "}
+          <Link href={MARKETING_ROUTES.enterprise} className="font-medium text-primary hover:underline">
+            enterprise
+          </Link>
+          , or{" "}
+          <Link href={MARKETING_ROUTES.contact} className="font-medium text-primary hover:underline">
+            contact sales
+          </Link>
+          . Security researchers: report vulnerabilities to{" "}
           <a href={`mailto:${SECURITY_EMAIL}`} className="font-medium text-primary hover:underline">
             {SECURITY_EMAIL}
-          </a>
-          . Read our{" "}
+          </a>{" "}
+          and read the{" "}
           <Link
             href={MARKETING_ROUTES.vulnerabilityDisclosure}
             className="font-medium text-primary hover:underline"
           >
             Vulnerability Disclosure Policy
           </Link>
-          . Review our{" "}
-          <Link href={MARKETING_ROUTES.compliance} className="font-medium text-primary hover:underline">
-            compliance readiness
+          . Also see{" "}
+          <Link href={LEGAL_ROUTES.securityPolicy} className="font-medium text-primary hover:underline">
+            security policy
           </Link>
           ,{" "}
-          <Link href={MARKETING_ROUTES.faq} className="font-medium text-primary hover:underline">
-            FAQ
+          <Link href={MARKETING_ROUTES.compliance} className="font-medium text-primary hover:underline">
+            compliance readiness
           </Link>
           ,{" "}
           <Link href={MARKETING_ROUTES.status} className="font-medium text-primary hover:underline">
@@ -63,10 +75,6 @@ export default function SecurityPage() {
           <Link href={LEGAL_ROUTES.subprocessors} className="font-medium text-primary hover:underline">
             sub-processors
           </Link>
-          ,{" "}
-          <Link href="/docs/api" className="font-medium text-primary hover:underline">
-            API documentation
-          </Link>
           .
         </p>
       </MarketingSection>
@@ -74,9 +82,9 @@ export default function SecurityPage() {
         <MarketingFaq items={SECURITY_FAQ} />
       </MarketingSection>
       <MarketingCtaSection
-        title="Evaluate Auroranexis for your security requirements"
-        description="Review documentation, request an enterprise demo, or contact sales for procurement support."
-        primaryPreset="viewDocumentation"
+        title="Ready to evaluate Auroranexis for your portfolio?"
+        description="Compare plans, talk to sales about enterprise requirements, or review the disclosure policy if you are reporting a vulnerability."
+        primaryPreset="seePricing"
         secondaryPreset="contactSales"
       />
     </MarketingShell>
