@@ -53,7 +53,16 @@ import {
   DashboardOpsIntelligenceTab,
   OpsTabPanelSkeleton,
 } from "@/components/dashboard/dashboard-ops-tab-panels";
+import {
+  OpsAiTasksSummary,
+  OpsAutomationTabBadge,
+  OpsGovernanceTabBadge,
+  OpsIntelligenceTabBadge,
+  StreamedWorkspaceHealthPercent,
+} from "@/components/dashboard/dashboard-ops-streamed-metrics";
+import { OpsTabPanelErrorBoundary } from "@/components/dashboard/ops-tab-panel-error-boundary";
 import { getDashboardData } from "@/lib/dashboard/queries";
+import { computeHealthScore } from "@/lib/dashboard/display";
 import { getExecutiveIntelligence } from "@/lib/intelligence/queries";
 import {
   buildSmartRecommendations,
@@ -118,7 +127,9 @@ export default async function DashboardPage() {
   const canReadCustomerSuccess = sessionHasPermission(session, "customer_success.read");
 
   // Ops-tab-only hubs load via Suspense (intelligence / automation / governance).
-  // Knowledge hub is deferred to the Automation tab — guidance uses null here.
+  // Known limitation: no cheap knowledge count/head API on the blocking path —
+  // activation/adoption/guidance use knowledgeHub: null (knowledge steps may under-count).
+  // Full hub still loads inside the Automation tab panel.
   const guidanceInput = {
     data,
     teamMemberCount: teamMembers.length || 1,
@@ -126,6 +137,12 @@ export default async function DashboardPage() {
     knowledgeHub: null,
     planContext,
     session,
+  };
+
+  const opsStreamAccess = {
+    operationalAiAccess: operationalAiAccess.allowed,
+    automationAccess: automationAccess.allowed,
+    canManageCompliance,
   };
 
   // Start customer-success portfolio in parallel with activation (independent).
@@ -244,7 +261,14 @@ export default async function DashboardPage() {
       <CommandCenterHero
         userName={session.user.full_name}
         data={data}
-        workspaceHealth={null}
+        workspaceHealthValue={
+          <Suspense fallback={<>{computeHealthScore(data.clientHealth)}%</>}>
+            <StreamedWorkspaceHealthPercent
+              aiAccess={aiAccess.allowed}
+              fallbackPercent={computeHealthScore(data.clientHealth)}
+            />
+          </Suspense>
+        }
       />
 
       <section aria-label="Executive intelligence" className="space-y-4">
@@ -527,9 +551,9 @@ export default async function DashboardPage() {
               <span>
                 <span className="font-semibold text-foreground">{data.draftReportsCount}</span> drafts
               </span>
-              <span>
-                <span className="font-semibold text-foreground">—</span> AI tasks
-              </span>
+              <Suspense fallback={null}>
+                <OpsAiTasksSummary access={opsStreamAccess} />
+              </Suspense>
               <span className="text-muted">
                 Open a tab for health, intelligence, automation, or governance detail.
               </span>
@@ -619,31 +643,49 @@ export default async function DashboardPage() {
             {
               id: "intelligence",
               label: "Intelligence",
-              badge: null,
-              content: (
-                <Suspense fallback={<OpsTabPanelSkeleton />}>
-                  <DashboardOpsIntelligenceTab access={opsTabAccess} />
+              badge: (
+                <Suspense fallback={null}>
+                  <OpsIntelligenceTabBadge access={opsStreamAccess} />
                 </Suspense>
+              ),
+              content: (
+                <OpsTabPanelErrorBoundary panelLabel="Intelligence">
+                  <Suspense fallback={<OpsTabPanelSkeleton />}>
+                    <DashboardOpsIntelligenceTab access={opsTabAccess} />
+                  </Suspense>
+                </OpsTabPanelErrorBoundary>
               ),
             },
             {
               id: "automation",
               label: "Automation",
-              badge: null,
-              content: (
-                <Suspense fallback={<OpsTabPanelSkeleton />}>
-                  <DashboardOpsAutomationTab access={opsTabAccess} />
+              badge: (
+                <Suspense fallback={null}>
+                  <OpsAutomationTabBadge access={opsStreamAccess} />
                 </Suspense>
+              ),
+              content: (
+                <OpsTabPanelErrorBoundary panelLabel="Automation">
+                  <Suspense fallback={<OpsTabPanelSkeleton />}>
+                    <DashboardOpsAutomationTab access={opsTabAccess} />
+                  </Suspense>
+                </OpsTabPanelErrorBoundary>
               ),
             },
             {
               id: "governance",
               label: "Governance",
-              badge: null,
-              content: (
-                <Suspense fallback={<OpsTabPanelSkeleton />}>
-                  <DashboardOpsGovernanceTab access={opsTabAccess} />
+              badge: (
+                <Suspense fallback={null}>
+                  <OpsGovernanceTabBadge access={opsStreamAccess} />
                 </Suspense>
+              ),
+              content: (
+                <OpsTabPanelErrorBoundary panelLabel="Governance">
+                  <Suspense fallback={<OpsTabPanelSkeleton />}>
+                    <DashboardOpsGovernanceTab access={opsTabAccess} />
+                  </Suspense>
+                </OpsTabPanelErrorBoundary>
               ),
             },
           ]}

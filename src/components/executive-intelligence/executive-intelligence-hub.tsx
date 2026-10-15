@@ -1,9 +1,17 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import type { ExecutiveIntelligenceSnapshot, ExecutiveBriefing } from "@/lib/executive-intelligence/types";
+import { generateExecutiveNarrativeAction } from "@/lib/executive-intelligence/actions";
+import type {
+  ExecutiveIntelligenceSnapshot,
+  ExecutiveBriefing,
+  GroundedNarrativeResult,
+} from "@/lib/executive-intelligence/types";
 import { Card } from "@/components/ui/card";
 import { SectionTitle } from "@/components/ui/typography";
 import { AiDisclosure } from "@/components/ai/ai-disclosure";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
@@ -11,10 +19,9 @@ type ExecutiveIntelligenceHubProps = {
   snapshot: ExecutiveIntelligenceSnapshot;
   briefing: ExecutiveBriefing;
   aiEnabled: boolean;
-  /** Optional streamed status badge (AI-assisted upgrade). Falls back to deterministic badge. */
-  statusSlot?: ReactNode;
-  /** Optional streamed narrative card. Falls back to deterministic narrative. */
-  narrativeSlot?: ReactNode;
+  canGenerate: boolean;
+  snapshotJson: string;
+  briefingJson: string;
 };
 
 const severityStyles: Record<string, string> = {
@@ -25,13 +32,60 @@ const severityStyles: Record<string, string> = {
   info: "text-primary",
 };
 
+function isGroundedNarrativeResult(value: unknown): value is GroundedNarrativeResult {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<GroundedNarrativeResult>;
+  return typeof candidate.narrative === "string" && typeof candidate.generatedBy === "string";
+}
+
 export function ExecutiveIntelligenceHub({
   snapshot,
   briefing,
   aiEnabled,
-  statusSlot,
-  narrativeSlot,
+  canGenerate,
+  snapshotJson,
+  briefingJson,
 }: ExecutiveIntelligenceHubProps) {
+  const [narrative, setNarrative] = useState(briefing.narrative);
+  const [generatedBy, setGeneratedBy] = useState(briefing.generatedBy);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const canRequest = canGenerate && aiEnabled;
+  const disabledReason = !aiEnabled
+    ? "AI narrative locked on plan"
+    : !canGenerate
+      ? "You do not have permission to generate narratives"
+      : null;
+
+  function onGenerate() {
+    if (!canRequest || pending) return;
+    setError(null);
+    startTransition(() => {
+      void (async () => {
+        const result = await generateExecutiveNarrativeAction({
+          snapshotJson,
+          briefingJson,
+        });
+        if (!result.success) {
+          setError(result.error || "Unable to generate executive narrative.");
+          return;
+        }
+        if (!isGroundedNarrativeResult(result.data)) {
+          setError("Unable to generate executive narrative.");
+          return;
+        }
+        if (result.data.generatedBy === "ai_assisted") {
+          setNarrative(result.data.narrative);
+          setGeneratedBy("ai_assisted");
+          setError(null);
+          return;
+        }
+        setError("AI summary unavailable. Showing deterministic briefing.");
+      })();
+    });
+  }
+
   return (
     <div className="space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -40,17 +94,41 @@ export function ExecutiveIntelligenceHub({
           <p className="mt-2 max-w-2xl text-sm text-muted">
             {briefing.periodLabel} · Generated {new Date(briefing.generatedAt).toLocaleString()}
           </p>
-          {statusSlot ?? (
-            <>
-              <span className="mt-2 inline-flex rounded-full border border-border/70 px-2 py-0.5 text-xs text-muted">
-                {briefing.generatedBy === "ai_assisted" ? "AI-assisted briefing" : "Deterministic briefing"}
-                {!aiEnabled ? " · AI narrative locked on plan" : ""}
-              </span>
-              {briefing.generatedBy === "ai_assisted" ? (
-                <AiDisclosure variant="assisted" className="mt-2" hint="Verify before use" />
-              ) : null}
-            </>
-          )}
+          <span className="mt-2 inline-flex rounded-full border border-border/70 px-2 py-0.5 text-xs text-muted">
+            {generatedBy === "ai_assisted" ? "AI-assisted briefing" : "Deterministic briefing"}
+            {!aiEnabled ? " · AI narrative locked on plan" : ""}
+          </span>
+          {generatedBy === "ai_assisted" ? (
+            <AiDisclosure variant="assisted" className="mt-2" hint="Verify before use" />
+          ) : null}
+          {generatedBy === "deterministic" ? (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                loading={pending}
+                loadingText="Generating…"
+                disabled={!canRequest}
+                onClick={onGenerate}
+                aria-label="Generate AI summary"
+              >
+                Generate AI summary
+              </Button>
+              {disabledReason ? (
+                <p className="text-xs text-muted">{disabledReason}</p>
+              ) : (
+                <p className="text-xs text-muted">
+                  Optional AI narrative — generated only when you ask.
+                </p>
+              )}
+            </div>
+          ) : null}
+          {error ? (
+            <p className="mt-2 text-xs text-danger" role="status" aria-live="polite">
+              {error}
+            </p>
+          ) : null}
         </div>
       </header>
 
@@ -161,14 +239,12 @@ export function ExecutiveIntelligenceHub({
         )}
       </Card>
 
-      {narrativeSlot ?? (
-        <Card padding="lg" className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">Narrative</h2>
-          <pre className="whitespace-pre-wrap rounded-lg bg-muted/30 p-4 text-sm text-foreground">
-            {briefing.narrative}
-          </pre>
-        </Card>
-      )}
+      <Card padding="lg" className="space-y-3">
+        <h2 className="text-sm font-semibold text-foreground">Narrative</h2>
+        <pre className="whitespace-pre-wrap rounded-lg bg-muted/30 p-4 text-sm text-foreground">
+          {narrative}
+        </pre>
+      </Card>
     </div>
   );
 }

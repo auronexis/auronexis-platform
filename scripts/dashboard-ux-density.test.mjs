@@ -24,6 +24,15 @@ test("operations center is a client tablist with hidden inactive panels", () => 
   assert.match(source, /role="tablist"/);
   assert.match(source, /hidden=\{!selected\}/);
   assert.match(source, /data-operations-center/);
+  assert.match(source, /streamedBadge/);
+});
+
+test("ops tab panels are wrapped in panel error boundaries", () => {
+  const page = readSource("src/app/(dashboard)/dashboard/page.tsx");
+  const boundary = readSource("src/components/dashboard/ops-tab-panel-error-boundary.tsx");
+  assert.match(page, /OpsTabPanelErrorBoundary/);
+  assert.match(boundary, /getDerivedStateFromError/);
+  assert.match(boundary, /Refresh the page to try again/);
 });
 
 test("customer success center uses compact KPI grid", () => {
