@@ -25,6 +25,8 @@
 # misc
 .DS_Store
 *.pem
+.tmp-*
+.recert-evidence/
 
 # debug
 npm-debug.log*
@@ -40,6 +42,7 @@ yarn-error.log*
 
 # vercel
 .vercel
+.vercel-*.json
 
 # typescript
 *.tsbuildinfo
