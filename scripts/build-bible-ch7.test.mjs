@@ -46,6 +46,16 @@ test("profitability rows are request-memoized to prevent duplicate org rebuilds"
   assert.match(profitability, /export const buildClientProfitabilityRows = cache\(/);
 });
 
+test("client success snapshot is request-memoized with stable primitive keys", () => {
+  const queries = readSource("src/lib/ai/client-success/queries.ts");
+  assert.match(queries, /import \{ cache \} from "react"/);
+  assert.match(queries, /getClientSuccessSnapshotRequestCache = cache\(/);
+  assert.match(queries, /new Map<string, Promise<ClientSuccessSnapshot \| null>>/);
+  assert.match(queries, /session\.organization\.id\}:\$\{clientId\}/);
+  assert.match(queries, /export async function buildClientSuccessSnapshot/);
+  assert.match(queries, /buildClientSuccessSnapshotUncached/);
+});
+
 test("portfolio builders cap work and use concurrency helper", () => {
   const helper = readSource("src/lib/performance/map-with-concurrency.ts");
   const aiPortfolio = readSource("src/lib/ai/client-success/portfolio.ts");

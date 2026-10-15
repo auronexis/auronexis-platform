@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { ActivityEventView } from "@/lib/activity/types";
 import { getClientOverview } from "@/lib/client-overview/queries";
 import { getClientById } from "@/lib/clients/queries";
@@ -41,6 +42,11 @@ export type ClientSuccessSnapshot = {
   periodLabel: string;
   previousPeriodLabel: string;
 };
+
+/** Request-scoped map so snapshot reuse keys on stable primitives, not session object identity. */
+const getClientSuccessSnapshotRequestCache = cache(
+  () => new Map<string, Promise<ClientSuccessSnapshot | null>>(),
+);
 
 function startOfMonthUtc(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
@@ -273,8 +279,7 @@ async function hasEmailActivity(session: SessionContext, clientId: string): Prom
   return (count ?? 0) > 0;
 }
 
-/** Build verified client success snapshot from DB — server-side only. */
-export async function buildClientSuccessSnapshot(
+async function buildClientSuccessSnapshotUncached(
   session: SessionContext,
   clientId: string,
 ): Promise<ClientSuccessSnapshot | null> {
@@ -367,4 +372,22 @@ export async function buildClientSuccessSnapshot(
     periodLabel: period.label,
     previousPeriodLabel: previousPeriod.label,
   };
+}
+
+/**
+ * Build verified client success snapshot from DB — server-side only.
+ * Request-memoized by organizationId + clientId (stable primitives; not session object identity).
+ */
+export async function buildClientSuccessSnapshot(
+  session: SessionContext,
+  clientId: string,
+): Promise<ClientSuccessSnapshot | null> {
+  const requestCache = getClientSuccessSnapshotRequestCache();
+  const cacheKey = `${session.organization.id}:${clientId}`;
+  const cached = requestCache.get(cacheKey);
+  if (cached) return cached;
+
+  const pending = buildClientSuccessSnapshotUncached(session, clientId);
+  requestCache.set(cacheKey, pending);
+  return pending;
 }

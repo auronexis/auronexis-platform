@@ -8,7 +8,6 @@ import { buildCustomerSuccessPortfolio } from "@/lib/customer-success/snapshot";
 import { getDashboardData } from "@/lib/dashboard/queries";
 import { buildExecutiveBriefing } from "@/lib/executive-intelligence/briefing";
 import { buildExecutiveIntelligenceSnapshot } from "@/lib/executive-intelligence/snapshot";
-import { generateGroundedExecutiveNarrative } from "@/lib/executive-intelligence/provider";
 import { ExecutiveIntelligenceHub } from "@/components/executive-intelligence/executive-intelligence-hub";
 import { ExecutiveIntelligenceTracker } from "@/components/executive-intelligence/executive-intelligence-tracker";
 import { PageHeader } from "@/components/layout/page-header";
@@ -84,20 +83,7 @@ export default async function IntelligencePage() {
     canReadCustomerSuccess,
   });
 
-  let briefing = buildExecutiveBriefing(snapshot);
-
-  if (sessionHasPermission(session, "executive_intelligence.generate") && aiAccess.allowed) {
-    const narrative = await generateGroundedExecutiveNarrative({
-      session,
-      snapshot,
-      briefing,
-      planKey: planContext?.planKey ?? "starter",
-      aiAllowed: true,
-    });
-    if (narrative.generatedBy === "ai_assisted") {
-      briefing = { ...briefing, narrative: narrative.narrative, generatedBy: "ai_assisted" };
-    }
-  }
+  const briefing = buildExecutiveBriefing(snapshot);
 
   return (
     <>

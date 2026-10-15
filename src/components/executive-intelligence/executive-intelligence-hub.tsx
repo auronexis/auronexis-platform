@@ -40,6 +40,9 @@ export function ExecutiveIntelligenceHub({
           {briefing.generatedBy === "ai_assisted" ? (
             <AiDisclosure variant="assisted" className="mt-2" hint="Verify before use" />
           ) : null}
+          {briefing.generatedBy === "deterministic" && aiEnabled ? (
+            <p className="mt-2 text-xs text-muted">AI summary is generated on request.</p>
+          ) : null}
         </div>
       </header>
 

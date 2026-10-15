@@ -187,6 +187,20 @@ test("buildOperationalSnapshot uses React cache", () => {
   assert.match(source, /export const buildOperationalSnapshot = cache/);
 });
 
+test("intelligence page does not block initial render on OpenAI narrative", () => {
+  const page = readFileSync(
+    join(rootDir, "src", "app", "(dashboard)", "intelligence", "page.tsx"),
+    "utf8",
+  );
+  const hub = readFileSync(
+    join(rootDir, "src", "components", "executive-intelligence", "executive-intelligence-hub.tsx"),
+    "utf8",
+  );
+  assert.doesNotMatch(page, /generateGroundedExecutiveNarrative/);
+  assert.match(page, /buildExecutiveBriefing\(snapshot\)/);
+  assert.match(hub, /AI summary is generated on request/);
+});
+
 test("client intelligence integrated on client success route", () => {
   const page = readFileSync(
     join(rootDir, "src", "app", "(dashboard)", "clients", "[id]", "success", "page.tsx"),
