@@ -21,7 +21,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     description:
       "Draft structured leadership briefings from verified operational data — with a clear split between facts and recommendations, and human review before publication.",
     metaDescription:
-      "AI-assisted leadership briefings for agencies: executive summaries from incidents, risks, and SLA data, with reviewer validation. Automated client reporting lives on the solution page.",
+      "AI-assisted leadership briefings from incidents, risks, and SLA data, with reviewer validation. Automated client reporting lives on the solution page.",
     problem:
       "Leadership briefings are assembled manually from spreadsheets, ticket exports, and email threads. By the time a report reaches a client or executive, the narrative is outdated and hard to defend.",
     solution:
@@ -166,7 +166,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     description:
       "Define triggers, actions, and execution history to reduce manual follow-up across your client portfolio.",
     metaDescription:
-      "Agency operations automation software: workflow builder, triggers, execution logs, and event-driven follow-up inside the Auroranexis workspace — not RPA or receptionist tooling.",
+      "Agency operations automation software: workflow builder, triggers, execution logs, and event-driven follow-up — not RPA or receptionist tooling.",
     problem:
       "Repeatable operational tasks — escalation reminders, status updates, report notifications — still depend on individuals remembering to act. Manual coordination does not scale across dozens of clients.",
     solution:
@@ -682,7 +682,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     description:
       "Connect delivery effort to client revenue context so leaders see which accounts drive margin and which need commercial attention — not a replacement accounting system.",
     metaDescription:
-      "Client and portfolio profitability reporting for agencies and MSPs: delivery effort, margin context, and operational signals in one workspace — not a replacement accounting system.",
+      "Portfolio profitability reporting for agencies and MSPs: delivery effort, margin context, and operational signals — not a replacement accounting system.",
     problem:
       "Agencies grow revenue without clear visibility into which clients consume disproportionate delivery effort. Profitability conversations happen in finance spreadsheets disconnected from operational reality.",
     solution:
@@ -753,7 +753,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     description:
       "Track adoption, engagement, and delivery outcomes to support retention and proactive account management — without replacing the customer health score solution.",
     metaDescription:
-      "Customer success tools for agencies and MSPs: account review context, adoption signals, and retention-focused delivery inside Auroranexis. Health score outcomes live on the solution page.",
+      "Customer success tools for agencies and MSPs: account reviews, adoption signals, and retention-focused delivery. Health scores live on the solution page.",
     problem:
       "Customer success teams lack operational visibility into how clients use delivered services. Retention conversations happen without evidence of adoption gaps or delivery friction.",
     solution:

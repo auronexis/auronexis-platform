@@ -101,7 +101,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.pricing]: {
     title: "MSP & Agency Operations Pricing (EUR)",
     description:
-      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — client operations platform for MSPs and agencies. Tax confirmed from billing context at checkout.",
+      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — MSP and agency client operations. Tax confirmed from billing context at checkout.",
   },
   [MARKETING_ROUTES.enterprise]: {
     title: "Enterprise Client Operations for MSPs & Agencies",
@@ -143,7 +143,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description: "Current operational status and availability of the Auroranexis platform.",
   },
   [MARKETING_ROUTES.about]: {
-    title: "About Auroranexis — Agency Operations Command Center",
+    title: "About Agency Operations Platform",
     description:
       "About Auroranexis: a B2B operations platform for AI automation agencies and MSPs covering client health, risk, incidents, reporting, and delivery transparency.",
   },
@@ -225,9 +225,43 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   },
 };
 
+/**
+ * Metadata title overrides for SERP length only.
+ * Landing/solution `title` fields remain the on-page H1 source — do not shorten those here.
+ * Final document title is `${title} | Auroranexis` (see root metadata template).
+ */
+const PAGE_SEO_TITLE_OVERRIDES: Record<string, string> = {
+  "/features/ai-executive-reports": "AI Executive Leadership Reports",
+  "/features/profitability": "Portfolio Profitability Reporting",
+  "/features/reports": "Report Templates & Publish Flows",
+  "/industries/consulting": "Consulting Engagement Governance",
+  "/industries/cybersecurity": "Cybersecurity Provider Operations",
+  "/industries/finance": "Financial Services Client Ops",
+  "/industries/healthcare": "Healthcare Delivery Operations",
+  "/industries/it": "IT Services Portfolio Governance",
+  "/industries/legal": "Legal Services Ops Governance",
+  "/industries/manufacturing": "Manufacturing Delivery Operations",
+  "/industries/marketing": "Marketing Sector Client Operations",
+  "/industries/technology": "Technology & SaaS Client Operations",
+  "/solutions/ai-reporting": "Automated Client Reporting Software",
+  "/solutions/incident-management": "Incident Response with SLA Tracking",
+};
+
+function applyPageSeoTitleOverrides(
+  registry: Record<string, { title: string; description: string }>,
+): Record<string, { title: string; description: string }> {
+  const next: Record<string, { title: string; description: string }> = { ...registry };
+  for (const [path, title] of Object.entries(PAGE_SEO_TITLE_OVERRIDES)) {
+    const existing = next[path];
+    if (!existing) continue;
+    next[path] = { ...existing, title };
+  }
+  return next;
+}
+
 /** Page-specific SEO titles and descriptions for public indexable routes. */
-export const PAGE_SEO: Record<string, { title: string; description: string }> = {
+export const PAGE_SEO: Record<string, { title: string; description: string }> = applyPageSeoTitleOverrides({
   ...STATIC_PAGE_SEO,
   ...buildDocPageSeo(),
   ...buildLandingPageSeo(),
-};
+});

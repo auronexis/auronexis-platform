@@ -19,7 +19,7 @@ test("priority page owns automated client reporting intent in title, H1 source, 
   assert.match(solution, /definitionTerm: "Automated client reporting"/);
   assert.match(
     solution,
-    /metaDescription:\s*\n\s*"Automated client reporting software for MSPs and agencies:/,
+    /metaDescription:\s*\n\s*"Automated client reporting software for MSPs and agencies: templates, schedules, workspace data/,
   );
   assert.match(solution, /What is automated client reporting in Auroranexis\?/);
   assert.match(solution, /Is AI required for automated client reporting\?/);
