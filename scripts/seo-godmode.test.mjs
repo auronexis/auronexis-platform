@@ -75,8 +75,13 @@ test("solution and feature page titles used as metadata remain unique", () => {
     if (file.endsWith("routes.ts")) {
       titles.push(...extractQuotedField(source, "title"));
       // STATIC_PAGE_SEO uses `description` as meta description.
+      // PAGE_SEO path overrides may repeat content metaDescription strings; count those only from content files.
+      const staticBlock = source.slice(
+        source.indexOf("const STATIC_PAGE_SEO"),
+        source.indexOf("export const PAGE_SEO"),
+      );
       metas.push(
-        ...[...source.matchAll(/title:[\s\S]*?description:\s*\n?\s*"([^"]+)"/g)].map((match) => match[1]),
+        ...[...staticBlock.matchAll(/title:[\s\S]*?description:\s*\n?\s*"([^"]+)"/g)].map((match) => match[1]),
       );
     }
   }

@@ -225,43 +225,79 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   },
 };
 
-/**
- * Metadata title overrides for SERP length only.
- * Landing/solution `title` fields remain the on-page H1 source — do not shorten those here.
- * Final document title is `${title} | Auroranexis` (see root metadata template).
- */
-const PAGE_SEO_TITLE_OVERRIDES: Record<string, string> = {
-  "/features/ai-executive-reports": "AI Executive Leadership Reports",
-  "/features/profitability": "Portfolio Profitability Reporting",
-  "/features/reports": "Report Templates & Publish Flows",
-  "/industries/consulting": "Consulting Engagement Governance",
-  "/industries/cybersecurity": "Cybersecurity Provider Operations",
-  "/industries/finance": "Financial Services Client Ops",
-  "/industries/healthcare": "Healthcare Delivery Operations",
-  "/industries/it": "IT Services Portfolio Governance",
-  "/industries/legal": "Legal Services Ops Governance",
-  "/industries/manufacturing": "Manufacturing Delivery Operations",
-  "/industries/marketing": "Marketing Sector Client Operations",
-  "/industries/technology": "Technology & SaaS Client Operations",
-  "/solutions/ai-reporting": "Automated Client Reporting Software",
-  "/solutions/incident-management": "Incident Response with SLA Tracking",
-};
-
-function applyPageSeoTitleOverrides(
-  registry: Record<string, { title: string; description: string }>,
-): Record<string, { title: string; description: string }> {
-  const next: Record<string, { title: string; description: string }> = { ...registry };
-  for (const [path, title] of Object.entries(PAGE_SEO_TITLE_OVERRIDES)) {
-    const existing = next[path];
-    if (!existing) continue;
-    next[path] = { ...existing, title };
-  }
-  return next;
-}
-
 /** Page-specific SEO titles and descriptions for public indexable routes. */
-export const PAGE_SEO: Record<string, { title: string; description: string }> = applyPageSeoTitleOverrides({
+export const PAGE_SEO: Record<string, { title: string; description: string }> = {
   ...STATIC_PAGE_SEO,
   ...buildDocPageSeo(),
   ...buildLandingPageSeo(),
-});
+  "/features/ai-executive-reports": {
+    title: "AI Executive Leadership Reports",
+    description:
+      "AI-assisted leadership briefings from incidents, risks, and SLA data, with reviewer validation. Automated client reporting lives on the solution page.",
+  },
+  "/features/profitability": {
+    title: "Portfolio Profitability Reporting",
+    description:
+      "Portfolio profitability reporting for agencies and MSPs: delivery effort, margin context, and operational signals — not a replacement accounting system.",
+  },
+  "/features/reports": {
+    title: "Report Templates & Publish Flows",
+    description:
+      "How Auroranexis reports work: templates, schedules, generate-and-review, PDF export, and portal publication. Outcome page: automated client reporting.",
+  },
+  "/industries/consulting": {
+    title: "Consulting Engagement Governance",
+    description:
+      "Professional services industry operations — engagement governance, client health, and executive reporting in Auroranexis.",
+  },
+  "/industries/cybersecurity": {
+    title: "Cybersecurity Provider Operations",
+    description:
+      "Cybersecurity operations platform — incident tracking, risk registers, SLA management, and client reporting for MSSPs and security firms in Auroranexis.",
+  },
+  "/industries/finance": {
+    title: "Financial Services Client Ops",
+    description:
+      "Financial services operations platform — client health, incident management, risk tracking, and SLA governance for fintech and B2B service providers in Auroranexis.",
+  },
+  "/industries/healthcare": {
+    title: "Healthcare Delivery Operations",
+    description:
+      "Healthcare operations platform — incident management, risk tracking, SLA governance, and client reporting for health tech and service providers in Auroranexis.",
+  },
+  "/industries/it": {
+    title: "IT Services Portfolio Governance",
+    description:
+      "IT services industry operations — SLA governance, incident records, and portfolio oversight for service providers in Auroranexis.",
+  },
+  "/industries/legal": {
+    title: "Legal Services Ops Governance",
+    description:
+      "Legal operations platform — client health, incident tracking, risk registers, and executive reporting for law firms and legal service providers in Auroranexis.",
+  },
+  "/industries/manufacturing": {
+    title: "Manufacturing Delivery Operations",
+    description:
+      "Manufacturing operations platform — incident tracking, SLA governance, vendor oversight, and executive reporting for industrial organizations in Auroranexis.",
+  },
+  "/industries/marketing": {
+    title: "Marketing Sector Client Operations",
+    description:
+      "Marketing sector operations platform — portfolio governance for agencies and in-house brand teams with Auroranexis.",
+  },
+  "/industries/technology": {
+    title: "Technology & SaaS Client Operations",
+    description:
+      "Technology operations platform — customer health, incident tracking, SLA management, and executive reporting for SaaS and tech service providers in Auroranexis.",
+  },
+  "/solutions/ai-reporting": {
+    title: "Automated Client Reporting Software",
+    description:
+      "Automated client reporting software for MSPs and agencies: templates, schedules, workspace data, PDF export, and portal delivery with human review.",
+  },
+  "/solutions/incident-management": {
+    title: "Incident Response with SLA Tracking",
+    description:
+      "Agency incident management — timelines, SLA tracking, client transparency, and audit logs in Auroranexis.",
+  },
+};
