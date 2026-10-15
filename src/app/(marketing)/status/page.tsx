@@ -17,7 +17,10 @@ import { cn } from "@/lib/utils/cn";
 
 export const metadata: Metadata = createPageMetadataForPath("/status");
 
-/** Live probes require runtime env — skip static prerender at build time. */
+/**
+ * Live probes require runtime env — skip static prerender at build time.
+ * Snapshot computation is TTL-cached + in-flight deduped in getLiveStatusOverrides.
+ */
 export const dynamic = "force-dynamic";
 
 export default async function StatusPage() {

@@ -59,7 +59,10 @@ test("status page delegates live probes to marketing service", () => {
   const service = readSource("src/lib/marketing/public-status.ts");
   assert.match(page, /getLiveStatusOverrides/);
   assert.match(service, /export async function getLiveStatusOverrides/);
+  assert.match(service, /PUBLIC_STATUS_CACHE_TTL_MS|inFlightSnapshot/);
   assert.doesNotMatch(page, /checkDatabaseHealth/);
+  assert.doesNotMatch(service, /getCronDiagnosticsSnapshot/);
+  assert.doesNotMatch(service, /getQueueDiagnosticsSnapshot/);
 });
 
 test("dead Stripe dispatcher shim and kpi card are removed", () => {

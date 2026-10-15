@@ -7,8 +7,10 @@ import {
   type OpenAIPlatformStatus,
 } from "@/lib/ai/openai/status";
 import { checkDatabaseHealth, type DatabaseHealthLevel } from "@/lib/diagnostics/platform-health";
-import { getCronDiagnosticsSnapshot } from "@/lib/jobs/health";
-import { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
+import {
+  getPublicQueueHealthSummary,
+  type PublicQueueHealthSummary,
+} from "@/lib/queue/health";
 import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 import { isMollieBillingRolloutEnabled } from "@/lib/billing/providers/mollie/rollout";
 
@@ -30,6 +32,10 @@ export const PUBLIC_STATUS_COMPONENT_KEYS = [
   "Automation",
 ] as const;
 
+/** Short TTL so outages surface within ~1 minute while sharing work across requests. */
+export const PUBLIC_STATUS_CACHE_TTL_MS = 45_000;
+const PROBE_TIMEOUT_MS = 3_000;
+
 const INTERNAL_STATUS_LABELS = new Set([
   "development",
   "partially configured",
@@ -42,6 +48,14 @@ const INTERNAL_STATUS_LABELS = new Set([
 ]);
 
 type PublicAiStatus = Pick<PublicStatusComponent, "status" | "detail">;
+
+type CacheEntry = {
+  value: Record<string, PublicStatusComponent>;
+  expiresAt: number;
+};
+
+let cachedSnapshot: CacheEntry | null = null;
+let inFlightSnapshot: Promise<Record<string, PublicStatusComponent>> | null = null;
 
 function resolveConfigurationDetail(config: ReturnType<typeof getOpenAIPlatformConfig>): string {
   if (!config.enabled) {
@@ -165,7 +179,7 @@ export function resolvePublicOverallStatus(components: PublicStatusComponent[]):
     return { label: "Service disruption", tierLabel: "Customer impact detected", color: "orange" };
   }
 
-  if (components.some((component) => component.status === "degraded")) {
+  if (components.some((component) => component.status === "degraded" || component.status === "unknown")) {
     return { label: "Degraded performance", tierLabel: "Some services limited", color: "amber" };
   }
 
@@ -188,32 +202,88 @@ function mapDatabaseLevel(level: DatabaseHealthLevel): StatusLevel {
   return "incident";
 }
 
-/** Live probes for the public marketing status page. */
-export async function getLiveStatusOverrides(): Promise<Record<string, PublicStatusComponent>> {
-  const [database, cron, queue] = await Promise.all([
-    checkDatabaseHealth(),
-    getCronDiagnosticsSnapshot(),
-    getQueueDiagnosticsSnapshot(),
+function publicSafeDatabaseDetail(level: DatabaseHealthLevel, surface: "platform" | "database"): string {
+  if (level === "healthy") {
+    return surface === "platform" ? "Application services available" : "Data services available";
+  }
+  if (level === "degraded") {
+    return surface === "platform" ? "Application services limited" : "Data services limited";
+  }
+  return surface === "platform" ? "Application services impacted" : "Data services impacted";
+}
+
+async function withProbeTimeout<T>(promise: Promise<T>, timeoutMs = PROBE_TIMEOUT_MS): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("probe_timeout")), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function unknownComponent(name: string): PublicStatusComponent {
+  return {
+    name,
+    status: "unknown",
+    detail: "Status check unavailable",
+  };
+}
+
+function settledValue<T>(
+  result: PromiseSettledResult<T>,
+): { ok: true; value: T } | { ok: false } {
+  if (result.status === "fulfilled") {
+    return { ok: true, value: result.value };
+  }
+  return { ok: false };
+}
+
+async function computeLiveStatusOverrides(): Promise<Record<string, PublicStatusComponent>> {
+  const [databaseResult, queueResult, aiResult] = await Promise.allSettled([
+    withProbeTimeout(checkDatabaseHealth()),
+    withProbeTimeout(getPublicQueueHealthSummary()),
+    withProbeTimeout(resolvePublicAiStatus()),
   ]);
+
+  const databaseSettled = settledValue(databaseResult);
+  const queueSettled = settledValue(queueResult);
+  const aiSettled = settledValue(aiResult);
+
   const billingConfigured = isMollieApiConfigured() && isMollieBillingRolloutEnabled();
-  const aiStatus = await resolvePublicAiStatus();
+
+  const database = databaseSettled.ok ? databaseSettled.value : null;
+  const queue: PublicQueueHealthSummary | null = queueSettled.ok ? queueSettled.value : null;
+  const aiStatus: PublicAiStatus = aiSettled.ok
+    ? aiSettled.value
+    : { status: "unknown", detail: "Status check unavailable" };
 
   return {
-    Platform: {
-      name: "Platform",
-      status: mapDatabaseLevel(database.level),
-      detail: database.level === "healthy" ? "Application services available" : database.message,
-    },
-    API: {
-      name: "API",
-      status: database.level === "unavailable" ? "incident" : "operational",
-      detail: "Application and authenticated API routes",
-    },
-    Database: {
-      name: "Database",
-      status: mapDatabaseLevel(database.level),
-      detail: database.level === "healthy" ? "Data services available" : "Data services impacted",
-    },
+    Platform: database
+      ? {
+          name: "Platform",
+          status: mapDatabaseLevel(database.level),
+          detail: publicSafeDatabaseDetail(database.level, "platform"),
+        }
+      : unknownComponent("Platform"),
+    API: database
+      ? {
+          name: "API",
+          status: database.level === "unavailable" ? "incident" : "operational",
+          detail: "Application and authenticated API routes",
+        }
+      : unknownComponent("API"),
+    Database: database
+      ? {
+          name: "Database",
+          status: mapDatabaseLevel(database.level),
+          detail: publicSafeDatabaseDetail(database.level, "database"),
+        }
+      : unknownComponent("Database"),
     Billing: {
       name: "Billing",
       status: billingConfigured ? "operational" : "degraded",
@@ -231,30 +301,47 @@ export async function getLiveStatusOverrides(): Promise<Record<string, PublicSta
       status: "operational",
       detail: "Integration infrastructure available",
     },
-    Automation: {
-      name: "Automation",
-      status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
-      detail: "Workflow execution services",
-    },
-    Cron: {
-      name: "Cron",
-      status: mapHealth(cron.tableReachable && cron.status !== "unavailable", cron.status === "degraded"),
-      detail: "Scheduled maintenance jobs",
-    },
-    Queue: {
-      name: "Queue",
-      status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
-      detail: "Background processing",
-    },
-    Observability: {
-      name: "Observability",
-      status:
-        process.env.NEXT_PUBLIC_SENTRY_DSN ||
-        process.env.NEXT_PUBLIC_POSTHOG_KEY ||
-        process.env.SENTRY_DSN
-          ? "operational"
-          : "maintenance",
-      detail: "Platform monitoring",
-    },
+    Automation: queue
+      ? {
+          name: "Automation",
+          status: mapHealth(queue.tableReachable && queue.status !== "unavailable", queue.status === "degraded"),
+          detail: "Workflow execution services",
+        }
+      : unknownComponent("Automation"),
   };
+}
+
+/**
+ * Live probes for the public marketing status page.
+ * Cached briefly with in-flight dedupe so concurrent visitors share one computation.
+ */
+export async function getLiveStatusOverrides(): Promise<Record<string, PublicStatusComponent>> {
+  const now = Date.now();
+  if (cachedSnapshot && cachedSnapshot.expiresAt > now) {
+    return cachedSnapshot.value;
+  }
+
+  if (inFlightSnapshot) {
+    return inFlightSnapshot;
+  }
+
+  inFlightSnapshot = computeLiveStatusOverrides()
+    .then((value) => {
+      cachedSnapshot = {
+        value,
+        expiresAt: Date.now() + PUBLIC_STATUS_CACHE_TTL_MS,
+      };
+      return value;
+    })
+    .finally(() => {
+      inFlightSnapshot = null;
+    });
+
+  return inFlightSnapshot;
+}
+
+/** Test helper — clears the process-local public status cache. */
+export function clearPublicStatusCacheForTests(): void {
+  cachedSnapshot = null;
+  inFlightSnapshot = null;
 }
