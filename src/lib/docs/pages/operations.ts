@@ -3,7 +3,8 @@ import type { DocPageInput } from "@/lib/docs/types";
 export const GETTING_STARTED_DOC: DocPageInput = {
   slug: "getting-started",
   title: "Getting Started",
-  description: "Sign up, onboarding, and first workspace setup.",
+  description:
+    "Create your Auroranexis account, complete organization onboarding, and set up your first workspace for multi-client agency operations.",
   intro:
     "Auroranexis is an operations platform built for agencies that manage multiple clients. After you create an account, your team works inside an organization-scoped workspace where clients, reports, and billing are kept together. Risk, incident, and SLA modules are available on Business and Enterprise; Professional includes portal, reporting, profitability, and automation builder workflows.",
   callouts: [
@@ -262,7 +263,8 @@ export const GETTING_STARTED_DOC: DocPageInput = {
 export const CLIENTS_DOC: DocPageInput = {
   slug: "clients",
   title: "Clients",
-  description: "Manage client portfolio, health, and revenue.",
+  description:
+    "Manage your client portfolio in Auroranexis — health scores, ownership, revenue context, and operational records per account.",
   intro:
     "The Clients module is your portfolio command center. Each client record ties together health scores, ownership, SLA alignment, monitoring summaries, open risks, recent reports, and portal users. Use it to maintain an accurate view of every account your agency manages and to prepare for client reviews, escalations, and revenue reporting.",
   callouts: [

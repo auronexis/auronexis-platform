@@ -208,7 +208,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     description:
       "For MSP owners and service delivery managers: monitor multi-client health, track and report SLA performance with auditable records, run incidents and risks per account, and publish multi-client reporting across your managed services portfolio.",
     metaDescription:
-      "MSP client portfolio management software for managed services portfolios — client health, SLA monitoring, incidents, risk registers, automated reporting, profitability context, and portal delivery.",
+      "MSP client portfolio management software — health, SLA monitoring, incidents, risks, automated reporting, and portal delivery.",
     problem:
       "MSPs run dozens of clients with technicians, account managers, and leadership sharing fragmented status. Without a shared operations layer, teams cannot quickly see which accounts need attention, SLA and incident context is scattered across PSA exports and chat, and QBR preparation pulls senior staff away from delivery.",
     solution:

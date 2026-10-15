@@ -101,7 +101,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.pricing]: {
     title: "MSP & Agency Operations Pricing (EUR)",
     description:
-      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — client operations platform for MSPs and agencies. Tax confirmed from billing context at checkout.",
+      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — MSP and agency client operations. Tax confirmed from billing context at checkout.",
   },
   [MARKETING_ROUTES.enterprise]: {
     title: "Enterprise Client Operations for MSPs & Agencies",
@@ -143,7 +143,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description: "Current operational status and availability of the Auroranexis platform.",
   },
   [MARKETING_ROUTES.about]: {
-    title: "About Auroranexis — Agency Operations Command Center",
+    title: "About Agency Operations Platform",
     description:
       "About Auroranexis: a B2B operations platform for AI automation agencies and MSPs covering client health, risk, incidents, reporting, and delivery transparency.",
   },
@@ -230,4 +230,74 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
   ...STATIC_PAGE_SEO,
   ...buildDocPageSeo(),
   ...buildLandingPageSeo(),
+  "/features/ai-executive-reports": {
+    title: "AI Executive Leadership Reports",
+    description:
+      "AI-assisted leadership briefings from incidents, risks, and SLA data, with reviewer validation. Automated client reporting lives on the solution page.",
+  },
+  "/features/profitability": {
+    title: "Portfolio Profitability Reporting",
+    description:
+      "Portfolio profitability reporting for agencies and MSPs: delivery effort, margin context, and operational signals — not a replacement accounting system.",
+  },
+  "/features/reports": {
+    title: "Report Templates & Publish Flows",
+    description:
+      "How Auroranexis reports work: templates, schedules, generate-and-review, PDF export, and portal publication. Outcome page: automated client reporting.",
+  },
+  "/industries/consulting": {
+    title: "Consulting Engagement Governance",
+    description:
+      "Professional services industry operations — engagement governance, client health, and executive reporting in Auroranexis.",
+  },
+  "/industries/cybersecurity": {
+    title: "Cybersecurity Provider Operations",
+    description:
+      "Cybersecurity operations platform — incident tracking, risk registers, SLA management, and client reporting for MSSPs and security firms in Auroranexis.",
+  },
+  "/industries/finance": {
+    title: "Financial Services Client Ops",
+    description:
+      "Financial services operations platform — client health, incident management, risk tracking, and SLA governance for fintech and B2B service providers in Auroranexis.",
+  },
+  "/industries/healthcare": {
+    title: "Healthcare Delivery Operations",
+    description:
+      "Healthcare operations platform — incident management, risk tracking, SLA governance, and client reporting for health tech and service providers in Auroranexis.",
+  },
+  "/industries/it": {
+    title: "IT Services Portfolio Governance",
+    description:
+      "IT services industry operations — SLA governance, incident records, and portfolio oversight for service providers in Auroranexis.",
+  },
+  "/industries/legal": {
+    title: "Legal Services Ops Governance",
+    description:
+      "Legal operations platform — client health, incident tracking, risk registers, and executive reporting for law firms and legal service providers in Auroranexis.",
+  },
+  "/industries/manufacturing": {
+    title: "Manufacturing Delivery Operations",
+    description:
+      "Manufacturing operations platform — incident tracking, SLA governance, vendor oversight, and executive reporting for industrial organizations in Auroranexis.",
+  },
+  "/industries/marketing": {
+    title: "Marketing Sector Client Operations",
+    description:
+      "Marketing sector operations platform — portfolio governance for agencies and in-house brand teams with Auroranexis.",
+  },
+  "/industries/technology": {
+    title: "Technology & SaaS Client Operations",
+    description:
+      "Technology operations platform — customer health, incident tracking, SLA management, and executive reporting for SaaS and tech service providers in Auroranexis.",
+  },
+  "/solutions/ai-reporting": {
+    title: "Automated Client Reporting Software",
+    description:
+      "Automated client reporting software for MSPs and agencies: templates, schedules, workspace data, PDF export, and portal delivery with human review.",
+  },
+  "/solutions/incident-management": {
+    title: "Incident Response with SLA Tracking",
+    description:
+      "Agency incident management — timelines, SLA tracking, client transparency, and audit logs in Auroranexis.",
+  },
 };
