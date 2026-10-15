@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import type { ExecutiveIntelligenceSnapshot, ExecutiveBriefing } from "@/lib/executive-intelligence/types";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,10 @@ type ExecutiveIntelligenceHubProps = {
   snapshot: ExecutiveIntelligenceSnapshot;
   briefing: ExecutiveBriefing;
   aiEnabled: boolean;
+  /** Optional streamed status badge (AI-assisted upgrade). Falls back to deterministic badge. */
+  statusSlot?: ReactNode;
+  /** Optional streamed narrative card. Falls back to deterministic narrative. */
+  narrativeSlot?: ReactNode;
 };
 
 const severityStyles: Record<string, string> = {
@@ -24,6 +29,8 @@ export function ExecutiveIntelligenceHub({
   snapshot,
   briefing,
   aiEnabled,
+  statusSlot,
+  narrativeSlot,
 }: ExecutiveIntelligenceHubProps) {
   return (
     <div className="space-y-8">
@@ -33,16 +40,17 @@ export function ExecutiveIntelligenceHub({
           <p className="mt-2 max-w-2xl text-sm text-muted">
             {briefing.periodLabel} · Generated {new Date(briefing.generatedAt).toLocaleString()}
           </p>
-          <span className="mt-2 inline-flex rounded-full border border-border/70 px-2 py-0.5 text-xs text-muted">
-            {briefing.generatedBy === "ai_assisted" ? "AI-assisted briefing" : "Deterministic briefing"}
-            {!aiEnabled ? " · AI narrative locked on plan" : ""}
-          </span>
-          {briefing.generatedBy === "ai_assisted" ? (
-            <AiDisclosure variant="assisted" className="mt-2" hint="Verify before use" />
-          ) : null}
-          {briefing.generatedBy === "deterministic" && aiEnabled ? (
-            <p className="mt-2 text-xs text-muted">AI summary is generated on request.</p>
-          ) : null}
+          {statusSlot ?? (
+            <>
+              <span className="mt-2 inline-flex rounded-full border border-border/70 px-2 py-0.5 text-xs text-muted">
+                {briefing.generatedBy === "ai_assisted" ? "AI-assisted briefing" : "Deterministic briefing"}
+                {!aiEnabled ? " · AI narrative locked on plan" : ""}
+              </span>
+              {briefing.generatedBy === "ai_assisted" ? (
+                <AiDisclosure variant="assisted" className="mt-2" hint="Verify before use" />
+              ) : null}
+            </>
+          )}
         </div>
       </header>
 
@@ -153,12 +161,14 @@ export function ExecutiveIntelligenceHub({
         )}
       </Card>
 
-      <Card padding="lg" className="space-y-3">
-        <h2 className="text-sm font-semibold text-foreground">Narrative</h2>
-        <pre className="whitespace-pre-wrap rounded-lg bg-muted/30 p-4 text-sm text-foreground">
-          {briefing.narrative}
-        </pre>
-      </Card>
+      {narrativeSlot ?? (
+        <Card padding="lg" className="space-y-3">
+          <h2 className="text-sm font-semibold text-foreground">Narrative</h2>
+          <pre className="whitespace-pre-wrap rounded-lg bg-muted/30 p-4 text-sm text-foreground">
+            {briefing.narrative}
+          </pre>
+        </Card>
+      )}
     </div>
   );
 }

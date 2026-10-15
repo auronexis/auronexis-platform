@@ -196,9 +196,21 @@ test("intelligence page does not block initial render on OpenAI narrative", () =
     join(rootDir, "src", "components", "executive-intelligence", "executive-intelligence-hub.tsx"),
     "utf8",
   );
-  assert.doesNotMatch(page, /generateGroundedExecutiveNarrative/);
+  const streamed = readFileSync(
+    join(rootDir, "src", "components", "executive-intelligence", "streamed-executive-narrative.tsx"),
+    "utf8",
+  );
+  assert.doesNotMatch(page, /await generateGroundedExecutiveNarrative/);
   assert.match(page, /buildExecutiveBriefing\(snapshot\)/);
-  assert.match(hub, /AI summary is generated on request/);
+  assert.match(page, /Suspense/);
+  assert.match(page, /resolveStreamedExecutiveNarrative/);
+  assert.match(page, /StreamedExecutiveNarrativeBody/);
+  assert.match(streamed, /generateGroundedExecutiveNarrative/);
+  assert.match(streamed, /narrative_timeout|NARRATIVE_TIMEOUT_MS/);
+  assert.match(streamed, /canGenerateExecutiveIntelligence/);
+  assert.match(streamed, /checkPlanFeatureForSession/);
+  assert.match(streamed, /assertWithinAIUsageLimit|generateGroundedExecutiveNarrative/);
+  assert.doesNotMatch(hub, /AI summary is generated on request/);
 });
 
 test("client intelligence integrated on client success route", () => {

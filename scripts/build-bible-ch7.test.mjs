@@ -109,3 +109,24 @@ test("dashboard page parallelizes feature checks and optional hubs", () => {
   assert.ok(adoptionBlockStart > 0);
   assert.match(page.slice(adoptionBlockStart, adoptionBlockStart + 600), /Promise\.all/);
 });
+
+test("dashboard defers ops-tab hubs behind Suspense", () => {
+  const page = readSource("src/app/(dashboard)/dashboard/page.tsx");
+  const panels = readSource("src/components/dashboard/dashboard-ops-tab-panels.tsx");
+  assert.match(page, /Suspense/);
+  assert.match(page, /DashboardOpsIntelligenceTab/);
+  assert.match(page, /DashboardOpsAutomationTab/);
+  assert.match(page, /DashboardOpsGovernanceTab/);
+  assert.match(page, /OpsTabPanelSkeleton/);
+  assert.doesNotMatch(page, /getClientSuccessPortfolio/);
+  assert.doesNotMatch(page, /getPredictiveDashboardSummary/);
+  assert.doesNotMatch(page, /getIntegrationsDashboardSummary/);
+  assert.doesNotMatch(page, /getComplianceDiagnosticsSnapshot/);
+  assert.doesNotMatch(page, /getOperationalIntelligence/);
+  assert.doesNotMatch(page, /buildOperationalTasks/);
+  assert.match(panels, /getClientSuccessPortfolio/);
+  assert.match(panels, /getPredictiveDashboardSummary/);
+  assert.match(panels, /getKnowledgeHubData/);
+  assert.match(panels, /getIntegrationsDashboardSummary/);
+  assert.match(panels, /getComplianceDiagnosticsSnapshot/);
+});

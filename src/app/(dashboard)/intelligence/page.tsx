@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { requireSession } from "@/lib/auth/session";
 import { sessionHasPermission } from "@/lib/authorization/guards";
 import { requireModuleAccess } from "@/lib/rbac/route-guards";
@@ -8,8 +9,15 @@ import { buildCustomerSuccessPortfolio } from "@/lib/customer-success/snapshot";
 import { getDashboardData } from "@/lib/dashboard/queries";
 import { buildExecutiveBriefing } from "@/lib/executive-intelligence/briefing";
 import { buildExecutiveIntelligenceSnapshot } from "@/lib/executive-intelligence/snapshot";
+import { canGenerateExecutiveIntelligence } from "@/lib/executive-intelligence/guards";
 import { ExecutiveIntelligenceHub } from "@/components/executive-intelligence/executive-intelligence-hub";
 import { ExecutiveIntelligenceTracker } from "@/components/executive-intelligence/executive-intelligence-tracker";
+import {
+  ExecutiveNarrativeSkeleton,
+  resolveStreamedExecutiveNarrative,
+  StreamedExecutiveNarrativeBody,
+  StreamedExecutiveNarrativeStatus,
+} from "@/components/executive-intelligence/streamed-executive-narrative";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageSurface } from "@/components/ui/page-surface";
 import { getOrganizationPlanContextForSession } from "@/lib/plans/queries";
@@ -84,6 +92,12 @@ export default async function IntelligencePage() {
   });
 
   const briefing = buildExecutiveBriefing(snapshot);
+  const planKey = planContext?.planKey ?? "starter";
+  const streamAiNarrative = canGenerateExecutiveIntelligence(session) && aiAccess.allowed;
+  // Start AI work without awaiting — Suspense streams the result after first paint.
+  const narrativePromise = streamAiNarrative
+    ? resolveStreamedExecutiveNarrative({ snapshot, briefing, planKey })
+    : null;
 
   return (
     <>
@@ -96,7 +110,34 @@ export default async function IntelligencePage() {
         organizationId={session.organization.id}
       />
       <PageSurface>
-        <ExecutiveIntelligenceHub snapshot={snapshot} briefing={briefing} aiEnabled={aiAccess.allowed} />
+        <ExecutiveIntelligenceHub
+          snapshot={snapshot}
+          briefing={briefing}
+          aiEnabled={aiAccess.allowed}
+          statusSlot={
+            narrativePromise ? (
+              <Suspense
+                fallback={
+                  <span className="mt-2 inline-flex rounded-full border border-border/70 px-2 py-0.5 text-xs text-muted">
+                    Deterministic briefing
+                  </span>
+                }
+              >
+                <StreamedExecutiveNarrativeStatus
+                  narrativePromise={narrativePromise}
+                  aiEnabled={aiAccess.allowed}
+                />
+              </Suspense>
+            ) : undefined
+          }
+          narrativeSlot={
+            narrativePromise ? (
+              <Suspense fallback={<ExecutiveNarrativeSkeleton />}>
+                <StreamedExecutiveNarrativeBody narrativePromise={narrativePromise} />
+              </Suspense>
+            ) : undefined
+          }
+        />
       </PageSurface>
     </>
   );
