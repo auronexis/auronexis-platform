@@ -17,6 +17,52 @@ const QUEUE_NAMES: QueueName[] = [
   "reports",
 ];
 
+/** Aggregated public status summary — no per-queue×status fan-out. */
+export type PublicQueueHealthSummary = {
+  tableReachable: boolean;
+  jobsPending: number;
+  jobsFailed: number;
+  status: JobHealthStatus;
+};
+
+/**
+ * Lightweight queue probe for the public marketing status page.
+ * Full per-queue diagnostics remain in {@link getQueueDiagnosticsSnapshot} for admin use.
+ */
+export async function getPublicQueueHealthSummary(): Promise<PublicQueueHealthSummary> {
+  const admin = createAdminClient();
+  const tableProbe = await admin.from("queue_jobs").select("id", { count: "exact", head: true });
+
+  if (tableProbe.error) {
+    return {
+      tableReachable: false,
+      jobsPending: 0,
+      jobsFailed: 0,
+      status: "unavailable",
+    };
+  }
+
+  const [pending, failed] = await Promise.all([
+    countPendingQueueJobs(),
+    countQueueJobsByStatus("failed"),
+  ]);
+
+  let status: JobHealthStatus = "healthy";
+  if (failed > 10) {
+    status = "degraded";
+  }
+  if (failed > 50 || pending > 500) {
+    status = "unavailable";
+  }
+
+  return {
+    tableReachable: true,
+    jobsPending: pending,
+    jobsFailed: failed,
+    status,
+  };
+}
+
 export async function getQueueDiagnosticsSnapshot(): Promise<QueueDiagnosticsSnapshot> {
   const admin = createAdminClient();
   const tableProbe = await admin.from("queue_jobs").select("id", { count: "exact", head: true });

@@ -16,6 +16,8 @@ test("public status page does not expose Development label", () => {
   assert.doesNotMatch(statusPage, /getPlatformStatusSnapshot/);
   assert.match(publicStatus, /resolvePublicOverallStatus/);
   assert.doesNotMatch(publicStatus, /Development/);
+  assert.match(publicStatus, /PUBLIC_STATUS_CACHE_TTL_MS/);
+  assert.match(publicStatus, /getPublicQueueHealthSummary/);
 });
 
 test("public AI status uses explicit missing-key detail without env exposure", () => {

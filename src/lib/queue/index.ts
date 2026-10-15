@@ -1,6 +1,10 @@
 export type { QueueDiagnosticsSnapshot, QueueJob, QueueJobStatus, QueueName } from "@/lib/jobs/types";
 export { dispatchQueueJob } from "@/lib/queue/dispatcher";
-export { getQueueDiagnosticsSnapshot } from "@/lib/queue/health";
+export {
+  getPublicQueueHealthSummary,
+  getQueueDiagnosticsSnapshot,
+} from "@/lib/queue/health";
+export type { PublicQueueHealthSummary } from "@/lib/queue/health";
 export {
   cancelQueueJob,
   enqueueQueueJob,

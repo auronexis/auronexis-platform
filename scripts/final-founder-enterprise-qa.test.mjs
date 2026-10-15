@@ -119,11 +119,18 @@ test("public favicon and manifest assets exist", () => {
 
 test("public status page does not expose environment variable names in customer copy", () => {
   const statusPage = readSource("src/app/(marketing)/status/page.tsx");
-  const customerFacingStrings = statusPage.match(/detail:\s*"[^"]+"/g) ?? [];
+  const publicStatus = readSource("src/lib/marketing/public-status.ts");
+  const statusContent = readSource("src/lib/marketing/content.ts");
+  const customerFacingStrings = [
+    ...(publicStatus.match(/detail:\s*"[^"]+"/g) ?? []),
+    ...(statusContent.match(/detail:\s*"[^"]+"/g) ?? []),
+  ];
   assert.ok(customerFacingStrings.length > 0);
   for (const line of customerFacingStrings) {
     assert.doesNotMatch(line, /OPENAI_API_KEY|STRIPE_SECRET_KEY|NEXT_PUBLIC_|process\.env/);
   }
+  assert.doesNotMatch(statusPage, /OPENAI_API_KEY|STRIPE_SECRET_KEY|SUPABASE_SERVICE_ROLE/);
+  assert.doesNotMatch(publicStatus, /process\.env\.(OPENAI|STRIPE|SUPABASE|MOLLIE)/);
 });
 
 test("marketing pages avoid exposing secret env key names in rendered copy", () => {
