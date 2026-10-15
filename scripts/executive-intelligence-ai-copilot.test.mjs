@@ -187,7 +187,7 @@ test("buildOperationalSnapshot uses React cache", () => {
   assert.match(source, /export const buildOperationalSnapshot = cache/);
 });
 
-test("intelligence page does not block initial render on OpenAI narrative", () => {
+test("intelligence page keeps deterministic briefing first paint and AI on request", () => {
   const page = readFileSync(
     join(rootDir, "src", "app", "(dashboard)", "intelligence", "page.tsx"),
     "utf8",
@@ -196,9 +196,15 @@ test("intelligence page does not block initial render on OpenAI narrative", () =
     join(rootDir, "src", "components", "executive-intelligence", "executive-intelligence-hub.tsx"),
     "utf8",
   );
-  assert.doesNotMatch(page, /generateGroundedExecutiveNarrative/);
+  assert.doesNotMatch(page, /await generateGroundedExecutiveNarrative/);
+  assert.doesNotMatch(page, /resolveStreamedExecutiveNarrative/);
+  assert.doesNotMatch(page, /StreamedExecutiveNarrativeBody/);
+  assert.doesNotMatch(page, /streamed-executive-narrative/);
   assert.match(page, /buildExecutiveBriefing\(snapshot\)/);
-  assert.match(hub, /AI summary is generated on request/);
+  assert.match(page, /canGenerateExecutiveIntelligence\(session\)/);
+  assert.match(hub, /Generate AI summary/);
+  assert.match(hub, /generateExecutiveNarrativeAction/);
+  assert.match(hub, /Optional AI narrative/);
 });
 
 test("client intelligence integrated on client success route", () => {

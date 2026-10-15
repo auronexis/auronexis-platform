@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CommandCenterGreeting } from "@/components/dashboard/command-center-greeting";
 import { cn } from "@/lib/utils/cn";
 import {
@@ -11,9 +12,16 @@ type CommandCenterHeroProps = {
   userName: string;
   data: DashboardData;
   workspaceHealth?: WorkspaceHealthSummary | null;
+  /** Optional streamed Workspace Health value (e.g. Suspense). Overrides workspaceHealth when set. */
+  workspaceHealthValue?: ReactNode;
 };
 
-export function CommandCenterHero({ userName, data, workspaceHealth }: CommandCenterHeroProps) {
+export function CommandCenterHero({
+  userName,
+  data,
+  workspaceHealth,
+  workspaceHealthValue,
+}: CommandCenterHeroProps) {
   const healthScore = workspaceHealth?.score ?? computeHealthScore(data.clientHealth);
   const activeAlerts = countActiveAlerts({
     criticalAlerts: data.criticalAlerts,
@@ -25,8 +33,11 @@ export function CommandCenterHero({ userName, data, workspaceHealth }: CommandCe
     includeSla: data.features.sla,
   });
 
-  const stats = [
-    { label: "Workspace Health", value: `${healthScore}%` },
+  const stats: Array<{ label: string; value: ReactNode }> = [
+    {
+      label: "Workspace Health",
+      value: workspaceHealthValue ?? `${healthScore}%`,
+    },
     { label: "Active Alerts", value: String(activeAlerts) },
     { label: "Reports Drafted", value: String(data.draftReportsCount) },
   ];

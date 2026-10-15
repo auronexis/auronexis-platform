@@ -8,6 +8,7 @@ import { buildCustomerSuccessPortfolio } from "@/lib/customer-success/snapshot";
 import { getDashboardData } from "@/lib/dashboard/queries";
 import { buildExecutiveBriefing } from "@/lib/executive-intelligence/briefing";
 import { buildExecutiveIntelligenceSnapshot } from "@/lib/executive-intelligence/snapshot";
+import { canGenerateExecutiveIntelligence } from "@/lib/executive-intelligence/guards";
 import { ExecutiveIntelligenceHub } from "@/components/executive-intelligence/executive-intelligence-hub";
 import { ExecutiveIntelligenceTracker } from "@/components/executive-intelligence/executive-intelligence-tracker";
 import { PageHeader } from "@/components/layout/page-header";
@@ -96,7 +97,14 @@ export default async function IntelligencePage() {
         organizationId={session.organization.id}
       />
       <PageSurface>
-        <ExecutiveIntelligenceHub snapshot={snapshot} briefing={briefing} aiEnabled={aiAccess.allowed} />
+        <ExecutiveIntelligenceHub
+          snapshot={snapshot}
+          briefing={briefing}
+          aiEnabled={aiAccess.allowed}
+          canGenerate={canGenerateExecutiveIntelligence(session)}
+          snapshotJson={JSON.stringify(snapshot)}
+          briefingJson={JSON.stringify(briefing)}
+        />
       </PageSurface>
     </>
   );

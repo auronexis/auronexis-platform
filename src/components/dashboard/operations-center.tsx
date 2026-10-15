@@ -12,9 +12,12 @@ import { focusRing, transitionInteractive } from "@/lib/ui/tokens";
 export type OperationsCenterTab = {
   id: string;
   label: string;
-  /** Optional count shown on the tab (urgent / items). */
-  badge?: number | null;
-  /** When true, badge uses danger tone. */
+  /**
+   * Optional count or streamed badge node shown on the tab.
+   * Prefer omitting / null over a fake zero — streamed badges should use Suspense fallback={null}.
+   */
+  badge?: number | ReactNode | null;
+  /** When true, numeric badges use danger tone (ignored for ReactNode badges). */
   urgent?: boolean;
   content: ReactNode;
 };
@@ -103,7 +106,10 @@ export function OperationsCenter({
       >
         {tabs.map((tab) => {
           const selected = tab.id === activeId;
-          const badge = tab.badge != null && tab.badge > 0 ? tab.badge : null;
+          const numericBadge =
+            typeof tab.badge === "number" && tab.badge > 0 ? tab.badge : null;
+          const streamedBadge =
+            tab.badge != null && typeof tab.badge !== "number" ? tab.badge : null;
           return (
             <button
               key={tab.id}
@@ -124,7 +130,7 @@ export function OperationsCenter({
               )}
             >
               {tab.label}
-              {badge != null ? (
+              {numericBadge != null ? (
                 <span
                   className={cn(
                     "inline-flex min-w-5 items-center justify-center rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums",
@@ -133,9 +139,10 @@ export function OperationsCenter({
                       : "bg-muted/20 text-muted",
                   )}
                 >
-                  {badge}
+                  {numericBadge}
                 </span>
               ) : null}
+              {streamedBadge}
             </button>
           );
         })}
