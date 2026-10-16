@@ -61,7 +61,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.home]: {
     title: "MSP & Agency Client Operations Software",
     description:
-      "Client health, SLA, incidents, and reporting for multi-client MSPs and agencies — one operations workspace for portfolio delivery, not a generic CRM.",
+      "Customer health score software, SLA tracking, NIS2 incident management, and automated client reporting for MSPs and agencies — one operations workspace, not a generic CRM.",
   },
   [MARKETING_ROUTES.features]: {
     title: "Client Operations Features for Agencies & MSPs",
@@ -101,7 +101,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.pricing]: {
     title: "MSP & Agency Operations Pricing (EUR)",
     description:
-      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — MSP and agency client operations. Tax confirmed from billing context at checkout.",
+      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — pricing for MSP and agency client operations including health scores, SLA tracking, incidents, and reporting. Tax confirmed from billing context at checkout.",
   },
   [MARKETING_ROUTES.enterprise]: {
     title: "Enterprise Client Operations for MSPs & Agencies",
@@ -289,15 +289,5 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "Technology & SaaS Client Operations",
     description:
       "Technology operations platform — customer health, incident tracking, SLA management, and executive reporting for SaaS and tech service providers in Auroranexis.",
-  },
-  "/solutions/ai-reporting": {
-    title: "Automated Client Reporting Software",
-    description:
-      "Automated client reporting software for MSPs and agencies: templates, schedules, workspace data, PDF export, and portal delivery with human review.",
-  },
-  "/solutions/incident-management": {
-    title: "Incident Response with SLA Tracking",
-    description:
-      "Agency incident management — timelines, SLA tracking, client transparency, and audit logs in Auroranexis.",
   },
 };

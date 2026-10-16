@@ -44,12 +44,12 @@ ${capabilityLines}
 
 ## Solution areas
 
-- Customer health score: ${base}${SOLUTION_ROUTES.customerHealthScore}
+- Customer health score software for MSPs: ${base}${SOLUTION_ROUTES.customerHealthScore}
 - Risk management: ${base}${SOLUTION_ROUTES.riskManagement}
-- Incident management: ${base}${SOLUTION_ROUTES.incidentManagement}
-- SLA management: ${base}${SOLUTION_ROUTES.slaManagement}
+- NIS2 incident management for IT service providers: ${base}${SOLUTION_ROUTES.incidentManagement}
+- SLA tracking for MSPs: ${base}${SOLUTION_ROUTES.slaManagement}
 - Executive dashboard: ${base}${SOLUTION_ROUTES.executiveDashboard}
-- Automated client reporting: ${base}${SOLUTION_ROUTES.aiReporting}
+- Automated client reporting for agencies: ${base}${SOLUTION_ROUTES.aiReporting}
 
 ## API and integrations
 

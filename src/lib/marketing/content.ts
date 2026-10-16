@@ -82,7 +82,7 @@ export type MarketingFeature = {
 
 export const FEATURES: readonly MarketingFeature[] = [
   {
-    title: "Operations Command Center",
+    title: "Portfolio operations workspace",
     description: "One workspace for client health, alerts, reports, and delivery metrics.",
     problem: "Client signals are scattered across spreadsheets, inboxes, and disconnected tools.",
     workflow: "Monitor portfolio health, overdue work, and executive priorities from a single dashboard.",
@@ -92,24 +92,24 @@ export const FEATURES: readonly MarketingFeature[] = [
     ctaHref: "/features/executive-dashboards",
   },
   {
-    title: "Client Reporting",
-    description: "Templates, schedules, PDF export, and secure client portal delivery.",
+    title: "Automated client reporting",
+    description: "Templates, schedules, PDF export, and secure client portal delivery for agencies.",
     problem: "Recurring client reports are manual, inconsistent, and hard to prove on time.",
     workflow: "Draft, generate, publish, and schedule reports with client portal visibility controls.",
     outcome: "Predictable delivery and a published record of value for every client.",
     enterpriseValue: "Client-ready reporting with version history and portal-only publication rules.",
-    ctaLabel: "See automated client reporting",
+    ctaLabel: "See automated client reporting for agencies",
     ctaHref: "/solutions/ai-reporting",
   },
   {
-    title: "Risk & Incident Management",
-    description: "Track operational risks, incidents, and SLA breaches with audit trails.",
+    title: "Risk & incident management",
+    description: "Track operational risks, NIS2-oriented incidents, and SLA breaches with audit trails.",
     problem: "Operational issues are tracked informally and escalate without portfolio context.",
     workflow: "Log risks and incidents, tie them to clients, and resolve with traceable status changes.",
     outcome: "Fewer surprises and a defensible record for client and leadership reviews.",
     enterpriseValue: "Governance-ready risk and incident history with role-based access.",
-    ctaLabel: "Review risk intelligence",
-    ctaHref: "/features/risk-intelligence",
+    ctaLabel: "Review NIS2 incident management",
+    ctaHref: "/solutions/incident-management",
     planNote: "Available on Business and Enterprise plans.",
   },
   {

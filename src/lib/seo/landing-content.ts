@@ -32,13 +32,14 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     slug: "customer-health-score",
     path: SOLUTION_ROUTES.customerHealthScore,
     eyebrow: "Solution",
-    title: "Customer Health Score Software for Agencies & MSPs",
+    title: "Customer Health Score Software for MSPs",
+    breadcrumbName: "Customer health score",
     description:
-      "Monitor client health across your portfolio with signals, thresholds, and executive-ready visibility.",
+      "Customer health score software for MSPs — portfolio signals, thresholds, and executive-ready visibility across managed clients.",
     metaDescription:
-      "Customer health score software for agencies and MSPs — portfolio signals, thresholds, risk indicators, and operational visibility in Auroranexis.",
+      "Customer health score software for MSPs — portfolio signals, thresholds, risk indicators, and operational visibility for multi-client service portfolios.",
     intro:
-      "Auroranexis helps agencies and MSPs track customer health using operational signals from reports, incidents, risks, and SLA performance. Instead of relying on spreadsheets or subjective check-ins, teams get a structured view of which clients need attention and why.",
+      "Auroranexis is customer health score software for MSPs and multi-client agencies. Track customer health using operational signals from reports, incidents, risks, and SLA performance. Instead of relying on spreadsheets or subjective check-ins, teams get a structured view of which clients need attention and why.",
     problem:
       "Account teams often judge client health from memory, last-week tickets, or a spreadsheet that is already stale. At-risk retainers surface too late — after a missed QBR, a surprise churn notice, or an SLA dispute.",
     audience:
@@ -79,9 +80,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       { label: "Health monitoring feature", href: FEATURE_ROUTES.healthMonitoring },
       { label: "Customer success tools", href: FEATURE_ROUTES.customerSuccess },
       { label: "Health score template", href: TEMPLATE_ROUTES.customerHealthScore },
-      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Automated client reporting for agencies", href: SOLUTION_ROUTES.aiReporting },
+      { label: "SLA tracking for MSPs", href: SOLUTION_ROUTES.slaManagement },
       { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "MSP & agency operations pricing", href: MARKETING_ROUTES.pricing },
     ],
   },
   "risk-management": {
@@ -137,25 +139,28 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     ],
     relatedLinks: [
       { label: "Risk intelligence", href: FEATURE_ROUTES.riskIntelligence },
-      { label: "Incident management with SLA tracking", href: SOLUTION_ROUTES.incidentManagement },
+      { label: "NIS2 incident management for IT service providers", href: SOLUTION_ROUTES.incidentManagement },
       { label: "Risk register template", href: TEMPLATE_ROUTES.riskRegister },
-      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Automated client reporting for agencies", href: SOLUTION_ROUTES.aiReporting },
     ],
   },
   "incident-management": {
     slug: "incident-management",
     path: SOLUTION_ROUTES.incidentManagement,
     eyebrow: "Solution",
-    title: "Client portfolio incident response with SLA tracking",
-    description: "Track incidents, timelines, ownership, and SLA impact across your client portfolio.",
+    title: "NIS2 Incident Management for IT Service Providers",
+    breadcrumbName: "Incident management",
+    definitionTerm: "NIS2 incident management",
+    description:
+      "NIS2-oriented incident management for IT service providers — timelines, ownership, SLA impact, and audit-ready records across the client portfolio.",
     metaDescription:
-      "Agency incident management — timelines, SLA tracking, client transparency, and audit logs in Auroranexis.",
+      "NIS2 incident management for IT service providers — timelines, SLA tracking, client transparency, and audit logs. Supports operator incident workflows; not a certification claim.",
     intro:
-      "When operations break, agencies need fast coordination and clear customer communication. Auroranexis centralizes incident records, response timelines, and SLA evaluation so teams resolve issues with accountability.",
+      "IT service providers need defensible incident records when client-impacting events occur. Auroranexis centralizes incident management with response timelines, SLA evaluation, and audit history so delivery teams coordinate faster and document what happened — supportive of NIS2-style operator incident obligations without claiming NIS2 certification.",
     problem:
-      "Incidents are logged in tickets, email, and chat without a shared client timeline. SLA impact is reconstructed after the fact, which weakens both response and client communication.",
+      "Incidents are logged in tickets, email, and chat without a shared client timeline. SLA impact is reconstructed after the fact, which weakens both response and client communication — and leaves little evidence for operator reporting expectations.",
     audience:
-      "Delivery and operations leads at MSPs and agencies who coordinate client-impacting incidents against contractual response and resolution targets.",
+      "Delivery and operations leads at IT service providers, MSPs, and agencies who coordinate client-impacting incidents against contractual response targets and operator documentation needs.",
     benefits: [
       {
         title: "Single incident workspace",
@@ -179,6 +184,11 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     ],
     faq: [
       {
+        question: "Does Auroranexis claim NIS2 certification?",
+        answer:
+          "No. Incident and risk workflows help IT service providers document operator-relevant events; Auroranexis does not claim NIS2 certification or act as a compliance authority.",
+      },
+      {
         question: "Can incidents trigger automations?",
         answer: "Yes. Auroranexis supports automation workflows that react to operational events where configured.",
       },
@@ -189,21 +199,25 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     ],
     relatedLinks: [
       { label: "Incidents feature", href: FEATURE_ROUTES.incidents },
-      { label: "SLA monitoring software", href: SOLUTION_ROUTES.slaManagement },
+      { label: "SLA tracking for MSPs", href: SOLUTION_ROUTES.slaManagement },
       { label: "Incident response template", href: TEMPLATE_ROUTES.incidentResponse },
-      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Automated client reporting for agencies", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
     ],
   },
   "sla-management": {
     slug: "sla-management",
     path: SOLUTION_ROUTES.slaManagement,
     eyebrow: "Solution",
-    title: "SLA Monitoring Software for Multi-Client Agencies",
-    description: "Define SLA policies, monitor breaches, and prove performance to clients.",
+    title: "SLA Tracking for MSPs",
+    breadcrumbName: "SLA tracking",
+    definitionTerm: "SLA tracking",
+    description:
+      "SLA tracking for MSPs — define policies, monitor breaches, and prove performance across multi-client portfolios.",
     metaDescription:
-      "SLA monitoring software for multi-client agencies and MSPs — policy definitions, breach visibility, and client reporting in Auroranexis.",
+      "SLA tracking for MSPs — policy definitions, breach visibility, and client reporting for managed service portfolios in Auroranexis.",
     intro:
-      "SLA performance is how agencies prove reliability. On Business and Enterprise plans, Auroranexis lets you define policies per client, monitor incidents and risks against those policies, and report outcomes without manual spreadsheet tracking.",
+      "SLA tracking is how MSPs prove reliability to clients. On Business and Enterprise plans, Auroranexis lets you define policies per client, monitor incidents and risks against those policies, and report outcomes without manual spreadsheet tracking.",
     problem:
       "SLA targets live in contracts while delivery work lives in another system. Breach evidence is assembled manually when a client asks for proof.",
     audience:
@@ -245,12 +259,13 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       },
     ],
     relatedLinks: [
-      { label: "Incident management with SLA tracking", href: SOLUTION_ROUTES.incidentManagement },
+      { label: "NIS2 incident management for IT service providers", href: SOLUTION_ROUTES.incidentManagement },
       { label: "SLA documentation", href: "/docs/sla" },
       { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
-      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Automated client reporting for agencies", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Customer health score software for MSPs", href: SOLUTION_ROUTES.customerHealthScore },
       { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "MSP & agency operations pricing", href: MARKETING_ROUTES.pricing },
     ],
   },
   "executive-dashboard": {
@@ -301,7 +316,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     relatedLinks: [
       { label: "Portfolio KPI dashboards", href: FEATURE_ROUTES.executiveDashboards },
       { label: "AI Copilot", href: FEATURE_ROUTES.aiCopilot },
-      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Automated client reporting for agencies", href: SOLUTION_ROUTES.aiReporting },
       { label: "Platform features", href: MARKETING_ROUTES.features },
     ],
   },
@@ -309,19 +324,19 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     slug: "ai-reporting",
     path: SOLUTION_ROUTES.aiReporting,
     eyebrow: "Solution",
-    title: "Automated Client Reporting Software for MSPs & Agencies",
+    title: "Automated Client Reporting for Agencies",
     breadcrumbName: "Automated client reporting",
     definitionTerm: "Automated client reporting",
     description:
-      "Create, generate, review, and publish client reports from operational data — templates, schedules, PDF export, and portal delivery, with optional AI-assisted summaries.",
+      "Automated client reporting for agencies — create, generate, review, and publish reports from operational data with templates, schedules, PDF export, and portal delivery.",
     metaDescription:
-      "Automated client reporting software for MSPs and agencies: templates, schedules, workspace data, PDF export, and portal delivery with human review.",
+      "Automated client reporting for agencies: templates, schedules, workspace data, PDF export, and portal delivery with human review. Built for multi-client service teams.",
     intro:
-      "Automated client reporting in Auroranexis is the workflow that turns delivery records into client-ready reports without rebuilding decks from scratch each period. Each report is linked to one client and a reporting period. Templates define the structure. Generate fills metrics and default narrative from workspace data such as health signals, SLA outcomes, related incidents, and open risks. Your team reviews and edits before publish. Published reports can go to the client portal, PDF export, and email where configured. Recurring schedules can create draft shells so cadence does not depend on someone remembering to start the report. Optional AI-assisted executive summaries are available when enabled; they do not replace human review, and reporting works without AI.",
+      "Automated client reporting for agencies in Auroranexis turns delivery records into client-ready reports without rebuilding decks from scratch each period. Each report is linked to one client and a reporting period. Templates define the structure. Generate fills metrics and default narrative from workspace data such as health signals, SLA outcomes, related incidents, and open risks. Your team reviews and edits before publish. Published reports can go to the client portal, PDF export, and email where configured. Recurring schedules can create draft shells so cadence does not depend on someone remembering to start the report. Optional AI-assisted executive summaries are available when enabled; they do not replace human review, and reporting works without AI.",
     problem:
       "Agencies still assemble client reports from spreadsheets, ticket exports, and last month's slides. Delivery is late or inconsistent, metrics do not match the live workspace, and there is no durable record of what the client actually received.",
     audience:
-      "Account, delivery, and operations teams at AI automation agencies, MSPs, and multi-client service firms who publish recurring client reports and QBR packs.",
+      "Account, delivery, and operations teams at agencies, MSPs, and multi-client service firms who publish recurring client reports and QBR packs.",
     howItWorks: [
       {
         title: "Start from a template",
@@ -404,10 +419,11 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       { label: "Reports documentation", href: "/docs/reports" },
       { label: "Executive report outline", href: TEMPLATE_ROUTES.executiveReport },
       { label: "Client portal delivery", href: FEATURE_ROUTES.clientPortal },
-      { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Customer health score software for MSPs", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "SLA tracking for MSPs", href: SOLUTION_ROUTES.slaManagement },
       { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
       { label: "Portfolio profitability reporting", href: FEATURE_ROUTES.profitability },
-      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "MSP & agency operations pricing", href: MARKETING_ROUTES.pricing },
     ],
   },
 };

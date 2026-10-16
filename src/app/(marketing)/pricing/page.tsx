@@ -32,22 +32,30 @@ export default async function PublicPricingPage() {
       <ConversionTracker event="pricing_view" />
       <MarketingHero
         eyebrow="Pricing"
-        title="Professional, Business, and Enterprise"
-        description="EUR catalog pricing for MSPs and agencies running multi-client operations — client portal, reporting, automation, and plan-gated risk, incident, and SLA modules. Choose the tier that matches your portfolio size."
+        title="MSP and agency operations pricing"
+        description="EUR catalog pricing for MSPs and agencies — customer health scores, SLA tracking, NIS2-oriented incident workflows, and automated client reporting. Choose Professional, Business, or Enterprise for your portfolio size."
         primaryHref="/signup"
         primaryLabel="Get started"
         secondaryHref="/login"
         secondaryLabel="Sign in"
       />
-      <MarketingSection title="Plans">
+      <MarketingSection title="Plans for multi-client operators">
         <p className="mb-6 max-w-3xl text-sm text-muted">
           Built for multi-client operators evaluating{" "}
-          <AuthAwareMarketingLink href="/use-cases/msps" className="font-medium text-primary hover:underline">
-            MSP portfolio operations
+          <AuthAwareMarketingLink href="/solutions/customer-health-score" className="font-medium text-primary hover:underline">
+            customer health score software for MSPs
+          </AuthAwareMarketingLink>
+          ,{" "}
+          <AuthAwareMarketingLink href="/solutions/sla-management" className="font-medium text-primary hover:underline">
+            SLA tracking for MSPs
           </AuthAwareMarketingLink>
           ,{" "}
           <AuthAwareMarketingLink href="/solutions/ai-reporting" className="font-medium text-primary hover:underline">
-            automated client reporting
+            automated client reporting for agencies
+          </AuthAwareMarketingLink>
+          ,{" "}
+          <AuthAwareMarketingLink href="/solutions/incident-management" className="font-medium text-primary hover:underline">
+            NIS2 incident management for IT service providers
           </AuthAwareMarketingLink>
           , and{" "}
           <AuthAwareMarketingLink href="/features/profitability" className="font-medium text-primary hover:underline">

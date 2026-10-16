@@ -15,11 +15,11 @@ function assertUnique(values, label) {
 test("priority page owns automated client reporting intent in title, H1 source, and meta", () => {
   const solution = readSource("src/lib/seo/landing-content.ts");
   assert.match(solution, /slug: "ai-reporting"/);
-  assert.match(solution, /title: "Automated Client Reporting Software for MSPs & Agencies"/);
+  assert.match(solution, /title: "Automated Client Reporting for Agencies"/);
   assert.match(solution, /definitionTerm: "Automated client reporting"/);
   assert.match(
     solution,
-    /metaDescription:\s*\n\s*"Automated client reporting software for MSPs and agencies: templates, schedules, workspace data/,
+    /metaDescription:\s*\n\s*"Automated client reporting for agencies: templates, schedules, workspace data/,
   );
   assert.match(solution, /What is automated client reporting in Auroranexis\?/);
   assert.match(solution, /Is AI required for automated client reporting\?/);
@@ -30,7 +30,7 @@ test("supporting report pages do not use the primary solution H1", () => {
   const feature = readSource("src/lib/seo/feature-content.ts");
   assert.match(feature, /title: "Report templates, schedules, and publication workflows"/);
   assert.match(feature, /title: "AI-assisted executive reports for leadership briefings"/);
-  assert.doesNotMatch(feature, /title: "Automated Client Reporting Software for MSPs & Agencies"/);
+  assert.doesNotMatch(feature, /title: "Automated Client Reporting for Agencies"/);
   assert.match(feature, /href: SOLUTION_ROUTES\.aiReporting/);
 });
 
@@ -85,25 +85,41 @@ test("solution and feature page titles used as metadata remain unique", () => {
       );
     }
   }
-  assert.ok(titles.includes("Automated Client Reporting Software for MSPs & Agencies"));
+  assert.ok(titles.includes("Automated Client Reporting for Agencies"));
+  assert.ok(titles.includes("Customer Health Score Software for MSPs"));
+  assert.ok(titles.includes("SLA Tracking for MSPs"));
+  assert.ok(titles.includes("NIS2 Incident Management for IT Service Providers"));
   assertUnique(titles, "public page title");
   assertUnique(metas.filter(Boolean), "meta description");
 });
 
-test("homepage and hubs link to automated client reporting with descriptive anchors", () => {
+test("homepage and hubs link to category money pages with descriptive anchors", () => {
   const home = readSource("src/app/(marketing)/page.tsx");
   const features = readSource("src/app/(marketing)/features/page.tsx");
   const solutions = readSource("src/app/(marketing)/solutions/page.tsx");
   const marketing = readSource("src/lib/marketing/content.ts");
-  assert.match(home, /Automated client reporting/);
+  const footer = readSource("src/lib/company/company-links.ts");
+  assert.match(home, /eyebrow="Operations Command Center"/);
+  assert.match(home, /title="Client operations software for MSPs and agencies"/);
+  assert.match(home, /Customer health score software for MSPs/);
+  assert.match(home, /href="\/solutions\/customer-health-score"/);
+  assert.match(home, /SLA tracking for MSPs/);
+  assert.match(home, /href="\/solutions\/sla-management"/);
+  assert.match(home, /Automated client reporting for agencies/);
   assert.match(home, /href="\/solutions\/ai-reporting"/);
-  assert.match(home, /Incident management with SLA tracking/);
-  assert.match(home, /MSP portfolio operations/);
+  assert.match(home, /NIS2 incident management for IT service providers/);
+  assert.match(home, /href="\/solutions\/incident-management"/);
+  assert.match(home, /MSP & agency operations pricing/);
   assert.match(home, /secondaryHref=\{MARKETING_ROUTES\.pricing\}/);
-  assert.match(home, /secondaryLabel="See pricing"/);
   assert.match(features, /Automated client reporting/);
   assert.match(solutions, /automated client reporting/);
   assert.match(marketing, /ctaHref: "\/solutions\/ai-reporting"/);
+  assert.match(footer, /Customer health score software for MSPs/);
+  assert.match(footer, /SLA tracking for MSPs/);
+  assert.match(footer, /Automated client reporting for agencies/);
+  assert.match(footer, /NIS2 incident management for IT service providers/);
+  assert.match(footer, /MSP & agency operations pricing/);
+  assert.doesNotMatch(home, /vulnerability-disclosure/);
 });
 
 test("feature JSON-LD does not mint extra SoftwareApplication nodes", () => {
@@ -143,8 +159,8 @@ test("private surfaces stay noindex and out of sitemap helpers", () => {
 test("llms.txt and entity graph point reporting capability at the solution URL", () => {
   const llms = readSource("src/lib/seo/llms-txt.ts");
   const entity = readSource("src/lib/seo/entity-graph.ts");
-  assert.match(llms, /Automated client reporting: \$\{base\}\$\{SOLUTION_ROUTES\.aiReporting\}/);
+  assert.match(llms, /Automated client reporting for agencies: \$\{base\}\$\{SOLUTION_ROUTES\.aiReporting\}/);
   assert.doesNotMatch(llms, /\/dashboard/);
-  assert.match(entity, /name: "Automated Client Reporting"/);
+  assert.match(entity, /name: "Automated Client Reporting for Agencies"/);
   assert.match(entity, /path: SOLUTION_ROUTES\.aiReporting/);
 });
