@@ -29,7 +29,6 @@ import {
 } from "@/lib/marketing/content";
 import { loadPublicPricingPlanViews } from "@/lib/marketing/public-pricing";
 import { MARKETING_ROUTES, SECURITY_EMAIL } from "@/lib/company";
-import { COMPANY_SEO } from "@/lib/company/company-seo";
 import { createPageMetadataForPath } from "@/lib/seo";
 import { homePageGraphJsonLd } from "@/lib/seo/geo-schema";
 import {
@@ -68,11 +67,11 @@ export default async function MarketingHomePage() {
         withBanner
         eyebrow="Operations Command Center"
         title="Client operations software for MSPs and agencies"
-        description="Monitor client health, SLA performance, incidents, and reporting across your multi-client portfolio. Built for MSPs and agencies that need one operations workspace — not another generic CRM."
+        description="Customer health score software for MSPs, SLA tracking, NIS2 incident management for IT service providers, and automated client reporting for agencies — one operations workspace, not another generic CRM."
         primaryHref="/signup"
         primaryLabel="Get started"
         secondaryHref={MARKETING_ROUTES.pricing}
-        secondaryLabel="See pricing"
+        secondaryLabel="See MSP & agency pricing"
       />
 
       <MarketingPace tone="muted">
@@ -86,7 +85,7 @@ export default async function MarketingHomePage() {
           id="what-is-auroranexis"
           eyebrow="Product"
           title="What is Auroranexis?"
-          description={COMPANY_SEO.defaultDescription}
+          description="Client operations software for MSPs and agencies: health scores, SLA tracking, incident records, and automated reporting in one workspace."
         >
         <div className="grid max-w-4xl gap-6 md:grid-cols-2">
           <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -99,7 +98,7 @@ export default async function MarketingHomePage() {
           <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h3 className="text-sm font-semibold text-white">Client intelligence</h3>
             <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
-              Combine health signals, risks, incidents, SLA performance, and reporting in one command center.
+              Combine health signals, risks, incidents, SLA performance, and reporting in one portfolio workspace.
             </p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -118,22 +117,27 @@ export default async function MarketingHomePage() {
         <ul className="mt-8 flex flex-wrap gap-3 text-sm">
           <li>
             <Link href="/solutions/customer-health-score" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
-              Customer health score
+              Customer health score software for MSPs
             </Link>
           </li>
           <li>
-            <Link href="/solutions/risk-management" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
-              Risk management
+            <Link href="/solutions/sla-management" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              SLA tracking for MSPs
             </Link>
           </li>
           <li>
             <Link href="/solutions/ai-reporting" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
-              Automated client reporting
+              Automated client reporting for agencies
             </Link>
           </li>
           <li>
             <Link href="/solutions/incident-management" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
-              Incident management with SLA tracking
+              NIS2 incident management for IT service providers
+            </Link>
+          </li>
+          <li>
+            <Link href="/solutions/risk-management" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Operational risk management
             </Link>
           </li>
           <li>
@@ -153,7 +157,7 @@ export default async function MarketingHomePage() {
           </li>
           <li>
             <Link href={MARKETING_ROUTES.pricing} className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
-              Pricing
+              MSP & agency operations pricing
             </Link>
           </li>
         </ul>
@@ -161,7 +165,11 @@ export default async function MarketingHomePage() {
       </MarketingPace>
 
       <MarketingPace>
-        <MarketingSection eyebrow="Platform" title="Built for agency operations" description="Everything your team needs to run client operations from one command center.">
+        <MarketingSection
+          eyebrow="Platform"
+          title="Built for MSP and agency client operations"
+          description="Health scores, SLA tracking, incident records, and automated client reporting — without reinventing your delivery stack."
+        >
           <MarketingCardGrid items={FEATURES} />
         </MarketingSection>
       </MarketingPace>
@@ -292,7 +300,7 @@ export default async function MarketingHomePage() {
 
       <MarketingCtaSection
         title="Create your agency workspace"
-        description="Set up Auroranexis, invite your team, and start managing client operations from one command center."
+        description="Set up Auroranexis, invite your team, and start managing client health, SLA, incidents, and reporting in one operations workspace."
         primaryPreset="startFreeTrial"
         secondaryPreset="seePricing"
       />

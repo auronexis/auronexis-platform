@@ -104,7 +104,7 @@ export const CANONICAL_CAPABILITIES = [
 export const CANONICAL_SOLUTIONS = [
   {
     id: "customer-health-score",
-    name: "Customer Health Score",
+    name: "Customer Health Score Software for MSPs",
     path: SOLUTION_ROUTES.customerHealthScore,
   },
   {
@@ -114,12 +114,12 @@ export const CANONICAL_SOLUTIONS = [
   },
   {
     id: "incident-management-solution",
-    name: "Incident Management",
+    name: "NIS2 Incident Management for IT Service Providers",
     path: SOLUTION_ROUTES.incidentManagement,
   },
   {
     id: "sla-management",
-    name: "SLA Management",
+    name: "SLA Tracking for MSPs",
     path: SOLUTION_ROUTES.slaManagement,
   },
   {
@@ -129,7 +129,7 @@ export const CANONICAL_SOLUTIONS = [
   },
   {
     id: "ai-reporting",
-    name: "Automated Client Reporting",
+    name: "Automated Client Reporting for Agencies",
     path: SOLUTION_ROUTES.aiReporting,
   },
 ] as const;

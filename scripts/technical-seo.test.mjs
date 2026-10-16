@@ -554,7 +554,26 @@ test("feature vs solution incident pages use differentiated titles", () => {
   const feature = readSource("src/lib/seo/feature-content.ts");
   const solution = readSource("src/lib/seo/landing-content.ts");
   assert.match(feature, /title: "Incident management with SLA awareness"/);
-  assert.match(solution, /title: "Client portfolio incident response with SLA tracking"/);
+  assert.match(solution, /title: "NIS2 Incident Management for IT Service Providers"/);
+  assert.match(solution, /Does Auroranexis claim NIS2 certification\?/);
+  assert.match(solution, /does not claim NIS2 certification/);
+});
+
+test("P0 category capture: money-page titles use searchable buyer terms", () => {
+  const routes = readSource("src/lib/seo/routes.ts");
+  const solution = readSource("src/lib/seo/landing-content.ts");
+  const home = readSource("src/app/(marketing)/page.tsx");
+  const pricing = readSource("src/app/(marketing)/pricing/page.tsx");
+  assert.match(routes, /title: "MSP & Agency Client Operations Software"/);
+  assert.match(routes, /title: "MSP & Agency Operations Pricing \(EUR\)"/);
+  assert.match(solution, /title: "Customer Health Score Software for MSPs"/);
+  assert.match(solution, /title: "SLA Tracking for MSPs"/);
+  assert.match(solution, /title: "Automated Client Reporting for Agencies"/);
+  assert.match(solution, /title: "NIS2 Incident Management for IT Service Providers"/);
+  assert.match(home, /eyebrow="Operations Command Center"/);
+  assert.match(home, /title="Client operations software for MSPs and agencies"/);
+  assert.match(pricing, /title="MSP and agency operations pricing"/);
+  assert.doesNotMatch(solution, /SOC 2 certified|ISO 27001 certified/i);
 });
 
 test("phase 2 authority: homepage logo/testimonials do not reintroduce duplicate H3 defaults", () => {
