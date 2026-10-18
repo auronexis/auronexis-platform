@@ -61,11 +61,15 @@ export function scrubSentryEvent<T extends Record<string, unknown>>(event: T): T
       }
       next.request.headers = scrubbedHeaders;
     }
-    if (next.request.cookies) {
+    // Never send cookies, bodies, or query strings — forms and URLs often carry PII.
+    if (next.request.cookies !== undefined) {
       next.request.cookies = "[redacted]";
     }
-    if (next.request.data) {
-      next.request.data = scrubRecord(next.request.data);
+    if (next.request.data !== undefined) {
+      next.request.data = "[redacted]";
+    }
+    if (next.request.query_string !== undefined) {
+      next.request.query_string = "[redacted]";
     }
   }
 

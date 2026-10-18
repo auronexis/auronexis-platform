@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getSession } from "@/lib/auth/session";
 import { SALES_EMAIL } from "@/lib/company";
 import { resolveOrganizationEntitlements } from "@/lib/entitlements/resolver";
+import { captureException } from "@/lib/observability/capture";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authThrottleUserMessage, checkPublicFormThrottle } from "@/lib/security/login-throttle";
 import { buildCalendlyLink, buildDiscoveryMeetLink } from "@/lib/sales/calendar";
@@ -287,32 +288,47 @@ const referralSchema = z.object({
 });
 
 export async function submitContactLead(_prev: CaptureActionState, formData: FormData): Promise<CaptureActionState> {
-  const parsed = contactSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid form data." };
+  try {
+    const parsed = contactSchema.safeParse(Object.fromEntries(formData.entries()));
+    if (!parsed.success) {
+      return { error: parsed.error.issues[0]?.message ?? "Invalid form data." };
+    }
+
+    const blocked = await validatePublicSubmission(parsed.data.email, "contact");
+    if (blocked) return blocked;
+
+    const marketingGranted = isMarketingConsentGranted(formData);
+    const result = await persistInboundLead({
+      source: "contact",
+      inboxKey: "info",
+      contactName: parsed.data.name,
+      contactEmail: parsed.data.email,
+      companyName: parsed.data.company ?? null,
+      message: parsed.data.message,
+      marketingConsent: marketingGranted
+        ? {
+            granted: true,
+            purposeVersion: MARKETING_CONSENT_PURPOSE_VERSION,
+            purpose: MARKETING_CONSENT_PURPOSE,
+          }
+        : null,
+    });
+
+    if (!result.ok) {
+      // Soft failure — no throw, so onRequestError would miss this; tag without PII.
+      captureException(new Error("Contact lead capture failed"), {
+        tags: { area: "contact", route: "contact" },
+      });
+      return { error: result.error };
+    }
+
+    return { success: true };
+  } catch (error) {
+    captureException(error, {
+      tags: { area: "contact", route: "contact" },
+    });
+    throw error;
   }
-
-  const blocked = await validatePublicSubmission(parsed.data.email, "contact");
-  if (blocked) return blocked;
-
-  const marketingGranted = isMarketingConsentGranted(formData);
-  const result = await persistInboundLead({
-    source: "contact",
-    inboxKey: "info",
-    contactName: parsed.data.name,
-    contactEmail: parsed.data.email,
-    companyName: parsed.data.company ?? null,
-    message: parsed.data.message,
-    marketingConsent: marketingGranted
-      ? {
-          granted: true,
-          purposeVersion: MARKETING_CONSENT_PURPOSE_VERSION,
-          purpose: MARKETING_CONSENT_PURPOSE,
-        }
-      : null,
-  });
-
-  return result.ok ? { success: true } : { error: result.error };
 }
 
 export async function submitPilotApplication(_prev: CaptureActionState, formData: FormData): Promise<CaptureActionState> {

@@ -23,6 +23,8 @@ test("contact lead capture routes to info@ and never fakes dual-path failure suc
   assert.match(capture, /Lead delivered by email only/);
   assert.match(capture, /Unable to save your submission/);
   assert.match(capture, /Lead persisted but notification email failed/);
+  assert.match(capture, /area:\s*"contact"/);
+  assert.match(capture, /captureException/);
   assert.match(notify, /const to = getInboxEmail\(input\.inboxKey\)/);
   assert.match(notify, /safeReplyToAddress/);
   assert.doesNotMatch(notify, /to: input\./);
