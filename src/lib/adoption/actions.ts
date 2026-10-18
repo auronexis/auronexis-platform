@@ -23,7 +23,6 @@ export async function recordAdoptionPageViewAction(): Promise<AdoptionActionResu
       return { success: false, error: error.error };
     }
 
-    revalidatePath("/adoption");
     return { success: true };
   } catch (err) {
     const resolved = resolveActionError(err);
