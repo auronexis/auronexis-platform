@@ -122,6 +122,8 @@ test("Sentry configs scrub PII and disable default PII", () => {
   const server = readSource("sentry.server.config.ts");
   assert.match(scrub, /sendDefaultPii:\s*false/);
   assert.match(scrub, /authorization|cookie/i);
+  assert.match(scrub, /request\.data\s*=\s*"\[redacted\]"/);
+  assert.match(scrub, /ip_address:\s*undefined/);
   assert.match(client, /beforeSend/);
   assert.match(client, /scrubSentryEvent/);
   assert.match(server, /beforeSend/);

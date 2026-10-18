@@ -1,5 +1,6 @@
 import { ACTION_DENIED_MESSAGE, assertPermissionSafe as assertStringPermissionSafe } from "@/lib/authorization/guards";
 import type { Permission } from "@/lib/authorization/permissions";
+import { captureException } from "@/lib/observability/capture";
 import { checkPlanFeature } from "@/lib/plans/guards";
 import type { PlanFeatureKey } from "@/lib/plans/types";
 import { AuthorizationError, requirePermission } from "@/lib/rbac/guards";
@@ -7,6 +8,11 @@ import type { AppModule, PermissionAction } from "@/lib/rbac/permissions";
 import type { UserRole } from "@/types/database";
 
 export const GENERIC_ACTION_ERROR = "Something went wrong. Please try again.";
+
+export type ResolveActionErrorOptions = {
+  /** Logical route / action id for Sentry tagging (never include PII). */
+  route?: string;
+};
 
 /** Return a form-safe plan error instead of throwing AuthorizationError. */
 export async function checkPlanFeatureSafe(
@@ -55,11 +61,18 @@ export function assertPermissionSafe(
 export function resolveActionError(
   error: unknown,
   fallback = GENERIC_ACTION_ERROR,
+  options?: ResolveActionErrorOptions,
 ): { error: string } {
   if (error instanceof AuthorizationError) {
     return { error: error.message || fallback };
   }
 
   console.error("[action] unexpected error:", error);
+  captureException(error, {
+    tags: {
+      route: options?.route ?? "server_action",
+      area: "server_action",
+    },
+  });
   return { error: fallback };
 }
