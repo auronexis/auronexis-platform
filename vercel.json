@@ -19,6 +19,22 @@
       "permanent": true
     },
     {
+      "source": "/documentation",
+      "has": [{ "type": "host", "value": "app.auroranexis.com" }],
+      "destination": "https://www.auroranexis.com/docs",
+      "permanent": true
+    },
+    {
+      "source": "/documentation",
+      "destination": "/docs",
+      "permanent": true
+    },
+    {
+      "source": "/features/integrations",
+      "destination": "/integrations",
+      "permanent": true
+    },
+    {
       "source": "/sub-processors",
       "destination": "/subprocessors",
       "permanent": true

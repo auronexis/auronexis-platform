@@ -84,6 +84,47 @@ test("documentation permanently redirects to /docs", () => {
   assert.match(redirect, /createPrivateAppMetadata/);
 });
 
+test("www /documentation reaches permanent redirect to /docs (public path + vercel 308)", () => {
+  const domainRouting = readSource("src/lib/deployment/domain-routing.ts");
+  const sessionMw = readSource("src/lib/supabase/middleware.ts");
+  const vercel = readSource("vercel.json");
+  const redirect = readSource("src/app/(marketing)/documentation/page.tsx");
+
+  assert.match(domainRouting, /pathname === "\/documentation"/);
+  assert.match(sessionMw, /pathname === "\/documentation"/);
+  assert.match(vercel, /"source":\s*"\/documentation"/);
+  assert.match(vercel, /"destination":\s*"\/docs"/);
+  assert.match(redirect, /permanentRedirect\("\/docs"\)/);
+});
+
+test("app /documentation redirects one hop to www /docs", () => {
+  const middleware = readSource("src/middleware.ts");
+  const routing = readSource("src/lib/deployment/middleware-routing.ts");
+  const vercel = readSource("vercel.json");
+
+  assert.match(routing, /shouldRedirectAppDocumentationToWwwDocs/);
+  assert.match(routing, /buildAppDocumentationWwwDocsRedirectUrl/);
+  assert.match(routing, /pathname !== "\/documentation"/);
+  assert.match(routing, /resolveDomainRole\(hostname\) === "app"/);
+  assert.match(routing, /https:\/\/\$\{PRODUCTION_DOMAINS\.www\}\/docs/);
+  assert.match(middleware, /shouldRedirectAppDocumentationToWwwDocs/);
+  assert.match(middleware, /buildAppDocumentationWwwDocsRedirectUrl/);
+  // Must run before path-preserving app marketing → www hop.
+  const appDocsIdx = middleware.indexOf("shouldRedirectAppDocumentationToWwwDocs");
+  const appMarketingIdx = middleware.indexOf("shouldRedirectAppMarketingToWww");
+  assert.ok(appDocsIdx >= 0 && appMarketingIdx > appDocsIdx, "app docs one-hop must precede path-preserving www hop");
+  assert.match(
+    vercel,
+    /"source":\s*"\/documentation"[\s\S]*?"has":\s*\[[\s\S]*?app\.auroranexis\.com[\s\S]*?"destination":\s*"https:\/\/www\.auroranexis\.com\/docs"/,
+  );
+  // Do not widen isAppServablePath for this alias.
+  const appServableFn = routing.match(
+    /export function isAppServablePath\(pathname: string\): boolean \{[\s\S]*?\n\}/,
+  );
+  assert.ok(appServableFn, "isAppServablePath function missing");
+  assert.doesNotMatch(appServableFn[0], /documentation/);
+});
+
 test("robots references sitemap and does not block assets", () => {
   const robots = readSource("src/lib/seo/robots.ts");
   assert.match(robots, /sitemap\.xml/);
@@ -704,8 +745,12 @@ test("features/integrations permanently redirects; winner copy does not overclai
   const redirect = readSource("src/app/(marketing)/features/integrations/page.tsx");
   const winner = readSource("src/app/(marketing)/integrations/page.tsx");
   const links = readSource("src/lib/company/company-links.ts");
+  const vercel = readSource("vercel.json");
   assert.match(redirect, /permanentRedirect\("\/integrations"\)/);
   assert.match(redirect, /createPrivateAppMetadata/);
+  assert.match(redirect, /dynamic\s*=\s*"force-dynamic"/);
+  assert.match(vercel, /"source":\s*"\/features\/integrations"/);
+  assert.match(vercel, /"destination":\s*"\/integrations"/);
   assert.match(links, /integrations: "\/integrations"/);
   assert.doesNotMatch(links, /integrations: "\/features\/integrations"/);
   assert.match(winner, /v1 sync as scaffolding/);

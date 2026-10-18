@@ -91,6 +91,26 @@ export function shouldRedirectAppMarketingToWww(hostname: string, pathname: stri
   return !isAppServablePath(pathname);
 }
 
+/**
+ * App-host legacy docs alias only — one hop to canonical www /docs.
+ * Avoids app /documentation → www /documentation → /docs (two hops / live 404).
+ * Does not change isAppServablePath or other marketing→www path rewriting.
+ */
+export function shouldRedirectAppDocumentationToWwwDocs(
+  hostname: string,
+  pathname: string,
+): boolean {
+  if (pathname !== "/documentation") {
+    return false;
+  }
+
+  return resolveDomainRole(hostname) === "app";
+}
+
+export function buildAppDocumentationWwwDocsRedirectUrl(): URL {
+  return new URL(`https://${PRODUCTION_DOMAINS.www}/docs`);
+}
+
 /** Apply X-Robots-Tag so app/staging hosts and private paths never enter the marketing index. */
 export function shouldAttachNoIndexHeader(hostname: string, pathname: string): boolean {
   if (isAppHost(hostname)) {
