@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { readSource } from "./_test-helpers/read-source.mjs";
 
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -246,6 +247,22 @@ test("/adoption route exists", () => {
     "utf8",
   );
   assert.match(page, /buildAdoptionSnapshot/);
+});
+
+test("/adoption render path does not call revalidatePath", () => {
+  const page = readSource("src/app/(dashboard)/adoption/page.tsx");
+  assert.doesNotMatch(page, /revalidatePath\s*\(/);
+
+  // Page fire-and-forgets recordAdoptionPageViewAction during RSC render.
+  // That action must not call revalidatePath (Next.js: unsupported during render).
+  assert.match(page, /recordAdoptionPageViewAction/);
+  const actions = readSource("src/lib/adoption/actions.ts");
+  const start = actions.indexOf("export async function recordAdoptionPageViewAction");
+  const end = actions.indexOf("export async function dismissAdoptionSummaryAction");
+  assert.ok(start >= 0, "recordAdoptionPageViewAction must exist");
+  assert.ok(end > start, "dismissAdoptionSummaryAction must follow page-view action");
+  const pageViewAction = actions.slice(start, end);
+  assert.doesNotMatch(pageViewAction, /revalidatePath\s*\(/);
 });
 
 test("no duplicate preference rows — primary key on organization_id", () => {
