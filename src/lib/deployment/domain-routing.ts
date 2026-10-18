@@ -60,6 +60,9 @@ export function isMarketingPublicPath(pathname: string): boolean {
     pathname === "/llms.txt" ||
     pathname === "/sub-processors" ||
     pathname === "/dpa" ||
+    // Legacy loser hub — must stay public so permanentRedirect("/docs") can run
+    // (session middleware otherwise hard-404s unknown non-private paths).
+    pathname === "/documentation" ||
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||
     pathname.startsWith("/invite/") ||

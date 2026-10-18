@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
+  buildAppDocumentationWwwDocsRedirectUrl,
   buildWwwRedirectUrl,
   isApiRoute,
   shouldAttachNoIndexHeader,
   shouldRedirectApexToWww,
+  shouldRedirectAppDocumentationToWwwDocs,
   shouldRedirectAppMarketingToWww,
 } from "@/lib/deployment/middleware-routing";
 import { applySecurityHeaders } from "@/lib/security/response-headers";
@@ -45,6 +47,15 @@ export async function middleware(request: NextRequest) {
   if (shouldRedirectApexToWww(hostname, pathname)) {
     return withSecurityHeaders(
       NextResponse.redirect(buildWwwRedirectUrl(request.nextUrl), 308),
+      hostname,
+      pathname,
+    );
+  }
+
+  // Path-limited: app /documentation → www /docs in one hop (before path-preserving www hop).
+  if (shouldRedirectAppDocumentationToWwwDocs(hostname, pathname)) {
+    return withSecurityHeaders(
+      NextResponse.redirect(buildAppDocumentationWwwDocsRedirectUrl(), 308),
       hostname,
       pathname,
     );

@@ -34,6 +34,7 @@ function isPublicPath(pathname: string): boolean {
     pathname === "/favicon.svg" ||
     pathname === "/sub-processors" ||
     pathname === "/dpa" ||
+    pathname === "/documentation" ||
     pathname.startsWith("/.well-known/") ||
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||
