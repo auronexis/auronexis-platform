@@ -66,12 +66,12 @@ export default async function MarketingHomePage() {
       <MarketingHero
         withBanner
         eyebrow="Operations Command Center"
-        title="Client operations software for MSPs and agencies"
-        description="Customer health score software for MSPs, SLA tracking, NIS2 incident management for IT service providers, and automated client reporting for agencies — one operations workspace, not another generic CRM."
+        title="Client operations software for service businesses"
+        description="Know which clients need attention, document every service commitment, and report with confidence. Health scores, SLA tracking, incident records, and automated client reporting in one workspace — for agencies, MSPs, accounting firms, facility and property managers, recruitment firms, and outsourcing providers."
         primaryHref="/signup"
         primaryLabel="Get started"
         secondaryHref={MARKETING_ROUTES.pricing}
-        secondaryLabel="See MSP & agency pricing"
+        secondaryLabel="See pricing"
       />
 
       <MarketingPace tone="muted">
@@ -85,13 +85,13 @@ export default async function MarketingHomePage() {
           id="what-is-auroranexis"
           eyebrow="Product"
           title="What is Auroranexis?"
-          description="Client operations software for MSPs and agencies: health scores, SLA tracking, incident records, and automated reporting in one workspace."
+          description="Client operations software for service businesses with recurring client work: health scores, SLA tracking, incident records, and automated reporting in one workspace."
         >
         <div className="grid max-w-4xl gap-6 md:grid-cols-2">
           <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h3 className="text-sm font-semibold text-white">B2B SaaS platform</h3>
             <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
-              Auroranexis is a multi-tenant operations platform for agencies and MSPs managing many clients —
+              Auroranexis is a multi-tenant operations platform for service businesses managing a client portfolio —
               not a generic CRM or project tool.
             </p>
           </article>
@@ -110,7 +110,7 @@ export default async function MarketingHomePage() {
           <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h3 className="text-sm font-semibold text-white">Who it is for</h3>
             <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
-              AI automation agencies, MSPs, IT consultancies, and service providers running recurring client operations.
+              Agencies, MSPs, accounting and bookkeeping firms, facility and property managers, recruitment agencies, and outsourcing providers — any service business delivering recurring work across a client portfolio.
             </p>
           </article>
         </div>
@@ -156,6 +156,36 @@ export default async function MarketingHomePage() {
             </Link>
           </li>
           <li>
+            <Link href="/industries/marketing" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Client operations for marketing agencies
+            </Link>
+          </li>
+          <li>
+            <Link href="/industries/accounting" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Client operations for accounting and bookkeeping firms
+            </Link>
+          </li>
+          <li>
+            <Link href="/industries/facility-services" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              SLA tracking for facility and security services
+            </Link>
+          </li>
+          <li>
+            <Link href="/industries/property-management" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Owner reporting for property management
+            </Link>
+          </li>
+          <li>
+            <Link href="/industries/recruitment" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              Account health for recruitment agencies
+            </Link>
+          </li>
+          <li>
+            <Link href="/industries/outsourcing" className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
+              SLA operations for outsourcing and BPO providers
+            </Link>
+          </li>
+          <li>
             <Link href={MARKETING_ROUTES.pricing} className={cn("font-medium text-primary hover:underline", focusRing, "rounded")}>
               MSP & agency operations pricing
             </Link>
@@ -167,7 +197,7 @@ export default async function MarketingHomePage() {
       <MarketingPace>
         <MarketingSection
           eyebrow="Platform"
-          title="Built for MSP and agency client operations"
+          title="Built for multi-client service operations"
           description="Health scores, SLA tracking, incident records, and automated client reporting — without reinventing your delivery stack."
         >
           <MarketingCardGrid items={FEATURES} />
@@ -178,7 +208,7 @@ export default async function MarketingHomePage() {
         <MarketingSection
           eyebrow="Use Cases"
           title="Designed for service providers"
-          description="From MSPs to automation firms — standardize delivery and document operational outcomes."
+          description="From agencies and MSPs to accounting, facility, and outsourcing firms — standardize delivery and document operational outcomes."
         >
           <MarketingCardGrid items={USE_CASES} />
         </MarketingSection>

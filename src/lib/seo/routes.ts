@@ -285,6 +285,31 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     description:
       "Marketing sector operations platform — portfolio governance for agencies and in-house brand teams with Auroranexis.",
   },
+  "/industries/accounting": {
+    title: "Accounting & Bookkeeping Client Ops",
+    description:
+      "Client operations for accounting, bookkeeping, and payroll firms — client health, service commitments, and client reporting across your whole client book in Auroranexis.",
+  },
+  "/industries/facility-services": {
+    title: "Facility & Security Services SLA Ops",
+    description:
+      "SLA tracking, incident records, and client reporting for facility management, cleaning, maintenance, and security service providers in Auroranexis.",
+  },
+  "/industries/property-management": {
+    title: "Property Management Client Operations",
+    description:
+      "Client operations for property and building management companies — owner reporting, issue tracking, and service commitments across your portfolio in Auroranexis.",
+  },
+  "/industries/recruitment": {
+    title: "Recruitment & Staffing Account Ops",
+    description:
+      "Client account health, issue tracking, and client reporting for recruitment, staffing, and HR outsourcing agencies in Auroranexis.",
+  },
+  "/industries/outsourcing": {
+    title: "BPO & Outsourcing SLA Operations",
+    description:
+      "SLA tracking, incident records, and client reporting for BPO, contact center, virtual assistant, and outsourced logistics providers in Auroranexis.",
+  },
   "/industries/technology": {
     title: "Technology & SaaS Client Operations",
     description:

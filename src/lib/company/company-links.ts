@@ -83,6 +83,11 @@ export const INDUSTRY_ROUTES = {
   legal: "/industries/legal",
   manufacturing: "/industries/manufacturing",
   technology: "/industries/technology",
+  accounting: "/industries/accounting",
+  facilityServices: "/industries/facility-services",
+  propertyManagement: "/industries/property-management",
+  recruitment: "/industries/recruitment",
+  outsourcing: "/industries/outsourcing",
 } as const;
 
 export const SOLUTION_ROUTES = {

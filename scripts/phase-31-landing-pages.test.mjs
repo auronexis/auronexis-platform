@@ -38,7 +38,7 @@ test("phase 31 audience and industry pages use static generation", () => {
   const audienceSlugs = (audience.match(/slug: "/g) ?? []).length;
   const industrySlugs = (industry.match(/slug: "/g) ?? []).length;
   assert.equal(audienceSlugs, 9);
-  assert.equal(industrySlugs, 9);
+  assert.equal(industrySlugs, 14);
 });
 
 test("marketing navigation includes solutions hub; industries remain publicly linked", () => {
