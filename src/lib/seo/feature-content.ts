@@ -979,7 +979,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     audience:
       "Operations leaders, account owners, and delivery managers at MSPs and agencies who need faster portfolio answers without opaque black-box scoring.",
     enterpriseAdvantages: [
-      "Organization-scoped AI assistance with plan-gated usage",
+      "AI assistance scoped to your workspace, with usage limits by plan",
       "Evidence-linked summaries tied to operational modules",
       "Separation between AI drafts and published client content",
       "Usage visibility in Settings → Usage for governance",
@@ -1005,8 +1005,8 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       "Operational Q&A within the authenticated workspace",
       "Structured summaries from incidents, risks, health, and reporting signals",
       "Links to predictive intelligence and executive reporting workflows",
-      "Plan-gated credits with usage monitoring",
-      "No fabricated certifications, testimonials, or external benchmarks",
+      "Plan-based credits with usage monitoring",
+      "Answers grounded in your own workspace data",
     ],
     faq: [
       {

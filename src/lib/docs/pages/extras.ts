@@ -427,16 +427,16 @@ export const PREDICTIVE_DOC: DocPageInput = {
   description:
     "Portfolio health scores, forecasts, and early warning signals.",
   intro:
-    "Predictive Intelligence combines operational data — reports, incidents, risks, SLA performance, monitoring, and automation history — into health scores, trend analysis, and forward-looking signals across your client portfolio. Open Dashboard → Predictive to review portfolio summaries and drill into per-client forecasts. Access is gated by the ai_predictive_intelligence plan feature, available on Professional and above.",
+    "Predictive Intelligence combines operational data — reports, incidents, risks, SLA performance, monitoring, and automation history — into health scores, trend analysis, and forward-looking signals across your client portfolio. Open Dashboard → Predictive to review portfolio summaries and drill into per-client forecasts. It is included in every plan (Professional and above).",
   callouts: [
     {
       variant: "info",
-      title: "Plan-gated feature",
-      body: "Predictive Intelligence requires the ai_predictive_intelligence feature on your subscription. Workspaces without the feature may see an upgrade prompt. Professional, Business, and Enterprise plans include health scores and portfolio signals.",
+      title: "Included in every plan",
+      body: "Professional, Business, and Enterprise plans include health scores and portfolio signals. Workspaces without an active plan see an upgrade prompt instead.",
     },
     {
       variant: "tip",
-      title: "Deterministic signals",
+      title: "Rule-based signals",
       body: "Predictive views are computed from your workspace data using transparent, rule-based models — not opaque black-box predictions. Confidence labels indicate how much historical data supports each forecast.",
     },
   ],
@@ -446,7 +446,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
       paragraphs: [
         "Predictive Intelligence gives agency leaders a portfolio-level view of client health before problems surface in QBRs or escalation calls. Open Dashboard → Predictive to see overall confidence, executive overview narrative, forecast counts, and key metric cards for churn risk, SLA breaches, incident likelihood, and revenue trajectory.",
         "Each client with sufficient operational history receives a health score, trend direction (improving, stable, declining, critical), and contributing factors drawn from recent activity. Portfolio views highlight clients flagged for attention so account owners can prioritize outreach.",
-        "Per-client predictive pages show historical windows (7 days, 30 days, 90 days, 12 months), trend comparisons, incident and risk forecasts, SLA breach probability, and actionable recommendations linked to relevant records. The module checks ai_predictive_intelligence at the plan level — API access via predictive.read scope requires the same feature.",
+        "Per-client predictive pages show historical windows (7 days, 30 days, 90 days, 12 months), trend comparisons, incident and risk forecasts, SLA breach probability, and actionable recommendations linked to relevant records. API access uses the predictive.read scope and requires an active plan.",
       ],
     },
     {
@@ -468,7 +468,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
         "SLA breach forecast — projected probability that open items will breach response targets.",
         "Incident forecast — predicted incident likelihood and severity band for at-risk clients.",
         "Historical window — rolling comparison period (7d, 30d, 90d, 12m) for trend analysis.",
-        "ai_predictive_intelligence — plan feature flag gating Dashboard → Predictive, per-client predictive pages, and predictive.read API scope.",
+        "Plan access — Dashboard → Predictive, per-client predictive pages, and the predictive.read API scope are included in every paid plan.",
       ],
     },
     {
@@ -482,13 +482,13 @@ export const PREDICTIVE_DOC: DocPageInput = {
         "Revenue forecast with recurring revenue trend and healthy vs declining account counts (when profitability data exists).",
         "Per-client predictive detail with health history and linked recommendations.",
         "Manual refresh for on-demand recalculation after bulk data changes.",
-        "API access via predictive.read scope for integrations (requires ai_predictive_intelligence).",
+        "API access via the predictive.read scope for integrations.",
       ],
     },
     {
       title: "Step-by-step usage",
       ordered: [
-        "Confirm your plan includes ai_predictive_intelligence (Professional or above). Open Dashboard → Predictive.",
+        "Make sure your workspace has an active plan (Professional or above). Open Dashboard → Predictive.",
         "Read the executive overview and note overall confidence — low confidence means insufficient historical data across the portfolio.",
         "Review customer forecast cards. Identify clients in the likely churn segment for immediate account owner review.",
         "Check SLA breach forecast for clients with elevated breach probability and open SLA-tracked items.",
@@ -510,7 +510,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
         "Document interventions as risks or incidents so future forecasts reflect your response history.",
         "Compare confidence labels before acting — Medium or Low confidence forecasts need more validation.",
         "Pair predictive views with Monitoring and Clients modules for full operational context.",
-        "Verify ai_predictive_intelligence is enabled before building integrations against predictive.read API endpoints.",
+        "Check that your API key has the predictive.read scope before building integrations against predictive endpoints.",
       ],
     },
     {
@@ -525,7 +525,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
         {
           title: "AI automation agency",
           paragraphs: [
-            "An automation agency newly upgraded to Professional enables ai_predictive_intelligence and opens Dashboard → Predictive. Initial confidence is Low because historical data is sparse. Over six weeks, consistent report publishing and monitoring activity raise confidence labels. The portfolio owner establishes a baseline health score review as part of the monthly operations cadence.",
+            "An automation agency newly upgraded to Professional opens Dashboard → Predictive. Initial confidence is Low because historical data is sparse. Over six weeks, consistent report publishing and monitoring activity raise confidence labels. The portfolio owner establishes a baseline health score review as part of the monthly operations cadence.",
           ],
         },
         {
@@ -556,7 +556,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
         rows: [
           [
             "Module locked or missing from navigation",
-            "Plan lacks ai_predictive_intelligence feature on current subscription",
+            "Workspace has no active plan that includes Predictive Intelligence",
             "Upgrade to Professional via Settings → Billing or contact sales for Enterprise",
           ],
           [
@@ -586,7 +586,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
           ],
           [
             "API returns 403 on predictive endpoints",
-            "Plan missing ai_predictive_intelligence or API key lacks predictive.read scope",
+            "Plan does not include Predictive Intelligence, or the API key lacks the predictive.read scope",
             "Verify plan tier (Enterprise for Settings → API keys) and create a new API key with predictive.read scope in Settings → API",
           ],
         ],
@@ -597,7 +597,7 @@ export const PREDICTIVE_DOC: DocPageInput = {
     {
       question: "Which plan includes Predictive Intelligence?",
       answer:
-        "Professional, Business, and Enterprise plans include the ai_predictive_intelligence feature with health scores and portfolio forecasts. Workspaces without the feature should upgrade through Settings → Billing.",
+        "Professional, Business, and Enterprise plans include Predictive Intelligence with health scores and portfolio forecasts. Workspaces without an active plan can upgrade through Settings → Billing.",
     },
     {
       question: "How often are forecasts updated?",
@@ -615,9 +615,9 @@ export const PREDICTIVE_DOC: DocPageInput = {
         "Consistent report publishing, recorded incidents and risks, SLA policy assignment, monitoring signals, and automation execution history all increase data density and raise confidence labels.",
     },
     {
-      question: "What is the ai_predictive_intelligence feature flag?",
+      question: "What does Predictive Intelligence access include?",
       answer:
-        "It is the plan-level gate for Dashboard → Predictive, per-client predictive pages, manual refresh actions, and API endpoints requiring predictive.read scope. Diagnostics show feature status at Settings → Diagnostics.",
+        "Dashboard → Predictive, per-client predictive pages, manual refresh actions, and API endpoints that use the predictive.read scope. Settings → Diagnostics shows whether the feature is active for your workspace.",
     },
     {
       question: "Are predictions AI-generated black-box outputs?",
@@ -653,7 +653,7 @@ export const DOCS_HUB_DOC: DocPageInput = {
         "Day-to-day delivery — Operations guides (Clients, Reports, Risks, Incidents, Monitoring, SLA).",
         "Platform extension — Automation, Integrations, Client Portal, and API.",
         "Account and governance — Billing, Security, Enterprise, White Label, and Compliance.",
-        "Portfolio intelligence — Predictive Intelligence (Professional+, ai_predictive_intelligence).",
+        "Portfolio intelligence — Predictive Intelligence (Professional and above).",
       ],
     },
   ],

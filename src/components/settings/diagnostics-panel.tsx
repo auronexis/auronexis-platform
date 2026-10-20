@@ -705,7 +705,7 @@ export function DiagnosticsPanel({ data }: DiagnosticsPanelProps) {
 
       <DiagnosticsSection
         title="White Label"
-        description="Entitlement is plan-gated. Configuration fields are optional customer branding — not platform health."
+        description="Availability depends on your plan. Configuration fields are optional customer branding — not platform health."
       >
         <dl>
           <Row
