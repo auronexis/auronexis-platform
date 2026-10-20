@@ -249,7 +249,7 @@ export function CheckoutContractSummaryDialog({
             <p className="text-xs text-muted-foreground">
               Self-serve checkout supports Germany (domestic B2B VAT) and listed EU countries with a
               verified VAT ID (reverse charge). Other countries require sales review and are blocked
-              here. The country must match your company's billing address.
+              here. The country must match your company&apos;s billing address.
             </p>
           </div>
 
