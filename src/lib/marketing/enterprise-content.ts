@@ -7,7 +7,7 @@ export const ENTERPRISE_CONTENT = {
     "Scale client intelligence, reporting, risk, incident, and SLA workflows with unlimited AI credits, custom limits, and priority support.",
   stats: [
     { value: "∞", label: "AI credits", detail: "Unlimited monthly AI copilot usage on Enterprise." },
-    { value: "RBAC", label: "Access control", detail: "Role-based permissions with organization-scoped data." },
+    { value: "RBAC", label: "Access control", detail: "Role-based permissions, with data isolated per workspace." },
     { value: "Audit", label: "Activity history", detail: "Operational events for governance and review." },
     { value: "EU", label: "Data posture", detail: "EU-capable regions with subprocessors documented." },
   ] satisfies readonly MarketingStat[],
@@ -30,7 +30,7 @@ export const ENTERPRISE_CONTENT = {
     },
     {
       title: "Executive intelligence",
-      description: "Deterministic portfolio metrics with source-grounded AI explanations.",
+      description: "Rule-based portfolio metrics with AI explanations that cite their sources.",
     },
     {
       title: "Procurement documentation",
@@ -38,8 +38,8 @@ export const ENTERPRISE_CONTENT = {
     },
   ] satisfies readonly MarketingBenefit[],
   securityHighlights: [
-    "Multi-tenant isolation with organization-scoped queries",
-    "Encryption in transit (TLS); provider-managed at-rest encryption where configured by cloud platforms",
+    "Strict data isolation between workspaces",
+    "Encryption in transit (TLS) and at rest through our infrastructure providers",
     "Audit-friendly activity and usage metadata",
     "Optional AI providers documented as sub-processors",
     "Cookie consent architecture for analytics and marketing tags",

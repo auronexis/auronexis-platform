@@ -84,7 +84,7 @@ export const INTEGRATION_CATALOG: IntegrationCatalogItem[] = [
     id: "api-access",
     title: "API Access",
     description:
-      "REST API for clients, reports, risks, incidents, and integrations — Enterprise plan entitlement.",
+      "REST API for clients, reports, risks, incidents, and integrations — included in the Enterprise plan.",
     status: "enterprise",
     section: "available",
   },

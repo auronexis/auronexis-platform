@@ -11,9 +11,16 @@ const compat = new FlatCompat({
 
 /** Build Bible V2 Chapter 1 — foundation enforcement gates. */
 const eslintConfig = [
+  {
+    ignores: ["next-env.d.ts", ".next/**", "node_modules/**", "artifacts/**"],
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
+      ],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/ban-ts-comment": [
         "error",
@@ -31,24 +38,24 @@ const eslintConfig = [
             {
               name: "stripe",
               message:
-                "Build Bible V2: Paddle is the only active billing provider. Do not reintroduce the Stripe SDK.",
+                "Mollie is the active billing provider. Do not reintroduce the Stripe SDK.",
             },
             {
               name: "@stripe/stripe-js",
               message:
-                "Build Bible V2: Paddle is the only active billing provider. Do not reintroduce Stripe client packages.",
+                "Mollie is the active billing provider. Do not reintroduce Stripe client packages.",
             },
             {
               name: "@stripe/react-stripe-js",
               message:
-                "Build Bible V2: Paddle is the only active billing provider. Do not reintroduce Stripe React packages.",
+                "Mollie is the active billing provider. Do not reintroduce Stripe React packages.",
             },
           ],
           patterns: [
             {
               group: ["@stripe/*"],
               message:
-                "Build Bible V2: Paddle is the only active billing provider. Do not reintroduce Stripe packages.",
+                "Mollie is the active billing provider. Do not reintroduce Stripe packages.",
             },
           ],
         },

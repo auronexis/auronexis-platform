@@ -72,7 +72,7 @@ export default async function PilotProgramPage() {
         </div>
       </MarketingSection>
 
-      <MarketingSection title="Target companies">
+      <MarketingSection title="Who the program is for">
         <div className="flex flex-wrap gap-2">
           {PILOT_PROGRAM.targets.map((target) => (
             <span key={target} className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-sm text-primary-foreground/75">

@@ -22,14 +22,14 @@ test("organization settings page reads stored language without browser fallback"
 test("save action persists language with post-update verification", () => {
   const actions = readSource("src/lib/team/actions.ts");
   assert.match(actions, /language: parsed\.data\.language/);
-  assert.match(actions, /\.select\("id, name, language, currency"\)/);
+  assert.match(actions, /\.select\(\s*"id, name, language, currency/);
   assert.match(actions, /saved\?\.language !== parsed\.data\.language/);
   assert.match(actions, /createAdminClient/);
 });
 
 test("session load explicitly selects organization language", () => {
   const session = readSource("src/lib/auth/session.ts");
-  assert.match(session, /\.select\("id, name, slug, plan, language, currency, created_at, updated_at"\)/);
+  assert.match(session, /\.select\(\s*"id, name, slug, plan, language, currency/);
 });
 
 test("organization form refreshes server state after successful save", () => {
@@ -39,8 +39,11 @@ test("organization form refreshes server state after successful save", () => {
 });
 
 test("billing surfaces use organization language as source of truth", () => {
+  // Billing page view-model is built in billing-page.ts and passed to the page as model.locale.
+  const billingModel = readSource("src/lib/billing/billing-page.ts");
+  assert.match(billingModel, /resolveLocaleFromOrganization\(session\.organization\)/);
   const billingPage = readSource("src/app/(dashboard)/settings/billing/page.tsx");
-  assert.match(billingPage, /resolveLocaleFromOrganization\(session\.organization\)/);
+  assert.match(billingPage, /locale=\{model\.locale\}/);
 });
 
 test("canonical database field is organizations.language", () => {

@@ -12,7 +12,9 @@ import test from "node:test";
 import { execSync } from "node:child_process";
 import { readSource, rootDir } from "./_test-helpers/read-source.mjs";
 
-const BASELINE = "5628764";
+// Baseline moved to 6795009 (PR #27): the only change since the original baseline is the
+// reviewed Mollie webhook mode-mismatch acknowledgement.
+const BASELINE = "6795009";
 
 const einvoice = await import("../src/lib/einvoice/index.ts");
 const archiveMod = await import("../src/lib/einvoice-archive/index.ts");

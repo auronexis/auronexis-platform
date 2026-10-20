@@ -53,13 +53,13 @@ test("contact and pilot separate service communication from optional marketing",
   const pilot = readSource("src/components/marketing/pilot-application-form.tsx");
   const actions = readSource("src/lib/sales/capture-actions.ts");
 
-  assert.match(contact, /service communication/);
+  assert.match(contact, /We use your details only to respond to this inquiry/);
   assert.match(contact, /Optional:/);
   assert.match(contact, /name="marketingConsent"/);
   assert.match(contact, /defaultChecked=\{false\}/);
   assert.doesNotMatch(contact, /name="marketingConsent"[^>]*required/);
 
-  assert.match(pilot, /service communication/);
+  assert.match(pilot, /We use your details only to review and respond to this pilot application/);
   assert.match(pilot, /Optional:/);
   assert.match(pilot, /name="marketingConsent"/);
   assert.match(pilot, /defaultChecked=\{false\}/);

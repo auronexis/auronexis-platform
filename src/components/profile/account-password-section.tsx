@@ -61,6 +61,8 @@ export function AccountPasswordSection({ hasPasswordProvider }: AccountPasswordS
               label="New password"
               autoComplete="new-password"
               required
+              minLength={12}
+              placeholder="At least 12 characters (A–Z, a–z, 0–9)"
             />
             <Input
               name="confirmPassword"

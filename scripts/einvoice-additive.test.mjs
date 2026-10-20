@@ -39,7 +39,7 @@ const BILLING_SEMANTICS_FREEZE_PATHS = [
 
 function gitDiffAgainstBaseline(paths) {
   try {
-    return execSync(`git diff 99ee628 -- ${paths.join(" ")}`, {
+    return execSync(`git diff 6795009 -- ${paths.join(" ")}`, {
       cwd: rootDir,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
@@ -174,7 +174,9 @@ test("G — demo numbers are TEST-EINV-* (not ANX-*) and marked DEMO/NOT LEGAL",
   assert.match(xml.xml, /DEMO\/NOT LEGAL/);
 });
 
-test("H — BILLING FREEZE PROOF: core billing semantics unchanged vs baseline 99ee628", () => {
+// Baseline moved to 6795009 (PR #27): the only change since the original baseline is the
+// reviewed Mollie webhook mode-mismatch acknowledgement.
+test("H — BILLING FREEZE PROOF: core billing semantics unchanged vs baseline 6795009", () => {
   const diff = gitDiffAgainstBaseline(BILLING_SEMANTICS_FREEZE_PATHS);
   if (diff.trim().length > 0) {
     assert.fail(`EINVOICE_BILLING_SEMANTICS_FREEZE_VIOLATION\n${diff.slice(0, 4000)}`);

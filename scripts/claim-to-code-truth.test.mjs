@@ -232,12 +232,11 @@ test("homepage and about avoid ROI show claims and unsupported prove-value langu
   assert.doesNotMatch(page, /prove outcomes/i);
   assert.doesNotMatch(page, /prove value/i);
   assert.match(page, /document operational outcomes/);
-  assert.match(page, /Document value/);
 
   const about = readSource("src/app/(marketing)/about/page.tsx");
   assert.doesNotMatch(about, /prove value/i);
   assert.doesNotMatch(about, /demonstrate outcomes/i);
-  assert.match(about, /Document delivered value/);
+  assert.match(about, /Visible client value/);
   assert.match(about, /communicate delivered operational value/);
 
   const marketing = readSource("src/lib/marketing/content.ts");

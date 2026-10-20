@@ -231,7 +231,6 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
               <CookiePreferencesButton className="text-primary-foreground/60 hover:text-white" />
-              <p>Version {APP_VERSION}</p>
             </div>
 
           </div>

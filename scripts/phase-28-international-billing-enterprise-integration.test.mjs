@@ -72,12 +72,15 @@ test("OpenAI test connection uses Responses API platform probe", () => {
 test("settings hub links to integration center", () => {
   const settings = readSource("src/app/(dashboard)/settings/page.tsx");
   assert.match(settings, /\/settings\/integrations/);
-  assert.match(settings, /Integration Center/);
+  const destinations = readSource("src/lib/layout/settings-nav-destinations.ts");
+  assert.match(destinations, /title: "Integration Center"/);
 });
 
 test("billing invoices map rows with organization locale", () => {
-  const invoices = readSource("src/lib/billing/invoices.ts");
-  assert.match(invoices, /resolveLocaleFromOrganization/);
-  assert.match(invoices, /getInvoiceStatusLabel/);
-  assert.match(invoices, /formatMoneyFromCentsLocale/);
+  // Legacy invoices.ts is now an archive stub; localized invoice rendering lives in i18n/invoice.ts
+  // and the invoice center panel.
+  const invoiceI18n = readSource("src/lib/i18n/invoice.ts");
+  assert.match(invoiceI18n, /getInvoiceStatusLabel/);
+  const panel = readSource("src/components/settings/invoice-center-panel.tsx");
+  assert.match(panel, /formatMoneyFromCentsLocale/);
 });

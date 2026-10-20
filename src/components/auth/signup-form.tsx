@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { inputClassName, labelClassName } from "@/components/auth/auth-password-input";
+import { AuthPasswordInput, inputClassName, labelClassName } from "@/components/auth/auth-password-input";
 import { FormAlert } from "@/components/ui/form-alert";
 import { signUp, type AuthActionState } from "@/lib/auth/actions";
 import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
@@ -77,20 +77,7 @@ export function SignUpForm() {
         />
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="password" className={labelClassName}>
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          placeholder="Minimum 8 characters"
-          className={inputClassName}
-        />
-      </div>
+      <AuthPasswordInput id="password" name="password" label="Password" autoComplete="new-password" showStrength />
 
       <label className="flex items-start gap-3 text-sm text-slate-800">
         <input

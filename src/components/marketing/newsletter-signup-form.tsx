@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useId } from "react";
+import { useId } from "react";
 import Link from "next/link";
 import { FormAlert } from "@/components/ui/form-alert";
 import { cn } from "@/lib/utils/cn";
@@ -9,12 +9,11 @@ import { LEGAL_ROUTES } from "@/lib/company/company-links";
 import {
   MARKETING_CONSENT_PURPOSE,
 } from "@/lib/marketing/marketing-consent";
-import { submitNewsletterSignup, type CaptureActionState } from "@/lib/sales/capture-actions";
-
-const initialState: CaptureActionState = {};
+import { submitNewsletterSignup } from "@/lib/sales/capture-actions";
+import { useResilientFormAction } from "@/components/marketing/use-resilient-form-action";
 
 export function NewsletterSignupForm({ className }: { className?: string }) {
-  const [state, formAction, isPending] = useActionState(submitNewsletterSignup, initialState);
+  const [state, formAction, isPending] = useResilientFormAction(submitNewsletterSignup);
   const emailId = useId();
   const consentId = useId();
 
@@ -27,7 +26,7 @@ export function NewsletterSignupForm({ className }: { className?: string }) {
   }
 
   return (
-    <form action={formAction} className={cn("space-y-3", className)} aria-labelledby={`${emailId}-legend`}>
+    <form key={state.attempt} action={formAction} className={cn("space-y-3", className)} aria-labelledby={`${emailId}-legend`}>
       <p id={`${emailId}-legend`} className="sr-only">
         Newsletter signup
       </p>
@@ -42,7 +41,8 @@ export function NewsletterSignupForm({ className }: { className?: string }) {
             type="email"
             name="email"
             autoComplete="email"
-            placeholder="you@agency.com"
+            defaultValue={state.values?.email}
+            placeholder="you@company.com"
             aria-required="true"
             className={cn(
               "w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white",
@@ -72,7 +72,7 @@ export function NewsletterSignupForm({ className }: { className?: string }) {
           className={cn("mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-white/[0.04]", focusRing)}
         />
         <span>
-          I agree to receive product updates and marketing emails ({MARKETING_CONSENT_PURPOSE}) See{" "}
+          I agree to: {MARKETING_CONSENT_PURPOSE} You can unsubscribe at any time. See our{" "}
           <Link href={LEGAL_ROUTES.privacy} className="underline underline-offset-2 hover:text-white">
             Privacy Policy
           </Link>

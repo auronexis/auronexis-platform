@@ -6,6 +6,8 @@ import { listRegisteredJobIds } from "@/lib/jobs/registry";
 import { runIndexNowForCron } from "@/lib/seo/indexnow";
 
 export const runtime = "nodejs";
+/** Jobs run sequentially; give the dispatcher room before Vercel stops the invocation. */
+export const maxDuration = 300;
 
 /**
  * Cron dispatcher — requires Bearer CRON_SECRET.

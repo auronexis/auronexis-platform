@@ -94,7 +94,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
           "AI assists with executive report drafting, AI Copilot workflows, and structured summaries. Source operational data remains visible so reviewers can validate outputs before publication. See /features/ai-copilot.",
       },
       {
-        question: "Is AI usage plan-gated?",
+        question: "Does AI usage depend on my plan?",
         answer: "Yes. AI copilot credits and advanced narrative features depend on your subscription tier. Usage is visible in Settings → Usage.",
       },
       {
@@ -168,12 +168,12 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Is execution history logged?",
-        answer: "Yes. Every automation run is recorded with organization scope for troubleshooting and audit review.",
+        answer: "Yes. Every automation run is recorded in your workspace for troubleshooting and audit review.",
       },
       {
         question: "Which plans include automation?",
         answer:
-          "Professional and above include the Automation workspace, AI builder, connectors, and workflow builder. Business and Enterprise also enable the operational automation engine for event-driven dispatch and raise automation limits. See Settings → Billing for your workspace entitlements.",
+          "Professional and above include the Automation workspace, AI builder, connectors, and workflow builder. Business and Enterprise also enable the operational automation engine for event-driven dispatch and raise automation limits. See Settings → Billing for what your plan includes.",
       },
     ],
   },
@@ -303,7 +303,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       {
         question: "What is the Knowledge Hub?",
         answer:
-          "An organization-scoped library for runbooks and delivery procedures. Marketing may also say Knowledge Base — both refer to the same module. See /features/knowledge-base and /docs/knowledge.",
+          "A shared library for your team's runbooks and delivery procedures, also called the Knowledge Base. See /features/knowledge-base and /docs/knowledge.",
       },
       {
         question: "Can clients read Knowledge Hub articles?",
@@ -318,7 +318,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       {
         question: "Does profitability replace accounting?",
         answer:
-          "No. It provides operations-adjacent financial context next to delivery signals. Keep your accounting system as the ledger of record. See /features/profitability.",
+          "No. It shows financial context next to your delivery data. Your accounting system stays the system of record. See /features/profitability.",
       },
     ],
   },
@@ -340,7 +340,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       {
         question: "What appears on the activity timeline?",
         answer:
-          "Organization-scoped changes across clients, incidents, risks, reports, and automation. See /features/activity-timeline and /docs/activity.",
+          "Changes across clients, incidents, risks, reports, and automation in your workspace. See /features/activity-timeline and /docs/activity.",
       },
     ],
   },

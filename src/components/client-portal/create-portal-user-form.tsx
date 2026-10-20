@@ -34,7 +34,8 @@ export function CreatePortalUserForm({ clientId }: CreatePortalUserFormProps) {
         type="password"
         label="Initial password"
         required
-        placeholder="Minimum 8 characters"
+        placeholder="At least 12 characters (A–Z, a–z, 0–9)"
+        minLength={12}
         autoComplete="new-password"
       />
       {state.error ? (

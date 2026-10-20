@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
+import { checkNewPassword } from "@/lib/auth/password-strength";
 import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";
 import { createClient, createWritableClient } from "@/lib/supabase/server";
 
@@ -114,6 +115,11 @@ export async function changeAccountPasswordAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid password." };
+  }
+
+  const passwordProblem = await checkNewPassword(parsed.data.password);
+  if (passwordProblem) {
+    return { error: passwordProblem };
   }
 
   const supabase = await createWritableClient();

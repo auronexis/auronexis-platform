@@ -57,13 +57,14 @@ test("public plan comparison aligns priority support with enterprise only", () =
 
 test("self-serve plan prices match marketing copy", () => {
   const content = readSource("src/lib/marketing/content.ts");
-  const plans = readSource("src/lib/billing/plans.ts");
-  assert.match(content, /€149/);
-  assert.match(content, /€499/);
-  assert.match(content, /€1,499/);
-  assert.match(plans, /priceMonthly: 149/);
-  assert.match(plans, /priceMonthly: 499/);
-  assert.match(plans, /priceMonthly: 1499/);
+  // Plan prices are derived from the price catalog (minor units) — see src/lib/billing/plans.ts.
+  const catalog = readSource("src/lib/billing/price-catalog.ts");
+  assert.match(content, /€179/);
+  assert.match(content, /€599/);
+  assert.match(content, /€1,799/);
+  assert.match(catalog, /amountMinor: 17_900/);
+  assert.match(catalog, /amountMinor: 59_900/);
+  assert.match(catalog, /amountMinor: 179_900/);
 });
 
 // --- Route integrity ---
@@ -88,21 +89,21 @@ test("company links register critical public marketing routes", () => {
   for (const segment of required) {
     assert.match(links, new RegExp(segment));
   }
-  assert.match(links, /apiDocumentation: "\/api\/docs"/);
+  assert.match(links, /apiDocumentation: "\/docs\/api"/);
 });
 
 test("about and security pages link to /api/docs not stale paths only", () => {
   const about = readSource("src/app/(marketing)/about/page.tsx");
   const security = readSource("src/app/(marketing)/security/page.tsx");
-  assert.match(about, /\/api\/docs/);
-  assert.match(security, /\/api\/docs/);
+  assert.match(about, /\/docs\/api/);
+  assert.match(security, /\/docs\/api/);
 });
 
 // --- SEO and indexing ---
 
 test("robots blocks private application routes", () => {
   const robots = readSource("src/lib/seo/robots.ts");
-  const routes = readSource("src/lib/seo/routes.ts");
+  const routes = readSource("src/lib/seo/private-routes.ts");
   assert.match(robots, /PRIVATE_ROUTE_PREFIXES/);
   for (const prefix of ["/dashboard", "/settings", "/client-portal", "/api/", "/clients", "/reports"]) {
     assert.match(routes, new RegExp(prefix.replace(/\//g, "\\/")));

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { requireSession } from "@/lib/auth/session";
+import { checkNewPassword } from "@/lib/auth/password-strength";
 import { ACTION_DENIED_MESSAGE, assertPermissionSafe, sessionHasPermission } from "@/lib/authorization/guards";
 import { getAppUrl } from "@/lib/env";
 import {
@@ -301,6 +302,11 @@ export async function acceptInvitationAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid registration data." };
+  }
+
+  const passwordProblem = await checkNewPassword(parsed.data.password);
+  if (passwordProblem) {
+    return { error: passwordProblem };
   }
 
   const invitation = await getInvitationByToken(parsed.data.token);

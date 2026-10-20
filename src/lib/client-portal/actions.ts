@@ -6,6 +6,7 @@ import { z } from "zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
 import { requireSession } from "@/lib/auth/session";
+import { checkNewPassword } from "@/lib/auth/password-strength";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { canManagePortalUsers } from "@/lib/client-portal/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -126,6 +127,11 @@ export async function createPortalUserAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid portal user data." };
+  }
+
+  const passwordProblem = await checkNewPassword(parsed.data.password);
+  if (passwordProblem) {
+    return { error: passwordProblem };
   }
 
   const admin = createAdminClient();

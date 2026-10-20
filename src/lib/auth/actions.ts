@@ -7,6 +7,7 @@ import { authThrottleUserMessage, checkLoginThrottle, checkSignupThrottle } from
 import { sendWelcomeEmailAfterSignup } from "@/lib/email/welcome";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createWritableClient } from "@/lib/supabase/server";
+import { checkNewPassword } from "@/lib/auth/password-strength";
 import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { slugifyOrganizationName } from "@/lib/tenancy/context";
 import {
@@ -101,6 +102,11 @@ export async function signUp(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid registration data." };
+  }
+
+  const passwordProblem = await checkNewPassword(parsed.data.password);
+  if (passwordProblem) {
+    return { error: passwordProblem };
   }
 
   const throttle = await checkSignupThrottle(parsed.data.email);

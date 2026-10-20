@@ -13,7 +13,7 @@ export const KNOWLEDGE_DOC: DocPageInput = {
     {
       variant: "info",
       title: "Also called Knowledge Base",
-      body: "Marketing and product surfaces may say Knowledge Hub or Knowledge Base — both refer to the same organization-scoped knowledge module.",
+      body: "Knowledge Hub and Knowledge Base refer to the same module: your workspace's shared library of procedures and reference content.",
     },
   ],
   sections: [
@@ -169,7 +169,7 @@ export const PROFITABILITY_DOC: DocPageInput = {
     {
       question: "Does profitability replace accounting software?",
       answer:
-        "No. It provides operations-adjacent financial context. Keep your accounting system as the ledger of record.",
+        "No. It shows financial context next to your delivery data. Your accounting system stays the system of record.",
     },
     {
       question: "Who can view profitability?",
@@ -248,7 +248,7 @@ export const CUSTOMER_SUCCESS_DOC: DocPageInput = {
       title: "Troubleshooting",
       bullets: [
         "Empty portfolios usually mean clients lack health or success signals yet — complete onboarding and monitoring first.",
-        "Plan gates may hide advanced success tooling — verify entitlements in Settings → Billing.",
+        "Some advanced customer success tools depend on your plan — check Settings → Billing.",
       ],
     },
   ],

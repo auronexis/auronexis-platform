@@ -724,9 +724,9 @@ export const AI_LITERACY_DOC: DocPageInput = {
     {
       title: "Troubleshooting",
       bullets: [
-        "Missing AI features usually means the plan does not include the entitlement or the provider is not configured.",
+        "If AI features are missing, your plan may not include them or the AI provider has not been set up yet.",
         "Low-confidence answers or insufficient-data messages mean you should rely on primary records instead of the draft.",
-        "If disclosure labels are missing on a generative surface, report it to product/engineering — do not claim AI Act compliance based on marketing copy alone.",
+        "If an AI-generated output is missing its disclosure label, please report it to support.",
       ],
     },
   ],

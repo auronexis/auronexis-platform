@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { AUTH_MESSAGES, isBenignPasswordResetError, sanitizeAuthError } from "@/lib/auth/messages";
 import { validatePasswordPolicy } from "@/lib/auth/password-policy";
+import { checkNewPassword } from "@/lib/auth/password-strength";
 import { authThrottleUserMessage, checkPasswordResetThrottle } from "@/lib/security/login-throttle";
 import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
@@ -146,6 +147,11 @@ export async function updatePasswordAfterResetAction(
 
   if (!user) {
     return { error: AUTH_MESSAGES.RESET_SESSION_EXPIRED };
+  }
+
+  const passwordProblem = await checkNewPassword(parsed.data.password);
+  if (passwordProblem) {
+    return { error: passwordProblem, fieldErrors: { password: passwordProblem } };
   }
 
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });

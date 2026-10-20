@@ -21,7 +21,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     description:
       "Draft structured leadership briefings from verified operational data — with a clear split between facts and recommendations, and human review before publication.",
     metaDescription:
-      "AI-assisted leadership briefings from incidents, risks, and SLA data, with reviewer validation. Automated client reporting lives on the solution page.",
+      "AI-assisted leadership briefings from incidents, risks, and SLA data, with reviewer validation.",
     problem:
       "Leadership briefings are assembled manually from spreadsheets, ticket exports, and email threads. By the time a report reaches a client or executive, the narrative is outdated and hard to defend.",
     solution:
@@ -1017,7 +1017,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
       {
         question: "Is Copilot available on every plan?",
         answer:
-          "AI Copilot credits and advanced narrative features are plan-gated. Check Settings → Usage and Settings → Billing for your workspace entitlements.",
+          "AI Copilot credits and advanced narrative features depend on your plan. Check Settings → Usage and Settings → Billing to see what your plan includes.",
       },
       {
         question: "How is this different from AI executive reports?",
