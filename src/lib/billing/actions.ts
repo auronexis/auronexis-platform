@@ -70,6 +70,7 @@ import { resolveVatIdTechnicalState } from "@/lib/billing/vat-id-status";
 import { normalizeVatId, validateVatIdWithVies } from "@/lib/billing/vies";
 import { LEGAL_COMPANY_NAME } from "@/lib/company/company-information";
 import { recordActivityEvent } from "@/lib/activity/record";
+import { captureException } from "@/lib/observability/capture";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type BillingActionState = {
@@ -495,6 +496,10 @@ export async function createCheckoutSessionAction(
       });
     } else {
       console.error("[billing][checkout] failed", error);
+      captureException(error, {
+        tags: { area: "billing", step: "checkout" },
+        organizationId: session.organization.id,
+      });
     }
     return {
       error: sanitizeBillingCustomerError(error, "Unable to start checkout."),

@@ -4,12 +4,12 @@ import { randomUUID } from "node:crypto";
 
 import { SequenceType } from "@mollie/api-client";
 
-import { isLegacyQuarantinedSubscriptionRow } from "@/lib/billing/legacy-quarantine";
-import {
-  hasVerifiedMollieSubscription,
-  isMollieBackedSubscription,
-} from "@/lib/billing/active-billing";
+import { isMollieBackedSubscription } from "@/lib/billing/active-billing";
 import { getPlanByKey } from "@/lib/billing/plans";
+import {
+  buildMollieProductionReturnUrl,
+  buildMollieWebhookUrl,
+} from "@/lib/billing/providers/mollie/callback-urls";
 import { createMollieBillingClient } from "@/lib/billing/providers/mollie/client";
 import {
   formatMollieAmount,
@@ -18,6 +18,10 @@ import {
   mapMollieSubscriptionStatus,
   type MollieSelfServePlanKey,
 } from "@/lib/billing/providers/mollie/checkout";
+import {
+  assertNoDuplicateMollieSubscription,
+  assertNoFastSpringConflict,
+} from "@/lib/billing/providers/mollie/checkout-guards";
 import { isMollieSubscriptionEntitlementGranting } from "@/lib/billing/providers/mollie/lifecycle-status";
 import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 import {
@@ -37,18 +41,8 @@ import {
   isMollieLiveChargingEnabled,
   isMollieProductionCheckoutEligible,
 } from "@/lib/billing/providers/mollie/rollout";
-import { isSubscriptionUsable } from "@/lib/billing/status";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getAppUrl } from "@/lib/env";
 import type { OrganizationSubscription } from "@/types/database";
-
-function buildMollieWebhookUrl(): string {
-  return `${getAppUrl()}/api/mollie/webhook`;
-}
-
-function buildMollieProductionReturnUrl(checkoutAttemptId: string): string {
-  return `${getAppUrl()}/settings/billing/mollie/return?attempt=${encodeURIComponent(checkoutAttemptId)}`;
-}
 
 async function readOrganizationSubscriptionRow(
   organizationId: string,
@@ -67,42 +61,6 @@ async function readOrganizationSubscriptionRow(
   }
 
   return (data as OrganizationSubscription | null) ?? null;
-}
-
-/**
- * Legacy FastSpring rows are quarantined — Mollie checkout proceeds when row is audit-only.
- */
-function assertNoFastSpringConflict(row: OrganizationSubscription | null): void {
-  if (!row || isLegacyQuarantinedSubscriptionRow(row)) {
-    return;
-  }
-  throw new Error(
-    "Refusing Mollie checkout — organization_subscriptions row belongs to a legacy provider (existing_subscription).",
-  );
-}
-
-/**
- * Duplicate purchase protection: refuse a second first payment when an active
- * or suspended Mollie subscription already exists (use plan change / support instead).
- */
-function assertNoDuplicateMollieSubscription(row: OrganizationSubscription | null): void {
-  if (!row || !isMollieBackedSubscription(row)) {
-    return;
-  }
-  if (!hasVerifiedMollieSubscription(row)) {
-    return;
-  }
-  const status = (row.provider_status ?? row.status ?? "").toLowerCase();
-  if (status === "active" || isSubscriptionUsable(status)) {
-    throw new Error(
-      "A Mollie subscription already exists for this workspace. Use plan change instead of a new checkout (duplicate_mollie).",
-    );
-  }
-  if (status === "suspended" || status === "past_due") {
-    throw new Error(
-      "A Mollie subscription already exists for this workspace. Resolve payment issues instead of starting a second subscription (existing_subscription).",
-    );
-  }
 }
 
 /**

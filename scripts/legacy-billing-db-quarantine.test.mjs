@@ -61,8 +61,11 @@ test("Mollie organization sync allows overwrite of quarantined legacy rows", () 
 
 test("Mollie production checkout allows checkout when legacy row is quarantined", () => {
   const checkout = readSource("src/lib/billing/providers/mollie/production-checkout.ts");
-  assert.match(checkout, /isLegacyQuarantinedSubscriptionRow/);
-  assert.match(checkout, /Legacy FastSpring rows are quarantined/);
+  assert.match(checkout, /assertNoFastSpringConflict/);
+  assert.match(checkout, /checkout-guards/);
+  const guards = readSource("src/lib/billing/providers/mollie/checkout-guards.ts");
+  assert.match(guards, /isLegacyQuarantinedSubscriptionRow/);
+  assert.match(guards, /legacy-quarantined rows|LegacyQuarantined/i);
 });
 
 test("billing snapshots job scopes to authoritative Mollie rows only", () => {

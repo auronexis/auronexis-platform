@@ -512,8 +512,11 @@ test("required migrations present for LIVE gate manifest", () => {
 
 test("per-resource Mollie webhookUrl on production checkout and subscription", () => {
   const production = readSource("src/lib/billing/providers/mollie/production-checkout.ts");
-  assert.match(production, /function buildMollieWebhookUrl\(\):\s*string/);
-  assert.match(production, /\$\{getAppUrl\(\)\}\/api\/mollie\/webhook/);
+  assert.match(production, /buildMollieWebhookUrl/);
+  assert.match(production, /callback-urls/);
+  const callbacks = readSource("src/lib/billing/providers/mollie/callback-urls.ts");
+  assert.match(callbacks, /export function buildMollieWebhookUrl/);
+  assert.match(callbacks, /\/api\/mollie\/webhook/);
   assert.match(production, /customerPayments\.create\([\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/);
   assert.match(
     production,

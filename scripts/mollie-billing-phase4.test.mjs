@@ -61,9 +61,21 @@ test("D: production checkout reuses open first payment and refuses duplicate sub
   assert.match(prod, /findReusableOpenFirstPayment/);
   assert.match(prod, /assertNoDuplicateMollieSubscription/);
   assert.match(prod, /assertNoFastSpringConflict/);
+  assert.match(prod, /checkout-guards/);
   assert.match(prod, /reusedOpenPayment/);
-  assert.match(prod, /duplicate_mollie/);
   assert.match(prod, /customerPayments\.page/);
+
+  const guards = readSource("src/lib/billing/providers/mollie/checkout-guards.ts");
+  assert.match(guards, /provider === "mollie"/);
+  assert.match(guards, /provider === "none"/);
+  assert.match(guards, /provider_conflict/);
+  assert.match(guards, /isLegacyQuarantinedSubscriptionRow/);
+  assert.match(guards, /assertNoDuplicateMollieSubscription/);
+  assert.match(guards, /duplicate_mollie/);
+  assert.doesNotMatch(
+    guards,
+    /row belongs to a legacy provider \(existing_subscription\)/,
+  );
 });
 
 // E — Mollie customer reuse

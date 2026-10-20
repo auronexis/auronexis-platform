@@ -54,16 +54,21 @@ test("First payment uses sequenceType first and canonical plan pricing", () => {
 
 test("Production checkout and subscription create supply per-resource webhookUrl", () => {
   const production = readSource("src/lib/billing/providers/mollie/production-checkout.ts");
-  assert.match(production, /function buildMollieWebhookUrl/);
-  assert.match(production, /getAppUrl\(\).*\/api\/mollie\/webhook|`\$\{getAppUrl\(\)\}\/api\/mollie\/webhook`/);
+  assert.match(production, /buildMollieWebhookUrl/);
+  assert.match(production, /from "@\/lib\/billing\/providers\/mollie\/callback-urls"/);
   assert.match(production, /customerPayments\.create\([\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/);
   assert.match(
     production,
     /customerSubscriptions\.create\([\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/,
   );
 
+  const callbacks = readSource("src/lib/billing/providers/mollie/callback-urls.ts");
+  assert.match(callbacks, /export function buildMollieWebhookUrl/);
+  assert.match(callbacks, /resolveMollieCallbackBaseUrl/);
+  assert.match(callbacks, /\/api\/mollie\/webhook/);
+
   const checkout = readSource("src/lib/billing/providers/mollie/checkout.ts");
-  assert.match(checkout, /function buildMollieWebhookUrl/);
+  assert.match(checkout, /buildMollieWebhookUrl/);
   assert.match(checkout, /webhookUrl:\s*buildMollieWebhookUrl\(\)/);
   assert.match(checkout, /customerSubscriptions\.create[\s\S]*webhookUrl:\s*buildMollieWebhookUrl\(\)/);
 
@@ -73,6 +78,7 @@ test("Production checkout and subscription create supply per-resource webhookUrl
   ]) {
     const src = readSource(file);
     assert.match(src, /webhookUrl:\s*buildMollieWebhookUrl\(\)/, `${file} must set webhookUrl`);
+    assert.match(src, /callback-urls/, `${file} must use shared callback-urls`);
   }
 });
 
