@@ -81,7 +81,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.useCases]: {
     title: "Use Cases for Agencies, MSPs & Automation Firms",
     description:
-      "Persona-focused workflows for MSPs, automation agencies, consultancies, and multi-client teams using Auroranexis for health, risk, incidents, and reporting.",
+      "How MSPs, automation agencies, consultancies, and multi-client teams use Auroranexis for client health, risk, incidents, and reporting.",
   },
   [MARKETING_ROUTES.industries]: {
     title: "Industry Client Operations for Service Providers",
@@ -155,7 +155,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.help]: {
     title: "Help Center for Auroranexis Workspace Users",
     description:
-      "Help resources for signed-in Auroranexis customers — documentation, support, and platform guidance. Distinct from the public docs hub.",
+      "Help resources for signed-in Auroranexis customers — documentation, support, and platform guidance.",
   },
   [MARKETING_ROUTES.support]: {
     title: "Customer Support for Auroranexis Workspaces",
@@ -243,7 +243,7 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
   "/features/reports": {
     title: "Report Templates & Publish Flows",
     description:
-      "How Auroranexis reports work: templates, schedules, generate-and-review, PDF export, and portal publication. Outcome page: automated client reporting.",
+      "How Auroranexis reports work: templates, schedules, generate-and-review, PDF export, and publication to the client portal.",
   },
   "/industries/consulting": {
     title: "Consulting Engagement Governance",

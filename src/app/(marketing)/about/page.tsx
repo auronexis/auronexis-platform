@@ -45,7 +45,7 @@ export default function AboutPage() {
       <MarketingHero
         eyebrow="Company"
         title={`About ${COMPANY_NAME}`}
-        description="We build the Operations Command Center for AI automation agencies, MSPs, and service providers."
+        description="We build the Operations Command Center for service businesses — agencies, MSPs, and firms that run recurring work for a portfolio of clients."
         primaryHref="/pricing"
         primaryLabel="View pricing"
         secondaryHref="/contact"

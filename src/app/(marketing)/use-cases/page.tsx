@@ -10,8 +10,8 @@ export default function UseCasesPage() {
   return (
     <LandingHubView
       eyebrow="Use cases"
-      title="Persona workflows for multi-client operators"
-      description="Dedicated pages for MSPs, automation agencies, consultancies, and enterprise teams — persona intent, separate from industry sector pages."
+      title="How multi-client teams use Auroranexis"
+      description="Dedicated pages for MSPs, automation agencies, consultancies, and enterprise teams — showing how each team runs client operations in Auroranexis."
       entries={AUDIENCE_HUB_ENTRIES}
       hubPath={MARKETING_ROUTES.useCases}
       primaryHref={MARKETING_ROUTES.pilotProgram}
