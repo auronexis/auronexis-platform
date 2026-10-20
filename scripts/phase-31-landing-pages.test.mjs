@@ -98,3 +98,13 @@ test("feature CTA no longer links to private intelligence route", () => {
   assert.doesNotMatch(content, /ctaHref: "\/intelligence"/);
   assert.match(content, /executive-dashboards/);
 });
+
+test("middleware industry slug allowlist matches INDUSTRY_PAGES (avoids hard 404 on new pages)", () => {
+  const allow = readSource("src/lib/seo/public-dynamic-slug-allowlist.ts");
+  const start = allow.indexOf("const INDUSTRY_SLUGS");
+  const block = allow.slice(start, allow.indexOf("]);", start));
+  const allowed = [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]).sort();
+  const content = readSource("src/lib/seo/industry-content.ts");
+  const slugs = [...content.matchAll(/slug: "([^"]+)"/g)].map((m) => m[1]).sort();
+  assert.deepEqual(allowed, slugs);
+});
