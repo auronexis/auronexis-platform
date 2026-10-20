@@ -38,7 +38,7 @@ export default function ResourcesHubPage() {
       <MarketingHero
         eyebrow="Resources"
         title="Operational resources for multi-client service teams"
-        description="Curated pillars that connect Auroranexis features, solutions, and templates — grounded in real product capabilities, not keyword farms."
+        description="Curated guides that connect Auroranexis features, solutions, and templates — grounded in real product capabilities."
         primaryHref={MARKETING_ROUTES.documentation}
         primaryLabel="Open documentation"
         secondaryHref={MARKETING_ROUTES.pricing}
@@ -47,7 +47,7 @@ export default function ResourcesHubPage() {
 
       <MarketingSection
         title="Topic pillars"
-        description="Each pillar owns a clear operational theme and links to the primary product pages that already cover that intent."
+        description="Each topic covers one operational theme and links to the product pages that explain it in depth."
       >
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {RESOURCE_PILLARS.map((pillar) => (
@@ -82,7 +82,7 @@ export default function ResourcesHubPage() {
 
       <MarketingSection
         title="Original frameworks"
-        description="Methodology pages and templates Auroranexis can credibly own — without inventing benchmarks or case studies."
+        description="Practical methods and templates based on how Auroranexis works — no invented benchmarks or case studies."
         className="border-t border-white/10"
       >
         <div className="grid gap-4 md:grid-cols-3">

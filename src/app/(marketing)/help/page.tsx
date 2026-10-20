@@ -18,7 +18,7 @@ export default function HelpPage() {
       <MarketingHero
         eyebrow="Help"
         title="Help Center"
-        description="A short index of documentation, FAQ, status, and support channels — not a second documentation hub."
+        description="Quick links to documentation, FAQ, platform status, and support channels."
         primaryHref={MARKETING_ROUTES.documentation}
         primaryLabel="View documentation"
         secondaryHref={MARKETING_ROUTES.support}

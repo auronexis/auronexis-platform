@@ -100,7 +100,7 @@ test("homepage and hubs link to category money pages with descriptive anchors", 
   const marketing = readSource("src/lib/marketing/content.ts");
   const footer = readSource("src/lib/company/company-links.ts");
   assert.match(home, /eyebrow="Operations Command Center"/);
-  assert.match(home, /title="Client operations software for MSPs and agencies"/);
+  assert.match(home, /title="Client operations software for service businesses"/);
   assert.match(home, /Customer health score software for MSPs/);
   assert.match(home, /href="\/solutions\/customer-health-score"/);
   assert.match(home, /SLA tracking for MSPs/);

@@ -66,6 +66,11 @@ const INDUSTRY_SLUGS = new Set([
   "legal",
   "manufacturing",
   "technology",
+  "accounting",
+  "facility-services",
+  "property-management",
+  "recruitment",
+  "outsourcing",
 ]);
 
 /** Doc topic slugs under /docs/[slug] — plus dedicated /docs/release-notes page. */

@@ -10,8 +10,8 @@ export default function IndustriesHubPage() {
   return (
     <LandingHubView
       eyebrow="Industries"
-      title="Industry-focused client operations by sector"
-      description="Sector-specific delivery context for marketing, IT, finance, healthcare, legal, and technology providers — distinct from persona use-case pages."
+      title="Client operations by industry"
+      description="How service businesses in marketing, IT, accounting, facility services, property management, recruitment, outsourcing, finance, healthcare, legal, and technology run client operations with Auroranexis."
       entries={INDUSTRY_HUB_ENTRIES}
       hubPath={MARKETING_ROUTES.industries}
       secondaryHref={MARKETING_ROUTES.useCases}

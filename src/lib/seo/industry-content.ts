@@ -894,6 +894,481 @@ export const INDUSTRY_PAGES: Record<string, LandingPageContent> = {
     primaryCta: "startFreeTrial",
     secondaryCta: "seePricing",
   }),
+
+  accounting: buildLandingPage({
+    slug: "accounting",
+    pathPrefix: "/industries",
+    category: "industry",
+    eyebrow: "Industry",
+    title: "Client operations for accounting, bookkeeping, and payroll firms",
+    description:
+      "See every client's status, open issues, and service commitments in one workspace — built for firms that look after dozens or hundreds of recurring clients.",
+    metaDescription:
+      "Client operations for accounting, bookkeeping, and payroll firms — client health, service commitments, and client reporting across your whole client book in Auroranexis.",
+    problem:
+      "Accounting and bookkeeping firms serve dozens or hundreds of clients at once, each with recurring work, deadlines, and expectations. Status lives in practice software, inboxes, and spreadsheets, so partners only notice an unhappy client when they leave or complain. Preparing client updates means chasing staff for information.",
+    solution:
+      "Auroranexis adds a client operations layer next to your practice and accounting software. Track open issues, risks, and agreed response times per client, see which clients need attention on a portfolio dashboard, and share structured status updates and reports through the client portal.",
+    businessValue:
+      "Spot quiet or frustrated clients earlier, standardize how the firm communicates progress, and give partners a portfolio view without asking every manager for an update.",
+    audience:
+      "Accounting firms, bookkeeping practices, payroll bureaus, and outsourced finance teams that manage a large book of recurring clients.",
+    enterpriseAdvantages: [
+      "Portfolio dashboard across the whole client book",
+      "Role-based access for partners, managers, and staff",
+      "Audit-friendly history of client issues and updates",
+      "Client portal for status and report sharing",
+      "AI copilot for portfolio questions on entitled plans",
+    ],
+    benefits: [
+      {
+        title: "Know which clients need attention",
+        description:
+          "Health indicators built from open issues, risks, and service performance show where to act before a client churns.",
+      },
+      {
+        title: "Consistent client communication",
+        description:
+          "Send structured status updates and reports instead of ad hoc emails written differently by every manager.",
+      },
+      {
+        title: "Partner-level overview",
+        description:
+          "See the state of the whole practice in one dashboard instead of collecting updates in meetings.",
+      },
+    ],
+    capabilities: [
+      "Client-level health indicators from operational signals",
+      "Issue and risk registers tied to each client",
+      "Response and resolution commitments per client tier",
+      "Scheduled client reports with PDF export",
+      "Client portal for transparent status sharing",
+      "Automation workflows for operational follow-up",
+    ],
+    challenges: [
+      "Client status scattered across practice software, email, and spreadsheets",
+      "No early warning when a long-standing client becomes dissatisfied",
+      "Client updates depend on individual managers and vary in quality",
+      "Partners lack a portfolio view without manual roll-ups",
+    ],
+    workflowImprovements: [
+      "Keep every client's open issues and history in one record",
+      "Define response commitments per client tier",
+      "Generate client and partner reports from live data",
+      "Share status through a client portal instead of long email threads",
+    ],
+    expectedOutcomes: [
+      "Earlier intervention with at-risk clients",
+      "Less time spent preparing client updates",
+      "More consistent service across the team",
+      "Clear ownership of open client issues",
+    ],
+    faq: [
+      {
+        question: "Does Auroranexis replace our accounting or practice management software?",
+        answer:
+          "No. It sits next to your existing tools as a client operations layer for health, service commitments, and client reporting.",
+      },
+      {
+        question: "Can we use it with hundreds of clients?",
+        answer:
+          "Yes. Portfolio dashboards are designed for firms managing large client portfolios.",
+      },
+      {
+        question: "Can clients see their own status?",
+        answer:
+          "Yes. The client portal lets you share selected status updates and reports with each client.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Consulting", href: INDUSTRY_ROUTES.consulting },
+      { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+    ],
+    primaryCta: "startFreeTrial",
+    secondaryCta: "seePricing",
+  }),
+
+  "facility-services": buildLandingPage({
+    slug: "facility-services",
+    pathPrefix: "/industries",
+    category: "industry",
+    eyebrow: "Industry",
+    title: "SLA and client operations for facility, cleaning, and security services",
+    description:
+      "Track service-level commitments, incidents, and client satisfaction per contract — for facility management, cleaning, maintenance, and security providers.",
+    metaDescription:
+      "SLA tracking, incident records, and client reporting for facility management, cleaning, maintenance, and security service providers in Auroranexis.",
+    problem:
+      "Facility and security providers run multiple sites and contracts, each with agreed response times and service levels. Incidents and complaints arrive by phone, email, and field apps, and proving what was delivered at contract review takes days of manual work.",
+    solution:
+      "Auroranexis gives operations managers one workspace per client contract. Record incidents and risks, set response and resolution commitments, watch SLA performance across the portfolio, and share structured reports with clients through the client portal.",
+    businessValue:
+      "Show clients documented service performance at every review, notice failing contracts early, and give leadership a portfolio view across all sites and clients.",
+    audience:
+      "Facility management companies, commercial cleaning firms, maintenance contractors, and security service providers with recurring multi-site contracts.",
+    enterpriseAdvantages: [
+      "SLA policies per client and contract tier",
+      "Incident and risk records tied to each client",
+      "Portfolio dashboard for operations leadership",
+      "Role-based access for managers, supervisors, and leadership",
+      "Audit-friendly history for contract reviews",
+    ],
+    benefits: [
+      {
+        title: "SLA performance you can show",
+        description:
+          "Response and resolution records per client support contract reviews with facts instead of anecdotes.",
+      },
+      {
+        title: "Early warning on failing contracts",
+        description:
+          "Health indicators highlight clients with repeated incidents or missed commitments before renewal is at risk.",
+      },
+      {
+        title: "Less reporting work",
+        description:
+          "Scheduled client reports replace manual spreadsheets before every monthly or quarterly review.",
+      },
+    ],
+    capabilities: [
+      "Response and resolution SLA policies per client",
+      "Incident register with status history",
+      "Client-level health indicators",
+      "Scheduled reports with PDF export",
+      "Client portal for status sharing",
+      "Executive dashboard across all contracts",
+    ],
+    challenges: [
+      "Incidents reported through many channels with no single record",
+      "Contract reviews require manual evidence gathering",
+      "Leadership cannot see which contracts are at risk",
+      "Service quality depends on individual site managers",
+    ],
+    workflowImprovements: [
+      "Log incidents per client in one workspace",
+      "Monitor SLA performance across all contracts",
+      "Generate review-ready reports from live data",
+      "Escalate repeated issues through structured workflows",
+    ],
+    expectedOutcomes: [
+      "Faster preparation for client and contract reviews",
+      "Earlier action on underperforming contracts",
+      "More consistent service across sites and teams",
+      "Clearer accountability for open incidents",
+    ],
+    faq: [
+      {
+        question: "Does Auroranexis replace our field service or workforce app?",
+        answer:
+          "No. It complements field tools with a client-level operations layer for SLAs, incidents, and reporting.",
+      },
+      {
+        question: "Can we set different service levels per client?",
+        answer:
+          "Yes. SLA policies can be configured per client and service tier.",
+      },
+      {
+        question: "Can our clients see the reports?",
+        answer:
+          "Yes. Reports and status updates can be shared through the client portal.",
+      },
+    ],
+    relatedLinks: [
+      { label: "SLA tracking", href: SOLUTION_ROUTES.slaManagement },
+      { label: "Incident management", href: SOLUTION_ROUTES.incidentManagement },
+      { label: "Executive dashboard", href: SOLUTION_ROUTES.executiveDashboard },
+      { label: "Property management", href: INDUSTRY_ROUTES.propertyManagement },
+    ],
+    primaryCta: "startFreeTrial",
+    secondaryCta: "seePricing",
+  }),
+
+  "property-management": buildLandingPage({
+    slug: "property-management",
+    pathPrefix: "/industries",
+    category: "industry",
+    eyebrow: "Industry",
+    title: "Client operations for property and building management companies",
+    description:
+      "Keep owners informed, track open issues per building, and report on service commitments — for property managers responsible for large owner and property portfolios.",
+    metaDescription:
+      "Client operations for property and building management companies — owner reporting, issue tracking, and service commitments across your portfolio in Auroranexis.",
+    problem:
+      "Property managers juggle numerous owners, buildings, and service partners. Repairs, complaints, and requests pile up across email and phone, owners ask for updates the team cannot answer quickly, and unhappy owners often move their properties without warning.",
+    solution:
+      "Auroranexis gives property managers a structured record per owner or building. Track open issues and risks, set response commitments, see which owners need attention on a portfolio dashboard, and share regular reports through the client portal.",
+    businessValue:
+      "Answer owner questions with current facts, spot dissatisfied owners earlier, and spend less time writing status reports by hand.",
+    audience:
+      "Residential and commercial property management firms, building management companies, and owners' association managers with recurring client portfolios.",
+    enterpriseAdvantages: [
+      "Portfolio dashboard across owners and buildings",
+      "Issue and risk registers per client",
+      "Response commitments per client tier",
+      "Client portal for owner updates",
+      "Role-based access for property managers and leadership",
+    ],
+    benefits: [
+      {
+        title: "Owners stay informed",
+        description:
+          "Regular, structured reports and portal access reduce status calls and build trust.",
+      },
+      {
+        title: "No forgotten issues",
+        description:
+          "Every open repair, complaint, or risk has an owner, a status, and a history.",
+      },
+      {
+        title: "See who might leave",
+        description:
+          "Health indicators flag owners with repeated issues or slow responses before they move their portfolio.",
+      },
+    ],
+    capabilities: [
+      "Issue and incident tracking per owner or building",
+      "Response and resolution commitments",
+      "Client-level health indicators",
+      "Scheduled owner reports with PDF export",
+      "Client portal for status sharing",
+      "Automation workflows for follow-ups",
+    ],
+    challenges: [
+      "Owner requests spread across email, phone, and messaging",
+      "Status updates take time to compile for every owner",
+      "No early signal when an owner is unhappy",
+      "Knowledge lost when a property manager leaves",
+    ],
+    workflowImprovements: [
+      "Record every issue per owner or building in one place",
+      "Track response times against agreed commitments",
+      "Send scheduled owner reports from live data",
+      "Share status through a client portal",
+    ],
+    expectedOutcomes: [
+      "Fewer status calls from owners",
+      "Earlier action on dissatisfied owners",
+      "Less time spent on manual reporting",
+      "Smoother handovers between team members",
+    ],
+    faq: [
+      {
+        question: "Does Auroranexis replace our property management software?",
+        answer:
+          "No. It complements your property and accounting tools with client health, issue tracking, and owner reporting.",
+      },
+      {
+        question: "Can each owner see only their own information?",
+        answer:
+          "Yes. The client portal shares selected updates and reports per client.",
+      },
+      {
+        question: "Is it suitable for small teams?",
+        answer:
+          "Yes. The value comes from portfolio size, not team size — small teams with large owner portfolios benefit most.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Facility services", href: INDUSTRY_ROUTES.facilityServices },
+      { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
+      { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+    ],
+    primaryCta: "startFreeTrial",
+    secondaryCta: "seePricing",
+  }),
+
+  recruitment: buildLandingPage({
+    slug: "recruitment",
+    pathPrefix: "/industries",
+    category: "industry",
+    eyebrow: "Industry",
+    title: "Client account operations for recruitment and staffing agencies",
+    description:
+      "See the health of every client account, track open issues and commitments, and send clear progress reports — for agencies managing a portfolio of hiring clients.",
+    metaDescription:
+      "Client account health, issue tracking, and client reporting for recruitment, staffing, and HR outsourcing agencies in Auroranexis.",
+    problem:
+      "Recruitment and staffing agencies serve a large portfolio of hiring clients at once. Client satisfaction depends on response times and clear updates, but account status sits with individual consultants, and leadership rarely sees which accounts are cooling until revenue drops.",
+    solution:
+      "Auroranexis adds a client account layer next to your recruitment system. Track open issues, risks, and agreed response times per client, monitor account health on a portfolio dashboard, and share structured progress reports through the client portal.",
+    businessValue:
+      "Keep key accounts warm with earlier visibility, make client updates consistent across consultants, and give leadership a real view of the client portfolio.",
+    audience:
+      "Recruitment agencies, staffing and temp agencies, executive search firms, and HR outsourcing providers with recurring corporate clients.",
+    enterpriseAdvantages: [
+      "Portfolio dashboard of all client accounts",
+      "Role-based access for consultants, account managers, and leadership",
+      "Issue and risk records per client",
+      "Client portal for progress sharing",
+      "AI copilot for portfolio questions on entitled plans",
+    ],
+    benefits: [
+      {
+        title: "Account health at a glance",
+        description:
+          "Health indicators show which hiring clients need attention before they move work to another agency.",
+      },
+      {
+        title: "Consistent client updates",
+        description:
+          "Structured reports replace individual email updates that vary from consultant to consultant.",
+      },
+      {
+        title: "No lost context",
+        description:
+          "Client history and open issues stay with the account when consultants change.",
+      },
+    ],
+    capabilities: [
+      "Client-level health indicators",
+      "Issue and risk registers per account",
+      "Response commitments per client tier",
+      "Scheduled client reports with PDF export",
+      "Client portal for status sharing",
+      "Executive dashboard across all accounts",
+    ],
+    challenges: [
+      "Account knowledge sits with individual consultants",
+      "No early warning when a client starts using other agencies",
+      "Client updates are inconsistent and time-consuming",
+      "Leadership lacks a portfolio view of account health",
+    ],
+    workflowImprovements: [
+      "Keep every account's issues and history in one record",
+      "Track agreed response times per client",
+      "Generate client progress reports from live data",
+      "Escalate at-risk accounts through structured workflows",
+    ],
+    expectedOutcomes: [
+      "Earlier action on cooling accounts",
+      "Less time spent writing client updates",
+      "Smoother handovers between consultants",
+      "Clearer ownership of client issues",
+    ],
+    faq: [
+      {
+        question: "Does Auroranexis replace our applicant tracking or CRM system?",
+        answer:
+          "No. It complements your recruitment tools with client account health, issue tracking, and client reporting.",
+      },
+      {
+        question: "Can we share progress with hiring clients?",
+        answer:
+          "Yes. Reports and status updates can be shared through the client portal.",
+      },
+      {
+        question: "Does it work for HR outsourcing providers?",
+        answer:
+          "Yes. Any firm with a portfolio of recurring corporate clients can use the same structure.",
+      },
+    ],
+    relatedLinks: [
+      { label: "Consulting", href: INDUSTRY_ROUTES.consulting },
+      { label: "Customer health score", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Customer success", href: FEATURE_ROUTES.customerSuccess },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+    ],
+    primaryCta: "startFreeTrial",
+    secondaryCta: "seePricing",
+  }),
+
+  outsourcing: buildLandingPage({
+    slug: "outsourcing",
+    pathPrefix: "/industries",
+    category: "industry",
+    eyebrow: "Industry",
+    title: "SLA and client operations for outsourcing and BPO providers",
+    description:
+      "Track service levels, incidents, and client health across every account — for contact centers, virtual assistant agencies, back-office outsourcing, and logistics providers.",
+    metaDescription:
+      "SLA tracking, incident records, and client reporting for BPO, contact center, virtual assistant, and outsourced logistics providers in Auroranexis.",
+    problem:
+      "Outsourcing providers run multiple client accounts with agreed service levels and regular performance reviews. Data sits in different systems per client, and account managers spend days building review decks while leadership struggles to see which accounts are at risk.",
+    solution:
+      "Auroranexis gives outsourcing teams a single operations workspace across all client accounts. Set SLA policies per client, record incidents and risks, monitor account health on a portfolio dashboard, and share structured reports through the client portal.",
+    businessValue:
+      "Prepare client reviews faster with documented service performance, act earlier on accounts at risk, and give leadership a portfolio view across all clients.",
+    audience:
+      "BPO providers, contact centers, virtual assistant agencies, back-office outsourcing firms, and third-party logistics providers with a portfolio of business clients.",
+    enterpriseAdvantages: [
+      "SLA policies per client and service tier",
+      "Portfolio dashboard across all accounts",
+      "Incident and risk records per client",
+      "Role-based access for account managers and leadership",
+      "Audit-friendly history for client reviews",
+    ],
+    benefits: [
+      {
+        title: "Review-ready reporting",
+        description:
+          "Scheduled client reports with SLA and incident data replace manually built review decks.",
+      },
+      {
+        title: "Account risk visibility",
+        description:
+          "Health indicators surface accounts with missed commitments or repeated incidents early.",
+      },
+      {
+        title: "One standard across accounts",
+        description:
+          "The same incident, escalation, and reporting workflows apply to every client.",
+      },
+    ],
+    capabilities: [
+      "Response and resolution SLA policies",
+      "Incident register with status history",
+      "Client-level health indicators",
+      "Scheduled reports with PDF export",
+      "Client portal for status sharing",
+      "Automation workflows for follow-up tasks",
+    ],
+    challenges: [
+      "Service data split across client-specific systems",
+      "Client reviews require days of manual preparation",
+      "No portfolio view of which accounts are at risk",
+      "Escalations handled differently by each account team",
+    ],
+    workflowImprovements: [
+      "Monitor SLA performance across all accounts",
+      "Record incidents and risks per client",
+      "Generate review reports from live data",
+      "Route escalations through structured workflows",
+    ],
+    expectedOutcomes: [
+      "Faster client review preparation",
+      "Earlier action on at-risk accounts",
+      "More consistent service across account teams",
+      "Clear accountability for open incidents",
+    ],
+    faq: [
+      {
+        question: "Does Auroranexis replace our contact center or warehouse system?",
+        answer:
+          "No. It complements operational systems with a client-level layer for SLAs, incidents, health, and reporting.",
+      },
+      {
+        question: "Can different clients have different service levels?",
+        answer:
+          "Yes. SLA policies can be configured per client and service tier.",
+      },
+      {
+        question: "Can clients see their own reports?",
+        answer:
+          "Yes. Reports and status updates can be shared through the client portal.",
+      },
+    ],
+    relatedLinks: [
+      { label: "SLA tracking", href: SOLUTION_ROUTES.slaManagement },
+      { label: "Executive dashboard", href: SOLUTION_ROUTES.executiveDashboard },
+      { label: "Facility services", href: INDUSTRY_ROUTES.facilityServices },
+      { label: "Automated client reporting", href: SOLUTION_ROUTES.aiReporting },
+    ],
+    primaryCta: "startFreeTrial",
+    secondaryCta: "seePricing",
+  }),
 };
 
 export const INDUSTRY_SLUGS: string[] = landingPageSlugs(INDUSTRY_PAGES);

@@ -15,7 +15,7 @@ export default function CompliancePage() {
     <MarketingShell>
       <MarketingHero
         eyebrow="Compliance"
-        title="Compliance readiness without overclaiming"
+        title="Transparent compliance readiness"
         description="We support GDPR obligations and describe readiness for SOC 2, ISO 27001, NIS2, and DORA. We do not claim certifications unless explicitly published."
         primaryHref="/privacy"
         primaryLabel="Privacy policy"

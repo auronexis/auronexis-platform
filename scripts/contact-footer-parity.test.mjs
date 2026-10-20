@@ -6,7 +6,7 @@ const INFO = "info@auroranexis.com";
 const SALES = "sales@auroranexis.com";
 const SUPPORT = "support@auroranexis.com";
 const SECURITY = "security@auroranexis.com";
-const BRAND_LINE = "Operations Command Center for AI automation agencies.";
+const BRAND_LINE = "Operations Command Center for service businesses.";
 const CONTACT_SUCCESS =
   "Thank you. Your message has been received. Our team will follow up by email.";
 

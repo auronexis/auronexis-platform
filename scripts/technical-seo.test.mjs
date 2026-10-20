@@ -612,7 +612,7 @@ test("P0 category capture: money-page titles use searchable buyer terms", () => 
   assert.match(solution, /title: "Automated Client Reporting for Agencies"/);
   assert.match(solution, /title: "NIS2 Incident Management for IT Service Providers"/);
   assert.match(home, /eyebrow="Operations Command Center"/);
-  assert.match(home, /title="Client operations software for MSPs and agencies"/);
+  assert.match(home, /title="Client operations software for service businesses"/);
   assert.match(pricing, /title="MSP and agency operations pricing"/);
   assert.doesNotMatch(solution, /SOC 2 certified|ISO 27001 certified/i);
 });

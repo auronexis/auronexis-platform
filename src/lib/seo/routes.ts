@@ -81,7 +81,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.useCases]: {
     title: "Use Cases for Agencies, MSPs & Automation Firms",
     description:
-      "Persona-focused workflows for MSPs, automation agencies, consultancies, and multi-client teams using Auroranexis for health, risk, incidents, and reporting.",
+      "How MSPs, automation agencies, consultancies, and multi-client teams use Auroranexis for client health, risk, incidents, and reporting.",
   },
   [MARKETING_ROUTES.industries]: {
     title: "Industry Client Operations for Service Providers",
@@ -155,7 +155,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.help]: {
     title: "Help Center for Auroranexis Workspace Users",
     description:
-      "Help resources for signed-in Auroranexis customers — documentation, support, and platform guidance. Distinct from the public docs hub.",
+      "Help resources for signed-in Auroranexis customers — documentation, support, and platform guidance.",
   },
   [MARKETING_ROUTES.support]: {
     title: "Customer Support for Auroranexis Workspaces",
@@ -243,7 +243,7 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
   "/features/reports": {
     title: "Report Templates & Publish Flows",
     description:
-      "How Auroranexis reports work: templates, schedules, generate-and-review, PDF export, and portal publication. Outcome page: automated client reporting.",
+      "How Auroranexis reports work: templates, schedules, generate-and-review, PDF export, and publication to the client portal.",
   },
   "/industries/consulting": {
     title: "Consulting Engagement Governance",
@@ -284,6 +284,31 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "Marketing Sector Client Operations",
     description:
       "Marketing sector operations platform — portfolio governance for agencies and in-house brand teams with Auroranexis.",
+  },
+  "/industries/accounting": {
+    title: "Accounting & Bookkeeping Client Ops",
+    description:
+      "Client operations for accounting, bookkeeping, and payroll firms — client health, service commitments, and client reporting across your whole client book in Auroranexis.",
+  },
+  "/industries/facility-services": {
+    title: "Facility & Security Services SLA Ops",
+    description:
+      "SLA tracking, incident records, and client reporting for facility management, cleaning, maintenance, and security service providers in Auroranexis.",
+  },
+  "/industries/property-management": {
+    title: "Property Management Client Operations",
+    description:
+      "Client operations for property and building management companies — owner reporting, issue tracking, and service commitments across your portfolio in Auroranexis.",
+  },
+  "/industries/recruitment": {
+    title: "Recruitment & Staffing Account Ops",
+    description:
+      "Client account health, issue tracking, and client reporting for recruitment, staffing, and HR outsourcing agencies in Auroranexis.",
+  },
+  "/industries/outsourcing": {
+    title: "BPO & Outsourcing SLA Operations",
+    description:
+      "SLA tracking, incident records, and client reporting for BPO, contact center, virtual assistant, and outsourced logistics providers in Auroranexis.",
   },
   "/industries/technology": {
     title: "Technology & SaaS Client Operations",

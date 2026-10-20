@@ -83,6 +83,11 @@ export const INDUSTRY_ROUTES = {
   legal: "/industries/legal",
   manufacturing: "/industries/manufacturing",
   technology: "/industries/technology",
+  accounting: "/industries/accounting",
+  facilityServices: "/industries/facility-services",
+  propertyManagement: "/industries/property-management",
+  recruitment: "/industries/recruitment",
+  outsourcing: "/industries/outsourcing",
 } as const;
 
 export const SOLUTION_ROUTES = {
@@ -145,7 +150,7 @@ export const HELP_LINKS = {
 
 /** Canonical public/authenticated footer brand line — do not omit in compact layouts. */
 export const FOOTER_BRAND_DESCRIPTION =
-  "Operations Command Center for AI automation agencies.";
+  "Operations Command Center for service businesses.";
 
 export const FOOTER_SECTIONS = {
   product: [
