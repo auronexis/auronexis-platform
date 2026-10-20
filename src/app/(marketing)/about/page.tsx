@@ -20,14 +20,14 @@ export const metadata: Metadata = createPageMetadataForPath("/about");
 const VALUES = [
   {
     title: "Operational clarity",
-    body: "Give agencies a single command center for clients, risks, incidents, reports, and automation — not another spreadsheet.",
+    body: "Give service businesses one command center for clients, risks, incidents, reports, and automation instead of scattered spreadsheets.",
   },
   {
     title: "Trust by design",
-    body: "Multi-tenant isolation, audit trails, and transparent security practices built for B2B workloads and client portals.",
+    body: "Strict workspace isolation, audit trails, and transparent security practices for business data and client portals.",
   },
   {
-    title: "Document delivered value",
+    title: "Visible client value",
     body: "Help teams communicate delivered operational value to clients through reporting, health signals, and executive-ready deliverables.",
   },
 ] as const;
@@ -79,7 +79,7 @@ export default function AboutPage() {
             <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Imprint</dt>
             <dd className="mt-1 text-sm">
               <Link href={LEGAL_ROUTES.imprint} className="font-medium text-primary hover:underline">
-                Legal provider identification
+                View imprint
               </Link>
             </dd>
           </div>
@@ -87,9 +87,8 @@ export default function AboutPage() {
       </MarketingSection>
       <MarketingSection title="Our mission">
         <p className="max-w-3xl text-base leading-relaxed text-muted">
-          {COMPANY_NAME} helps agencies monitor client operations, detect risks early, automate delivery,
-          and document delivered value through reporting and client portals. Public plans are Professional, Business, and
-          Enterprise. Pilot and Founding programs are invite-only.
+          {COMPANY_NAME} helps service businesses monitor client operations, spot risks early, automate recurring
+          work, and show clients the value they receive through reporting and client portals.
         </p>
       </MarketingSection>
       <MarketingSection title="What we believe">

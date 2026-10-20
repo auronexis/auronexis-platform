@@ -32,8 +32,8 @@ export default async function PublicPricingPage() {
       <ConversionTracker event="pricing_view" />
       <MarketingHero
         eyebrow="Pricing"
-        title="MSP and agency operations pricing"
-        description="EUR catalog pricing for MSPs and agencies — customer health scores, SLA tracking, NIS2-oriented incident workflows, and automated client reporting. Choose Professional, Business, or Enterprise for your portfolio size."
+        title="Pricing for client operations software"
+        description="Monthly plans in EUR for service businesses — client health scores, SLA tracking, incident records, and automated client reporting. Choose the plan that fits the number of clients you serve."
         primaryHref="/signup"
         primaryLabel="Get started"
         secondaryHref="/login"

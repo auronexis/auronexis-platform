@@ -12,7 +12,7 @@ const pricingIdentity = getAuroraModule("pricing");
 
 export function PricingHero({
   title = "Choose Professional, Business, or Enterprise",
-  subtitle = "Compare Professional, Business, and Enterprise. Pilot and Founding programs are invite-only.",
+  subtitle = "Compare Professional, Business, and Enterprise side by side.",
 }: PricingHeroProps) {
   return (
     <section

@@ -391,7 +391,8 @@ test("credit notes not silently mutating invoices", () => {
 
 test("pricing display avoids unconditional VAT-included claim", () => {
   const marketing = readSource("src/lib/marketing/content.ts");
-  assert.match(marketing, /Catalog list prices in EUR/);
+  assert.match(marketing, /All prices in EUR per month/);
+  assert.match(marketing, /VAT is calculated at checkout/);
   const dialog = readSource("src/components/billing/checkout-contract-summary-dialog.tsx");
   assert.doesNotMatch(dialog, /Price \(VAT-inclusive list\)/);
 });

@@ -44,13 +44,48 @@ export async function isJobDue(jobId: JobId): Promise<boolean> {
 }
 
 /** True when a previous execution for this job is still marked running. */
-export async function hasRunningJobExecution(jobId: JobId): Promise<boolean> {
+/**
+ * A "running" execution older than this is treated as dead (the serverless
+ * invocation was killed before it could record completion). Without this,
+ * one timed-out run blocks the job forever — which stopped 7 of 9 jobs from
+ * 2026-09-14 until this fix.
+ */
+export const STALE_RUNNING_EXECUTION_MS = 30 * 60 * 1000;
+
+/** Marks dead "running" executions of a job as failed so they no longer block it. */
+export async function failStaleRunningJobExecutions(jobId: JobId, now = new Date()): Promise<number> {
   const admin = createAdminClient();
+  const cutoff = new Date(now.getTime() - STALE_RUNNING_EXECUTION_MS).toISOString();
+  const { data, error } = await admin
+    .from("job_executions")
+    .update({
+      status: "failed",
+      completed_at: now.toISOString(),
+      error_message: "Execution timed out (no completion recorded).",
+    } as never)
+    .eq("job_id", jobId)
+    .eq("status", "running")
+    .lt("started_at", cutoff)
+    .select("id");
+
+  if (error) {
+    return 0;
+  }
+  return (data ?? []).length;
+}
+
+/** True only when a job has a live (recent) running execution. Stale runs are failed first. */
+export async function hasRunningJobExecution(jobId: JobId): Promise<boolean> {
+  await failStaleRunningJobExecutions(jobId);
+
+  const admin = createAdminClient();
+  const cutoff = new Date(Date.now() - STALE_RUNNING_EXECUTION_MS).toISOString();
   const { data, error } = await admin
     .from("job_executions")
     .select("id")
     .eq("job_id", jobId)
     .eq("status", "running")
+    .gte("started_at", cutoff)
     .limit(1)
     .maybeSingle();
 

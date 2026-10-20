@@ -13,7 +13,6 @@ import {
   cancelMollieSubscriptionAction,
   withdrawMollieSubscriptionCancellationAction,
 } from "@/lib/billing/actions";
-import { sanitizeBillingCustomerError } from "@/lib/billing/errors";
 import { formatScheduledPlanChangeSummary } from "@/lib/billing/plan-change";
 import { formatMoneyFromCents } from "@/lib/billing/status";
 import type { BillingOverview } from "@/lib/billing/types";

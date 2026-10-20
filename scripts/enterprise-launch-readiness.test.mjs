@@ -47,10 +47,9 @@ test("features include business problem workflow outcome and CTA", () => {
 test("about and security pages link to API docs route", () => {
   const about = readSource("src/app/(marketing)/about/page.tsx");
   const security = readSource("src/app/(marketing)/security/page.tsx");
-  assert.match(about, /\/api\/docs/);
-  assert.match(security, /\/api\/docs/);
-  assert.doesNotMatch(about, /\/docs\/api/);
-  assert.doesNotMatch(security, /\/docs\/api/);
+  // Public, indexable API guide lives at /docs/api (interactive OpenAPI UI at /api/docs is noindex).
+  assert.match(about, /\/docs\/api/);
+  assert.match(security, /\/docs\/api/);
 });
 
 test("business plan no longer claims priority support in highlights", () => {

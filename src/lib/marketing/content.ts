@@ -46,7 +46,7 @@ export const MARKETING_TESTIMONIALS = [
   },
   {
     quote:
-      "Procurement reviews go faster when AI usage, audit trails, and plan entitlements are documented.",
+      "Procurement reviews go faster when AI usage, audit trails, and plan limits are documented.",
     role: "Client success leadership",
     organizationType: "Representative priority",
   },
@@ -87,7 +87,7 @@ export const FEATURES: readonly MarketingFeature[] = [
     problem: "Client signals are scattered across spreadsheets, inboxes, and disconnected tools.",
     workflow: "Monitor portfolio health, overdue work, and executive priorities from a single dashboard.",
     outcome: "Leadership sees what changed, which clients need attention, and what to do next.",
-    enterpriseValue: "Faster operational decisions with organization-scoped visibility and audit-friendly activity.",
+    enterpriseValue: "Faster operational decisions with role-based visibility and a complete activity history.",
     ctaLabel: "Explore executive dashboards",
     ctaHref: "/features/executive-dashboards",
   },
@@ -106,7 +106,7 @@ export const FEATURES: readonly MarketingFeature[] = [
     description: "Track operational risks, NIS2-oriented incidents, and SLA breaches with audit trails.",
     problem: "Operational issues are tracked informally and escalate without portfolio context.",
     workflow: "Log risks and incidents, tie them to clients, and resolve with traceable status changes.",
-    outcome: "Fewer surprises and a defensible record for client and leadership reviews.",
+    outcome: "Fewer surprises and a clear record for client and leadership reviews.",
     enterpriseValue: "Governance-ready risk and incident history with role-based access.",
     ctaLabel: "Review NIS2 incident management",
     ctaHref: "/solutions/incident-management",
@@ -118,19 +118,19 @@ export const FEATURES: readonly MarketingFeature[] = [
     problem: "Repeatable operational work still depends on manual follow-up across teams.",
     workflow: "Define triggers and actions, monitor execution history, and connect delivery events.",
     outcome: "More consistent operations with less manual coordination.",
-    enterpriseValue: "Repeatable automation with organization-scoped execution logs.",
+    enterpriseValue: "Repeatable automation with a full execution log for every run.",
     ctaLabel: "View automation features",
     ctaHref: "/features/automation",
     planNote:
-      "Automation builder and connectors on Professional and above. Event-driven operational automation engine on Business and Enterprise.",
+      "Automation builder and connectors are included in every plan. The event-driven automation engine is included in Business and Enterprise.",
   },
   {
     title: "Integrations & Connectors",
     description: "Connect supported CRM, ticketing, messaging, and productivity systems through available connectors and integration workflows.",
     problem: "Client data lives in external systems that operations teams still reconcile by hand.",
-    workflow: "Connect approved systems through available connectors and use supported integration workflows from automation where live.",
-    outcome: "Less swivel-chair work between delivery tools and client intelligence.",
-    enterpriseValue: "Connector inventory and integration workflows designed for multi-tenant operations teams.",
+    workflow: "Connect approved systems through the available connectors and use them in your automation workflows.",
+    outcome: "Less copying between delivery tools and your client overview.",
+    enterpriseValue: "A clear connector overview and integration workflows built for multi-client operations teams.",
     ctaLabel: "Browse integrations",
     ctaHref: "/integrations",
   },
@@ -140,10 +140,10 @@ export const FEATURES: readonly MarketingFeature[] = [
     problem: "Client deterioration is noticed too late to protect delivery quality and client relationships.",
     workflow: "Use adoption, success, and operational signals to surface priority clients and changes.",
     outcome: "Earlier intervention on at-risk clients and clearer executive narratives.",
-    enterpriseValue: "Deterministic intelligence with evidence-backed findings and optional AI assistance.",
+    enterpriseValue: "Rule-based health scoring with evidence for every finding, plus optional AI assistance.",
     ctaLabel: "Explore AI Copilot",
     ctaHref: "/features/ai-copilot",
-    planNote: "Advanced AI narrative features are plan-gated.",
+    planNote: "Advanced AI narrative features depend on your plan.",
   },
 ];
 
@@ -204,12 +204,12 @@ export const PUBLIC_PRICING_PLANS = [
 
 /** Copy-only footnote for public pricing pages — invite-only programs are not listed here. */
 export const PUBLIC_PRICING_NOTE =
-  "Catalog list prices in EUR. Tax treatment is determined from organization billing identity at checkout — not from browser locale. Contact sales for custom enterprise agreements when needed.";
+  "All prices in EUR per month. VAT is calculated at checkout from your company's billing details. Contact sales for custom enterprise agreements.";
 export const INVITE_ONLY_PROGRAMS_NOTE = "Pilot and Founding programs are invite-only.";
 
 export const SECURITY_HIGHLIGHTS = [
-  "Encryption in transit (TLS). Platform cloud stores typically provide provider-managed encryption at rest as configured for production.",
-  "Role-based access control with organization-scoped permissions.",
+  "Encryption in transit (TLS) and encryption at rest provided by our infrastructure providers.",
+  "Role-based access control with permissions scoped to your workspace.",
   "Audit logging for sensitive actions and compliance workflows.",
   "Auroranexis uses EU-capable infrastructure. Specific data-residency requirements are confirmed for applicable enterprise arrangements.",
   `Security contact: ${SECURITY_EMAIL} for responsible disclosure.`,
@@ -270,7 +270,14 @@ export const FAQ_ITEMS = [
 export const PILOT_PROGRAM = {
   duration: "6 weeks",
   discount: "Invite-only beta pricing on approved Pilot Partner terms",
-  targets: ["MSPs", "IT agencies", "Consultancies", "Automation firms"],
+  targets: [
+    "Agencies",
+    "MSPs and IT providers",
+    "Accounting firms",
+    "Facility and property managers",
+    "Recruitment firms",
+    "Outsourcing providers",
+  ],
   includes: [
     "Dedicated onboarding and workspace setup",
     "Weekly check-ins with product team",
@@ -312,7 +319,7 @@ export const STATUS_COMPONENTS_STATIC = [
 
 export const HELP_TOPICS = [
   { title: "FAQ", href: MARKETING_ROUTES.faq, description: "Billing, security, AI, reports, and enterprise questions." },
-  { title: "AI literacy", href: "/docs/ai-literacy", description: "How generative, deterministic, and predictive AI features work — and their limits." },
+  { title: "AI literacy", href: "/docs/ai-literacy", description: "How generative, rule-based, and predictive AI features work — and their limits." },
   { title: "Getting started", href: "/docs/getting-started", description: "Account setup and first workspace." },
   { title: "Documentation hub", href: "/docs", description: "Module guides and API reference." },
   { title: "Release notes", href: "/docs/release-notes", description: "Product updates and changes." },

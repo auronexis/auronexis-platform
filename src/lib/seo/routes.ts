@@ -91,7 +91,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.resources]: {
     title: "Resources for AI Agency & MSP Operations",
     description:
-      "Topical resource pillars connecting Auroranexis features, solutions, and templates for client health, incidents, SLA, monitoring, and reporting.",
+      "Guides, templates, and feature overviews for client health, incidents, SLA tracking, monitoring, and reporting.",
   },
   [MARKETING_ROUTES.faq]: {
     title: "FAQ for Auroranexis Buyers & Operators",
@@ -101,7 +101,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.pricing]: {
     title: "MSP & Agency Operations Pricing (EUR)",
     description:
-      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — pricing for MSP and agency client operations including health scores, SLA tracking, incidents, and reporting. Tax confirmed from billing context at checkout.",
+      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — pricing for MSP and agency client operations including health scores, SLA tracking, incidents, and reporting. VAT is calculated at checkout.",
   },
   [MARKETING_ROUTES.enterprise]: {
     title: "Enterprise Client Operations for MSPs & Agencies",
@@ -111,7 +111,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.security]: {
     title: "Security & Trust for Agency Operations Software",
     description:
-      "Encryption, role-based access, audit logging, and responsible disclosure for MSP and agency operations software — without inventing SOC 2 or ISO certifications.",
+      "Encryption, role-based access, audit logging, and responsible disclosure for client operations software used by MSPs, agencies, and other service businesses.",
   },
   [MARKETING_ROUTES.vulnerabilityDisclosure]: {
     title: "Vulnerability Disclosure Policy",
@@ -131,12 +131,12 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.contact]: {
     title: "Contact Auroranexis Sales, Support, and Security",
     description:
-      "Contact Auroranexis for sales, support, and security inquiries. Use this page for agency and MSP operations questions — not the authenticated workspace.",
+      "Contact Auroranexis for sales, support, and security inquiries. We answer questions about client operations for service businesses.",
   },
   [MARKETING_ROUTES.pilotProgram]: {
     title: "Pilot Partner Program",
     description:
-      "Invite-only Pilot Partner program for qualified MSPs and agencies evaluating Auroranexis.",
+      "Invite-only Pilot Partner program for service businesses evaluating Auroranexis.",
   },
   [MARKETING_ROUTES.status]: {
     title: "Platform Status",
@@ -145,7 +145,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.about]: {
     title: "About Agency Operations Platform",
     description:
-      "About Auroranexis: a B2B operations platform for AI automation agencies and MSPs covering client health, risk, incidents, reporting, and delivery transparency.",
+      "About Auroranexis: a B2B operations platform for service businesses covering client health, risk, incidents, reporting, and delivery transparency.",
   },
   [MARKETING_ROUTES.careers]: {
     title: "Careers",
@@ -213,7 +213,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   },
   "/signup": {
     title: "Sign up",
-    description: "Create your Auroranexis workspace for agency and MSP operations.",
+    description: "Create your Auroranexis workspace for client operations.",
   },
   "/forgot-password": {
     title: "Forgot password",
@@ -233,7 +233,7 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
   "/features/ai-executive-reports": {
     title: "AI Executive Leadership Reports",
     description:
-      "AI-assisted leadership briefings from incidents, risks, and SLA data, with reviewer validation. Automated client reporting lives on the solution page.",
+      "AI-assisted leadership briefings from incidents, risks, and SLA data, with reviewer validation.",
   },
   "/features/profitability": {
     title: "Portfolio Profitability Reporting",

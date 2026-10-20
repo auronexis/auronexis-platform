@@ -91,7 +91,7 @@ export default async function MarketingHomePage() {
           <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <h3 className="text-sm font-semibold text-white">B2B SaaS platform</h3>
             <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">
-              Auroranexis is a multi-tenant operations platform for service businesses managing a client portfolio —
+              Auroranexis is an operations platform for service businesses that manage a portfolio of clients —
               not a generic CRM or project tool.
             </p>
           </article>
@@ -216,7 +216,7 @@ export default async function MarketingHomePage() {
 
       <MarketingCtaSection
         title="See plans that scale with your portfolio"
-        description="Professional, Business, and Enterprise — transparent pricing with plan-gated AI and operations modules."
+        description="Professional, Business, and Enterprise — transparent monthly pricing in EUR, with more AI and operations modules on higher plans."
         primaryPreset="seePricing"
         secondaryPreset="bookDemo"
       />

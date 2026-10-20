@@ -71,6 +71,10 @@ export default function SecurityPage() {
           <Link href={MARKETING_ROUTES.status} className="font-medium text-primary hover:underline">
             platform status
           </Link>
+          ,{" "}
+          <Link href="/docs/api" className="font-medium text-primary hover:underline">
+            API documentation
+          </Link>
           , and{" "}
           <Link href={LEGAL_ROUTES.subprocessors} className="font-medium text-primary hover:underline">
             sub-processors

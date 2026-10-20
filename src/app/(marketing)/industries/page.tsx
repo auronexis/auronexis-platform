@@ -15,7 +15,7 @@ export default function IndustriesHubPage() {
       entries={INDUSTRY_HUB_ENTRIES}
       hubPath={MARKETING_ROUTES.industries}
       secondaryHref={MARKETING_ROUTES.useCases}
-      secondaryLabel="View persona use cases"
+      secondaryLabel="View use cases by role"
     />
   );
 }

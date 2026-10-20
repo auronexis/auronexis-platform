@@ -405,7 +405,9 @@ test("generator isolation — VIEWER_GENERATOR_EXECUTION = 0", () => {
   }
 });
 
-test("freeze proof — core billing/generator semantics unchanged vs cdd03c5", () => {
+// Baseline moved from cdd03c5 to 6795009: the only change since was the reviewed Mollie
+// webhook mode-mismatch acknowledgement (PR #27).
+test("freeze proof — core billing/generator semantics unchanged vs 6795009", () => {
   const paths = [
     "src/lib/billing/taxes.ts",
     "src/lib/billing/tax-policy.ts",
@@ -416,7 +418,7 @@ test("freeze proof — core billing/generator semantics unchanged vs cdd03c5", (
     "src/lib/einvoice",
     "src/app/api/mollie",
   ];
-  const diff = execSync(`git diff cdd03c5 -- ${paths.join(" ")}`, {
+  const diff = execSync(`git diff 6795009 -- ${paths.join(" ")}`, {
     cwd: rootDir,
     encoding: "utf8",
   });

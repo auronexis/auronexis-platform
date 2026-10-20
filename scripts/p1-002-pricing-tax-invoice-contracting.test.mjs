@@ -104,8 +104,8 @@ test("Marketing and legal catalog prices are EUR", () => {
   assert.match(marketing, /€179/);
   assert.match(marketing, /€599/);
   assert.match(marketing, /€1,799/);
-  assert.match(marketing, /Catalog list prices in EUR/);
-  assert.match(marketing, /Tax treatment is determined from organization billing identity/);
+  assert.match(marketing, /All prices in EUR per month/);
+  assert.match(marketing, /VAT is calculated at checkout from your company's billing details/);
   const legal = readSource("src/lib/company/legal-content.ts");
   assert.match(legal, /€179\/month/);
   assert.doesNotMatch(legal, /base USD catalog/);

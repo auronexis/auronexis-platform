@@ -111,7 +111,6 @@ test("active public source has zero unsupported red-finding strings", () => {
 
 test("canonical replacements for homepage/about/tagline and revenue language are present", () => {
   const homepage = readSource("src/app/(marketing)/page.tsx");
-  assert.match(homepage, /Document value/);
   assert.match(homepage, /document operational outcomes/);
   assert.match(
     readSource("src/lib/marketing/content.ts"),
@@ -119,7 +118,7 @@ test("canonical replacements for homepage/about/tagline and revenue language are
   );
 
   const about = readSource("src/app/(marketing)/about/page.tsx");
-  assert.match(about, /Document delivered value/);
+  assert.match(about, /Visible client value/);
   assert.match(about, /communicate delivered operational value/);
 
   const audience = readSource("src/lib/seo/audience-content.ts");

@@ -45,7 +45,8 @@ export function AcceptInviteForm({
           label="Password"
           autoComplete="new-password"
           required
-          placeholder="Minimum 8 characters"
+          placeholder="At least 12 characters (A–Z, a–z, 0–9)"
+          minLength={12}
         />
         {state.error ? (
           <FormAlert variant="error" className="[color-scheme:light]">

@@ -5,7 +5,7 @@ export const COMPANY_INFORMATION = {
   owner: "István-Tamás Schneller",
   businessFormGerman: "Einzelunternehmen",
   businessFormInternational: "Sole proprietorship",
-  businessType: "German B2B SaaS Provider",
+  businessType: "B2B software provider (Germany)",
   productName: "Auroranexis",
   street: "Im Malerwinkel 4",
   postalCode: "71566",

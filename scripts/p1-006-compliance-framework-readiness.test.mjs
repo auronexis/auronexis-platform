@@ -157,7 +157,7 @@ test("UI language distinguishes maturity from certification and empty configurat
   assert.match(workspace, /not SOC 2/);
   assert.match(workspace, /not yet configured/);
 
-  const dashboard = readSource("src/app/(dashboard)/dashboard/page.tsx");
+  const dashboard = readSource("src/components/dashboard/dashboard-ops-tab-panels.tsx");
   assert.match(dashboard, /Framework maturity/);
   assert.match(dashboard, /not certification/);
 });
