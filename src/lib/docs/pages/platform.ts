@@ -6,7 +6,7 @@ export const AUTOMATION_DOC: DocPageInput = {
   description:
     "Workflow builder, triggers, conditions, actions, execution history, connectors, and integration secrets.",
   intro:
-    "Automation turns operational events into repeatable workflows your agency can trust. Define triggers, apply conditions, chain actions, and review execution history when something needs attention. Connect external systems through Automation → Connectors and store API credentials at Integrations → Secrets. The automation builder is plan-gated—confirm your subscription includes workflow access in Settings → Billing before building production automations.",
+    "Automation turns operational events into repeatable workflows your agency can trust. Define triggers, apply conditions, chain actions, and review execution history when something needs attention. Connect external systems through Automation → Connectors and store API credentials at Integrations → Secrets. The automation builder is included in every plan; plan limits are shown in Settings → Billing.",
   callouts: [
     {
       variant: "info",
@@ -111,13 +111,13 @@ export const AUTOMATION_DOC: DocPageInput = {
         "Visual workflow builder at Automation → New with trigger, condition tree, and action chain.",
         "Platform event triggers for incidents, reports, risks, clients, SLA states, and monitoring events.",
         "Condition filters with AND/OR groups to narrow high-frequency triggers.",
-        "Built-in actions: send notification, create activity, create risk, create incident, create report draft, and AI summary where plan-gated.",
+        "Built-in actions: send notification, create activity, create risk, create incident, create report draft, and AI summary (where your plan includes it).",
         "Live connector HTTP actions for Slack, Microsoft Teams, Discord, and outbound webhooks; other catalog connectors use scaffolding or simulated execution in v1.",
         "Execution history with step-level success, failure messages, and duration.",
         "Manual trigger for on-demand testing before activation.",
         "Automation → Connectors catalog for OAuth authorization and connection status.",
         "Integrations → Secrets for API keys and tokens referenced by connector actions.",
-        "Plan-gated access with limits visible in Settings → Usage.",
+        "Access and limits depend on your plan and are shown in Settings → Usage.",
       ],
     },
     {
@@ -394,7 +394,7 @@ export const INTEGRATIONS_DOC: DocPageInput = {
         "Secrets management at Integrations → Secrets for API keys and manual credentials.",
         "Workflow action targets unlocked after successful connector authorization where supported.",
         "Activity logging for authorization refresh, sync, and delivery operations.",
-        "Plan-gated connectors with availability reflected in Settings → Usage.",
+        "Connector availability depends on your plan and is shown in Settings → Usage.",
       ],
     },
     {
@@ -774,7 +774,7 @@ export const CLIENT_PORTAL_DOC: DocPageInput = {
           [
             "Branding not applied to login page",
             "Branding changes not published or plan lacks white-label.",
-            "Save and publish branding in Settings → Branding; upgrade via Settings → Billing if white-label is plan-gated.",
+            "Save and publish branding in Settings → Branding; upgrade via Settings → Billing if your plan does not include white-label.",
           ],
         ],
       },

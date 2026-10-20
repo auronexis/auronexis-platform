@@ -61,7 +61,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.home]: {
     title: "MSP & Agency Client Operations Software",
     description:
-      "Customer health score software, SLA tracking, NIS2 incident management, and automated client reporting for MSPs and agencies — one operations workspace, not a generic CRM.",
+      "Client health scores, SLA tracking, NIS2 incident management, and automated client reporting for MSPs, agencies, and service businesses — in one workspace.",
   },
   [MARKETING_ROUTES.features]: {
     title: "Client Operations Features for Agencies & MSPs",
@@ -101,7 +101,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.pricing]: {
     title: "MSP & Agency Operations Pricing (EUR)",
     description:
-      "Professional from €179/mo, Business €599/mo, Enterprise €1,799+/mo — pricing for MSP and agency client operations including health scores, SLA tracking, incidents, and reporting. VAT is calculated at checkout.",
+      "Professional €179/mo, Business €599/mo, Enterprise from €1,799/mo — client operations software with health scores, SLA tracking, incidents, and reporting.",
   },
   [MARKETING_ROUTES.enterprise]: {
     title: "Enterprise Client Operations for MSPs & Agencies",

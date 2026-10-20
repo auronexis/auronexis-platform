@@ -165,7 +165,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "7. AI, analytics, and decision-support",
         body:
-          "The platform may generate health scores, executive insights, forecasts, risk analyses, recommendations, reports, and dashboard intelligence. All such outputs are decision-support tools only. They may depend on the quality, completeness, and timeliness of data you provide. We do not guarantee accuracy, completeness, business success, revenue increase, legal compliance, or elimination of operational risk. You remain solely responsible for business, legal, tax, financial, medical, and compliance decisions. Verify important outputs before relying on them. AI features may be plan-gated and subject to usage limits.",
+          "The platform may generate health scores, executive insights, forecasts, risk analyses, recommendations, reports, and dashboard intelligence. All such outputs are decision-support tools only. They may depend on the quality, completeness, and timeliness of data you provide. We do not guarantee accuracy, completeness, business success, revenue increase, legal compliance, or elimination of operational risk. You remain solely responsible for business, legal, tax, financial, medical, and compliance decisions. Verify important outputs before relying on them. Availability of AI features depends on your plan, and AI features are subject to usage limits.",
       },
       {
         heading: "8. Customer obligations",
@@ -185,7 +185,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "11. Prices, payment, invoices, and taxes",
         body:
-          "Listed self-serve plans (EUR catalog list prices; tax treatment confirmed at checkout from billing identity): Professional €179/month; Business €599/month; Enterprise €1,799/month. Final tax treatment is confirmed at checkout. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
+          "Listed self-serve plans (prices in EUR; VAT treatment is confirmed at checkout based on your billing details): Professional €179/month; Business €599/month; Enterprise €1,799/month. Final tax treatment is confirmed at checkout. You authorize recurring charges for subscription plans until cancelled. Failed payments may lead to service restriction after reasonable notice.",
       },
       {
         heading: "11a. Payment processing",

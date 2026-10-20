@@ -42,7 +42,7 @@ export const BILLING_DOC: DocPageInput = {
       bullets: [
         "Workspace plan — the subscription tier (Professional, Business, or Enterprise) that governs features and limits.",
         "Billing cycle — monthly period during which your subscription is active and renewed (self-serve Mollie subscriptions are monthly).",
-        "Proration — a mid-cycle upgrade charge for the remainder of the current month when you upgrade; downgrades take effect at the next billing cycle without inventing partial credits.",
+        "Proration — a mid-cycle upgrade charge for the remainder of the current month when you upgrade; downgrades take effect at the next billing cycle, without partial credits.",
         "Subscription management — in-app cancel, keep, and plan-change actions in Settings → Billing (Mollie does not provide a hosted billing portal).",
         "Usage limits — caps on clients, seats, API calls, monitoring targets, and other resources defined by your plan.",
         "Past due — a subscription status indicating a failed or overdue payment that requires attention.",
@@ -551,7 +551,7 @@ export const API_DOC: DocPageInput = {
   callouts: [
     {
       variant: "info",
-      title: "Enterprise entitlement",
+      title: "Included in Enterprise",
       body: "Creating and managing API keys and outbound webhook endpoints in Settings → API requires the Enterprise plan (future_api_webhooks). Professional and Business workspaces see an upgrade prompt on that settings page.",
     },
     {
@@ -570,7 +570,7 @@ export const API_DOC: DocPageInput = {
       title: "Overview",
       paragraphs: [
         "The Auroranexis API is a RESTful, organization-scoped interface. Every request is authenticated with an API key that carries explicit scopes limiting what the key can read or write. The API follows standard HTTP conventions — JSON request and response bodies, appropriate status codes, and TLS encryption for all traffic.",
-        "API key management and outbound webhook registration in Settings → API require Enterprise. Rate limits and plan-gated features such as AI execution and predictive analytics additionally require the appropriate scope and an eligible plan tier.",
+        "API key management and outbound webhook registration in Settings → API require Enterprise. Rate limits and plan-dependent features such as AI execution and predictive analytics additionally require the appropriate scope and an eligible plan tier.",
         "All key management — creation, scope selection, revocation, and webhook registration — happens in Settings → API on eligible plans. The OpenAPI reference at /api/docs documents selected public endpoints and schemas; treat it as a guided reference rather than a claim of complete coverage of every route.",
       ],
     },
@@ -622,7 +622,7 @@ export const API_DOC: DocPageInput = {
             "billing.read — subscription and usage summaries (read-only).",
             "settings.read — non-sensitive settings visibility.",
             "health.read — health and monitoring summaries.",
-            "ai.execute / predictive.read — plan-gated intelligence features.",
+            "ai.execute / predictive.read — intelligence features (depend on your plan).",
           ],
         },
       ],
@@ -733,7 +733,7 @@ export const API_DOC: DocPageInput = {
           [
             "403 Forbidden on API request",
             "Key lacks required scope or plan does not include the feature",
-            "Create a new key with the needed scope or upgrade your plan if the feature is plan-gated.",
+            "Create a new key with the needed scope, or upgrade your plan if it does not include the feature.",
           ],
           [
             "404 Not Found for resource",

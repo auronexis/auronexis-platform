@@ -154,7 +154,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     description:
       "NIS2-oriented incident management for IT service providers — timelines, ownership, SLA impact, and audit-ready records across the client portfolio.",
     metaDescription:
-      "NIS2 incident management for IT service providers — timelines, SLA tracking, client transparency, and audit logs. Supports operator incident workflows; not a certification claim.",
+      "NIS2 incident management for IT service providers — timelines, SLA tracking, client transparency, and audit logs for operator incident workflows.",
     intro:
       "IT service providers need defensible incident records when client-impacting events occur. Auroranexis centralizes incident management with response timelines, SLA evaluation, and audit history so delivery teams coordinate faster and document what happened — supportive of NIS2-style operator incident obligations without claiming NIS2 certification.",
     problem:

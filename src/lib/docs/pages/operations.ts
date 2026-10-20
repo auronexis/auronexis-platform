@@ -1435,7 +1435,7 @@ export const MONITORING_DOC: DocPageInput = {
         "Resolve or ignore events with status workflow.",
         "Integration with Operations Command Center portfolio signals.",
         "Escalation alignment via Settings → Escalation for critical event patterns.",
-        "Plan-gated connector counts enforced at organization level.",
+        "Connector limits depend on your plan and apply to the whole workspace.",
       ],
     },
     {
