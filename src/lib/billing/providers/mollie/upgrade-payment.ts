@@ -42,7 +42,10 @@ import {
   calculateMollieUpgradeProration,
   type MollieUpgradeProration,
 } from "@/lib/billing/providers/mollie/upgrade-proration";
-import { getAppUrl } from "@/lib/env";
+import {
+  buildMollieUpgradeReturnUrl,
+  buildMollieWebhookUrl,
+} from "@/lib/billing/providers/mollie/callback-urls";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { OrganizationSubscription } from "@/types/database";
 
@@ -56,14 +59,6 @@ export {
   UPGRADE_PAYMENT_SYNC_NEEDED_MESSAGE,
 };
 export type { MollieUpgradeProration };
-
-function buildMollieWebhookUrl(): string {
-  return `${getAppUrl()}/api/mollie/webhook`;
-}
-
-function buildMollieUpgradeReturnUrl(attemptId: string): string {
-  return `${getAppUrl()}/settings/billing/mollie/return?attempt=${encodeURIComponent(attemptId)}&purpose=upgrade`;
-}
 
 function logUpgradeStage(
   stage: string,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 import { getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
+import { isMollieModeMismatchError } from "@/lib/billing/providers/mollie/mode-mismatch";
 import { isMollieLiveChargingEnabled } from "@/lib/billing/providers/mollie/rollout";
 import {
   ensureMollieIdempotency,
@@ -11,6 +12,7 @@ import {
   markMollieEventProcessed,
   reconcileMolliePaymentWebhook,
 } from "@/lib/billing/providers/mollie/webhooks";
+import { captureException, captureWarning } from "@/lib/observability/capture";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -93,9 +95,31 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ received: true, status: "processed" }, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Webhook handler failed.";
+    const paymentIdPrefix = paymentId.slice(0, 8);
+
+    if (isMollieModeMismatchError(error)) {
+      console.warn("[mollie] webhook mode mismatch — acknowledging to stop retries:", {
+        message,
+        paymentIdPrefix,
+      });
+      captureWarning("Mollie webhook mode mismatch (test vs live)", {
+        tags: { mollie_mode_mismatch: "true", area: "billing", step: "webhook" },
+        paymentIdPrefix,
+      });
+      await markMollieEventIgnored(paymentId, "mollie_mode_mismatch");
+      return NextResponse.json(
+        { received: true, status: "ignored", reason: "mollie_mode_mismatch" },
+        { status: 200 },
+      );
+    }
+
     console.error("[mollie] webhook handler failed:", {
       message,
-      paymentIdPrefix: paymentId.slice(0, 8),
+      paymentIdPrefix,
+    });
+    captureException(error, {
+      tags: { area: "billing", step: "webhook" },
+      paymentIdPrefix,
     });
     await markMollieEventFailed(paymentId, message);
     return NextResponse.json({ error: "Webhook processing failed." }, { status: 500 });

@@ -18,12 +18,15 @@ import {
   isMolliePaymentPending,
   mapMollieSubscriptionStatus,
 } from "@/lib/billing/providers/mollie/lifecycle-status";
+import {
+  buildMollieTestReturnUrl,
+  buildMollieWebhookUrl,
+} from "@/lib/billing/providers/mollie/callback-urls";
 import { assertMollieTestModeOnly, getMollieCredentialMode } from "@/lib/billing/providers/mollie/mode";
 import {
   getMollieTestSubscriptionForOrg,
   upsertMollieTestSubscription,
 } from "@/lib/billing/providers/mollie/sync";
-import { getAppUrl } from "@/lib/env";
 import { isMollieApiConfigured } from "@/lib/billing/providers/mollie/env";
 
 export {
@@ -44,14 +47,6 @@ export function isMollieSelfServePlanKey(value: string): value is MollieSelfServ
 
 export function formatMollieAmount(value: number): string {
   return value.toFixed(2);
-}
-
-function buildMollieWebhookUrl(): string {
-  return `${getAppUrl()}/api/mollie/webhook`;
-}
-
-function buildMollieReturnUrl(checkoutAttemptId: string): string {
-  return `${getAppUrl()}/settings/billing/mollie-test/return?attempt=${encodeURIComponent(checkoutAttemptId)}`;
 }
 
 export type MollieFirstPaymentResult = {
@@ -114,7 +109,7 @@ export async function createMollieFirstPayment(input: {
     amount: { currency: plan.currency, value: amountValue },
     description: `Auroranexis ${plan.name} — first payment (TEST)`,
     sequenceType: SequenceType.first,
-    redirectUrl: buildMollieReturnUrl(checkoutAttemptId),
+    redirectUrl: buildMollieTestReturnUrl(checkoutAttemptId),
     webhookUrl: buildMollieWebhookUrl(),
     metadata: {
       [MOLLIE_METADATA_ORGANIZATION_ID]: input.organizationId,

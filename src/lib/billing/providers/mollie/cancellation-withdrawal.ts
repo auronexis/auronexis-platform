@@ -28,7 +28,7 @@ import {
   SUBSCRIPTION_CANCELLATION_WITHDRAW_NOT_SCHEDULED_MESSAGE,
   isSubscriptionPaidThroughPeriodEnd,
 } from "@/lib/billing/subscription-management";
-import { getAppUrl } from "@/lib/env";
+import { buildMollieWebhookUrl } from "@/lib/billing/providers/mollie/callback-urls";
 
 export type MollieSubscriptionCancellationWithdrawResult = {
   withdrawn: true;
@@ -39,10 +39,6 @@ export type MollieSubscriptionCancellationWithdrawResult = {
   renewalAt: string | null;
   mandateId: string | null;
 };
-
-function buildMollieWebhookUrl(): string {
-  return `${getAppUrl()}/api/mollie/webhook`;
-}
 
 function toMollieStartDate(isoOrDate: string): string {
   const parsed = new Date(isoOrDate);
