@@ -4,6 +4,7 @@ import { PUBLIC_SITEMAP_ROUTES } from "@/lib/seo/routes";
 import { getSeoBaseUrl } from "@/lib/seo/metadata";
 import { PUBLIC_CANONICAL_ORIGIN } from "@/lib/company/company-seo";
 import { isIndexablePublicRoute } from "@/lib/seo/route-catalog";
+import { contentLastModified } from "@/lib/seo/content-dates";
 
 function resolvePriority(route: string): number {
   if (route === "/") return 1;
@@ -43,13 +44,14 @@ export function listPublicIndexableRoutes(): string[] {
 }
 
 /** Build the public sitemap — authenticated routes are excluded by design.
- * lastmod is omitted: we do not have per-URL editorial timestamps, and injecting `new Date()` would be untruthful.
+ * lastmod comes from real editorial dates in content-dates.ts — never `new Date()`, which would be untruthful.
  */
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const baseUrl = getSeoBaseUrl();
 
   return uniquePublicRoutes().map((route) => ({
     url: `${baseUrl}${route === "/" ? "" : route}`,
+    lastModified: contentLastModified(route),
     changeFrequency: resolveChangeFrequency(route),
     priority: resolvePriority(route),
   }));

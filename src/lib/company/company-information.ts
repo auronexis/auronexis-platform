@@ -14,7 +14,7 @@ export const COMPANY_INFORMATION = {
   vatId: "DE449657077",
   website: "https://www.auroranexis.com",
   shortDescription:
-    "Auroranexis is an AI-powered B2B SaaS platform for client intelligence, risk monitoring, reports, incidents, and executive operational insights.",
+    "Auroranexis is client operations software for service businesses: client health scores, SLA tracking, incident and risk records, and automated client reporting in one workspace.",
 } as const;
 
 export type CompanyInformation = typeof COMPANY_INFORMATION;

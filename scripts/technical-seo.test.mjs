@@ -137,7 +137,7 @@ test("PAGE_SEO registry has unique titles for critical pages", () => {
   const routes = readSource("src/lib/seo/routes.ts");
   const titles = [...routes.matchAll(/title:\s*"([^"]+)"/g)].map((match) => match[1]);
   const critical = [
-    "MSP & Agency Operations Pricing (EUR)",
+    "Pricing – Plans from €179/month",
     "Client Operations Features for Agencies & MSPs",
     "Enterprise Client Operations for MSPs & Agencies",
     "Integrations for Agency Operations Platforms",
@@ -594,7 +594,7 @@ test("marketing and docs SEO titles do not cannibalize Security/Compliance/Integ
 test("feature vs solution incident pages use differentiated titles", () => {
   const feature = readSource("src/lib/seo/feature-content.ts");
   const solution = readSource("src/lib/seo/landing-content.ts");
-  assert.match(feature, /title: "Incident management with SLA awareness"/);
+  assert.match(feature, /title: "Incident Management Software with SLA Tracking"/);
   assert.match(solution, /title: "NIS2 Incident Management for IT Service Providers"/);
   assert.match(solution, /Does Auroranexis claim NIS2 certification\?/);
   assert.match(solution, /does not claim NIS2 certification/);
@@ -605,11 +605,11 @@ test("P0 category capture: money-page titles use searchable buyer terms", () => 
   const solution = readSource("src/lib/seo/landing-content.ts");
   const home = readSource("src/app/(marketing)/page.tsx");
   const pricing = readSource("src/app/(marketing)/pricing/page.tsx");
-  assert.match(routes, /title: "MSP & Agency Client Operations Software"/);
-  assert.match(routes, /title: "MSP & Agency Operations Pricing \(EUR\)"/);
+  assert.match(routes, /title: "Client Operations & Client Reporting Software"/);
+  assert.match(routes, /title: "Pricing – Plans from €179\/month"/);
   assert.match(solution, /title: "Customer Health Score Software for MSPs"/);
   assert.match(solution, /title: "SLA Tracking for MSPs"/);
-  assert.match(solution, /title: "Automated Client Reporting for Agencies"/);
+  assert.match(solution, /title: "Automated Client Reporting Software"/);
   assert.match(solution, /title: "NIS2 Incident Management for IT Service Providers"/);
   assert.match(home, /eyebrow="Operations Command Center"/);
   assert.match(home, /title="Client operations software for service businesses"/);

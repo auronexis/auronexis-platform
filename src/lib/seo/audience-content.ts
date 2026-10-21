@@ -208,7 +208,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     description:
       "For MSP owners and service delivery managers: monitor multi-client health, track and report SLA performance with auditable records, run incidents and risks per account, and publish multi-client reporting across your managed services portfolio.",
     metaDescription:
-      "MSP client portfolio management software — health, SLA monitoring, incidents, risks, automated reporting, and portal delivery.",
+      "MSP client portfolio management software for your managed services portfolio: client health, SLA monitoring, incidents, risks and automated client reports.",
     problem:
       "MSPs run dozens of clients with technicians, account managers, and leadership sharing fragmented status. Without a shared operations layer, teams cannot quickly see which accounts need attention, SLA and incident context is scattered across PSA exports and chat, and QBR preparation pulls senior staff away from delivery.",
     solution:
@@ -686,11 +686,11 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/use-cases",
     category: "audience",
     eyebrow: "Use case",
-    title: "Operations for automation and integration agencies",
+    title: "Operations Software for Automation Agencies",
     description:
       "Monitor workflow reliability, support ROI discussions with operational performance evidence, and manage client health across your integration portfolio.",
     metaDescription:
-      "Automation agency operations — workflow monitoring, client health, and operational performance reporting in Auroranexis.",
+      "Agency operations software for automation and integration agencies: workflow reliability, client health and automated client reporting in one workspace.",
     problem:
       "Automation agencies build integrations and workflows that clients depend on daily. When workflows fail silently, client trust erodes quickly. Yet most agencies lack a portfolio-level view of automation health, incident history, and delivery reliability across their client base.",
     solution:

@@ -31,9 +31,9 @@ export const GRAPH_ENTITY_IDS = {
 export const CANONICAL_CAPABILITIES = [
   {
     id: "ai-operations-platform",
-    name: "AI Operations Platform",
+    name: "Client Operations Software",
     description:
-      "A B2B SaaS workspace for multi-client operators to monitor delivery, automate workflows, and report client outcomes.",
+      "A B2B SaaS workspace for service businesses to monitor client health, track SLAs, record incidents, automate workflows, and report client outcomes.",
     path: MARKETING_ROUTES.features,
   },
   {
@@ -54,7 +54,7 @@ export const CANONICAL_CAPABILITIES = [
     id: "automation",
     name: "Automation",
     description:
-      "Trigger-based workflows with organization-scoped execution history for repeatable operations.",
+      "Trigger-based workflows with a full execution history for repeatable operations.",
     path: FEATURE_ROUTES.automation,
   },
   {
@@ -82,7 +82,7 @@ export const CANONICAL_CAPABILITIES = [
     id: "knowledge-base",
     name: "Knowledge Hub",
     description:
-      "Organization-scoped operational knowledge for delivery teams and client context.",
+      "Shared operational knowledge for delivery teams, kept next to each client record.",
     path: FEATURE_ROUTES.knowledgeBase,
   },
   {
@@ -129,7 +129,7 @@ export const CANONICAL_SOLUTIONS = [
   },
   {
     id: "ai-reporting",
-    name: "Automated Client Reporting for Agencies",
+    name: "Automated Client Reporting Software",
     path: SOLUTION_ROUTES.aiReporting,
   },
 ] as const;
