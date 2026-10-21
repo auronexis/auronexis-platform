@@ -324,13 +324,13 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     slug: "ai-reporting",
     path: SOLUTION_ROUTES.aiReporting,
     eyebrow: "Solution",
-    title: "Automated Client Reporting for Agencies",
+    title: "Automated Client Reporting Software",
     breadcrumbName: "Automated client reporting",
     definitionTerm: "Automated client reporting",
     description:
       "Automated client reporting for agencies — create, generate, review, and publish reports from operational data with templates, schedules, PDF export, and portal delivery.",
     metaDescription:
-      "Automated client reporting for agencies: templates, schedules, workspace data, PDF export, and portal delivery with human review. Built for multi-client service teams.",
+      "Automated, AI-assisted client reporting software: templates, schedules, live client data, PDF export and portal delivery, reviewed by your team before sending.",
     intro:
       "Automated client reporting for agencies in Auroranexis turns delivery records into client-ready reports without rebuilding decks from scratch each period. Each report is linked to one client and a reporting period. Templates define the structure. Generate fills metrics and default narrative from workspace data such as health signals, SLA outcomes, related incidents, and open risks. Your team reviews and edits before publish. Published reports can go to the client portal, PDF export, and email where configured. Recurring schedules can create draft shells so cadence does not depend on someone remembering to start the report. Optional AI-assisted executive summaries are available when enabled; they do not replace human review, and reporting works without AI.",
     problem:

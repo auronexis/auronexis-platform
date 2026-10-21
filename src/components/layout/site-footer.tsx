@@ -175,9 +175,9 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
 
         <div className="mx-auto max-w-6xl px-6 py-12">
 
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
 
-            <div>
+            <div className="col-span-2 sm:col-span-3 lg:col-span-6">
 
               <BrandLogo
                 branding={platformBranding}
@@ -216,6 +216,12 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
             </div>
 
             <FooterLinkColumn dark title="Product" links={FOOTER_SECTIONS.product} />
+
+            <FooterLinkColumn dark title="Solutions" links={FOOTER_SECTIONS.solutions} />
+
+            <FooterLinkColumn dark title="Industries" links={FOOTER_SECTIONS.industries} />
+
+            <FooterLinkColumn dark title="Resources" links={FOOTER_SECTIONS.resources} />
 
             <FooterLinkColumn dark title="Legal" links={FOOTER_SECTIONS.legal} />
 

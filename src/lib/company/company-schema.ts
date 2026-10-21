@@ -97,9 +97,9 @@ export function organizationJsonLd() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": GRAPH_ENTITY_IDS.organization,
-    name: COMPANY_INFORMATION.legalName,
+    name: COMPANY_INFORMATION.productName,
     legalName: COMPANY_INFORMATION.legalName,
-    alternateName: COMPANY_INFORMATION.productName,
+    alternateName: COMPANY_INFORMATION.legalName,
     description: COMPANY_INFORMATION.shortDescription,
     url: HOME_URL(),
     logo: absoluteAsset(BRANDING_ASSETS.approvedCompositeLogo),
@@ -184,7 +184,7 @@ export function softwareApplicationJsonLd() {
     "@id": GRAPH_ENTITY_IDS.softwareApplication,
     name: COMPANY_INFORMATION.productName,
     applicationCategory: "BusinessApplication",
-    applicationSubCategory: "Operations Command Center",
+    applicationSubCategory: "Client operations and client reporting software",
     operatingSystem: "Web",
     softwareVersion: APP_VERSION,
     url: HOME_URL(),
@@ -199,7 +199,7 @@ export function softwareApplicationJsonLd() {
     },
     audience: {
       "@type": "BusinessAudience",
-      audienceType: "MSPs, IT agencies, consultancies, and automation firms",
+      audienceType: "Service businesses with recurring clients: agencies, MSPs, accounting firms, facility and property managers, recruitment firms, and outsourcing providers",
     },
   };
 }

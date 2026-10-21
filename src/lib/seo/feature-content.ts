@@ -603,11 +603,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Incident management with SLA awareness",
+    title: "Incident Management Software with SLA Tracking",
     description:
-      "Track incidents, response timelines, ownership, and SLA impact across your client portfolio.",
+      "Track incidents, response timelines, ownership, and SLA impact for every client — with a clean incident record you can share.",
     metaDescription:
-      "Agency incident management — timelines, SLA tracking, ownership, and client transparency in Auroranexis.",
+      "Incident management with SLA tracking for service providers: response timelines, ownership, SLA impact per client and client-ready incident reports.",
     problem:
       "When operations break, coordination happens in chat threads with no shared record. Clients receive inconsistent updates and leadership cannot assess SLA impact across the portfolio.",
     solution:
@@ -678,11 +678,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     pathPrefix: "/features",
     category: "feature",
     eyebrow: "Feature",
-    title: "Client & Portfolio Profitability Reporting for Agencies",
+    title: "Client Profitability Reporting Software",
     description:
       "Connect delivery effort to client revenue context so leaders see which accounts drive margin and which need commercial attention — not a replacement accounting system.",
     metaDescription:
-      "Portfolio profitability reporting for agencies and MSPs: delivery effort, margin context, and operational signals — not a replacement accounting system.",
+      "Client and portfolio profitability reporting for agencies, MSPs and service firms: delivery effort, margin context and client health side by side.",
     problem:
       "Agencies grow revenue without clear visibility into which clients consume disproportionate delivery effort. Profitability conversations happen in finance spreadsheets disconnected from operational reality.",
     solution:

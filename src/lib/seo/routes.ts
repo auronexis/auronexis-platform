@@ -59,7 +59,7 @@ function buildLandingPageSeo(): Record<string, { title: string; description: str
 
 const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = {
   [MARKETING_ROUTES.home]: {
-    title: "MSP & Agency Client Operations Software",
+    title: "Client Operations & Client Reporting Software",
     description:
       "Client health scores, SLA tracking, NIS2 incident management, and automated client reporting for MSPs, agencies, and service businesses — in one workspace.",
   },
@@ -99,7 +99,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
       "Frequently asked questions about Auroranexis — billing, security, AI, client portal, reports, integrations, and enterprise plans.",
   },
   [MARKETING_ROUTES.pricing]: {
-    title: "MSP & Agency Operations Pricing (EUR)",
+    title: "Pricing – Plans from €179/month",
     description:
       "Professional €179/mo, Business €599/mo, Enterprise from €1,799/mo — client operations software with health scores, SLA tracking, incidents, and reporting.",
   },
@@ -143,7 +143,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description: "Current operational status and availability of the Auroranexis platform.",
   },
   [MARKETING_ROUTES.about]: {
-    title: "About Agency Operations Platform",
+    title: "About Us – Client Operations Software",
     description:
       "About Auroranexis: a B2B operations platform for service businesses covering client health, risk, incidents, reporting, and delivery transparency.",
   },
@@ -234,11 +234,6 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "AI Executive Leadership Reports",
     description:
       "AI-assisted leadership briefings from incidents, risks, and SLA data, with reviewer validation.",
-  },
-  "/features/profitability": {
-    title: "Portfolio Profitability Reporting",
-    description:
-      "Portfolio profitability reporting for agencies and MSPs: delivery effort, margin context, and operational signals — not a replacement accounting system.",
   },
   "/features/reports": {
     title: "Report Templates & Publish Flows",
