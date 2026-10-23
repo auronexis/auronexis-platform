@@ -20,6 +20,7 @@ export {
   SOLUTION_ROUTES,
   STATUS_URL,
   TEMPLATE_ROUTES,
+  GUIDE_ROUTES,
   USE_CASE_ROUTES,
 } from "@/lib/company/company-links";
 

@@ -38,4 +38,5 @@ export {
   STATUS_URL,
   SUPPORT_EMAIL,
   TEMPLATE_ROUTES,
+  GUIDE_ROUTES,
 } from "@/lib/company";

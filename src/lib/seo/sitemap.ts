@@ -12,6 +12,7 @@ function resolvePriority(route: string): number {
   if (route === "/solutions/ai-reporting") return 0.9;
   if (route.startsWith("/solutions/")) return 0.85;
   if (route.startsWith("/templates/")) return 0.8;
+  if (route.startsWith("/guides/")) return 0.8;
   if (route.startsWith("/docs")) return 0.75;
   return 0.7;
 }
