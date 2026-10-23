@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Temporary migration sitemap: old app.auroranexis.com URLs that Google still lists.
+  Each one 308-redirects to the same path on www.auroranexis.com. Listing them makes
+  Google recrawl them, see the redirect and move their ranking to www sooner.
+  Remove this file once Search Console shows these URLs as "Page with redirect"
+  (expected: a few weeks after 2026-10-23).
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://app.auroranexis.com/</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/about</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/acceptable-use</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/careers</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/compliance</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/contact</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/cookies</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/documentation</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/features</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/help</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/integrations</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/pricing</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/security</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/solutions</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/subprocessors</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/terms</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/use-cases</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/docs/client-portal</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/docs/clients</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/docs/getting-started</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/docs/integrations</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/docs/monitoring</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/docs/release-notes</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/docs/security</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/docs/white-label</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/features/ai-executive-reports</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/features/profitability</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/solutions/incident-management</loc><lastmod>2026-10-21</lastmod></url>
+  <url><loc>https://app.auroranexis.com/templates/risk-register</loc><lastmod>2026-10-21</lastmod></url>
+</urlset>
