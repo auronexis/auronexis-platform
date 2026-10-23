@@ -259,3 +259,48 @@ export const PLATFORM_DEFINITION = {
   definition: COMPANY_INFORMATION.shortDescription,
   audience: "MSPs, IT agencies, consultancies, and automation firms managing multi-client portfolios.",
 } as const;
+
+type GuidePageGraphInput = {
+  title: string;
+  description: string;
+  path: string;
+  published: string;
+  updated: string;
+  author: { name: string; role: string };
+  faq: ReadonlyArray<{ question: string; answer: string }>;
+  breadcrumbs: readonly BreadcrumbItem[];
+};
+
+/** Long-form guide graph: Article with author and dates, breadcrumb, and the visible FAQ. */
+export function guidePageGraphJsonLd(input: GuidePageGraphInput) {
+  const graph: Record<string, unknown>[] = [
+    {
+      "@type": "Article",
+      "@id": pageEntityId(input.path),
+      headline: input.title,
+      description: input.description,
+      url: getCanonicalUrl(input.path).toString(),
+      mainEntityOfPage: getCanonicalUrl(input.path).toString(),
+      inLanguage: "en",
+      datePublished: input.published,
+      dateModified: input.updated,
+      author: {
+        "@type": "Person",
+        name: input.author.name,
+        jobTitle: input.author.role,
+        worksFor: { "@id": GRAPH_ENTITY_IDS.organization },
+      },
+      publisher: { "@id": GRAPH_ENTITY_IDS.organization },
+      isPartOf: { "@id": GRAPH_ENTITY_IDS.website },
+    },
+    breadcrumbList(input.breadcrumbs),
+  ];
+
+  const faq = faqPage(input.faq);
+  if (faq) graph.push(faq);
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": graph,
+  };
+}

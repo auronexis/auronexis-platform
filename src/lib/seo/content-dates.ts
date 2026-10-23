@@ -24,6 +24,8 @@ export const CONTENT_DATE_RULES: readonly ContentDateRule[] = [
     match: exact("/terms", "/privacy", "/cookies", "/imprint", "/refund-policy", "/acceptable-use", "/security-policy"),
     date: "2026-10-20",
   },
+  // Long-form guides — keep in sync with `updated` in guides-content.ts.
+  { match: prefix("/guides"), date: "2026-10-23" },
   // Marketing, landing, industry and docs pages — SEO copy and positioning update 2026-10-21.
   {
     match: prefix(

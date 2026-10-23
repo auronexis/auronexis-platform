@@ -42,6 +42,7 @@ export const MARKETING_ROUTES = {
   support: "/support",
   faq: "/faq",
   resources: "/resources",
+  guides: "/guides",
 } as const;
 
 export const FEATURE_ROUTES = {
@@ -97,6 +98,13 @@ export const SOLUTION_ROUTES = {
   slaManagement: "/solutions/sla-management",
   executiveDashboard: "/solutions/executive-dashboard",
   aiReporting: "/solutions/ai-reporting",
+} as const;
+
+/** Long-form guides (src/lib/seo/guides-content.ts). */
+export const GUIDE_ROUTES = {
+  automatedClientReporting: "/guides/automated-client-reporting",
+  clientProfitabilityAnalysis: "/guides/client-profitability-analysis",
+  slaReporting: "/guides/sla-reporting",
 } as const;
 
 export const TEMPLATE_ROUTES = {
@@ -206,6 +214,7 @@ export const FOOTER_SECTIONS = {
   ],
   resources: [
     { label: "Resources", href: MARKETING_ROUTES.resources },
+    { label: "Guides", href: MARKETING_ROUTES.guides },
     { label: "Templates", href: MARKETING_ROUTES.templates },
     { label: "Customer health score template", href: TEMPLATE_ROUTES.customerHealthScore },
     { label: "Risk register template", href: TEMPLATE_ROUTES.riskRegister },
@@ -259,6 +268,7 @@ export const PUBLIC_SITEMAP_ROUTES = [
   ...Object.values(INDUSTRY_ROUTES),
   ...Object.values(SOLUTION_ROUTES),
   ...Object.values(TEMPLATE_ROUTES),
+  ...Object.values(GUIDE_ROUTES),
   "/docs",
   "/docs/release-notes",
   ...PUBLIC_DOC_ROUTES,

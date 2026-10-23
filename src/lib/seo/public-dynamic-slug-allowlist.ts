@@ -1,7 +1,7 @@
 /**
  * Edge-safe allowlists for public marketing/docs dynamic segments.
  * Keep in sync with FEATURE_ROUTES / SOLUTION_ROUTES / TEMPLATE_ROUTES /
- * USE_CASE_ROUTES / INDUSTRY_ROUTES / DOC_PAGE_SLUGS (+ release-notes page).
+ * USE_CASE_ROUTES / INDUSTRY_ROUTES / GUIDE_ROUTES / DOC_PAGE_SLUGS (+ release-notes page).
  *
  * Middleware uses these to return hard HTTP 404 for unknown slugs —
  * Next.js notFound() alone has been observed returning soft-404 (HTTP 200)
@@ -34,6 +34,12 @@ const SOLUTION_SLUGS = new Set([
   "sla-management",
   "executive-dashboard",
   "ai-reporting",
+]);
+
+const GUIDE_SLUGS = new Set([
+  "automated-client-reporting",
+  "client-profitability-analysis",
+  "sla-reporting",
 ]);
 
 const TEMPLATE_SLUGS = new Set([
@@ -104,6 +110,7 @@ const DYNAMIC_PREFIXES: ReadonlyArray<{ prefix: string; slugs: ReadonlySet<strin
   { prefix: "/features/", slugs: FEATURE_SLUGS },
   { prefix: "/solutions/", slugs: SOLUTION_SLUGS },
   { prefix: "/templates/", slugs: TEMPLATE_SLUGS },
+  { prefix: "/guides/", slugs: GUIDE_SLUGS },
   { prefix: "/use-cases/", slugs: USE_CASE_SLUGS },
   { prefix: "/industries/", slugs: INDUSTRY_SLUGS },
   { prefix: "/docs/", slugs: DOC_SLUGS },

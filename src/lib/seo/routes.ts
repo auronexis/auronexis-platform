@@ -10,6 +10,7 @@ import { DOC_PAGES } from "@/lib/docs/registry";
 import { FEATURE_PAGES } from "@/lib/seo/feature-content";
 import { INDUSTRY_PAGES } from "@/lib/seo/industry-content";
 import { SOLUTION_PAGES, TEMPLATE_PAGES } from "@/lib/seo/landing-content";
+import { GUIDES, GUIDES_HUB } from "@/lib/seo/guides-content";
 import type { LandingPageContent } from "@/lib/seo/landing-page-types";
 
 export {
@@ -226,8 +227,19 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
 };
 
 /** Page-specific SEO titles and descriptions for public indexable routes. */
+function buildGuidePageSeo(): Record<string, { title: string; description: string }> {
+  const entries: Record<string, { title: string; description: string }> = {
+    [GUIDES_HUB.path]: { title: GUIDES_HUB.seoTitle, description: GUIDES_HUB.description },
+  };
+  for (const guide of GUIDES) {
+    entries[guide.path] = { title: guide.seoTitle, description: guide.description };
+  }
+  return entries;
+}
+
 export const PAGE_SEO: Record<string, { title: string; description: string }> = {
   ...STATIC_PAGE_SEO,
+  ...buildGuidePageSeo(),
   ...buildDocPageSeo(),
   ...buildLandingPageSeo(),
   "/features/ai-executive-reports": {

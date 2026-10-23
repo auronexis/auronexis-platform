@@ -12,6 +12,7 @@ import {
   RESOURCE_PILLARS,
 } from "@/lib/seo/resource-pillars";
 import { MARKETING_ROUTES } from "@/lib/company/company-links";
+import { GUIDES } from "@/lib/seo/guides-content";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 import { marketingCardHover } from "@/lib/ui/marketing-motion";
@@ -46,8 +47,37 @@ export default function ResourcesHubPage() {
       />
 
       <MarketingSection
+        title="Guides"
+        description="Step-by-step guides for running recurring client work — useful on their own, with or without Auroranexis."
+      >
+        <ul className="grid gap-4 md:grid-cols-3">
+          {GUIDES.map((guide) => (
+            <li key={guide.slug}>
+              <Link
+                href={guide.path}
+                className={cn(
+                  "block h-full rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-primary/25",
+                  focusRing,
+                )}
+              >
+                <h3 className="font-semibold text-white">{guide.title}</h3>
+                <p className="mt-2 text-sm text-primary-foreground/75">{guide.summary}</p>
+                <span className="mt-4 inline-block text-sm font-medium text-primary">Read guide →</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-6 text-sm">
+          <Link href={MARKETING_ROUTES.guides} className={cn("font-medium text-primary hover:underline", focusRing)}>
+            All guides →
+          </Link>
+        </p>
+      </MarketingSection>
+
+      <MarketingSection
         title="Topic pillars"
         description="Each topic covers one operational theme and links to the product pages that explain it in depth."
+        className="border-t border-white/10"
       >
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {RESOURCE_PILLARS.map((pillar) => (
