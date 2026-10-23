@@ -20,3 +20,9 @@ test("legacy sitemap is not advertised in robots.txt (submitted in Search Consol
   const robots = readSource("src/app/robots.ts");
   assert.doesNotMatch(robots, /sitemap-legacy-app/);
 });
+
+test("legacy sitemap is reachable for signed-out visitors (not hard-404ed by the auth middleware)", () => {
+  const middleware = readSource("src/lib/supabase/middleware.ts");
+  const isPublic = middleware.match(/function isPublicPath[\s\S]*?\n}\n/)?.[0] ?? "";
+  assert.match(isPublic, /pathname === "\/sitemap-legacy-app\.xml"/);
+});
