@@ -28,6 +28,8 @@ function isPublicPath(pathname: string): boolean {
   if (
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
+    // Temporary migration sitemap for old app.auroranexis.com URLs (public/sitemap-legacy-app.xml).
+    pathname === "/sitemap-legacy-app.xml" ||
     pathname === "/llms.txt" ||
     pathname === "/manifest.webmanifest" ||
     pathname === "/favicon.ico" ||
