@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from "react";
 import { ANALYTICS_CONFIG } from "@/lib/analytics/config";
 import {
+  captureGa4Pageview,
   ga4Sink,
   plausibleSink,
   posthogSink,
@@ -112,6 +113,9 @@ function initGa4(): void {
   inline.id = "ga4-inline";
   inline.textContent = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${measurementId}',{anonymize_ip:true,send_page_view:false});`;
   document.head.appendChild(inline);
+
+  // PageViewTracker already fired for this page before gtag existed — record it now.
+  captureGa4Pageview();
 }
 
 function loadConfiguredAnalytics(): void {
