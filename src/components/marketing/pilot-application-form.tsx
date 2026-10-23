@@ -22,7 +22,7 @@ export function PilotApplicationForm({
   /** Server-resolved paid-customer block — mirrored by submitPilotApplication. */
   blockedReason?: string | null;
 }) {
-  const [state, formAction, isPending] = useResilientFormAction(submitPilotApplication);
+  const [state, formAction, isPending] = useResilientFormAction(submitPilotApplication, "pilot");
   const marketingId = useId();
   const values = state.values ?? {};
 

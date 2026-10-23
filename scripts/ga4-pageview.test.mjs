@@ -52,3 +52,19 @@ test("GA4 loader records the current page right after gtag is configured", () =>
   assert.match(init, /send_page_view:false/);
   assert.ok(init.indexOf("captureGa4Pageview()") > init.indexOf("appendChild(inline)"));
 });
+
+test("every public lead form reports generate_lead after a successful submit", () => {
+  const hook = readSource("src/components/marketing/use-resilient-form-action.ts");
+  assert.match(hook, /if \(result\.success\) \{\s*if \(leadForm\) trackAnalyticsEvent\("generate_lead", \{ form: leadForm \}\);/);
+  const forms = {
+    "contact-form": "contact",
+    "pilot-application-form": "pilot",
+    "demo-booking-form": "demo",
+    "referral-lead-form": "referral",
+    "newsletter-signup-form": "newsletter",
+  };
+  for (const [file, name] of Object.entries(forms)) {
+    const source = readSource(`src/components/marketing/${file}.tsx`);
+    assert.match(source, new RegExp(`useResilientFormAction\\([A-Za-z]+, "${name}"\\)`), file);
+  }
+});

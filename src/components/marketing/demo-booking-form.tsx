@@ -12,7 +12,7 @@ import {
 } from "@/components/marketing/use-resilient-form-action";
 
 export function DemoBookingForm({ className }: { className?: string }) {
-  const [state, formAction, isPending] = useResilientFormAction(submitDemoRequest);
+  const [state, formAction, isPending] = useResilientFormAction(submitDemoRequest, "demo");
   const values = state.values ?? {};
 
   useEffect(() => {

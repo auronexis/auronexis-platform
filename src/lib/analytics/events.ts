@@ -31,6 +31,7 @@ export type AnalyticsEventName =
   | "contact_clicked"
   | "support_clicked"
   | "demo_requested"
+  | "generate_lead"
   | "cta_clicked"
   | "enterprise_page_viewed"
   | "portal_viewed"

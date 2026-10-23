@@ -10,7 +10,7 @@ import {
 } from "@/components/marketing/use-resilient-form-action";
 
 export function ReferralLeadForm({ className }: { className?: string }) {
-  const [state, formAction, isPending] = useResilientFormAction(submitReferralLead);
+  const [state, formAction, isPending] = useResilientFormAction(submitReferralLead, "referral");
   const values = state.values ?? {};
 
   if (state.success) {

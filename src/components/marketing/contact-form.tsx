@@ -18,7 +18,7 @@ type ContactFormProps = {
 };
 
 export function ContactForm({ className }: ContactFormProps) {
-  const [state, formAction, isPending] = useResilientFormAction(submitContactForm);
+  const [state, formAction, isPending] = useResilientFormAction(submitContactForm, "contact");
   const marketingId = useId();
   const values = state.values ?? {};
 

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { INFO_EMAIL } from "@/lib/company/company-contact";
+import { trackAnalyticsEvent } from "@/lib/analytics/events";
 import type { CaptureActionState } from "@/lib/sales/capture-actions";
 
 /**
@@ -12,6 +13,8 @@ import type { CaptureActionState } from "@/lib/sales/capture-actions";
  *   every form action).
  * - `attempt` changes on every submit and is used as the form `key`, so inputs
  *   re-mount with `values` as their default.
+ * - `leadForm` names the form in the `generate_lead` analytics event sent after a
+ *   successful submit (GA4 key event, consent-gated; never carries what was typed).
  * - `unreachable` is set when the server action itself could not be reached,
  *   e.g. "Failed to find Server Action" after a new deployment. The form then
  *   offers an email fallback so the inquiry is not lost.
@@ -38,15 +41,21 @@ function collectValues(formData: FormData): Record<string, string> {
   return values;
 }
 
+export type LeadFormName = "contact" | "pilot" | "demo" | "referral" | "newsletter";
+
 export function useResilientFormAction(
   action: (prev: CaptureActionState, formData: FormData) => Promise<CaptureActionState>,
+  leadForm?: LeadFormName,
 ) {
   return useActionState<ResilientFormState, FormData>(async (prev, formData) => {
     const values = collectValues(formData);
     const attempt = prev.attempt + 1;
     try {
       const result = await action({}, formData);
-      if (result.success) return { success: true, attempt };
+      if (result.success) {
+        if (leadForm) trackAnalyticsEvent("generate_lead", { form: leadForm });
+        return { success: true, attempt };
+      }
       return { error: result.error, values, attempt };
     } catch {
       return { error: FORM_UNREACHABLE_MESSAGE, values, attempt, unreachable: true };

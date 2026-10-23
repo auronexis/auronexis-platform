@@ -66,6 +66,7 @@ const EVENT_CATEGORY_MAP: Record<string, AnalyticsEventCategory> = {
   page_view: "marketing",
   landing_page_view: "marketing",
   pricing_view: "marketing",
+  generate_lead: "marketing",
   pricing_viewed: "marketing",
   signup_started: "authentication",
   signup_completed: "authentication",

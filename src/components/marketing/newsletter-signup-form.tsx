@@ -13,7 +13,7 @@ import { submitNewsletterSignup } from "@/lib/sales/capture-actions";
 import { useResilientFormAction } from "@/components/marketing/use-resilient-form-action";
 
 export function NewsletterSignupForm({ className }: { className?: string }) {
-  const [state, formAction, isPending] = useResilientFormAction(submitNewsletterSignup);
+  const [state, formAction, isPending] = useResilientFormAction(submitNewsletterSignup, "newsletter");
   const emailId = useId();
   const consentId = useId();
 
