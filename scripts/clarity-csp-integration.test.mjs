@@ -46,12 +46,13 @@ test("existing analytics providers remain in CSP", () => {
     "https://eu-assets.i.posthog.com",
     "https://plausible.io",
     "https://www.googletagmanager.com",
-    "https://region1.google-analytics.com",
-    "https://www.google-analytics.com",
+    "https://*.google-analytics.com",
+    "https://analytics.google.com",
+    "https://*.analytics.google.com",
     "https://challenges.cloudflare.com",
   ];
   for (const host of providers) {
-    assert.match(csp, new RegExp(host.replace(/\./g, "\\.")));
+    assert.ok(csp.includes(`"${host}"`), `${host} missing from CSP`);
   }
 });
 
@@ -81,4 +82,15 @@ test("Clarity project ID remains environment-driven", () => {
 test("Clarity loads only in production analytics runtime", () => {
   const config = readSource("src/lib/analytics/config.ts");
   assert.match(config, /isProductionAnalyticsRuntime/);
+});
+
+test("GA4 collect hosts are allowed in connect-src (csp.ts and vercel.json)", () => {
+  const csp = readSource("src/lib/security/csp.ts");
+  const connect = csp.match(/"connect-src 'self'"[\s\S]*?\]\.join/)?.[0] ?? "";
+  const vercel = readSource("vercel.json");
+  const vercelConnect = vercel.match(/connect-src[^;]*/)?.[0] ?? "";
+  for (const host of ["https://analytics.google.com", "https://*.analytics.google.com", "https://*.google-analytics.com"]) {
+    assert.ok(connect.includes(`"${host}"`), `csp.ts connect-src lacks ${host}`);
+    assert.ok(vercelConnect.includes(host), `vercel.json connect-src lacks ${host}`);
+  }
 });

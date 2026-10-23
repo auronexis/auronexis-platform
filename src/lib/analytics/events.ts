@@ -309,17 +309,66 @@ export function capturePostHogPageview(): void {
   posthog.capture("$pageview", { $current_url: url });
 }
 
+const GA4_ATTRIBUTION_PARAMS = /^(utm_[a-z_]+|gclid|gbraid|wbraid|msclkid|fbclid|ttclid|li_fat_id)$/i;
+
+/**
+ * Current URL for GA4: campaign/click-id parameters are kept so traffic sources are
+ * attributed correctly; every other query parameter (auth codes, tokens, search terms)
+ * is dropped so it never reaches Google.
+ */
+export function ga4PageLocation(href: string): string {
+  try {
+    const url = new URL(href);
+    const kept = new URLSearchParams();
+    url.searchParams.forEach((value, key) => {
+      if (GA4_ATTRIBUTION_PARAMS.test(key)) kept.append(key, value);
+    });
+    const query = kept.toString();
+    return `${url.origin}${url.pathname}${query ? `?${query}` : ""}`;
+  } catch {
+    return href.split("?")[0];
+  }
+}
+
+let lastGa4PageviewUrl = "";
+let lastGa4PageviewAt = 0;
+
+/**
+ * Emit a single GA4 `page_view` for the current URL.
+ *
+ * Called by ga4Sink for App Router navigations and once right after gtag is loaded:
+ * PageViewTracker fires before the consent-gated gtag exists, so without this the
+ * landing page of every visit (the page that carries the Google/Bing referral) would
+ * never reach GA4.
+ */
+export function captureGa4Pageview(props?: AnalyticsEventProps): void {
+  if (typeof window === "undefined") return;
+  const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag;
+  if (!gtag) return;
+
+  const url = ga4PageLocation(window.location.href);
+  const now = Date.now();
+  if (url === lastGa4PageviewUrl && now - lastGa4PageviewAt < DEDUPE_WINDOW_MS) {
+    return;
+  }
+  lastGa4PageviewUrl = url;
+  lastGa4PageviewAt = now;
+
+  gtag("event", "page_view", {
+    page_path: window.location.pathname,
+    page_location: url,
+    page_title: document.title,
+    ...props,
+  });
+}
+
 /** GA4 gtag sink — manual page views to avoid duplicate automatic page_view. */
 export function ga4Sink(name: string, props?: AnalyticsEventProps): void {
   const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag;
   if (!gtag) return;
 
   if (name === "page_view" && props?.path) {
-    gtag("event", "page_view", {
-      page_path: props.path,
-      page_location: window.location.href.split("?")[0],
-      ...props,
-    });
+    captureGa4Pageview(props);
     return;
   }
 

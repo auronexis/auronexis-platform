@@ -38,8 +38,12 @@ export function buildContentSecurityPolicy(): string {
       "https://www.clarity.ms",
       "https://*.clarity.ms",
       "https://c.bing.com",
-      "https://region1.google-analytics.com",
-      "https://www.google-analytics.com",
+      // GA4 (marketing consent only): gtag sends hits to analytics.google.com and
+      // *.google-analytics.com, depending on region and tag version.
+      "https://*.google-analytics.com",
+      "https://analytics.google.com",
+      "https://*.analytics.google.com",
+      "https://www.googletagmanager.com",
       "https://challenges.cloudflare.com",
     ].join(" "),
     "frame-src https://challenges.cloudflare.com",
