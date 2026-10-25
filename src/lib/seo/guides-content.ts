@@ -51,8 +51,9 @@ export type GuideContent = {
   faq: ReadonlyArray<{ question: string; answer: string }>;
 };
 
+/** Public-facing name is "Tamas" (the legal name stays in the imprint only). */
 export const GUIDES_AUTHOR = {
-  name: "István-Tamás Schneller",
+  name: "Tamas Schneller",
   role: "Founder, Auroranexis",
 } as const;
 
