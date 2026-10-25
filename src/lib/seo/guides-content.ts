@@ -1,3 +1,4 @@
+import { COMPANY_INFORMATION } from "@/lib/company/company-information";
 import {
   FEATURE_ROUTES,
   GUIDE_ROUTES,
@@ -51,9 +52,9 @@ export type GuideContent = {
   faq: ReadonlyArray<{ question: string; answer: string }>;
 };
 
-/** Public-facing name is "Tamas" (the legal name stays in the imprint only). */
+/** Author byline uses the legal name from the imprint data (single source of truth). */
 export const GUIDES_AUTHOR = {
-  name: "Tamas Schneller",
+  name: COMPANY_INFORMATION.owner,
   role: "Founder, Auroranexis",
 } as const;
 
