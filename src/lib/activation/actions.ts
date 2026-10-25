@@ -63,7 +63,13 @@ export async function dismissActivationSurfaceAction(
   }
 }
 
-/** Record onboarding hub visit timestamp. */
+/**
+ * Record onboarding hub visit timestamp.
+ *
+ * Called while /onboarding renders, so it must NOT call revalidatePath: Next.js rejects cache
+ * revalidation during render ("used revalidatePath during render which is unsupported").
+ * The page is dynamic, so nothing needs revalidating anyway.
+ */
 export async function recordOnboardingViewAction(): Promise<ActivationActionState> {
   try {
     const session = await requireSession();
@@ -76,7 +82,6 @@ export async function recordOnboardingViewAction(): Promise<ActivationActionStat
       return upsertError;
     }
 
-    revalidatePath("/onboarding");
     return { success: "Recorded." };
   } catch (error) {
     return resolveActionError(error);

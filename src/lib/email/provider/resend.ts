@@ -18,6 +18,7 @@ export async function sendViaResend(message: EmailMessage): Promise<EmailSendRes
       to: message.to,
       subject: message.subject,
       replyTo: message.replyTo,
+      ...(message.headers ? { headers: message.headers } : {}),
       attachments: message.attachments?.map((attachment) => ({
         filename: attachment.filename,
         content: attachment.content,

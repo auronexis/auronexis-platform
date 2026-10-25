@@ -20,7 +20,7 @@ export function NewsletterSignupForm({ className }: { className?: string }) {
   if (state.success) {
     return (
       <FormAlert variant="success" className={className}>
-        You are subscribed. Welcome to the Auroranexis updates list.
+        Almost done: please check your inbox and confirm your subscription with the link we just sent you.
       </FormAlert>
     );
   }

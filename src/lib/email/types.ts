@@ -12,6 +12,8 @@ export type EmailMessage = {
   text?: string;
   replyTo?: string;
   attachments?: EmailAttachment[];
+  /** Extra MIME headers, e.g. List-Unsubscribe for newsletters. */
+  headers?: Record<string, string>;
 };
 
 export type EmailSendResult = {

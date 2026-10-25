@@ -41,6 +41,9 @@ function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||
     pathname.startsWith("/invite/") ||
+    // Newsletter double opt-in and unsubscribe links (signed-out visitors).
+    pathname === "/newsletter/confirm" ||
+    pathname === "/newsletter/unsubscribe" ||
     // IndexNow Option 1 key file — must not hard-404 before the route handler.
     isIndexNowKeyFilePath(pathname)
   ) {
