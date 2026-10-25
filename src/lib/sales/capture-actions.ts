@@ -15,6 +15,7 @@ import {
 import { evaluatePilotApplicationEligibility } from "@/lib/sales/pilot-eligibility";
 import { resolvePlatformSalesOrganizationId } from "@/lib/sales/platform-org";
 import { sendLeadNotificationEmail } from "@/lib/sales/notify";
+import { sendNewsletterConfirmation } from "@/lib/newsletter/service";
 import { recordConsent } from "@/lib/compliance/consent";
 import {
   MARKETING_CONSENT_PURPOSE,
@@ -430,7 +431,12 @@ export async function submitNewsletterSignup(_prev: CaptureActionState, formData
     },
   });
 
-  return result.ok ? { success: true } : { error: result.error };
+  if (!result.ok) return { error: result.error };
+
+  // Double opt-in: the address only receives newsletters after confirming via this email.
+  // Best effort — the hourly backfill retries if this send fails.
+  await sendNewsletterConfirmation({ email: parsed.data.email, leadId: result.leadId });
+  return { success: true };
 }
 
 export async function submitReferralLead(_prev: CaptureActionState, formData: FormData): Promise<CaptureActionState> {

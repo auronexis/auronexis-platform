@@ -4,6 +4,7 @@ import { dispatchDueJobs, dispatchJob } from "@/lib/jobs/dispatcher";
 import type { JobId } from "@/lib/jobs/types";
 import { listRegisteredJobIds } from "@/lib/jobs/registry";
 import { runIndexNowForCron } from "@/lib/seo/indexnow";
+import { runNewsletterConfirmationBackfill } from "@/lib/newsletter/service";
 
 export const runtime = "nodejs";
 /** Jobs run sequentially; give the dispatcher room before Vercel stops the invocation. */
@@ -43,7 +44,11 @@ async function handleCron(request: Request): Promise<Response> {
 
     const results = await dispatchDueJobs();
     const indexNow = await runIndexNowForCron();
-    return NextResponse.json({ ok: true, results, indexNow });
+    const newsletterConfirmations = await runNewsletterConfirmationBackfill().catch((error: unknown) => ({
+      status: "failed" as const,
+      error: error instanceof Error ? error.message : "unknown error",
+    }));
+    return NextResponse.json({ ok: true, results, indexNow, newsletterConfirmations });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Cron dispatch failed.";
     return NextResponse.json({ error: message }, { status: 500 });

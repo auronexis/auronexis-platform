@@ -90,6 +90,7 @@ export function buildSmtpMailOptions(message: EmailMessage) {
     html: message.html,
     text: message.text,
     replyTo: message.replyTo,
+    ...(message.headers ? { headers: message.headers } : {}),
     attachments: message.attachments?.map((attachment) => ({
       filename: attachment.filename,
       content: attachment.content,
