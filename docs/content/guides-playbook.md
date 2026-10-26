@@ -16,6 +16,10 @@ people can too.
 - **Regulation is sourced.** Any legal deadline or requirement links to an official or primary
   source that was opened and read for the guide.
 - **Plain English.** Short sentences, no internal jargon, no keyword stuffing. Proofread twice.
+- **Name and contact.** On the website, in bylines and in anything legal, the founder's full legal
+  name is used (from `COMPANY_INFORMATION.owner`). Only in email and similar direct messages he
+  is "Tamas". Calls to action point to the website, the pilot program or a reply by email – never
+  a phone or video call.
 - **One guide per topic.** Do not publish a guide that substantially repeats an existing one.
 
 ## Format
