@@ -34,7 +34,11 @@ function MetricCard({
 export function SLAMetrics({ metrics, className }: SLAMetricsProps) {
   return (
     <div className={cn("grid gap-3 sm:grid-cols-2 xl:grid-cols-3", className)}>
-      <MetricCard label="Compliance" value={`${metrics.compliancePercent}%`} tone="success" />
+      <MetricCard
+        label="Compliance"
+        value={`${metrics.compliancePercent}%`}
+        tone={metrics.compliancePercent >= 95 ? "success" : metrics.compliancePercent >= 80 ? "warning" : "danger"}
+      />
       <MetricCard
         label="Breached SLAs"
         value={String(metrics.breachedCount)}

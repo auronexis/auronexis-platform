@@ -6,6 +6,15 @@ type SLAComplianceChartProps = {
   className?: string;
 };
 
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** "2026-10" → "Oct 2026". */
+export function formatTrendMonth(month: string): string {
+  const [year, monthNumber] = month.split("-");
+  const label = MONTH_LABELS[Number(monthNumber) - 1];
+  return label && year ? `${label} ${year}` : month;
+}
+
 export function SLAComplianceChart({ points, className }: SLAComplianceChartProps) {
   if (points.length === 0) {
     return (
@@ -30,7 +39,7 @@ export function SLAComplianceChart({ points, className }: SLAComplianceChartProp
               />
             </div>
             <span className="text-[10px] font-medium uppercase tracking-wide text-muted">
-              {point.month.slice(5)}
+              {formatTrendMonth(point.month)} · {point.compliancePercent}%
             </span>
           </div>
         ))}
