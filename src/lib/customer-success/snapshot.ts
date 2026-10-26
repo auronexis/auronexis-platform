@@ -6,6 +6,7 @@ import {
   computeClientHealth,
   resolveClientTrend,
   resolveHealthStatus,
+  successStatusFromCanonicalScore,
 } from "@/lib/customer-success/health";
 import { buildClientSignals } from "@/lib/customer-success/signals";
 import { resolveSuggestedPlaybooks } from "@/lib/customer-success/playbook-engine";
@@ -116,13 +117,16 @@ export async function buildClientSuccessSnapshot(
 
   const isNew =
     Math.floor((Date.now() - new Date(client.created_at).getTime()) / 86400000) <= 14;
-  const healthStatus = resolveHealthStatus(
-    healthBreakdown,
-    aiData,
-    riskCounts.critical,
-    openIncidents,
-    isNew,
-  );
+  // One health score everywhere: use the canonical client score when it exists; the
+  // customer-success breakdown stays available as supporting detail.
+  const canonicalScore = typeof client.health_score === "number" ? client.health_score : null;
+  const insufficientData =
+    aiData.publishedReportsCount === 0 && aiData.draftReportsCount === 0 && isNew;
+  const healthScore = canonicalScore ?? healthBreakdown.total;
+  const healthStatus =
+    canonicalScore !== null
+      ? successStatusFromCanonicalScore(canonicalScore, insufficientData)
+      : resolveHealthStatus(healthBreakdown, aiData, riskCounts.critical, openIncidents, isNew);
   const trend = resolveClientTrend(aiData);
   const { adoptionSignals, riskSignals, valueSignals } = buildClientSignals({
     data: aiData,
@@ -154,7 +158,7 @@ export async function buildClientSuccessSnapshot(
   const recoveryStatus = resolveRecoveryStatus({
     activeInstances: allInstances,
     healthScoreBefore: allInstances.find((i) => i.recovery_score_before !== null)?.recovery_score_before ?? null,
-    healthScoreAfter: healthBreakdown.total,
+    healthScoreAfter: healthScore,
     hasRecentPositiveSignal: valueSignals.some((s) => s.impact === "positive"),
   });
 
@@ -162,7 +166,7 @@ export async function buildClientSuccessSnapshot(
     organizationId: session.organization.id,
     clientId,
     clientName: client.name,
-    healthScore: healthBreakdown.total,
+    healthScore,
     healthStatus,
     healthBreakdown,
     trend,

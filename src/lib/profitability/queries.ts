@@ -18,6 +18,7 @@ import type { ClientFinancial } from "@/types/database";
 type ActiveClient = {
   id: string;
   name: string;
+  health_score?: number | null;
 };
 
 async function loadActiveClients(organizationId: string): Promise<ActiveClient[]> {
@@ -25,7 +26,7 @@ async function loadActiveClients(organizationId: string): Promise<ActiveClient[]
 
   const { data, error } = await supabase
     .from("clients")
-    .select("id, name")
+    .select("id, name, health_score")
     .eq("organization_id", organizationId)
     .neq("status", "archived")
     .order("name", { ascending: true });
@@ -123,6 +124,7 @@ export const buildClientProfitabilityRows = cache(async function buildClientProf
       hasCriticalIncident,
       notes: financial?.notes ?? null,
       financialId: financial?.id ?? null,
+      healthScore: typeof client.health_score === "number" ? client.health_score : null,
     };
   });
 });

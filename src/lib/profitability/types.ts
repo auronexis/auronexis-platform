@@ -12,6 +12,8 @@ export type ClientProfitabilityRow = {
   hasCriticalIncident: boolean;
   notes: string | null;
   financialId: string | null;
+  /** Canonical client health score (health engine), when available. */
+  healthScore?: number | null;
 };
 
 export type ProfitabilitySummary = {
@@ -32,6 +34,16 @@ export const CLIENT_HEALTH_LABELS: Record<ClientHealth, string> = {
   healthy: "Healthy",
   watch: "Watch",
   critical: "Critical",
+};
+
+/**
+ * The profitability status is about margin (and critical issues), not client health.
+ * Shown with these labels so it is never confused with the client health score.
+ */
+export const MARGIN_STATUS_LABELS: Record<ClientHealth, string> = {
+  healthy: "Strong margin",
+  watch: "Thin margin",
+  critical: "Margin at risk",
 };
 
 export function calculateProfit(revenue: number, cost: number): number {

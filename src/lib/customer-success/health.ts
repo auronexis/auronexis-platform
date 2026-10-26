@@ -160,3 +160,18 @@ export function resolveClientTrend(data: AiClientData): ClientSuccessTrend {
   if (ratio <= 0.8) return "declining";
   return "stable";
 }
+
+/**
+ * Map the canonical client health score (health engine, 0–100, shown on the client list and
+ * client page) to the customer-success status, so every screen tells the same story.
+ * Thresholds match `scoreToHealthStatus`: ≥70 healthy, 50–69 watch, <50 critical.
+ */
+export function successStatusFromCanonicalScore(
+  score: number,
+  insufficientData: boolean,
+): ClientSuccessHealthStatus {
+  if (insufficientData) return "insufficient_data";
+  if (score >= 70) return "healthy";
+  if (score >= 50) return "watch";
+  return "critical";
+}

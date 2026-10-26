@@ -14,6 +14,8 @@ export type ClientSuccessSnapshot = {
   clientId: string;
   clientName: string;
   clientStatus: string;
+  /** Canonical client health score (health engine), same as the client list. */
+  clientHealthScore: number | null;
   overview: Awaited<ReturnType<typeof getClientOverview>>;
   profitability: ClientProfitabilityRow | null;
   risksEnabled: boolean;
@@ -344,6 +346,7 @@ async function buildClientSuccessSnapshotUncached(
     clientId,
     clientName: client.name,
     clientStatus: client.status,
+    clientHealthScore: typeof client.health_score === "number" ? client.health_score : null,
     overview,
     profitability: overview.kpis.profitability,
     risksEnabled,
