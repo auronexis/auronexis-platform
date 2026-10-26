@@ -1,3 +1,4 @@
+import { computeRiskMitigationRate } from "@/lib/risks/mitigation";
 import { cache } from "react";
 import { sessionHasPermission } from "@/lib/authorization/guards";
 import { createClient } from "@/lib/supabase/server";
@@ -257,11 +258,11 @@ export async function getRiskSummary(session: SessionContext): Promise<SafeResul
     }
 
     const openCount = rows.length;
-    const mitigationDenominator = openCount + (resolvedResult.count ?? 0);
-    const mitigationRate =
-      mitigationDenominator > 0
-        ? Math.round(((mitigatedOpenCount + (mitigatedResult.count ?? 0)) / mitigationDenominator) * 100)
-        : 0;
+    const mitigationRate = computeRiskMitigationRate({
+      openCount,
+      mitigatedOpenCount,
+      resolvedCount: resolvedResult.count ?? 0,
+    });
 
     return {
       data: {
