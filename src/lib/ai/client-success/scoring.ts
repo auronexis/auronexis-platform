@@ -11,6 +11,10 @@ import type {
 } from "@/lib/ai/client-success/types";
 
 export function computeClientHealthScore(snapshot: ClientSuccessSnapshot): number {
+  // One health score everywhere: the canonical client score wins when it exists.
+  if (typeof snapshot.clientHealthScore === "number") {
+    return snapshot.clientHealthScore;
+  }
   let score = 100;
   const { overview, profitability } = snapshot;
 
@@ -37,10 +41,10 @@ export function computeClientHealthScore(snapshot: ClientSuccessSnapshot): numbe
 }
 
 export function healthLabelFromScore(score: number): ClientHealthLabel {
+  // Same bands as the canonical health status (scoreToHealthStatus).
   if (score >= 90) return "excellent";
-  if (score >= 75) return "healthy";
-  if (score >= 55) return "watch";
-  if (score >= 35) return "attention";
+  if (score >= 70) return "healthy";
+  if (score >= 50) return "watch";
   return "critical";
 }
 

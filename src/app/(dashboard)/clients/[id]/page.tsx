@@ -9,6 +9,7 @@ import { ClientKnowledgeSection } from "@/components/knowledge/client-knowledge-
 import { ClientHealthCard } from "@/components/health/client-health-card";
 import { ClientHealthHistory } from "@/components/health/client-health-history";
 import { ClientSecondaryNav } from "@/components/clients/client-secondary-nav";
+import { ClientHealthScore } from "@/components/clients/client-health-score";
 import { ClientHealthScoreWithTooltip } from "@/components/clients/client-health-score-with-tooltip";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { ClientForm } from "@/components/clients/client-form";
@@ -190,7 +191,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       <DetailMetadataItem label="Health score">
         <ClientHealthScoreWithTooltip score={client.health_score} />
       </DetailMetadataItem>
-      <DetailMetadataItem label="Computed health">
+      <DetailMetadataItem label="Margin status">
         <ClientHealthBadge health={profitability?.health ?? "watch"} />
       </DetailMetadataItem>
       <DetailMetadataItem label="Open risks">{riskScoreSummary.openCount}</DetailMetadataItem>
@@ -219,7 +220,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       <DetailKpiGrid id="client-kpis">
         <DetailKpiStat label="Client health">
-          <ClientHealthBadge health={profitability?.health ?? "watch"} />
+          <ClientHealthScore score={client.health_score} />
         </DetailKpiStat>
         <DetailKpiStat label="Monthly revenue">
           {showRevenue ? (

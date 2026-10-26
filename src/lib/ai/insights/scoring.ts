@@ -86,55 +86,23 @@ export function buildClientPriorityRankings(snapshot: OperationalSnapshot): Clie
     .sort((a, b) => b.score - a.score);
 }
 
+/**
+ * Workspace health = average of the canonical client health scores (the same scores shown on the
+ * client list), so the dashboard number matches what users see per client.
+ */
 export function computeWorkspaceHealth(snapshot: OperationalSnapshot): WorkspaceHealthSummary {
-  const { dashboard, clients } = snapshot;
-  let score = 100;
+  const scores = snapshot.clients
+    .map((client) => client.healthScore)
+    .filter((score): score is number => typeof score === "number");
 
-  if (dashboard.clientHealth.totalClients === 0) {
+  if (scores.length === 0) {
     return { score: 100, label: "Excellent" };
   }
 
-  const criticalRatio =
-    dashboard.clientHealth.criticalClients / Math.max(1, dashboard.clientHealth.totalClients);
-  const watchRatio =
-    dashboard.clientHealth.watchClients / Math.max(1, dashboard.clientHealth.totalClients);
-
-  score -= Math.round(criticalRatio * 35);
-  score -= Math.round(watchRatio * 15);
-
-  if (dashboard.features.risks) {
-    score -= Math.min(15, dashboard.openRiskCount * 2);
-  }
-
-  if (dashboard.features.incidents) {
-    score -= Math.min(15, dashboard.openIncidentCount * 2);
-  }
-
-  if (dashboard.features.sla) {
-    score -= Math.min(12, dashboard.slaMetrics.breachedCount * 4);
-    score -= Math.min(6, dashboard.slaMetrics.warningCount * 2);
-  }
-
-  score -= Math.min(8, dashboard.draftReportsCount);
-
-  if (snapshot.daysSinceLastOrgPublishedReport != null && snapshot.daysSinceLastOrgPublishedReport > 30) {
-    score -= Math.min(10, Math.floor(snapshot.daysSinceLastOrgPublishedReport / 10));
-  }
-
-  if (snapshot.recentActivity.length === 0) {
-    score -= 5;
-  }
-
-  if (snapshot.portfolioMargin != null && snapshot.portfolioMargin < 20) {
-    score -= 8;
-  } else if (snapshot.portfolioMargin != null && snapshot.portfolioMargin < 40) {
-    score -= 4;
-  }
-
-  const clientsWithIssues = clients.filter((client) => computeClientPriorityScore(client) >= 51).length;
-  score -= Math.min(10, clientsWithIssues * 2);
-
-  const clamped = Math.max(0, Math.min(100, Math.round(score)));
+  const clamped = Math.max(
+    0,
+    Math.min(100, Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)),
+  );
 
   let label = "Critical";
   if (clamped >= 85) label = "Excellent";

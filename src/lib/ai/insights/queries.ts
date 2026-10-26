@@ -33,6 +33,8 @@ export type ClientOperationalMetrics = {
   slaBreachesThisPeriod: number;
   daysSinceLastPublishedReport: number | null;
   recentActivityCount: number;
+  /** Canonical client health score (same as the client list). */
+  healthScore: number | null;
 };
 
 export type OperationalSnapshot = {
@@ -448,6 +450,7 @@ export const buildOperationalSnapshot = cache(async function buildOperationalSna
       slaBreachesThisPeriod: slaBreachesByClient.get(row.clientId) ?? 0,
       daysSinceLastPublishedReport: daysSinceReportByClient.get(row.clientId) ?? null,
       recentActivityCount,
+      healthScore: row.healthScore ?? null,
     } satisfies ClientOperationalMetrics;
   });
 

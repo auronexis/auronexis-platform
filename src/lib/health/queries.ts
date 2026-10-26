@@ -50,7 +50,7 @@ export async function gatherClientHealthMetrics(
         .select("id, status, created_at")
         .eq("organization_id", organizationId)
         .eq("client_id", clientId)
-        .not("status", "in", "(resolved,dismissed)"),
+        .not("status", "in", "(resolved,dismissed,mitigated)"),
       supabase
         .from("reports")
         .select("id, status, updated_at")
