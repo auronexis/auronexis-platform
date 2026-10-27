@@ -6,6 +6,7 @@ import { AUTH_MESSAGES, isBenignPasswordResetError, sanitizeAuthError } from "@/
 import { validatePasswordPolicy } from "@/lib/auth/password-policy";
 import { checkNewPassword } from "@/lib/auth/password-strength";
 import { authThrottleUserMessage, checkPasswordResetThrottle } from "@/lib/security/login-throttle";
+import { requireTurnstileFromForm } from "@/lib/security/turnstile";
 import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import { createWritableClient } from "@/lib/supabase/server";
@@ -67,6 +68,11 @@ export async function requestPasswordResetAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? AUTH_MESSAGES.INVALID_EMAIL };
+  }
+
+  const botCheck = await requireTurnstileFromForm(formData);
+  if (!botCheck.ok) {
+    return { error: botCheck.error };
   }
 
   const throttle = await checkPasswordResetThrottle(parsed.data.email);

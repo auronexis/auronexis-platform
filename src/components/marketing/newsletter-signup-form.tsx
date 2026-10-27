@@ -1,4 +1,5 @@
 "use client";
+import { TurnstileField } from "@/components/security/turnstile-field";
 
 import { useId } from "react";
 import Link from "next/link";
@@ -62,6 +63,7 @@ export function NewsletterSignupForm({ className }: { className?: string }) {
           {isPending ? "Subscribing…" : "Subscribe"}
         </button>
       </div>
+      <TurnstileField action="newsletter" resetKey={state} className="pt-1" />
       <label htmlFor={consentId} className="flex cursor-pointer items-start gap-2 text-xs text-white/70">
         <input
           id={consentId}

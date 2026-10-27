@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { AuthPasswordInput, inputClassName, labelClassName } from "@/components/auth/auth-password-input";
 import { FormAlert } from "@/components/ui/form-alert";
+import { TurnstileField } from "@/components/security/turnstile-field";
 import { signUp, type AuthActionState } from "@/lib/auth/actions";
 import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { trackAnalyticsEvent } from "@/lib/analytics/events";
@@ -127,6 +128,7 @@ export function SignUpForm() {
         </FormAlert>
       ) : null}
 
+      <TurnstileField action="signup" resetKey={state} className="pt-1" />
       <button
         type="submit"
         disabled={isPending}

@@ -16,13 +16,13 @@ const prefix = (...prefixes: string[]) => (route: string) =>
 export const CONTENT_DATE_RULES: readonly ContentDateRule[] = [
   // Data processing agreement and sub-processor inventory — legal documents with their own history.
   { match: exact("/data-processing-agreement"), date: "2026-08-30" },
-  { match: exact("/subprocessors"), date: "2026-09-02" },
+  { match: exact("/subprocessors"), date: "2026-10-27" },
   { match: exact("/careers"), date: "2026-07-12" },
   { match: exact("/status"), date: "2026-10-15" },
-  // Terms, privacy and other legal pages — legal-content.ts last changed 2026-10-20.
+  // Terms, privacy and other legal pages — legal-content.ts last changed 2026-10-27.
   {
     match: exact("/terms", "/privacy", "/cookies", "/imprint", "/refund-policy", "/acceptable-use", "/security-policy"),
-    date: "2026-10-20",
+    date: "2026-10-27",
   },
   // Long-form guides — keep in sync with `updated` in guides-content.ts.
   { match: prefix("/guides"), date: "2026-10-23" },

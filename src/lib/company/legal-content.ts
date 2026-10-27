@@ -118,6 +118,11 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
           "On the public website, optional analytics tools (such as Plausible, Microsoft Clarity, or PostHog where configured) load only if you grant analytics consent. Marketing conversion tools (such as GA4 where explicitly enabled) load only if you grant marketing consent. You can change preferences via the cookie banner or footer link. Inside the authenticated application, operational logging and security monitoring may occur separately as described in this policy and our Security Policy.",
       },
       {
+        heading: "Bot protection",
+        body:
+          "To protect accounts and the service against automated attacks (such as credential stuffing, mass registrations, password-reset flooding and form spam), sign-in, registration, password reset and public forms may use Cloudflare Turnstile. Turnstile evaluates technical signals such as your IP address and browser characteristics to tell humans from bots; it does not receive the contents of the form. The legal basis is our legitimate interest in securing the service (Art. 6(1)(f) GDPR). Cloudflare is listed on our Sub-processors page.",
+      },
+      {
         heading: "Security",
         body:
           "We implement technical and organizational measures described in our Security Policy, including encryption in transit, access controls, tenant isolation, and audit logging.",

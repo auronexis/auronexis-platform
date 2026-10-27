@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { TurnstileField } from "@/components/security/turnstile-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -40,6 +41,7 @@ export function PortalLoginForm() {
         placeholder="••••••••"
       />
       {state.error ? <FormAlert variant="error">{state.error}</FormAlert> : null}
+      <TurnstileField action="portal_login" resetKey={state} className="pt-1" />
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? "Signing in…" : "Sign in to portal"}
       </Button>
