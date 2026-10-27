@@ -23,6 +23,11 @@ import { getPlatformBrandingDefaults } from "@/lib/branding/platform-defaults";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
 
+const PRODUCT_HUNT_URL =
+  "https://www.producthunt.com/products/auroranexis?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-auroranexis";
+const PRODUCT_HUNT_BADGE_SRC =
+  "https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1293358&theme=light";
+
 
 
 type SiteFooterProps = {
@@ -212,6 +217,22 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
                   {SALES_EMAIL}
                 </a>
               </p>
+              <a
+                href={PRODUCT_HUNT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn("mt-5 inline-block rounded", focusRing)}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- external Product Hunt badge (SVG) */}
+                <img
+                  src={PRODUCT_HUNT_BADGE_SRC}
+                  alt="Auroranexis on Product Hunt"
+                  width={250}
+                  height={54}
+                  loading="lazy"
+                  style={{ width: 250, height: 54 }}
+                />
+              </a>
 
             </div>
 
