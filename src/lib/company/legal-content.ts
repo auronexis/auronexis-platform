@@ -115,7 +115,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Analytics and consent",
         body:
-          "On the public website, optional analytics tools (such as Plausible, Microsoft Clarity, or PostHog where configured) load only if you grant analytics consent. Marketing conversion tools (such as GA4 where explicitly enabled) load only if you grant marketing consent. You can change preferences via the cookie banner or footer link. Inside the authenticated application, operational logging and security monitoring may occur separately as described in this policy and our Security Policy.",
+          "On the public website, optional analytics tools (such as Plausible, Microsoft Clarity, or PostHog where configured) run with cookies, session recording and click analytics only if you grant analytics consent. Without that consent, we count page views anonymously with PostHog in cookieless mode: no cookies or other storage on your device, no session recording, no click tracking and no identification; PostHog derives a temporary identifier on its EU servers from a daily-rotating hash, and IP addresses are not stored. The legal basis for this anonymous reach measurement is our legitimate interest in understanding how our website is used (Art. 6(1)(f) GDPR). Marketing conversion tools (such as GA4 where explicitly enabled) load only if you grant marketing consent. You can change preferences via the cookie banner or footer link. Inside the authenticated application, operational logging and security monitoring may occur separately as described in this policy and our Security Policy.",
       },
       {
         heading: "Free trial",
@@ -313,7 +313,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "Analytics (where enabled)",
         body:
-          "If analytics consent is granted, we may load privacy-aware analytics tools configured for the public website — such as Plausible Analytics (cookieless/privacy-oriented usage measurement), Microsoft Clarity (session insights), or PostHog (product analytics). These tools load only after you accept analytics cookies in the consent banner. If not configured or not consented, they do not run.",
+          "If analytics consent is granted, we may load privacy-aware analytics tools configured for the public website — such as Plausible Analytics (cookieless/privacy-oriented usage measurement), Microsoft Clarity (session insights), or PostHog (product analytics). These tools use cookies only after you accept analytics cookies in the consent banner. Without consent, only PostHog runs, in cookieless mode: it counts page views anonymously and stores nothing on your device (no cookies, local storage or session storage).",
       },
       {
         heading: "Marketing measurement (where enabled)",

@@ -153,9 +153,9 @@ export const SUBPROCESSOR_INVENTORY: readonly SubprocessorEntry[] = [
   },
   {
     provider: "PostHog",
-    purpose: "Consent-gated product analytics when configured",
+    purpose: "Product analytics under analytics consent; anonymous cookieless page-view counting without consent",
     locationOrRegion: "As configured (EU host preferred when set)",
-    dataCategories: "Pseudonymous product usage events under analytics consent",
+    dataCategories: "Pseudonymous product usage events under analytics consent; without consent, anonymous page views only (no cookies or device storage, IP not stored)",
     role: "OPTIONAL_ANALYTICS",
     alwaysUsed: false,
     activationStatus: "OPTIONAL_CONFIGURABLE",

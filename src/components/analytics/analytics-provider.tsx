@@ -12,6 +12,7 @@ import {
   capturePostHogPageview,
 } from "@/lib/analytics/events";
 import { claritySink } from "@/lib/analytics/clarity-events";
+import { applyAnalyticsIdentity } from "@/lib/analytics/identity";
 import { hasAnalyticsConsent, hasMarketingConsent, subscribeToConsentChanges } from "@/lib/consent/storage";
 import { PlausibleScript } from "@/components/analytics/plausible-script";
 import { ClarityScript } from "@/components/analytics/clarity-script";
@@ -31,36 +32,66 @@ function registerSinksOnce(): void {
 }
 
 let posthogInitialized = false;
+let posthogConsentApplied: boolean | null = null;
 
-function disablePostHog(): void {
+type PostHogConsentClient = {
+  opt_in_capturing?: () => void;
+  opt_out_capturing?: () => void;
+  reset?: () => void;
+  startSessionRecording?: () => void;
+  stopSessionRecording?: () => void;
+};
+
+/**
+ * Switch PostHog between full mode (analytics consent) and cookieless mode (no consent).
+ * Cookieless mode: no cookies or browser storage, no session recording, no identification;
+ * PostHog derives an anonymous, daily-rotating id on its servers (`cookieless_mode: "on_reject"`).
+ */
+function applyPostHogConsent(consented: boolean): void {
   if (typeof window === "undefined") return;
-  const posthog = (window as Window & { posthog?: { opt_out_capturing?: () => void; reset?: () => void } })
-    .posthog;
+  const posthog = (window as Window & { posthog?: PostHogConsentClient }).posthog;
+  if (!posthog) return;
   try {
-    posthog?.opt_out_capturing?.();
-    posthog?.reset?.();
+    if (consented) {
+      posthog.opt_in_capturing?.();
+      posthog.startSessionRecording?.();
+    } else {
+      posthog.stopSessionRecording?.();
+      // opt_out_capturing switches to cookieless capture; it must be called explicitly even when
+      // opt_out_capturing_by_default is set, otherwise nothing is sent.
+      posthog.opt_out_capturing?.();
+      if (posthogConsentApplied === true) {
+        // Consent withdrawn: drop the stored anonymous id and any identification.
+        posthog.reset?.();
+      }
+    }
   } catch {
     // Fail-silent — analytics must never break the app.
   }
-  posthogInitialized = false;
+  posthogConsentApplied = consented;
 }
 
 function initPostHog(): void {
   if (!ANALYTICS_CONFIG.posthog.enabled) return;
-  if (!hasAnalyticsConsent()) {
-    disablePostHog();
-    return;
-  }
-  if (posthogInitialized) return;
 
   const key = ANALYTICS_CONFIG.posthog.key;
   const host = ANALYTICS_CONFIG.posthog.host;
   const assetHost = ANALYTICS_CONFIG.posthog.assetHost;
   if (!key) return;
 
+  if (posthogInitialized) {
+    const consented = hasAnalyticsConsent();
+    if (consented !== posthogConsentApplied) {
+      applyPostHogConsent(consented);
+      applyAnalyticsIdentity();
+    }
+    return;
+  }
+
   void import("posthog-js").then(({ default: posthog }) => {
     // Guard against overlapping dynamic imports before the first init settles.
-    if (posthogInitialized || !hasAnalyticsConsent()) return;
+    if (posthogInitialized) return;
+    const consented = hasAnalyticsConsent();
 
     posthog.init(key, {
       api_host: host,
@@ -69,9 +100,21 @@ function initPostHog(): void {
       // Option B: manual App Router pageviews via PageViewTracker + posthogSink → $pageview.
       capture_pageview: false,
       capture_pageleave: true,
+      // Without analytics consent PostHog runs cookieless (see applyPostHogConsent).
+      cookieless_mode: "on_reject",
+      opt_out_capturing_by_default: !consented,
+      disable_session_recording: !consented,
+      // Cookieless visitors send page views only — no click, heatmap or dead-click capture.
+      // After consent is given, these switch on with the next full page load.
+      autocapture: consented,
+      capture_heatmaps: consented,
+      capture_dead_clicks: consented,
+      rageclick: consented,
     });
     (window as Window & { posthog?: typeof posthog }).posthog = posthog;
     posthogInitialized = true;
+    applyPostHogConsent(consented);
+    applyAnalyticsIdentity();
 
     // PageViewTracker often runs before this async import resolves; capture the current URL once.
     capturePostHogPageview();
