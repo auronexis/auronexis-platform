@@ -70,6 +70,10 @@ describe("bot protection", () => {
     assert.match(readSource("src/lib/company/legal-content.ts"), /heading: "Bot protection"/);
   });
 
+  it("only one token field per form (Cloudflare's own response field is disabled)", () => {
+    assert.match(readSource("src/components/security/turnstile-field.tsx"), /"response-field": false/);
+  });
+
   it("CSP allows the Turnstile script and frame", () => {
     const csp = readSource("src/lib/security/csp.ts");
     assert.match(csp, /frame-src https:\/\/challenges\.cloudflare\.com/);
