@@ -86,7 +86,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
     description: "For growing agencies with client portal delivery, integrations, and AI-assisted reporting",
     order: 1,
     features: [
-      "Up to 25 clients",
+      "Up to 25 clients · 3 team members",
       "Client portal",
       "Integrations",
       "Report templates and scheduling",
@@ -102,7 +102,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanDefinition[] = [
     order: 2,
     recommended: true,
     features: [
-      "Higher client and seat limits",
+      "Up to 100 clients · 10 team members",
+      "SLA tracking per contract",
       "Automation workflows",
       "White label branding",
       "Compliance center",

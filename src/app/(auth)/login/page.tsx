@@ -36,7 +36,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         ? AUTH_MESSAGES.SIGNUP_TRIAL_STARTED
         : params.trial === "unavailable"
           ? AUTH_MESSAGES.SIGNUP_TRIAL_UNAVAILABLE
-          : AUTH_MESSAGES.SIGNUP_SUCCESS
+          : params.trial === "pending"
+            ? AUTH_MESSAGES.SIGNUP_TRIAL_PENDING
+            : AUTH_MESSAGES.SIGNUP_SUCCESS
       : params.reset === "success"
         ? AUTH_MESSAGES.PASSWORD_UPDATED
         : undefined;

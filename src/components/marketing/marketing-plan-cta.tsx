@@ -49,7 +49,7 @@ export function MarketingPlanCta({ planName, className }: MarketingPlanCtaProps)
 
   return (
     <Link href="/signup" className={buttonClass}>
-      Create workspace
+      Start free trial
     </Link>
   );
 }
