@@ -23,6 +23,7 @@ export const CONVERSION_EVENTS = [
   "pricing_view",
   "signup_started",
   "signup_completed",
+  "trial_started",
   "workspace_created",
   "subscription_checkout_started",
   "subscription_checkout_completed",

@@ -116,8 +116,8 @@ export function CookieConsentBanner() {
               Privacy preferences
             </p>
             <p className="mt-1">
-              We use essential cookies for authentication and security. Analytics and marketing tools load only if you
-              accept them. Read our{" "}
+              We use essential cookies for authentication and security. Analytics cookies and marketing tools are used only
+              if you accept them; otherwise we only count page views anonymously, without cookies. Read our{" "}
               <ConsentLegalLink
                 href={LEGAL_ROUTES.cookies}
                 className={cn("font-medium text-primary hover:underline", focusRing)}

@@ -26,6 +26,7 @@ export const EVENT_FUNNEL_STAGE: Partial<Record<string, ConversionFunnelStage>> 
   pricing_view: "pricing",
   signup_started: "signup",
   signup_completed: "signup",
+  trial_started: "trial_activation",
   workspace_created: "workspace_creation",
   first_client_created: "first_client",
   client_created: "first_client",

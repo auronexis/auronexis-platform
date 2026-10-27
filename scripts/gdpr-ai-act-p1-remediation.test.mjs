@@ -103,7 +103,9 @@ test("analytics withdraw tears down optional trackers", () => {
   assert.match(provider, /opt_out_capturing/);
   assert.match(provider, /removeGa4Scripts|ga4-script/);
   assert.match(provider, /!hasMarketingConsent\(\)/);
-  assert.match(provider, /!hasAnalyticsConsent\(\)/);
+  // Withdrawal switches PostHog to cookieless (opt_out + reset), it no longer tears it down.
+  assert.match(provider, /const consented = hasAnalyticsConsent\(\)/);
+  assert.match(provider, /posthog\.reset\?\.\(\)/);
   assert.match(plausible, /removePlausible|plausible-script/);
   assert.match(clarity, /removeClarity|clarity-script/);
 });

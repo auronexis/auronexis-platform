@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createPageMetadataForPath } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
+import { ConversionTracker } from "@/components/analytics/conversion-tracker";
 import { LoginBrandingShell } from "@/components/branding/login-branding-shell";
 import { LegalLinksInline } from "@/components/legal/legal-links-inline";
 import { WhiteLabelThemeInjector } from "@/components/white-label/white-label-theme-injector";
@@ -46,6 +47,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <>
       <WhiteLabelThemeInjector branding={branding} scopeId="login-root" />
+      {params.signup === "success" && params.trial === "started" ? (
+        <ConversionTracker event="trial_started" props={{ surface: "signup_redirect" }} />
+      ) : null}
       <div id="login-root" className="white-label-scope contents">
         <LoginBrandingShell
           branding={branding}

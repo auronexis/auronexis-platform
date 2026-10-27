@@ -12,6 +12,8 @@ import { ToastProvider } from "@/components/ui/toast";
 import { getOrganizationBranding } from "@/lib/branding/queries";
 import { getOrganizationPlanContext } from "@/lib/plans/queries";
 import { TrialBanner } from "@/components/trial/trial-banner";
+import { AnalyticsIdentity } from "@/components/analytics/analytics-identity";
+import { isInternalAnalyticsUser } from "@/lib/analytics/internal";
 import { canUseFeature } from "@/lib/plans/guards";
 import { getNavItemsForRoleAndPlan } from "@/lib/tenancy/context";
 import { buildWorkspaceSearchActions } from "@/lib/layout/workspace-search";
@@ -64,6 +66,14 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
           <MobileNavProvider>
             <WhiteLabelThemeInjector branding={branding} scopeId="dashboard-root" />
             <div id="dashboard-root" className="white-label-scope contents">
+              <AnalyticsIdentity
+                userId={session.user.id}
+                role={session.role}
+                isInternal={isInternalAnalyticsUser({
+                  organizationId: session.organization.id,
+                  email: session.user.email,
+                })}
+              />
               <DashboardAnalyticsTracker
                 isRecentSignup={isRecentSignup}
                 planTier={navPlan}
