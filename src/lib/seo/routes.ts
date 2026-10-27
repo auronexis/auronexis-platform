@@ -62,7 +62,7 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.home]: {
     title: "Client Operations & Client Reporting Software",
     description:
-      "Client health scores, SLA tracking, NIS2 incident management, and automated client reporting for MSPs, agencies, and service businesses — in one workspace.",
+      "Client health scores, SLA tracking, incident records and automated client reports for agencies, MSPs and service businesses in one workspace.",
   },
   [MARKETING_ROUTES.features]: {
     title: "Client Operations Features for Agencies & MSPs",
