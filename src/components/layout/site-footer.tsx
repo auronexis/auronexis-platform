@@ -27,6 +27,8 @@ const PRODUCT_HUNT_URL =
   "https://www.producthunt.com/products/auroranexis?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-auroranexis";
 const PRODUCT_HUNT_BADGE_SRC =
   "https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1293358&theme=light";
+const PRODUCT_HUNT_BADGE_SRC_DARK =
+  "https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1293358&theme=dark";
 
 
 
@@ -165,6 +167,23 @@ export function SiteFooter({ variant = "default", className, poweredByLabel }: S
               © {year} {COMPANY_NAME} · Version {APP_VERSION}
             </p>
           </div>
+
+          <a
+            href={PRODUCT_HUNT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn("inline-block self-start rounded", focusRing)}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- external Product Hunt badge (SVG) */}
+            <img
+              src={PRODUCT_HUNT_BADGE_SRC_DARK}
+              alt="Auroranexis on Product Hunt"
+              width={200}
+              height={43}
+              loading="lazy"
+              style={{ width: 200, height: 43 }}
+            />
+          </a>
         </div>
       </footer>
     );

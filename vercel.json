@@ -8,19 +8,34 @@
   "redirects": [
     {
       "source": "/",
-      "has": [{ "type": "host", "value": "auroranexis.com" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "auroranexis.com"
+        }
+      ],
       "destination": "https://www.auroranexis.com/",
       "permanent": true
     },
     {
       "source": "/:path((?!api/).*)",
-      "has": [{ "type": "host", "value": "auroranexis.com" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "auroranexis.com"
+        }
+      ],
       "destination": "https://www.auroranexis.com/:path",
       "permanent": true
     },
     {
       "source": "/documentation",
-      "has": [{ "type": "host", "value": "app.auroranexis.com" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "app.auroranexis.com"
+        }
+      ],
       "destination": "https://www.auroranexis.com/docs",
       "permanent": true
     },
@@ -67,6 +82,31 @@
     {
       "source": "/refund",
       "destination": "/refund-policy",
+      "permanent": true
+    },
+    {
+      "source": "/terms-of-service",
+      "destination": "/terms",
+      "permanent": true
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/about-us",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/contact-us",
+      "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/founders",
+      "destination": "/about",
       "permanent": true
     }
   ],
