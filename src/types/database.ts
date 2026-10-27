@@ -282,6 +282,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      trial_claims: {
+        Row: {
+          id: string;
+          email_hash: string;
+          domain_hash: string | null;
+          organization_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email_hash: string;
+          domain_hash?: string | null;
+          organization_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email_hash?: string;
+          domain_hash?: string | null;
+          organization_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       users: {
         Row: {
           id: string;
@@ -3350,6 +3374,8 @@ export type Database = {
           portal_branding_enabled: boolean;
           custom_domain_enabled: boolean;
           priority_support_enabled: boolean;
+          source: string;
+          expires_at: string | null;
           notes: string | null;
           created_by: string | null;
           created_at: string;
@@ -3369,6 +3395,8 @@ export type Database = {
           portal_branding_enabled?: boolean;
           custom_domain_enabled?: boolean;
           priority_support_enabled?: boolean;
+          source?: string;
+          expires_at?: string | null;
           notes?: string | null;
           created_by?: string | null;
           created_at?: string;
@@ -3388,6 +3416,8 @@ export type Database = {
           portal_branding_enabled?: boolean;
           custom_domain_enabled?: boolean;
           priority_support_enabled?: boolean;
+          source?: string;
+          expires_at?: string | null;
           notes?: string | null;
           created_by?: string | null;
           created_at?: string;

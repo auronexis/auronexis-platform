@@ -353,7 +353,7 @@ export async function submitPilotApplication(_prev: CaptureActionState, formData
     });
     const eligibility = evaluatePilotApplicationEligibility({
       hasAuthenticatedOrganization: true,
-      isPaidAccess: entitlements.isPaidAccess,
+      isPaidAccess: entitlements.isPaidAccess && !entitlements.isTrial,
     });
     if (!eligibility.allowed) {
       return { error: eligibility.reason };

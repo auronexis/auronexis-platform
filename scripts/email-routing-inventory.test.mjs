@@ -69,7 +69,7 @@ test("production signup confirms at create then sends welcome via facade — not
   assert.doesNotMatch(auth, /Confirm your Auroranexis account/);
   assert.doesNotMatch(auth, /action_link/);
   assert.match(auth, /email_confirm:\s*true/);
-  assert.match(auth, /redirect\("\/login\?signup=success"\)/);
+  assert.match(auth, /redirect\(`\/login\?signup=success&trial=\$\{trialParam\}`\)/);
   assert.match(auth, /sendWelcomeEmailAfterSignup/);
   assert.doesNotMatch(auth, /nodemailer/i);
   assert.doesNotMatch(auth, /sendEmail\(/);

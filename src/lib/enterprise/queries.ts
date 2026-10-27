@@ -8,6 +8,7 @@ import type {
 } from "@/lib/enterprise/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isTrialExpired } from "@/lib/trial/policy";
 import type { EnterpriseRequest, OrganizationPlanOverride } from "@/types/database";
 
 function mapRequest(row: EnterpriseRequest): EnterpriseRequestView {
@@ -37,11 +38,17 @@ function parsePlanKey(value: string): PlanKey {
 }
 
 function mapOverride(row: OrganizationPlanOverride): OrganizationPlanOverrideView {
+  const source: OrganizationPlanOverrideView["source"] = row.source === "trial" ? "trial" : "admin";
+  const expiresAt = row.expires_at ?? null;
+  // Expiry is enforced at read time: an override past expires_at never grants access.
+  const expired = (source === "trial" || expiresAt !== null) && isTrialExpired(expiresAt);
   return {
     id: row.id,
     organizationId: row.organization_id,
     plan: parsePlanKey(row.plan),
-    status: row.status as OrganizationPlanOverrideView["status"],
+    status: expired ? "expired" : (row.status as OrganizationPlanOverrideView["status"]),
+    source,
+    expiresAt,
     seatsLimit: row.seats_limit,
     clientsLimit: row.clients_limit,
     monitoringLimit: row.monitoring_limit,

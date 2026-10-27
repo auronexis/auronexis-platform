@@ -27,12 +27,13 @@ test("public AI status uses explicit missing-key detail without env exposure", (
   assert.doesNotMatch(source, /process\.env\.OPENAI_API_KEY/);
 });
 
-test("marketing CTA uses Create workspace instead of free trial", () => {
+test("marketing CTA offers the real 7-day free trial (no card, ends automatically)", () => {
   const cta = readSource("src/lib/marketing/cta.ts");
   const auth = readSource("src/lib/marketing/auth-context.ts");
-  assert.match(cta, /Create workspace/);
-  assert.doesNotMatch(cta, /Start free trial/);
-  assert.match(auth, /Create workspace/);
+  assert.match(cta, /Start 7-day free trial/);
+  assert.match(auth, /signupLabel: "Start free trial"/);
+  const policy = readSource("src/lib/trial/policy.ts");
+  assert.match(policy, /TRIAL_LENGTH_DAYS = 7/);
 });
 
 test("features include business problem workflow outcome and CTA", () => {

@@ -42,6 +42,9 @@ export async function createOrUpdatePlanOverrideAction(
     portal_branding_enabled: input.portalBrandingEnabled ?? false,
     custom_domain_enabled: input.customDomainEnabled ?? false,
     priority_support_enabled: input.prioritySupportEnabled ?? false,
+    // A manual override always replaces a trial: open-ended, never expires on its own.
+    source: "admin",
+    expires_at: null,
     notes: input.notes ?? null,
     created_by: input.createdBy ?? actorUserId,
   };

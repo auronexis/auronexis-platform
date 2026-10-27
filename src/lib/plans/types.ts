@@ -87,6 +87,15 @@ export type OrganizationPlanContext = {
   subscriptionPriceId: string | null;
   subscriptionStatus: string | null;
   mappedPlanKeyFromPriceId: PlanKey | null;
+  /** Self-serve free trial state; null when the workspace never had a trial. */
+  trial?: WorkspaceTrialState | null;
+};
+
+export type WorkspaceTrialState = {
+  /** Trial currently grants access (not expired, no paid subscription). */
+  active: boolean;
+  expiresAt: string | null;
+  daysRemaining: number;
 };
 
 export type ClientLimitUsage = {

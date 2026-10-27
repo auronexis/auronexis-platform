@@ -23,7 +23,7 @@ export default async function PilotProgramPage() {
     });
     const eligibility = evaluatePilotApplicationEligibility({
       hasAuthenticatedOrganization: true,
-      isPaidAccess: entitlements.isPaidAccess,
+      isPaidAccess: entitlements.isPaidAccess && !entitlements.isTrial,
     });
     if (!eligibility.allowed) {
       blockedReason = eligibility.reason;

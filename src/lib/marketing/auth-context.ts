@@ -41,7 +41,7 @@ export function resolveMarketingHeaderActions(auth: MarketingAuthState) {
     signInHref: "/login",
     signInLabel: "Sign in",
     signupHref: "/signup",
-    signupLabel: "Create workspace",
+    signupLabel: "Start free trial",
   };
 }
 
@@ -49,6 +49,7 @@ const PUBLIC_AUTH_PATHS = new Set(["/login", "/signup", "/register"]);
 
 const PUBLIC_SIGNUP_LABELS = [
   /create workspace/i,
+  /free trial/i,
   /get started/i,
   /^sign up$/i,
   /try for free/i,

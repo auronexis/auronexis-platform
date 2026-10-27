@@ -33,11 +33,11 @@ test("marketing testimonials avoid fabricated customer claims", () => {
   assert.doesNotMatch(content, /Start free trial/i);
 });
 
-test("primary marketing CTAs use Create workspace language", () => {
+test("primary marketing CTAs point to the free trial signup", () => {
   const cta = readSource("src/lib/marketing/cta.ts");
   const auth = readSource("src/lib/marketing/auth-context.ts");
-  assert.match(cta, /Create workspace/);
-  assert.match(auth, /Create workspace/);
+  assert.match(cta, /label: "Start 7-day free trial",\s*href: "\/signup"/);
+  assert.match(auth, /signupHref: "\/signup",\s*signupLabel: "Start free trial"/);
 });
 
 // --- Plan and billing consistency ---

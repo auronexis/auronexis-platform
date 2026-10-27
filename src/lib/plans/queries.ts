@@ -3,6 +3,7 @@ import type { PlanKey } from "@/lib/billing/plans";
 import { applyPlanOverride } from "@/lib/enterprise/limits";
 import { getPlanOverride } from "@/lib/enterprise/queries";
 import { getEnabledModuleLabels } from "@/lib/plans/features";
+import { overrideAppliesWithSubscription, trialDaysRemaining } from "@/lib/trial/policy";
 import {
   resolveEffectivePlanFromSubscriptionRows,
   type EffectivePlanSubscriptionRow,
@@ -56,11 +57,22 @@ export const getOrganizationPlanContext = cache(async function getOrganizationPl
     organizationId,
     rows,
     planOverride: planOverride
-      ? { status: planOverride.status, plan: planOverride.plan }
+      ? { status: planOverride.status, plan: planOverride.plan, source: planOverride.source }
       : null,
   });
 
-  const mergedFeatures = applyPlanOverride(resolved.planKey, planOverride);
+  const hasPaidSubscription =
+    resolved.isActiveSubscription && resolved.mappedPlanKeyFromPriceId !== null;
+  const appliedOverride = overrideAppliesWithSubscription(planOverride, hasPaidSubscription);
+  const mergedFeatures = applyPlanOverride(resolved.planKey, appliedOverride);
+  const trial =
+    planOverride?.source === "trial"
+      ? {
+          active: appliedOverride !== null && planOverride.status === "active",
+          expiresAt: planOverride.expiresAt,
+          daysRemaining: trialDaysRemaining(planOverride.expiresAt),
+        }
+      : null;
 
   return {
     organizationId,
@@ -74,6 +86,7 @@ export const getOrganizationPlanContext = cache(async function getOrganizationPl
     subscriptionPriceId: resolved.subscriptionPriceId,
     subscriptionStatus: resolved.subscriptionStatus,
     mappedPlanKeyFromPriceId: resolved.mappedPlanKeyFromPriceId,
+    trial,
   };
 });
 
