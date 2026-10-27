@@ -42,6 +42,10 @@ export type OrganizationPlanOverrideView = {
   portalBrandingEnabled: boolean;
   customDomainEnabled: boolean;
   prioritySupportEnabled: boolean;
+  /** "admin" for manual/pilot overrides, "trial" for the self-serve free trial. */
+  source: "admin" | "trial";
+  /** Trial end; null for open-ended admin overrides. */
+  expiresAt: string | null;
   notes: string | null;
   createdBy: string | null;
   createdAt: string;

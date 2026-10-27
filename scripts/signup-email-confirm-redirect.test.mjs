@@ -46,7 +46,7 @@ describe("production signup without email confirmation UX", () => {
 
   it("successful signup redirects to login without auto sign-in", () => {
     const source = authActions();
-    assert.match(source, /redirect\("\/login\?signup=success"\)/);
+    assert.match(source, /redirect\(`\/login\?signup=success&trial=\$\{trialParam\}`\)/);
     assert.doesNotMatch(source, /redirect\("\/dashboard"\)/);
     // signInWithPassword remains for login; signup must not call it after createUser.
     const signupFn = source.slice(source.indexOf("export async function signUp"));

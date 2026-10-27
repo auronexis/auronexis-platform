@@ -13,7 +13,7 @@ import { headers } from "next/headers";
 export const metadata: Metadata = createPageMetadataForPath("/login");
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; redirect?: string; reset?: string; signup?: string }>;
+  searchParams: Promise<{ error?: string; redirect?: string; reset?: string; signup?: string; trial?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -32,7 +32,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       : undefined;
   const initialSuccess =
     params.signup === "success"
-      ? AUTH_MESSAGES.SIGNUP_SUCCESS
+      ? params.trial === "started"
+        ? AUTH_MESSAGES.SIGNUP_TRIAL_STARTED
+        : params.trial === "unavailable"
+          ? AUTH_MESSAGES.SIGNUP_TRIAL_UNAVAILABLE
+          : AUTH_MESSAGES.SIGNUP_SUCCESS
       : params.reset === "success"
         ? AUTH_MESSAGES.PASSWORD_UPDATED
         : undefined;

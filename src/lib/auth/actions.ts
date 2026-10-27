@@ -17,6 +17,8 @@ import {
   buildTermsAcceptanceEvidence,
 } from "@/lib/billing/contracting";
 import { persistContractAcceptance } from "@/lib/billing/contract-acceptance";
+import { normalizeEmailForTrial } from "@/lib/trial/policy";
+import { startTrialForNewOrganization } from "@/lib/trial/service";
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters."),
@@ -110,6 +112,10 @@ export async function signUp(
     return { error: parsed.error.issues[0]?.message ?? "Invalid registration data." };
   }
 
+  if (normalizeEmailForTrial(parsed.data.email)?.isDisposable) {
+    return { error: "Please sign up with your business email address. Disposable email addresses are not accepted." };
+  }
+
   const passwordProblem = await checkNewPassword(parsed.data.password);
   if (passwordProblem) {
     return { error: passwordProblem };
@@ -198,6 +204,12 @@ export async function signUp(
     console.error("[auth] contract acceptance persistence failed (account retained)");
   }
 
+  // Free trial is best-effort as well: one per email address and per company domain.
+  const trial = await startTrialForNewOrganization({
+    organizationId: organization.id,
+    email: parsed.data.email,
+  });
+
   // Welcome mail is best-effort — never roll back a successful provisioning.
   try {
     await sendWelcomeEmailAfterSignup({
@@ -212,7 +224,8 @@ export async function signUp(
   }
 
   revalidatePath("/", "layout");
-  redirect("/login?signup=success");
+  const trialParam = trial.status === "started" ? "started" : "unavailable";
+  redirect(`/login?signup=success&trial=${trialParam}`);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) {
       throw error;

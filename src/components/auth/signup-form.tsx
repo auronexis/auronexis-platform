@@ -26,10 +26,11 @@ export function SignUpForm() {
       }}
     >
       <div className="mb-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Create your agency</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Start your 7-day free trial</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-700">
-          Create a free workspace to explore the platform, then choose a paid plan when you are ready
-          to scale.
+          Business plan for 7 days, up to 10 clients. No credit card or payment details. The trial ends
+          automatically and nothing is charged unless you choose a plan. For businesses only; one trial
+          per company.
         </p>
       </div>
 

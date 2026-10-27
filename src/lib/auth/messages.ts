@@ -15,6 +15,10 @@ export const AUTH_MESSAGES = {
   CONFIGURATION_ERROR: "Password reset is temporarily unavailable. Please try again later.",
   GENERIC_ERROR: "Something went wrong. Please try again.",
   SIGNUP_SUCCESS: "Account created successfully. You can now sign in.",
+  SIGNUP_TRIAL_STARTED:
+    "Account created. Your 7-day free trial of the Business plan has started — sign in to set up your workspace. No payment details needed; the trial ends automatically.",
+  SIGNUP_TRIAL_UNAVAILABLE:
+    "Account created. A free trial has already been used for this email address or company, so your workspace starts without trial access — you can choose a plan in Settings → Plans.",
 } as const;
 
 export type AuthMessageKey = keyof typeof AUTH_MESSAGES;

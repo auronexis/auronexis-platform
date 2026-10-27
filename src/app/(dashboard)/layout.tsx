@@ -10,7 +10,8 @@ import { UserPreferencesProvider } from "@/components/profile/user-preferences-p
 import { WorkspaceMoneyProvider } from "@/components/workspace/workspace-money-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { getOrganizationBranding } from "@/lib/branding/queries";
-import { getCurrentPlan } from "@/lib/plans/queries";
+import { getOrganizationPlanContext } from "@/lib/plans/queries";
+import { TrialBanner } from "@/components/trial/trial-banner";
 import { canUseFeature } from "@/lib/plans/guards";
 import { getNavItemsForRoleAndPlan } from "@/lib/tenancy/context";
 import { buildWorkspaceSearchActions } from "@/lib/layout/workspace-search";
@@ -35,7 +36,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     redirect("/login");
   }
 
-  const navPlan = await getCurrentPlan(session.organization.id);
+  const planContext = await getOrganizationPlanContext(session.organization.id);
+  const navPlan = planContext.planKey;
   const navItems = getNavItemsForRoleAndPlan(session.role, navPlan);
   const searchActions = buildWorkspaceSearchActions(session.role, navPlan);
   const [unreadNotificationCount, branding, notificationsEnabled] = await Promise.all([
@@ -77,6 +79,12 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
               branding={branding}
               searchActions={searchActions}
             >
+              <TrialBanner
+                trial={planContext.trial}
+                hasPaidSubscription={
+                  planContext.isActiveSubscription && planContext.mappedPlanKeyFromPriceId !== null
+                }
+              />
               {children}
             </DashboardShell>
             </div>

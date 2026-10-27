@@ -63,6 +63,14 @@ export default async function PublicPricingPage() {
           </AuthAwareMarketingLink>
           .
         </p>
+        <p className="mb-6 max-w-3xl rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm">
+          <span className="font-semibold">Try it free for 7 days.</span> Every new workspace starts with a
+          7-day trial of the Business plan (up to 10 clients). No credit card, no payment details, and the trial
+          ends automatically. Nothing is charged unless you choose a plan.{" "}
+          <AuthAwareMarketingLink href="/signup" className="font-medium text-primary hover:underline">
+            Start your free trial
+          </AuthAwareMarketingLink>
+        </p>
         <div className="grid gap-4 lg:grid-cols-3">
           {plans.map((plan) => (
             <article
@@ -125,7 +133,7 @@ export default async function PublicPricingPage() {
       </MarketingSection>
       <MarketingCtaSection
         title="Ready to standardize client operations?"
-        description="Create a workspace, invite your team, and connect your first clients."
+        description="Start a 7-day free trial, invite your team, and connect your first clients. No credit card needed."
         primaryPreset="startFreeTrial"
         secondaryPreset="contactSales"
       />

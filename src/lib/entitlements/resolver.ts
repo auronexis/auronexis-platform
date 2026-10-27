@@ -25,6 +25,7 @@ import {
 } from "@/lib/entitlements/definitions";
 import type { ResolvedEntitlements } from "@/lib/entitlements/types";
 import { getDevForcePlanOverride } from "@/lib/plans/dev-override";
+import { TRIAL_AI_CREDITS, overrideAppliesWithSubscription } from "@/lib/trial/policy";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SessionContext } from "@/lib/tenancy/context";
 import type { OrganizationSubscription } from "@/types/database";
@@ -132,7 +133,7 @@ export async function resolveOrganizationEntitlements(
   organizationId: string,
   options?: ResolveOrganizationEntitlementsOptions,
 ): Promise<ResolvedEntitlements> {
-  const [subscription, planOverride] = await Promise.all([
+  const [subscription, storedOverride] = await Promise.all([
     loadOrganizationSubscription(organizationId, options?.session),
     getPlanOverride(organizationId),
   ]);
@@ -145,6 +146,10 @@ export async function resolveOrganizationEntitlements(
   const flags = resolveActiveBillingStatusFlags(subscription, activeProvider);
   const status = flags.rawStatus;
   const subscriptionAccess = flags.isUsable;
+  // A paid subscription replaces the free trial instead of stacking on top of it.
+  const planOverride = overrideAppliesWithSubscription(storedOverride, subscriptionAccess);
+  const isTrial =
+    planOverride?.source === "trial" && planOverride.status === "active" && !getDevForcePlanOverride();
   const overrideAccess =
     Boolean(getDevForcePlanOverride()) || planOverride?.status === "active";
   const activeAccess = subscriptionAccess || overrideAccess;
@@ -168,17 +173,22 @@ export async function resolveOrganizationEntitlements(
   const base = getEntitlementsForPlan(planKey);
   const effectiveLimits = getEffectiveLimits(planKey, planOverride);
 
+  const planName = safeGetPlanByKey(planKey)?.name ?? "Plan";
+
   return {
     planKey,
     resolvedPlanKey: planKey,
-    planLabel: safeGetPlanByKey(planKey)?.name ?? "Plan",
+    planLabel: isTrial ? `${planName} (free trial)` : planName,
     isPaidAccess: true,
+    isTrial,
     subscriptionStatus: status,
     fallbackPath: "paid_plan",
     maxClients: effectiveLimits.maxClients ?? base.maxClients,
     maxSeats: effectiveLimits.seats ?? base.maxSeats,
     maxReportsPerMonth: base.maxReportsPerMonth,
-    aiCreditsPerMonth: base.aiCreditsPerMonth,
+    aiCreditsPerMonth: isTrial
+      ? Math.min(base.aiCreditsPerMonth ?? TRIAL_AI_CREDITS, TRIAL_AI_CREDITS)
+      : base.aiCreditsPerMonth,
     features: base.features,
   };
 }

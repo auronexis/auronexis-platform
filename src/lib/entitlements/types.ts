@@ -44,6 +44,8 @@ export type ResolvedEntitlements = PlanEntitlements & {
   resolvedPlanKey: PlanKey | null;
   planLabel: string;
   isPaidAccess: boolean;
+  /** Access comes from the self-serve free trial (no payment). */
+  isTrial?: boolean;
   subscriptionStatus: string | null;
   fallbackPath: "paid_plan" | "minimal_access" | "starter_default";
 };

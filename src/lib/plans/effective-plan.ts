@@ -69,7 +69,7 @@ function resolveSubscriptionPriceId(
 export function resolveEffectivePlanFromSubscriptionRows(input: {
   organizationId: string;
   rows: EffectivePlanSubscriptionRow[];
-  planOverride: { status: string; plan: PlanKey } | null;
+  planOverride: { status: string; plan: PlanKey; source?: string } | null;
 }): EffectivePlanResolution {
   const preferredHint = pickSubscriptionProviderHintRow(input.rows);
   const activeProvider = getOrganizationBillingProvider({
@@ -113,11 +113,16 @@ export function resolveEffectivePlanFromSubscriptionRows(input: {
   if (devOverride) {
     basePlanKey = devOverride;
     planSource = "dev_override";
-  } else if (input.planOverride?.status === "active") {
+  } else if (
+    input.planOverride?.status === "active" &&
+    // A paid subscription replaces the free trial instead of stacking on top of it.
+    !(input.planOverride.source === "trial" && isActiveSubscription && mappedPlanKeyFromPriceId)
+  ) {
     basePlanKey = input.planOverride.plan;
     planSource = "plan_override";
     planOverrideActive = true;
   }
+  const trialActive = planOverrideActive && input.planOverride?.source === "trial";
 
   const plan = safeGetPlanByKey(basePlanKey) ?? safeGetPlanByKey(getDefaultPlanKey());
   const isPaidAccess =
@@ -127,9 +132,11 @@ export function resolveEffectivePlanFromSubscriptionRows(input: {
 
   return {
     planKey: basePlanKey,
-    planLabel: planOverrideActive
-      ? `${plan?.name ?? "Plan"} (Enterprise override)`
-      : (plan?.name ?? "Plan"),
+    planLabel: trialActive
+      ? `${plan?.name ?? "Plan"} (free trial)`
+      : planOverrideActive
+        ? `${plan?.name ?? "Plan"} (Enterprise override)`
+        : (plan?.name ?? "Plan"),
     mappedPlanKeyFromPriceId,
     isActiveSubscription,
     isPaidAccess,

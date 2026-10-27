@@ -201,7 +201,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
     items: [
       {
         question: "Is there a free trial?",
-        answer: "Create a workspace to evaluate the platform. Pilot Partner offers invite-only terms for qualified agencies.",
+        answer: "Yes. Every new workspace gets a 7-day free trial of the Business plan (up to 10 clients and 3 team members). No credit card or payment details are needed, and the trial ends automatically — nothing is charged unless you choose a plan. One trial per company. Pilot Partner offers invite-only terms for qualified agencies.",
       },
       {
         question: "What is included in Enterprise?",

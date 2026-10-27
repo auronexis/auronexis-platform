@@ -30,7 +30,7 @@ describe("transactional email system", () => {
   it("1. signup provisions account and redirects to login success without confirmation UX", () => {
     const source = auth();
     assert.match(source, /email_confirm:\s*true/);
-    assert.match(source, /redirect\("\/login\?signup=success"\)/);
+    assert.match(source, /redirect\(`\/login\?signup=success&trial=\$\{trialParam\}`\)/);
     assert.doesNotMatch(source, /Check your email/);
     assert.doesNotMatch(source, /generateLink\(/);
   });

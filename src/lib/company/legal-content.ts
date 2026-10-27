@@ -118,6 +118,11 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
           "On the public website, optional analytics tools (such as Plausible, Microsoft Clarity, or PostHog where configured) load only if you grant analytics consent. Marketing conversion tools (such as GA4 where explicitly enabled) load only if you grant marketing consent. You can change preferences via the cookie banner or footer link. Inside the authenticated application, operational logging and security monitoring may occur separately as described in this policy and our Security Policy.",
       },
       {
+        heading: "Free trial",
+        body:
+          "To grant only one free trial per company and per email address, we store a pseudonymised SHA-256 value of your normalized email address and, for company email domains, of the domain. We keep these values after a workspace is deleted, because their purpose is to recognise repeated trial sign-ups; they do not contain your address in readable form. The legal basis is our legitimate interest in preventing abuse of the free trial (Art. 6(1)(f) GDPR).",
+      },
+      {
         heading: "Bot protection",
         body:
           "To protect accounts and the service against automated attacks (such as credential stuffing, mass registrations, password-reset flooding and form spam), sign-in, registration, password reset and public forms may use Cloudflare Turnstile. Turnstile evaluates technical signals such as your IP address and browser characteristics to tell humans from bots; it does not receive the contents of the form. The legal basis is our legitimate interest in securing the service (Art. 6(1)(f) GDPR). Cloudflare is listed on our Sub-processors page.",
@@ -186,6 +191,11 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
         heading: "10. Subscription plans",
         body:
           "Features, usage limits, and entitlements depend on the plan selected. Plan descriptions on the pricing page and in your workspace settings are authoritative. Enterprise or pilot arrangements may include custom limits documented separately.",
+      },
+      {
+        heading: "10a. Free trial",
+        body:
+          "New workspaces may receive a one-time free trial of the Business plan for 7 days (\"Trial\"). The Trial is free of charge and requires no payment details. It ends automatically at the end of the seventh day; it does not convert into a paid subscription and does not renew. A paid subscription starts only if you actively choose a plan and complete checkout.\n\nDuring the Trial, limits apply: up to 10 clients, up to 3 team members, a reduced monthly AI credit allowance, and reports can be emailed only to members of your own workspace. One Trial is available per company and per email address. We may refuse or end a Trial early where we detect repeated sign-ups to obtain further Trials, automated or abusive use, or false business information.\n\nAfter the Trial, your workspace and data are kept and you can still sign in with limited access; paid features unlock again once you choose a plan. You can request deletion of the workspace and its data at any time. The Trial is provided for evaluation; section 22 (Limitation of liability) applies.",
       },
       {
         heading: "11. Prices, payment, invoices, and taxes",
@@ -456,7 +466,7 @@ export const LEGAL_PAGES: Record<LegalPageKey, LegalPageContent> = {
       {
         heading: "4. Refund Eligibility",
         body:
-          "Unless otherwise agreed in writing or required by mandatory law, subscription fees already paid for the current billing period are generally non-refundable for business customers.\n\nAuroranexis may review requests involving duplicate charges, incorrect charges, confirmed billing errors, unauthorized transactions, or material technical failure that prevented access to the purchased service. A review does not guarantee a refund.\n\nNothing in this policy promises a refund where this policy or applicable law does not provide one.",
+          "Unless otherwise agreed in writing or required by mandatory law, subscription fees already paid for the current billing period are generally non-refundable for business customers. New workspaces can evaluate the Business plan free of charge for 7 days before any payment (see Terms of Service, section 10a).\n\nAuroranexis may review requests involving duplicate charges, incorrect charges, confirmed billing errors, unauthorized transactions, or material technical failure that prevented access to the purchased service. A review does not guarantee a refund.\n\nNothing in this policy promises a refund where this policy or applicable law does not provide one.",
       },
       {
         heading: "5. How to Request a Refund",

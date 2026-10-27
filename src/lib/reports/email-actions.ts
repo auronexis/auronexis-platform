@@ -23,6 +23,7 @@ import {
   getReportById,
 } from "@/lib/reports/queries";
 import { createClient } from "@/lib/supabase/server";
+import { getOrganizationPlanContext } from "@/lib/plans/queries";
 import type { Database } from "@/types/database";
 
 type ReportEmailDeliveryInsert = Database["public"]["Tables"]["report_email_deliveries"]["Insert"];
@@ -61,6 +62,27 @@ export async function sendReportByEmailAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid email address." };
+  }
+
+  // Free trial: report emails only to members of this workspace, so a trial cannot be used to
+  // send mail to arbitrary addresses through our mail servers.
+  const planContext = await getOrganizationPlanContext(session.organization.id);
+  if (planContext.trial?.active) {
+    const supabaseForTrial = await createClient();
+    const { data: members } = await supabaseForTrial
+      .from("users")
+      .select("email")
+      .eq("organization_id", session.organization.id);
+    const recipient = parsed.data.recipientEmail.trim().toLowerCase();
+    const isMember = ((members ?? []) as { email: string | null }[]).some(
+      (member) => (member.email ?? "").trim().toLowerCase() === recipient,
+    );
+    if (!isMember) {
+      return {
+        error:
+          "During the free trial, reports can be emailed to members of your workspace only. Choose a plan in Settings → Plans to send reports to your clients.",
+      };
+    }
   }
 
   const report = await getReportById(session, reportId);
