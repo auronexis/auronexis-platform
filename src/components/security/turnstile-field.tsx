@@ -8,6 +8,7 @@ type TurnstileRenderOptions = {
   action?: string;
   appearance?: "always" | "execute" | "interaction-only";
   theme?: "light" | "dark" | "auto";
+  "response-field"?: boolean;
   callback: (token: string) => void;
   "expired-callback"?: () => void;
   "error-callback"?: () => void;
@@ -104,6 +105,9 @@ export function TurnstileField({ action, className, resetKey, onTokenChange }: T
           action,
           appearance: "interaction-only",
           theme: "auto",
+          // We submit the token through our own hidden input; without this Cloudflare adds a
+          // second field with the same name to the form.
+          "response-field": false,
           callback: (value) => setToken(value),
           "expired-callback": () => setToken(""),
           "error-callback": () => setToken(""),
