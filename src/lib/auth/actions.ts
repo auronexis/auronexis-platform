@@ -224,7 +224,8 @@ export async function signUp(
   }
 
   revalidatePath("/", "layout");
-  const trialParam = trial.status === "started" ? "started" : "unavailable";
+  const trialParam =
+    trial.status === "started" ? "started" : trial.status === "already_used" ? "unavailable" : "pending";
   redirect(`/login?signup=success&trial=${trialParam}`);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) {

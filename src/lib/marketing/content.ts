@@ -179,7 +179,7 @@ export const PUBLIC_PRICING_PLANS = [
     period: "/ month",
     productPath: "professional" as const,
     description: "For growing agencies with client portal delivery, integrations, automation workflows, and AI-assisted reporting.",
-    highlights: ["Up to 25 clients", "Client portal", "Integrations", "Automation builder", "AI report assistant"],
+    highlights: ["Up to 25 clients · 3 team members", "Client portal", "Integrations", "Automation builder", "AI report assistant"],
     featured: false,
   },
   {
@@ -188,7 +188,14 @@ export const PUBLIC_PRICING_PLANS = [
     period: "/ month",
     productPath: "business" as const,
     description: "For established agencies with compliance, white-label, and higher operational limits.",
-    highlights: ["Higher limits", "Operational automation engine", "White label", "Compliance center"],
+    highlights: [
+      "Up to 100 clients · 10 team members",
+      "SLA tracking per contract",
+      "Risk & incident management",
+      "Operational automation engine",
+      "White label",
+      "Compliance center",
+    ],
     featured: true,
   },
   {

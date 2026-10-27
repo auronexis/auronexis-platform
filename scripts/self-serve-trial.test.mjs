@@ -139,3 +139,19 @@ describe("wiring", () => {
     assert.match(layout, /<TrialBanner/);
   });
 });
+
+describe("pricing clarity and honest signup messages", () => {
+  it("plan cards state concrete client and team limits and the trial CTA", () => {
+    const content = readSource("src/lib/marketing/content.ts");
+    assert.match(content, /"Up to 25 clients · 3 team members"/);
+    assert.match(content, /"Up to 100 clients · 10 team members"/);
+    assert.doesNotMatch(content, /"Higher limits"/);
+    assert.match(readSource("src/components/marketing/marketing-plan-cta.tsx"), /Start free trial/);
+  });
+
+  it("a failed trial start is not reported as an already-used trial", () => {
+    const actions = readSource("src/lib/auth/actions.ts");
+    assert.match(actions, /trial\.status === "already_used" \? "unavailable" : "pending"/);
+    assert.match(readSource("src/app/(auth)/login/page.tsx"), /SIGNUP_TRIAL_PENDING/);
+  });
+});

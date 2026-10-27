@@ -17,6 +17,8 @@ export const AUTH_MESSAGES = {
   SIGNUP_SUCCESS: "Account created successfully. You can now sign in.",
   SIGNUP_TRIAL_STARTED:
     "Account created. Your 7-day free trial of the Business plan has started — sign in to set up your workspace. No payment details needed; the trial ends automatically.",
+  SIGNUP_TRIAL_PENDING:
+    "Account created. Your free trial could not be activated automatically — email support@auroranexis.com and we will activate it for you.",
   SIGNUP_TRIAL_UNAVAILABLE:
     "Account created. A free trial has already been used for this email address or company, so your workspace starts without trial access — you can choose a plan in Settings → Plans.",
 } as const;
