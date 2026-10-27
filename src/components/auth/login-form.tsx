@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
+import { TurnstileField } from "@/components/security/turnstile-field";
 import { signIn, type AuthActionState } from "@/lib/auth/actions";
 import { markPendingAnalyticsEvent } from "@/lib/analytics/pending-events";
 import { BRANDING_ASSETS } from "@/lib/branding/assets";
@@ -103,6 +104,7 @@ export function LoginForm({ redirectTo, initialError, initialSuccess }: LoginFor
           <span aria-live="assertive">{errorMessage}</span>
         </FormAlert>
       ) : null}
+      <TurnstileField action="login" resetKey={state} className="pt-1" />
       <button
         type="submit"
         disabled={isPending}

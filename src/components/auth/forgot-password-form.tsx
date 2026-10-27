@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { inputClassName, labelClassName } from "@/components/auth/auth-password-input";
 import { FormAlert } from "@/components/ui/form-alert";
+import { TurnstileField } from "@/components/security/turnstile-field";
 import {
   requestPasswordResetAction,
   type ForgotPasswordActionState,
@@ -80,6 +81,7 @@ export function ForgotPasswordForm() {
         </FormAlert>
       ) : null}
 
+      <TurnstileField action="password_reset" resetKey={state} className="pt-1" />
       <button
         type="submit"
         disabled={isSubmitDisabled || showSuccess}

@@ -1,4 +1,5 @@
 "use client";
+import { TurnstileField } from "@/components/security/turnstile-field";
 
 import { FormAlert } from "@/components/ui/form-alert";
 import { cn } from "@/lib/utils/cn";
@@ -54,6 +55,7 @@ export function ReferralLeadForm({ className }: { className?: string }) {
           ) : null}
         </FormAlert>
       ) : null}
+      <TurnstileField action="referral" resetKey={state} className="pt-1" />
       <button type="submit" disabled={isPending} className={cn("rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60", focusRing)}>
         {isPending ? "Submitting…" : "Submit referral"}
       </button>

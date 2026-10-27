@@ -1,4 +1,5 @@
 "use client";
+import { TurnstileField } from "@/components/security/turnstile-field";
 
 import { useEffect } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -62,6 +63,7 @@ export function DemoBookingForm({ className }: { className?: string }) {
           ) : null}
         </FormAlert>
       ) : null}
+      <TurnstileField action="demo" resetKey={state} className="pt-1" />
       <MarketingButton type="submit" loading={isPending} ctaId="book_demo" analyticsEvent="demo_requested">
         Book demo
       </MarketingButton>

@@ -14,8 +14,8 @@
 
 import { COMPANY_CONTACT } from "@/lib/company/company-contact";
 
-export const SUBPROCESSORS_DOCUMENT_VERSION = "subprocessors-2026-09-02-v2" as const;
-export const SUBPROCESSORS_EFFECTIVE_DATE = "2026-09-02" as const;
+export const SUBPROCESSORS_DOCUMENT_VERSION = "subprocessors-2026-10-27-v3" as const;
+export const SUBPROCESSORS_EFFECTIVE_DATE = "2026-10-27" as const;
 
 export type SubprocessorRole =
   | "PROCESSOR"
@@ -121,6 +121,16 @@ export const SUBPROCESSOR_INVENTORY: readonly SubprocessorEntry[] = [
     role: "CONDITIONAL_PROCESSOR",
     alwaysUsed: false,
     activationStatus: "CODE_SUPPORTED_NOT_ACTIVE",
+  },
+  {
+    provider: "Cloudflare Turnstile",
+    purpose: "Bot and abuse protection on sign-in, registration, password reset and public forms when configured",
+    locationOrRegion: "Cloudflare global network (as operated by Cloudflare)",
+    dataCategories: "IP address, browser and device signals needed to tell humans from automated traffic; no form contents",
+    role: "CONDITIONAL_PROCESSOR",
+    alwaysUsed: false,
+    activationStatus: "OPTIONAL_CONFIGURABLE",
+    notes: "Active only when Turnstile keys are configured. Used to protect accounts and the service from automated abuse (legitimate interest, Art. 6(1)(f) GDPR).",
   },
   {
     provider: "Sentry",

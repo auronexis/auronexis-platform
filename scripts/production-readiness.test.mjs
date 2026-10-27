@@ -21,7 +21,9 @@ test("tracked env example is Mollie-first without legacy provider env keys", () 
   assert.match(example, /CRON_SECRET/);
   assert.match(example, /E2E_DISABLE_RATE_LIMIT/);
   assert.match(example, /never enable in production|Must remain false until explicit/i);
-  assert.doesNotMatch(example, /TURNSTILE/);
+  // Turnstile is optional bot protection: documented, never a kill switch.
+  assert.match(example, /Active only when BOTH keys are set/);
+  assert.doesNotMatch(example, /TURNSTILE_DISABLE/);
   // Retired provider credentials must not appear as settable keys (even commented).
   assert.doesNotMatch(example, /^[#\s]*FASTSPRING_/m);
   assert.doesNotMatch(example, /^BILLING_PROVIDER=/m);
@@ -130,7 +132,7 @@ test("dev plan override and e2e bypasses are not production defaults", () => {
   const example = readSource(".env.example");
   assert.match(example, /# DEV_FORCE_PLAN=/);
   assert.doesNotMatch(example, /^DEV_FORCE_PLAN=/m);
-  assert.doesNotMatch(example, /TURNSTILE/);
+  assert.doesNotMatch(example, /TURNSTILE_DISABLE/);
   assert.doesNotMatch(example, /^E2E_DISABLE_RATE_LIMIT=/m);
 });
 

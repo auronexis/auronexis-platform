@@ -12,6 +12,7 @@ import { canManagePortalUsers } from "@/lib/client-portal/guards";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient, createWritableClient } from "@/lib/supabase/server";
 import { authThrottleUserMessage, checkPortalLoginThrottle } from "@/lib/security/login-throttle";
+import { requireTurnstileFromForm } from "@/lib/security/turnstile";
 import type { Database } from "@/types/database";
 
 type ClientPortalUserInsert = Database["public"]["Tables"]["client_portal_users"]["Insert"];
@@ -50,6 +51,11 @@ export async function signInPortal(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
+  }
+
+  const botCheck = await requireTurnstileFromForm(formData);
+  if (!botCheck.ok) {
+    return { error: botCheck.error };
   }
 
   const throttle = await checkPortalLoginThrottle(parsed.data.email);

@@ -1,4 +1,5 @@
 "use client";
+import { TurnstileField } from "@/components/security/turnstile-field";
 
 import { useId } from "react";
 import Link from "next/link";
@@ -108,6 +109,7 @@ export function ContactForm({ className }: ContactFormProps) {
           ) : null}
         </FormAlert>
       ) : null}
+      <TurnstileField action="contact" resetKey={state} className="pt-1" />
       <button
         type="submit"
         disabled={isPending}

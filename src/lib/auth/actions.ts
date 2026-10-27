@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { requireTurnstileFromForm } from "@/lib/security/turnstile";
 import { authThrottleUserMessage, checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
 import { sendWelcomeEmailAfterSignup } from "@/lib/email/welcome";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -51,6 +52,11 @@ export async function signIn(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
+  }
+
+  const botCheck = await requireTurnstileFromForm(formData);
+  if (!botCheck.ok) {
+    return { error: botCheck.error };
   }
 
   const throttle = await checkLoginThrottle(parsed.data.email);
@@ -107,6 +113,11 @@ export async function signUp(
   const passwordProblem = await checkNewPassword(parsed.data.password);
   if (passwordProblem) {
     return { error: passwordProblem };
+  }
+
+  const botCheck = await requireTurnstileFromForm(formData);
+  if (!botCheck.ok) {
+    return { error: botCheck.error };
   }
 
   const throttle = await checkSignupThrottle(parsed.data.email);
