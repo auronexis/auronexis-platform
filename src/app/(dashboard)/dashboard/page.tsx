@@ -27,17 +27,9 @@ import { DashboardBusinessUpgradeCard } from "@/components/dashboard/dashboard-b
 import { DashboardCriticalAlerts } from "@/components/dashboard/dashboard-critical-alerts";
 import { DashboardMetricCard } from "@/components/dashboard/dashboard-panel";
 import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
-import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
-import { SmartRecommendations } from "@/components/dashboard/smart-recommendations";
-import { ActivationPanel } from "@/components/activation/activation-panel";
 import { ActivationTracker } from "@/components/activation/activation-tracker";
 import { ActivationWelcome } from "@/components/activation/activation-welcome";
-import { AdoptionSummaryPanel } from "@/components/adoption/adoption-summary-panel";
 import { AdoptionTracker } from "@/components/adoption/adoption-tracker";
-import { CustomerSuccessSummaryPanel } from "@/components/customer-success/customer-success-summary-panel";
-import { CustomerSuccessTracker } from "@/components/customer-success/customer-success-tracker";
-import { ExecutiveIntelligenceSummaryPanel } from "@/components/executive-intelligence/executive-intelligence-summary-panel";
-import { ExecutiveIntelligenceTracker } from "@/components/executive-intelligence/executive-intelligence-tracker";
 import {
   DashboardUpgradeMetricCard,
 } from "@/components/dashboard/dashboard-upgrade-cards";
@@ -45,9 +37,12 @@ import { ReportsQueueCard } from "@/components/dashboard/reports-queue-card";
 import { SystemHealthCard } from "@/components/dashboard/system-health-card";
 import { SectionTitle } from "@/components/ui/typography";
 import { requireSession } from "@/lib/auth/session";
-import { sessionHasPermission } from "@/lib/authorization/guards";
 import { OperationsCenter } from "@/components/dashboard/operations-center";
 import { LazyOpsTabPanel } from "@/components/dashboard/lazy-ops-tab-panel";
+import {
+  DashboardGuidanceSection,
+  DashboardGuidanceSkeleton,
+} from "@/components/dashboard/dashboard-guidance-section";
 import {
   OpsAiTasksSummary,
   OpsAutomationTabBadge,
@@ -65,14 +60,6 @@ import {
 } from "@/lib/dashboard/workspace-guidance";
 import { buildActivationSnapshot } from "@/lib/activation/status";
 import { buildAdoptionSnapshot, resolveDashboardGuidanceMode } from "@/lib/adoption/snapshot";
-import {
-  buildCustomerSuccessPortfolio,
-  resolveDashboardCustomerSuccessMode,
-} from "@/lib/customer-success/snapshot";
-import {
-  buildExecutiveIntelligenceSnapshot,
-  resolveDashboardExecutiveIntelligenceMode,
-} from "@/lib/executive-intelligence/snapshot";
 import { canManageOrganizationSettings } from "@/lib/team/guards";
 import { checkPlanFeatureForSession } from "@/lib/plans";
 import { formatCurrency, formatMargin } from "@/lib/profitability/types";
@@ -114,7 +101,6 @@ export default async function DashboardPage() {
   ]);
 
   const canManageCompliance = canManageOrganizationSettings(session);
-  const canReadCustomerSuccess = sessionHasPermission(session, "customer_success.read");
 
   // Ops-tab-only hubs load via Suspense (intelligence / automation / governance).
   // Known limitation: no cheap knowledge count/head API on the blocking path —
@@ -135,11 +121,6 @@ export default async function DashboardPage() {
     canManageCompliance,
   };
 
-  // Start customer-success portfolio in parallel with activation (independent).
-  const customerSuccessPortfolioPromise = canReadCustomerSuccess
-    ? buildCustomerSuccessPortfolio({ session, planContext })
-    : Promise.resolve(null);
-
   timer.mark("context");
   const activation = await buildActivationSnapshot({
     session,
@@ -152,7 +133,7 @@ export default async function DashboardPage() {
   });
 
   timer.mark("activation");
-  const [adoption, smartRecommendations, customerSuccessPortfolio] = await Promise.all([
+  const [adoption, smartRecommendations] = await Promise.all([
     buildAdoptionSnapshot({
       session,
       planContext,
@@ -164,37 +145,12 @@ export default async function DashboardPage() {
       activation,
     }),
     buildSmartRecommendations(guidanceInput),
-    customerSuccessPortfolioPromise,
   ]);
 
   const guidanceMode = resolveDashboardGuidanceMode(activation, adoption);
-  const customerSuccessMode = customerSuccessPortfolio
-    ? resolveDashboardCustomerSuccessMode(activation, adoption, customerSuccessPortfolio)
-    : "hidden";
-
-  const canReadExecutiveIntelligence = sessionHasPermission(session, "executive_intelligence.read");
-  const executiveSnapshot = canReadExecutiveIntelligence
-    ? await buildExecutiveIntelligenceSnapshot({
-        session,
-        dashboardData: data,
-        activation,
-        adoption,
-        customerSuccessPortfolio,
-        planContext,
-        canReadCustomerSuccess,
-      })
-    : null;
-  timer.mark("guidance");
+  timer.mark("adoption");
+  // Customer-success portfolio and executive snapshot stream in DashboardGuidanceSection.
   timer.logIfSlow("/dashboard");
-  const executiveIntelligenceMode =
-    executiveSnapshot && customerSuccessMode !== "critical"
-      ? resolveDashboardExecutiveIntelligenceMode(
-          activation,
-          adoption,
-          customerSuccessMode,
-          executiveSnapshot,
-        )
-      : "hidden";
 
   const canDismissActivation = canManageOrganizationSettings(session);
 
@@ -211,12 +167,6 @@ export default async function DashboardPage() {
   }));
 
   const showCriticalAlerts = data.features.risks || data.features.incidents;
-  const guidanceNeedsAttention =
-    guidanceMode === "activation_primary" ||
-    guidanceMode === "adoption_risk" ||
-    customerSuccessMode === "critical" ||
-    executiveIntelligenceMode === "critical";
-  const guidanceCompact = !guidanceNeedsAttention;
   const opsAlertCount = data.criticalAlerts.length;
   const opsOpenRisks = data.openRiskCount;
   const opsOverviewBadge = opsAlertCount + opsOpenRisks + data.openIncidentCount;
@@ -419,104 +369,17 @@ export default async function DashboardPage() {
           snapshot={adoption}
           sourceRoute="/dashboard"
         />
-        {guidanceNeedsAttention ? (
-          <>
-            <SectionTitle>Get started</SectionTitle>
-            <div className="grid gap-3 md:grid-cols-12">
-              <div className="md:col-span-8">
-                <DashboardQuickActions compact />
-              </div>
-              <div className="md:col-span-4 space-y-3">
-                {guidanceMode === "activation_primary" ? (
-                  <ActivationPanel activation={activation} canDismiss={canDismissActivation} compact />
-                ) : guidanceMode === "adoption_risk" ? (
-                  <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
-                ) : customerSuccessMode === "critical" && customerSuccessPortfolio ? (
-                  <>
-                    <CustomerSuccessTracker
-                      event="customer_success_summary_viewed"
-                      organizationId={session.organization.id}
-                    />
-                    <CustomerSuccessSummaryPanel portfolio={customerSuccessPortfolio} mode="critical" />
-                  </>
-                ) : executiveIntelligenceMode === "critical" && executiveSnapshot ? (
-                  <>
-                    <ExecutiveIntelligenceTracker
-                      event="executive_intelligence_viewed"
-                      organizationId={session.organization.id}
-                    />
-                    <ExecutiveIntelligenceSummaryPanel snapshot={executiveSnapshot} mode="critical" />
-                  </>
-                ) : null}
-              </div>
-              <div className="md:col-span-12">
-                <details className="group rounded-xl border border-border/70 bg-surface/50">
-                  <summary
-                    className={cn(
-                      "cursor-pointer list-none px-4 py-2.5 text-sm font-medium text-foreground",
-                      "marker:content-none [&::-webkit-details-marker]:hidden",
-                      focusRing,
-                    )}
-                  >
-                    Smart recommendations
-                  </summary>
-                  <div className="border-t border-border/70 px-2 pb-2 pt-2">
-                    <SmartRecommendations recommendations={smartRecommendations} />
-                  </div>
-                </details>
-              </div>
-            </div>
-          </>
-        ) : (
-          <details className="group rounded-2xl border border-border/70 bg-surface/50 open:bg-surface/80">
-            <summary
-              className={cn(
-                "cursor-pointer list-none px-5 py-3 text-sm font-semibold text-foreground",
-                "marker:content-none [&::-webkit-details-marker]:hidden",
-                focusRing,
-              )}
-            >
-              <span className="flex items-center justify-between gap-3">
-                <span>Quick actions &amp; workspace guidance</span>
-                <span className="text-xs font-medium text-muted group-open:hidden">
-                  Expand when needed
-                </span>
-              </span>
-            </summary>
-            <div className="space-y-3 border-t border-border/70 px-3 pb-3 pt-3 sm:px-4">
-              <DashboardQuickActions compact={guidanceCompact} />
-              <div className="grid gap-3 md:grid-cols-12">
-                <div className="md:col-span-4 space-y-3">
-                  <AdoptionSummaryPanel adoption={adoption} mode={guidanceMode} />
-                  {customerSuccessMode === "summary" && customerSuccessPortfolio ? (
-                    <>
-                      <CustomerSuccessTracker
-                        event="customer_success_summary_viewed"
-                        organizationId={session.organization.id}
-                      />
-                      <CustomerSuccessSummaryPanel
-                        portfolio={customerSuccessPortfolio}
-                        mode="summary"
-                      />
-                    </>
-                  ) : null}
-                  {executiveIntelligenceMode === "summary" && executiveSnapshot ? (
-                    <>
-                      <ExecutiveIntelligenceTracker
-                        event="executive_intelligence_viewed"
-                        organizationId={session.organization.id}
-                      />
-                      <ExecutiveIntelligenceSummaryPanel snapshot={executiveSnapshot} mode="summary" />
-                    </>
-                  ) : null}
-                </div>
-                <div className="md:col-span-8">
-                  <SmartRecommendations recommendations={smartRecommendations} />
-                </div>
-              </div>
-            </div>
-          </details>
-        )}
+        <Suspense fallback={<DashboardGuidanceSkeleton />}>
+          <DashboardGuidanceSection
+            data={data}
+            planContext={planContext}
+            activation={activation}
+            adoption={adoption}
+            smartRecommendations={smartRecommendations}
+            guidanceMode={guidanceMode}
+            canDismissActivation={canDismissActivation}
+          />
+        </Suspense>
       </section>
 
       <section aria-label="Operations" className="space-y-3">

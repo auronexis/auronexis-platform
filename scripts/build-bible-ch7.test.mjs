@@ -102,10 +102,11 @@ test("job dispatcher skips overlapping executions", () => {
 test("dashboard page parallelizes feature checks and optional hubs", () => {
   const page = readSource("src/app/(dashboard)/dashboard/page.tsx");
   assert.match(page, /checkPlanFeatureForSession\(session, \"ai_report_assistant\"\)/);
-  assert.match(page, /buildCustomerSuccessPortfolio/);
+  // The customer-success portfolio streams in DashboardGuidanceSection (see dashboard-stream-guidance.test.mjs).
+  assert.match(readSource("src/components/dashboard/dashboard-guidance-section.tsx"), /buildCustomerSuccessPortfolio/);
   assert.match(page, /buildAdoptionSnapshot/);
   assert.match(page, /buildSmartRecommendations/);
-  const adoptionBlockStart = page.indexOf("const [adoption, smartRecommendations, customerSuccessPortfolio]");
+  const adoptionBlockStart = page.indexOf("const [adoption, smartRecommendations]");
   assert.ok(adoptionBlockStart > 0);
   assert.match(page.slice(adoptionBlockStart, adoptionBlockStart + 600), /Promise\.all/);
 });

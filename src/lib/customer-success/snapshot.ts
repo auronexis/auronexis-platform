@@ -15,8 +15,11 @@ import {
   countClientRisks,
   listPlaybookInstancesForOrg,
   listTasksForOrg,
+  loadOpenWorkCountsByClient,
   mapPlaybookInstance,
   mapTask,
+  type PlaybookInstanceRow,
+  type SuccessTaskRow,
 } from "@/lib/customer-success/queries";
 import { resolveRecoveryStatus } from "@/lib/customer-success/recovery";
 import { countOverdueTasks } from "@/lib/customer-success/task-engine";
@@ -43,6 +46,16 @@ export type BuildClientSnapshotInput = {
   session: SessionContext;
   clientId: string;
   planContext: OrganizationPlanContext | null;
+  /**
+   * Organization-wide rows already loaded by the portfolio. When present, the per-client
+   * playbook, task, risk and incident queries are answered from memory.
+   */
+  preloaded?: {
+    instances: PlaybookInstanceRow[];
+    tasks: SuccessTaskRow[];
+    riskCounts: Map<string, { open: number; critical: number }>;
+    incidentCounts: Map<string, number>;
+  };
 };
 
 function buildNextBestAction(
@@ -91,16 +104,23 @@ function buildNextBestAction(
 export async function buildClientSuccessSnapshot(
   input: BuildClientSnapshotInput,
 ): Promise<ClientSuccessSnapshot | null> {
-  const { session, clientId, planContext } = input;
+  const { session, clientId, planContext, preloaded } = input;
   const client = await getClientById(session, clientId);
   if (!client) return null;
 
+  const orgId = session.organization.id;
   const [aiData, riskCounts, openIncidents, allInstances, allTasks] = await Promise.all([
     buildAiClientData(session, clientId),
-    countClientRisks(session.organization.id, clientId),
-    countClientIncidents(session.organization.id, clientId),
-    listPlaybookInstancesForOrg(session.organization.id, clientId),
-    listTasksForOrg(session.organization.id, clientId),
+    preloaded
+      ? (preloaded.riskCounts.get(clientId) ?? { open: 0, critical: 0 })
+      : countClientRisks(orgId, clientId),
+    preloaded ? (preloaded.incidentCounts.get(clientId) ?? 0) : countClientIncidents(orgId, clientId),
+    preloaded
+      ? preloaded.instances.filter((row) => row.client_id === clientId)
+      : listPlaybookInstancesForOrg(orgId, clientId),
+    preloaded
+      ? preloaded.tasks.filter((row) => row.client_id === clientId)
+      : listTasksForOrg(orgId, clientId),
   ]);
 
   if (!aiData) return null;
@@ -213,10 +233,18 @@ export async function buildCustomerSuccessPortfolio(
   const { clients } = await listClientsSafe(session, { includeArchived: false });
   const limited = clients.slice(0, PORTFOLIO_PAGE_SIZE);
 
-  const [allInstances, allTasks] = await Promise.all([
+  const [allInstances, allTasks, openWork] = await Promise.all([
     listPlaybookInstancesForOrg(session.organization.id),
     listTasksForOrg(session.organization.id),
+    loadOpenWorkCountsByClient(session.organization.id),
   ]);
+
+  const preloaded = {
+    instances: allInstances,
+    tasks: allTasks,
+    riskCounts: openWork.risks,
+    incidentCounts: openWork.incidents,
+  };
 
   const snapshots = await mapWithConcurrency(
     limited,
@@ -226,6 +254,7 @@ export async function buildCustomerSuccessPortfolio(
         session,
         clientId: client.id,
         planContext,
+        preloaded,
       }),
   );
 
