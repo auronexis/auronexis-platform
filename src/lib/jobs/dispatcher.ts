@@ -14,10 +14,14 @@ import {
   createJobExecution,
   hasRunningJobExecution,
   isJobDue,
+  isScheduleDue,
+  listJobSchedules,
 } from "@/lib/jobs/scheduler";
 import type { JobId, JobRunResult } from "@/lib/jobs/types";
 import { processWebhookDeliveryRetries } from "@/lib/jobs/handlers/webhook-retries";
 import { processQueueWorkerJob } from "@/lib/queue/worker";
+import { hasDueWebhookDeliveries } from "@/lib/webhooks/queries";
+import { hasPendingQueueJobs } from "@/lib/queue/repository";
 
 type JobHandler = () => Promise<Record<string, unknown>>;
 
@@ -33,15 +37,27 @@ const JOB_HANDLERS: Record<JobId, JobHandler> = {
   queue_worker: processQueueWorkerJob,
 };
 
+/**
+ * Polling jobs run every tick but usually have nothing to do. A cheap "is there work?" check
+ * lets an idle tick skip them without writing execution rows or touching the schedule.
+ */
+const IDLE_PRECHECKS: Partial<Record<JobId, () => Promise<boolean>>> = {
+  webhook_retries: hasDueWebhookDeliveries,
+  queue_worker: hasPendingQueueJobs,
+};
+
 /** Run a registered cron job with execution history and schedule advancement. */
-export async function dispatchJob(jobId: JobId, options?: { force?: boolean }): Promise<JobRunResult> {
+export async function dispatchJob(
+  jobId: JobId,
+  options?: { force?: boolean; knownDue?: boolean },
+): Promise<JobRunResult> {
   const definition = getJobDefinition(jobId);
 
   if (!definition?.enabled) {
     return { jobId, status: "skipped", durationMs: 0, metadata: { reason: "disabled" } };
   }
 
-  if (!options?.force && !(await isJobDue(jobId))) {
+  if (!options?.force && !options?.knownDue && !(await isJobDue(jobId))) {
     return { jobId, status: "skipped", durationMs: 0, metadata: { reason: "not_due" } };
   }
 
@@ -84,17 +100,26 @@ export async function dispatchJob(jobId: JobId, options?: { force?: boolean }): 
   }
 }
 
-/** Run all due registered jobs sequentially. */
+/** Run all due registered jobs sequentially. Schedules are read once per tick. */
 export async function dispatchDueJobs(): Promise<JobRunResult[]> {
   const jobIds = Object.keys(JOB_HANDLERS) as JobId[];
   const results: JobRunResult[] = [];
+  const schedules = await listJobSchedules();
 
   for (const jobId of jobIds) {
     try {
-      const due = await isJobDue(jobId);
-      if (due) {
-        results.push(await dispatchJob(jobId));
+      const due = schedules ? isScheduleDue(schedules.get(jobId)) : await isJobDue(jobId);
+      if (!due) {
+        continue;
       }
+
+      const precheck = IDLE_PRECHECKS[jobId];
+      if (precheck && !(await precheck())) {
+        results.push({ jobId, status: "skipped", durationMs: 0, metadata: { reason: "no_work" } });
+        continue;
+      }
+
+      results.push(await dispatchJob(jobId, { knownDue: true }));
     } catch (error) {
       const message = error instanceof Error ? error.message : "Job dispatch failed.";
       results.push({ jobId, status: "failed", durationMs: 0, errorMessage: message });
