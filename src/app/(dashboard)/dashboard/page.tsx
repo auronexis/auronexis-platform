@@ -358,7 +358,11 @@ export default async function DashboardPage() {
                 label="Monthly revenue"
                 value={formatCurrency(data.businessMetrics.monthlyRevenue, currency)}
                 icon={DollarSign}
-                trend="+8% this quarter"
+                trend={
+                  data.clientHealth.totalClients > 0
+                    ? `Across ${data.clientHealth.totalClients} active client${data.clientHealth.totalClients === 1 ? "" : "s"}`
+                    : "No active clients yet"
+                }
                 tone="success"
                 size="compact"
               />
@@ -366,15 +370,15 @@ export default async function DashboardPage() {
                 label="Monthly profit"
                 value={formatCurrency(data.businessMetrics.monthlyProfit, currency)}
                 icon={TrendingUp}
-                trend="Tracking upward"
-                tone="success"
+                trend={`After ${formatCurrency(data.businessMetrics.monthlyCost, currency)} costs`}
+                tone={data.businessMetrics.monthlyProfit < 0 ? "danger" : "success"}
                 size="compact"
               />
               <DashboardMetricCard
                 label="Average margin"
                 value={formatMargin(data.businessMetrics.averageMargin)}
                 icon={Percent}
-                trend="Stable this period"
+                trend={data.businessMetrics.averageMargin === null ? "No financials yet" : "Average per client"}
                 tone="info"
                 size="compact"
               />
@@ -402,7 +406,7 @@ export default async function DashboardPage() {
             label="Reports drafted"
             value={data.draftReportsCount}
             icon={FileText}
-            trend="In progress"
+            trend={data.draftReportsCount > 0 ? "Awaiting review" : "No drafts open"}
             tone="info"
             size="compact"
           />

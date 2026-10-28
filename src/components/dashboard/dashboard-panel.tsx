@@ -74,7 +74,7 @@ export function DashboardMetricCard({
   label,
   value,
   icon,
-  trend = "Stable this period",
+  trend,
   tone = "default",
   className,
   size = "default",
@@ -103,7 +103,7 @@ export function DashboardMetricCard({
         >
           <Icon icon={icon} size={compact ? "sm" : "md"} />
         </span>
-        <span className="text-[11px] font-medium text-muted">{trend}</span>
+        {trend ? <span className="text-[11px] font-medium text-muted">{trend}</span> : null}
       </div>
       <p
         className={cn(
