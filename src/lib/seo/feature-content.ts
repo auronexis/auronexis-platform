@@ -97,7 +97,7 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     description:
       "Give clients a secure view of reports, health status, and operational updates — with controls over what you share.",
     metaDescription:
-      "Client portal software for agencies and MSPs: share reports, health status and updates with each client in a secure portal. White-label branding on Business.",
+      "Client portal software for agencies and MSPs: share reports, health status and updates with each client in a secure, white-label portal.",
     problem:
       "Client updates arrive as email attachments and ad-hoc links with no consistent experience. Teams struggle to prove delivery value and maintain a single source of truth clients can access on demand.",
     solution:

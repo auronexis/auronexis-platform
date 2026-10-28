@@ -28,6 +28,7 @@ export const CONTENT_DATE_RULES: readonly ContentDateRule[] = [
   // newest guide date; guides added later get their own exact rule above the prefix rule.
   { match: exact("/guides", "/guides/customer-health-score"), date: "2026-10-28" },
   { match: prefix("/guides"), date: "2026-10-23" },
+  { match: exact("/alternatives/agencyanalytics"), date: "2026-10-28" },
   // Templates rewritten with examples and CSV downloads; retitled feature/solution pages.
   {
     match: (route: string) =>

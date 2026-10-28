@@ -18,6 +18,7 @@ export {
   NOINDEX_ROUTES,
   isPrivateRoute,
 } from "@/lib/seo/private-routes";
+import { AGENCYANALYTICS_ALTERNATIVE } from "@/lib/seo/comparison-content";
 
 export { PUBLIC_SITEMAP_ROUTES, SOLUTION_ROUTES, TEMPLATE_ROUTES };
 
@@ -133,6 +134,10 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "Contact Auroranexis Sales, Support, and Security",
     description:
       "Contact Auroranexis for sales, support, and security inquiries. We answer questions about client operations for service businesses.",
+  },
+  [MARKETING_ROUTES.agencyAnalyticsAlternative]: {
+    title: AGENCYANALYTICS_ALTERNATIVE.seoTitle,
+    description: AGENCYANALYTICS_ALTERNATIVE.metaDescription,
   },
   [MARKETING_ROUTES.pilotProgram]: {
     title: "Pilot Partner Program",

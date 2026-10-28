@@ -67,7 +67,8 @@ export function isMarketingPublicPath(pathname: string): boolean {
     pathname.startsWith("/docs/") ||
     pathname.startsWith("/invite/") ||
     pathname.startsWith("/solutions/") ||
-    pathname.startsWith("/templates/")
+    pathname.startsWith("/templates/") ||
+    pathname.startsWith("/alternatives/")
   ) {
     return true;
   }
