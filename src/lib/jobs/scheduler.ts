@@ -35,12 +35,47 @@ export async function getJobSchedule(jobId: JobId): Promise<JobSchedule | null> 
   };
 }
 
-export async function isJobDue(jobId: JobId): Promise<boolean> {
-  const schedule = await getJobSchedule(jobId);
+/** All job schedules in one query — the cron tick reads this once instead of once per job. */
+export async function listJobSchedules(): Promise<Map<JobId, JobSchedule> | null> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("job_schedules")
+    .select("job_id, next_run_at, last_run_at");
+
+  if (error) {
+    return null;
+  }
+
+  const rows = (data ?? []) as Array<{ job_id: string; next_run_at: string; last_run_at: string | null }>;
+  return new Map(
+    rows.map((row) => [
+      row.job_id as JobId,
+      { jobId: row.job_id as JobId, nextRunAt: row.next_run_at, lastRunAt: row.last_run_at },
+    ]),
+  );
+}
+
+/** A job without a schedule row has never run and is due. */
+export function isScheduleDue(schedule: JobSchedule | null | undefined, now = Date.now()): boolean {
   if (!schedule) {
     return true;
   }
-  return new Date(schedule.nextRunAt).getTime() <= Date.now();
+  return new Date(schedule.nextRunAt).getTime() <= now;
+}
+
+export async function isJobDue(jobId: JobId): Promise<boolean> {
+  return isScheduleDue(await getJobSchedule(jobId));
+}
+
+/**
+ * Cron ticks arrive a few seconds late and runs take time, so "now + interval" made a 5-minute
+ * job wait for every second tick (and a 15-minute job ~20 minutes). The next run is therefore
+ * set slightly earlier, capped at a fifth of the interval.
+ */
+export function computeNextRunAt(jobId: JobId, now: Date): Date {
+  const interval = DEFAULT_INTERVAL_MS[jobId] ?? 60 * 60 * 1000;
+  const grace = Math.min(60 * 1000, Math.floor(interval / 5));
+  return new Date(now.getTime() + interval - grace);
 }
 
 /** True when a previous execution for this job is still marked running. */
@@ -99,7 +134,7 @@ export async function hasRunningJobExecution(jobId: JobId): Promise<boolean> {
 export async function advanceJobSchedule(jobId: JobId): Promise<void> {
   const admin = createAdminClient();
   const now = new Date();
-  const next = new Date(now.getTime() + (DEFAULT_INTERVAL_MS[jobId] ?? 60 * 60 * 1000));
+  const next = computeNextRunAt(jobId, now);
 
   await admin.from("job_schedules").upsert(
     {

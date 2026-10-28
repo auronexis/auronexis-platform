@@ -92,6 +92,22 @@ export async function getWebhookEndpointById(
   return (data as WebhookEndpoint | null) ?? null;
 }
 
+/**
+ * True when at least one delivery is waiting for a retry (same filter as
+ * listDueWebhookDeliveries). On a read error it returns true so the full job still runs.
+ */
+export async function hasDueWebhookDeliveries(): Promise<boolean> {
+  const admin = createAdminClient();
+  const now = new Date().toISOString();
+  const { count, error } = await admin
+    .from("webhook_deliveries")
+    .select("id", { count: "exact", head: true })
+    .in("status", ["pending", "retrying"])
+    .or(`next_retry_at.is.null,next_retry_at.lte.${now}`);
+  if (error) return true;
+  return (count ?? 0) > 0;
+}
+
 export async function listDueWebhookDeliveries(limit = 25): Promise<
   Array<{ delivery: WebhookDelivery; endpoint: WebhookEndpoint }>
 > {

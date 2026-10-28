@@ -57,6 +57,21 @@ export async function enqueueQueueJob(input: {
   return mapQueueRow(data as Record<string, unknown>);
 }
 
+/**
+ * True when a queue job is ready to run (same filter as claimNextQueueJob).
+ * On a read error it returns true so the worker still runs.
+ */
+export async function hasPendingQueueJobs(): Promise<boolean> {
+  const admin = createAdminClient();
+  const { count, error } = await admin
+    .from("queue_jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending")
+    .lte("scheduled_at", new Date().toISOString());
+  if (error) return true;
+  return (count ?? 0) > 0;
+}
+
 export async function claimNextQueueJob(queueName?: QueueName): Promise<QueueJob | null> {
   const admin = createAdminClient();
   let query = admin
