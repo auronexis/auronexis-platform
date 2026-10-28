@@ -51,6 +51,8 @@ export type DashboardData = {
   escalationMetrics: EscalationDashboardMetrics;
   criticalAlerts: CriticalAlertItem[];
   clientHealth: ClientHealthCounts;
+  /** Clients created since the start of the current month (UTC). */
+  newClientsThisMonth: number;
   healthMetrics: HealthDashboardMetrics;
   reportsMetrics: ReportsOverviewMetrics;
   riskSummary: RiskSummary;

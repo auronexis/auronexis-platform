@@ -44,6 +44,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { SessionContext } from "@/lib/tenancy/context";
 
 import type { DashboardData, CriticalAlertItem } from "@/lib/dashboard/types";
+import { startOfCurrentMonthUtc } from "@/lib/dashboard/operational-metrics";
 
 
 
@@ -256,6 +257,17 @@ export async function getDashboardMetrics(
 
 
 
+/** Clients added to the workspace since the start of the month — powers the real "+N" label. */
+async function getNewClientsThisMonthCount(session: SessionContext): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("clients")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", session.organization.id)
+    .gte("created_at", startOfCurrentMonthUtc());
+  return error ? 0 : (count ?? 0);
+}
+
 /** Full dashboard dataset for Dashboard v2. */
 export const getDashboardData = cache(async function getDashboardData(
   session: SessionContext,
@@ -300,6 +312,7 @@ export const getDashboardData = cache(async function getDashboardData(
     incidentAIMetrics,
     riskAIMetrics,
     executiveReportMetrics,
+    newClientsThisMonth,
   ] = await Promise.all([
     getDashboardMetrics(session, { risksEnabled, incidentsEnabled }),
     slaEnabled ? getSlaDashboardMetrics(session) : Promise.resolve(EMPTY_SLA_METRICS),
@@ -329,6 +342,8 @@ export const getDashboardData = cache(async function getDashboardData(
 
       getExecutiveReportDashboardMetrics(session),
 
+      getNewClientsThisMonthCount(session),
+
     ]);
 
 
@@ -338,6 +353,7 @@ export const getDashboardData = cache(async function getDashboardData(
     slaMetrics,
     escalationMetrics,
     businessMetrics,
+    newClientsThisMonth,
     healthMetrics,
     reportsMetrics: reportsMetrics.data ?? {
       publishedThisMonth: 0,
