@@ -24,7 +24,9 @@ export const CONTENT_DATE_RULES: readonly ContentDateRule[] = [
     match: exact("/terms", "/privacy", "/cookies", "/imprint", "/refund-policy", "/acceptable-use", "/security-policy"),
     date: "2026-10-27",
   },
-  // Long-form guides — keep in sync with `updated` in guides-content.ts.
+  // Long-form guides — keep in sync with `updated` in guides-content.ts. The hub uses the
+  // newest guide date; guides added later get their own exact rule above the prefix rule.
+  { match: exact("/guides", "/guides/customer-health-score"), date: "2026-10-28" },
   { match: prefix("/guides"), date: "2026-10-23" },
   // Marketing, landing, industry and docs pages — SEO copy and positioning update 2026-10-21.
   {

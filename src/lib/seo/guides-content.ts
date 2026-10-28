@@ -458,10 +458,181 @@ const slaReporting: GuideContent = {
   ],
 };
 
+const customerHealthScore: GuideContent = {
+  slug: "customer-health-score",
+  path: GUIDE_ROUTES.customerHealthScore,
+  title: "Customer health score: how to build one for a service business",
+  seoTitle: "Customer Health Score for Service Businesses",
+  description:
+    "How to build a customer health score when you sell a service, not software: which signals to use, how to weight them, a worked example and what to do next.",
+  summary:
+    "Which signals show client health in a service business, how to turn them into one score, and what to do when a client turns amber or red.",
+  published: "2026-10-28",
+  updated: "2026-10-28",
+  readingMinutes: 9,
+  intro: [
+    "Most advice on customer health scores is written for software companies. It tells you to score logins, feature adoption and product usage. If you run an agency, an IT service provider, an accounting firm or a facility services company, your clients do not log in to anything. They receive a service, and their health shows up in other places: in how reliably you deliver, how they respond to you, and how the commercial relationship develops.",
+    "A customer health score for a service business turns those signals into one simple rating per client, so you can see early which accounts need attention. This guide shows which signals to use, how to combine them, a worked example you can copy into a spreadsheet, and how to act on the result.",
+  ],
+  sections: [
+    {
+      heading: "What a customer health score is — and what it is not",
+      paragraphs: [
+        "A customer health score is a regular, rule-based rating of how likely a client is to stay, grow or leave. It combines a few signals you already have into one number or colour, and it should always show which signals caused the rating.",
+        "It is not a prediction you can trust blindly, and it is not a replacement for talking to your clients. It is a way to make sure no account drifts for months without anyone noticing. A good score starts conversations; it does not end them.",
+      ],
+    },
+    {
+      heading: "The signals that show client health in a service business",
+      paragraphs: [
+        "Choose signals from four groups. You do not need all of them — four to six signals in total are enough for a first version.",
+      ],
+      bullets: [
+        "Delivery: SLA attainment, number and severity of incidents, missed deadlines, rework. This is what the client experiences directly.",
+        "Relationship: how quickly the client answers, whether they attend review meetings, whether your main contact has changed, the tone of recent feedback.",
+        "Commercial: late or disputed invoices, requests for discounts, a reduced scope, or the opposite — requests for additional work.",
+        "Engagement: whether the client reads your reports, uses the client portal if you have one, and gives input on plans.",
+      ],
+      closing:
+        "A change of the main contact person deserves special attention. The person who chose you may be gone, and the new contact may not know what you deliver. Treat it as an early warning even when everything else looks fine.",
+    },
+    {
+      heading: "How to build the score in six steps",
+      steps: [
+        {
+          title: "Look back at clients you lost",
+          text: "Write down the clients who left or reduced their contract in the last one or two years, and what happened in the months before. Those patterns tell you which signals matter in your business.",
+        },
+        {
+          title: "Pick four to six signals",
+          text: "Choose signals you can measure every month without guessing. If a signal depends on someone's mood that day, define it more precisely or leave it out.",
+        },
+        {
+          title: "Set simple thresholds",
+          text: "For every signal, define what counts as healthy, watch and at risk. Three levels are enough; scoring them 100, 50 and 0 keeps the arithmetic easy.",
+        },
+        {
+          title: "Weight the signals",
+          text: "Give the signals that best explained past losses the highest weight. The weights must add up to 100%.",
+        },
+        {
+          title: "Calculate and set bands",
+          text: "Multiply each signal score by its weight and add the results. Then turn the number into a colour, for example green at 75 or above, amber from 50 to under 75, red below 50.",
+        },
+        {
+          title: "Assign an owner and an action per band",
+          text: "Every client needs one person responsible for its health, and every band needs an agreed next step. A score without an action is just another dashboard.",
+        },
+      ],
+    },
+    {
+      heading: "Example thresholds",
+      paragraphs: [
+        "These thresholds are an example for a service provider with monthly reporting. Adapt them to your contracts and your clients.",
+      ],
+      example: {
+        title: "Example — three levels per signal",
+        lines: [
+          "SLA attainment: 100 if at or above target · 50 if up to 5 percentage points below · 0 if more than 5 percentage points below",
+          "Incidents: 100 if no major incident in 90 days · 50 if one · 0 if two or more",
+          "Responsiveness: 100 if the client replies within the agreed time and attends reviews · 50 if one review was missed · 0 if two reviews were missed or questions stay unanswered",
+          "Payment: 100 if invoices are paid on time · 50 if one invoice was late · 0 if invoices are disputed or repeatedly late",
+          "Sentiment: 100 if feedback is positive or neutral · 50 if there was one complaint · 0 if there were escalations or the main contact changed",
+        ],
+      },
+      links: [{ label: "Customer health score template", href: TEMPLATE_ROUTES.customerHealthScore }],
+    },
+    {
+      heading: "A worked example",
+      paragraphs: [
+        "One client, one month, using the thresholds above and these example weights: SLA attainment 30%, incidents 20%, responsiveness 20%, payment 15%, sentiment 15%. The numbers are illustrative; use your own.",
+      ],
+      example: {
+        title: "Example — one client, one month",
+        lines: [
+          "SLA attainment at target: 100 × 30% = 30",
+          "One major incident in 90 days: 50 × 20% = 10",
+          "Two review meetings missed: 0 × 20% = 0",
+          "Invoices paid on time: 100 × 15% = 15",
+          "One complaint: 50 × 15% = 7.5",
+          "Health score: 30 + 10 + 0 + 15 + 7.5 = 62.5 → amber",
+        ],
+      },
+      closing:
+        "The total says amber, but the detail says more: delivery is fine, yet the client has stopped showing up. That is why every score must show its drivers. The right action here is not a technical fix but a conversation with the client about whether the service still meets their needs.",
+    },
+    {
+      heading: "What to do with green, amber and red clients",
+      bullets: [
+        "Green: keep the regular rhythm. Use the good results in your reports and ask whether there is more you could help with.",
+        "Amber: the owner looks at the drivers within a week, talks to the client and writes down what will change. Check again at the next review.",
+        "Red: escalate to the account lead or management, agree on a recovery plan with dates, and tell the client openly what you are doing. Review weekly until the client is back to amber.",
+        "Any band: when a client moves down a band, treat the change itself as a signal, even if the new band is still green.",
+      ],
+      closing:
+        "Bring the health history to your quarterly review with the client. Showing that you noticed a problem early and acted on it builds more trust than a perfect score.",
+    },
+    {
+      heading: "Common mistakes",
+      bullets: [
+        "Too many signals: with fifteen inputs, nobody can explain why a client is amber. Start with four to six.",
+        "Opinion only: a score based only on an account manager's gut feeling changes with the manager's mood. Use facts where you can and define the rest clearly.",
+        "Revenue as health: a large client is not automatically a healthy one. Keep revenue and profitability separate from the health score and look at both.",
+        "A black box: if the team cannot see why a client is red, they will not trust the score or act on it.",
+        "Never checking it: test the score every six months against the clients who actually left or renewed, and adjust signals and weights.",
+      ],
+      links: [
+        { label: "Client profitability analysis", href: GUIDE_ROUTES.clientProfitabilityAnalysis },
+        { label: "SLA reporting", href: GUIDE_ROUTES.slaReporting },
+      ],
+    },
+  ],
+  productFit: {
+    heading: "Where Auroranexis fits",
+    paragraphs: [
+      "Auroranexis is client operations software for service businesses. It derives client health indicators from the operational records in your workspace — incident volume, open risks, SLA performance and delivery activity — so health is based on evidence rather than check-in notes. Scoring is rule-based and shows the signals behind every rating; it is not a black-box AI score. You can configure thresholds and assign an owner per client, see health trends across the portfolio on dashboards, export summaries for quarterly reviews, and decide what each client sees in the client portal.",
+      "Auroranexis is not a product analytics tool. If you sell software and want to score in-app usage, a customer success platform built for software companies will suit you better. Plans start at €179 per month for up to 25 clients; the incident, risk and SLA modules that feed many health signals are part of the Business and Enterprise plans, starting at €599 per month.",
+    ],
+    links: [
+      { label: "Customer health score software", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Client health monitoring", href: FEATURE_ROUTES.healthMonitoring },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+    ],
+  },
+  faq: [
+    {
+      question: "What is a customer health score?",
+      answer:
+        "It is a regular, rule-based rating of each client that combines a few signals — such as delivery quality, responsiveness, payment behaviour and feedback — into one number or colour, so you can see early which clients need attention.",
+    },
+    {
+      question: "How many metrics should a customer health score have?",
+      answer:
+        "Four to six is a good start. Fewer signals make the score easy to explain and to trust. Add more only when you can show that they would have warned you about a client you lost.",
+    },
+    {
+      question: "How do you calculate a customer health score?",
+      answer:
+        "Give every signal a score — for example 100 for healthy, 50 for watch and 0 for at risk — multiply each score by the signal's weight, and add the results. Then translate the total into a band such as green, amber or red.",
+    },
+    {
+      question: "Should clients see their own health score?",
+      answer:
+        "Usually not the score itself, because it includes internal judgements such as payment behaviour. Share the parts that describe your service — SLA results, incidents and open risks — in your regular reports instead.",
+    },
+    {
+      question: "How often should the health score be updated?",
+      answer:
+        "Monthly is enough for most service businesses, ideally right before the monthly report. Review red clients weekly until they recover, and check the scoring rules themselves every six months.",
+    },
+  ],
+};
+
 export const GUIDES: readonly GuideContent[] = [
   automatedClientReporting,
   clientProfitabilityAnalysis,
   slaReporting,
+  customerHealthScore,
 ];
 
 export const GUIDE_PAGES: Record<string, GuideContent> = Object.fromEntries(
@@ -475,5 +646,5 @@ export const GUIDES_HUB = {
   title: "Guides for service businesses with recurring clients",
   seoTitle: "Client Operations Guides",
   description:
-    "Practical guides on client reporting, client profitability and SLA reporting for service businesses with recurring clients.",
+    "Practical guides on client reporting, profitability, SLA reporting and customer health scores for service businesses with recurring clients.",
 } as const;
