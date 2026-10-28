@@ -114,6 +114,7 @@ export const TEMPLATE_ROUTES = {
   incidentResponse: "/templates/incident-response",
   slaPolicy: "/templates/sla-policy",
   executiveReport: "/templates/executive-report",
+  quarterlyBusinessReview: "/templates/quarterly-business-review",
 } as const;
 
 export const LEGAL_ROUTES = {
@@ -222,6 +223,7 @@ export const FOOTER_SECTIONS = {
     { label: "Incident response template", href: TEMPLATE_ROUTES.incidentResponse },
     { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
     { label: "Executive report template", href: TEMPLATE_ROUTES.executiveReport },
+    { label: "QBR template", href: TEMPLATE_ROUTES.quarterlyBusinessReview },
     { label: "Documentation", href: MARKETING_ROUTES.documentation },
     { label: "API documentation", href: "/docs/api" },
     { label: "FAQ", href: MARKETING_ROUTES.faq },

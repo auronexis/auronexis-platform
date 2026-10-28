@@ -93,10 +93,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     category: "feature",
     eyebrow: "Feature",
     title: "Client portal for transparent delivery",
+    seoTitle: "Client Portal Software for Agencies & MSPs",
     description:
       "Give clients a secure view of reports, health status, and operational updates — with controls over what you share.",
     metaDescription:
-      "B2B client portal for MSPs — secure report delivery, status visibility, and controlled transparency in Auroranexis.",
+      "Client portal software for agencies and MSPs: share reports, health status and updates with each client in a secure portal. White-label branding on Business.",
     problem:
       "Client updates arrive as email attachments and ad-hoc links with no consistent experience. Teams struggle to prove delivery value and maintain a single source of truth clients can access on demand.",
     solution:
@@ -464,10 +465,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     category: "feature",
     eyebrow: "Feature",
     title: "Portfolio KPI dashboards for operations teams",
+    seoTitle: "Executive Portfolio Dashboard for Agencies",
     description:
       "Give operations teams a portfolio-level view of delivery performance, open exceptions, and client status without manual reporting.",
     metaDescription:
-      "Portfolio KPI dashboards for MSPs — delivery exceptions, operational metrics, and team visibility in Auroranexis.",
+      "Executive portfolio dashboard for agencies and MSPs: client health, delivery exceptions, SLA results and risks across every account in one view.",
     problem:
       "Executives rely on slide decks that take days to compile and are outdated on arrival. Without live dashboards, leadership decisions lag behind operational reality.",
     solution:
@@ -679,10 +681,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     category: "feature",
     eyebrow: "Feature",
     title: "Client Profitability Reporting Software",
+    seoTitle: "Client Profitability Analysis Software",
     description:
       "Connect delivery effort to client revenue context so leaders see which accounts drive margin and which need commercial attention — not a replacement accounting system.",
     metaDescription:
-      "Client and portfolio profitability reporting for agencies, MSPs and service firms: delivery effort, margin context and client health side by side.",
+      "Client profitability analysis and portfolio profitability reporting for agencies, MSPs and service firms: profit by client, margin and health side by side.",
     problem:
       "Agencies grow revenue without clear visibility into which clients consume disproportionate delivery effort. Profitability conversations happen in finance spreadsheets disconnected from operational reality.",
     solution:

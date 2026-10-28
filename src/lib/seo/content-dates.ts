@@ -28,6 +28,21 @@ export const CONTENT_DATE_RULES: readonly ContentDateRule[] = [
   // newest guide date; guides added later get their own exact rule above the prefix rule.
   { match: exact("/guides", "/guides/customer-health-score"), date: "2026-10-28" },
   { match: prefix("/guides"), date: "2026-10-23" },
+  // Templates rewritten with examples and CSV downloads; retitled feature/solution pages.
+  {
+    match: (route: string) =>
+      route === "/templates" ||
+      route.startsWith("/templates/") ||
+      [
+        "/features/profitability",
+        "/features/client-portal",
+        "/features/executive-dashboards",
+        "/solutions/sla-management",
+        "/solutions/executive-dashboard",
+        "/solutions/customer-health-score",
+      ].includes(route),
+    date: "2026-10-28",
+  },
   // Marketing, landing, industry and docs pages — SEO copy and positioning update 2026-10-21.
   {
     match: prefix(

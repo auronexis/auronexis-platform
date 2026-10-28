@@ -41,6 +41,8 @@ function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/legal/") ||
     pathname.startsWith("/docs/") ||
     pathname.startsWith("/invite/") ||
+    // Free template downloads (CSV files in public/downloads/templates).
+    /^\/downloads\/templates\/[a-z0-9-]+\.csv$/.test(pathname) ||
     // Newsletter double opt-in and unsubscribe links (signed-out visitors).
     pathname === "/newsletter/confirm" ||
     pathname === "/newsletter/unsubscribe" ||
