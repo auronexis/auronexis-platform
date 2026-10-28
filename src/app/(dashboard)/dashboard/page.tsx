@@ -47,12 +47,7 @@ import { SectionTitle } from "@/components/ui/typography";
 import { requireSession } from "@/lib/auth/session";
 import { sessionHasPermission } from "@/lib/authorization/guards";
 import { OperationsCenter } from "@/components/dashboard/operations-center";
-import {
-  DashboardOpsAutomationTab,
-  DashboardOpsGovernanceTab,
-  DashboardOpsIntelligenceTab,
-  OpsTabPanelSkeleton,
-} from "@/components/dashboard/dashboard-ops-tab-panels";
+import { LazyOpsTabPanel } from "@/components/dashboard/lazy-ops-tab-panel";
 import {
   OpsAiTasksSummary,
   OpsAutomationTabBadge,
@@ -86,38 +81,33 @@ import { getOrganizationPlanContextForSession } from "@/lib/plans/queries";
 import { listPendingInvitations, listTeamMembers } from "@/lib/team/queries";
 import { cn } from "@/lib/utils/cn";
 import { focusRing, linkText } from "@/lib/ui/tokens";
+import { startPhaseTimer } from "@/lib/observability/phase-timer";
 
 export const metadata: Metadata = {
   title: "Dashboard",
 };
 
 export default async function DashboardPage() {
+  const timer = startPhaseTimer();
   const session = await requireSession();
   const currency = getStoredOrganizationCurrency(session.organization);
   const data = await getDashboardData(session);
+  timer.mark("data");
+  // Intelligence / Automation / Governance tabs load on demand (LazyOpsTabPanel), so only the
+  // plan checks needed for the visible page run here.
   const [
     executiveIntelligence,
     aiAccess,
-    successAccess,
     operationalAiAccess,
-    incidentAiAccess,
-    riskAiAccess,
     automationAccess,
-    predictiveAccess,
-    knowledgeAccess,
     teamMembers,
     pendingInvitations,
     planContext,
   ] = await Promise.all([
     getExecutiveIntelligence(session, data),
     checkPlanFeatureForSession(session, "ai_report_assistant"),
-    checkPlanFeatureForSession(session, "ai_client_analysis"),
-    checkPlanFeatureForSession(session, "ai_risk_assistant"),
-    checkPlanFeatureForSession(session, "ai_incident_assistant"),
     checkPlanFeatureForSession(session, "ai_risk_assistant"),
     checkPlanFeatureForSession(session, "ai_automation_builder"),
-    checkPlanFeatureForSession(session, "ai_predictive_intelligence"),
-    checkPlanFeatureForSession(session, "ai_knowledge_search"),
     listTeamMembers(session).catch(() => []),
     listPendingInvitations(session).catch(() => []),
     getOrganizationPlanContextForSession(session).catch(() => null),
@@ -150,6 +140,7 @@ export default async function DashboardPage() {
     ? buildCustomerSuccessPortfolio({ session, planContext })
     : Promise.resolve(null);
 
+  timer.mark("context");
   const activation = await buildActivationSnapshot({
     session,
     planContext,
@@ -160,6 +151,7 @@ export default async function DashboardPage() {
     monitoringConnectorCount: data.monitoringMetrics.activeConnectors,
   });
 
+  timer.mark("activation");
   const [adoption, smartRecommendations, customerSuccessPortfolio] = await Promise.all([
     buildAdoptionSnapshot({
       session,
@@ -174,18 +166,6 @@ export default async function DashboardPage() {
     buildSmartRecommendations(guidanceInput),
     customerSuccessPortfolioPromise,
   ]);
-
-  const opsTabAccess = {
-    aiAccess: aiAccess.allowed,
-    successAccess: successAccess.allowed,
-    operationalAiAccess: operationalAiAccess.allowed,
-    incidentAiAccess: incidentAiAccess.allowed,
-    riskAiAccess: riskAiAccess.allowed,
-    automationAccess: automationAccess.allowed,
-    predictiveAccess: predictiveAccess.allowed,
-    knowledgeAccess: knowledgeAccess.allowed,
-    canManageCompliance,
-  };
 
   const guidanceMode = resolveDashboardGuidanceMode(activation, adoption);
   const customerSuccessMode = customerSuccessPortfolio
@@ -204,6 +184,8 @@ export default async function DashboardPage() {
         canReadCustomerSuccess,
       })
     : null;
+  timer.mark("guidance");
+  timer.logIfSlow("/dashboard");
   const executiveIntelligenceMode =
     executiveSnapshot && customerSuccessMode !== "critical"
       ? resolveDashboardExecutiveIntelligenceMode(
@@ -650,9 +632,7 @@ export default async function DashboardPage() {
               ),
               content: (
                 <OpsTabPanelErrorBoundary panelLabel="Intelligence">
-                  <Suspense fallback={<OpsTabPanelSkeleton />}>
-                    <DashboardOpsIntelligenceTab access={opsTabAccess} />
-                  </Suspense>
+                  <LazyOpsTabPanel tab="intelligence" panelLabel="Intelligence" />
                 </OpsTabPanelErrorBoundary>
               ),
             },
@@ -666,9 +646,7 @@ export default async function DashboardPage() {
               ),
               content: (
                 <OpsTabPanelErrorBoundary panelLabel="Automation">
-                  <Suspense fallback={<OpsTabPanelSkeleton />}>
-                    <DashboardOpsAutomationTab access={opsTabAccess} />
-                  </Suspense>
+                  <LazyOpsTabPanel tab="automation" panelLabel="Automation" />
                 </OpsTabPanelErrorBoundary>
               ),
             },
@@ -682,9 +660,7 @@ export default async function DashboardPage() {
               ),
               content: (
                 <OpsTabPanelErrorBoundary panelLabel="Governance">
-                  <Suspense fallback={<OpsTabPanelSkeleton />}>
-                    <DashboardOpsGovernanceTab access={opsTabAccess} />
-                  </Suspense>
+                  <LazyOpsTabPanel tab="governance" panelLabel="Governance" />
                 </OpsTabPanelErrorBoundary>
               ),
             },

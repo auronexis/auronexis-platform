@@ -17,8 +17,9 @@ import { DashboardMonitoringOverview } from "@/components/monitoring/dashboard-m
 import { DashboardIncidentAIOverview } from "@/components/incidents/ai/dashboard-incident-ai-overview";
 import { DashboardRiskAIOverview } from "@/components/ai-risks/dashboard-risk-ai-overview";
 import { DashboardExecutiveReportsOverview } from "@/components/executive-reports/dashboard-executive-reports-overview";
-import { LoadingCard } from "@/components/ui/loading-card";
+import { OpsTabPanelSkeleton } from "@/components/dashboard/ops-tab-panel-skeleton";
 import { requireSession } from "@/lib/auth/session";
+import type { OpsTabAccess } from "@/lib/dashboard/ops-tab-access";
 import { buildOperationalTasks } from "@/lib/ai/operational/tasks";
 import { getKnowledgeHubData } from "@/lib/ai/knowledge/get-hub";
 import { getOperationalIntelligence } from "@/lib/ai/insights/get-intelligence";
@@ -35,36 +36,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { linkText } from "@/lib/ui/tokens";
 
-export function OpsTabPanelSkeleton() {
-  return (
-    <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-12" aria-busy="true">
-      <div className="lg:col-span-8">
-        <LoadingCard lines={4} />
-      </div>
-      <div className="lg:col-span-4">
-        <LoadingCard lines={3} />
-      </div>
-      <div className="lg:col-span-4">
-        <LoadingCard lines={3} />
-      </div>
-      <div className="lg:col-span-4">
-        <LoadingCard lines={3} />
-      </div>
-    </div>
-  );
-}
-
-type OpsTabAccess = {
-  aiAccess: boolean;
-  successAccess: boolean;
-  operationalAiAccess: boolean;
-  incidentAiAccess: boolean;
-  riskAiAccess: boolean;
-  automationAccess: boolean;
-  predictiveAccess: boolean;
-  knowledgeAccess: boolean;
-  canManageCompliance: boolean;
-};
+export { OpsTabPanelSkeleton };
 
 export async function DashboardOpsIntelligenceTab({ access }: { access: OpsTabAccess }) {
   const session = await requireSession();

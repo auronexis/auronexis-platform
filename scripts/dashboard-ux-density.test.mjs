@@ -13,7 +13,7 @@ test("dashboard page uses OperationsCenter progressive disclosure", () => {
   assert.match(page, /id: "automation"/);
   assert.match(page, /id: "governance"/);
   assert.match(page, /More executive intelligence/);
-  assert.match(page, /DashboardOpsIntelligenceTab/);
+  assert.match(page, /<LazyOpsTabPanel tab="intelligence"/);
   assert.doesNotMatch(page, /min-h-\[320px\]/);
   assert.doesNotMatch(page, /min-h-\[360px\]/);
 });

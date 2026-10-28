@@ -19,6 +19,7 @@ async function countRows(
   organizationId: string,
   filter?: { column: string; value: string | boolean | number },
   since?: string,
+  sinceColumn = "created_at",
 ): Promise<number> {
   const supabase = await createClient();
   let query = supabase
@@ -30,7 +31,7 @@ async function countRows(
     query = query.eq(filter.column, filter.value);
   }
   if (since) {
-    query = query.gte("created_at", since);
+    query = query.gte(sinceColumn, since);
   }
 
   const { count, error } = await query;
@@ -212,7 +213,8 @@ export async function getAdoptionDataSnapshot(
       ? countRows("automation_workflows", organizationId)
       : Promise.resolve(0),
     features?.automation_engine
-      ? countRows("automation_executions", organizationId, undefined, since30d)
+      ? // automation_executions has no created_at; runs are dated by started_at.
+        countRows("automation_executions", organizationId, undefined, since30d, "started_at")
       : Promise.resolve(0),
     countRows("monitoring_events", organizationId, undefined, since30d),
     countActivityEvents(organizationId, MEANINGFUL_ACTIVITY_EVENT_TYPES, since30d),
