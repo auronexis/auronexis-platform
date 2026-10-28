@@ -162,6 +162,47 @@ export async function countClientRisks(
   };
 }
 
+/**
+ * Open risk and incident counts for every client of an organization in two queries — the
+ * portfolio uses this instead of two count queries per client. Same filters as
+ * countClientRisks / countClientIncidents.
+ */
+export async function loadOpenWorkCountsByClient(organizationId: string): Promise<{
+  risks: Map<string, { open: number; critical: number }>;
+  incidents: Map<string, number>;
+}> {
+  const supabase = await createClient();
+  const [riskResult, incidentResult] = await Promise.all([
+    supabase
+      .from("client_risks")
+      .select("client_id, severity")
+      .eq("organization_id", organizationId)
+      .in("status", ["open", "acknowledged", "mitigated"]),
+    supabase
+      .from("incidents")
+      .select("client_id")
+      .eq("organization_id", organizationId)
+      .in("status", ["open", "investigating"]),
+  ]);
+
+  const risks = new Map<string, { open: number; critical: number }>();
+  for (const row of (riskResult.data ?? []) as { client_id: string | null; severity: string }[]) {
+    if (!row.client_id) continue;
+    const entry = risks.get(row.client_id) ?? { open: 0, critical: 0 };
+    entry.open += 1;
+    if (row.severity === "critical") entry.critical += 1;
+    risks.set(row.client_id, entry);
+  }
+
+  const incidents = new Map<string, number>();
+  for (const row of (incidentResult.data ?? []) as { client_id: string | null }[]) {
+    if (!row.client_id) continue;
+    incidents.set(row.client_id, (incidents.get(row.client_id) ?? 0) + 1);
+  }
+
+  return { risks, incidents };
+}
+
 export async function countClientIncidents(
   organizationId: string,
   clientId: string,
