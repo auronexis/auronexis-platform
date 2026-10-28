@@ -105,6 +105,7 @@ export const GUIDE_ROUTES = {
   automatedClientReporting: "/guides/automated-client-reporting",
   clientProfitabilityAnalysis: "/guides/client-profitability-analysis",
   slaReporting: "/guides/sla-reporting",
+  customerHealthScore: "/guides/customer-health-score",
 } as const;
 
 export const TEMPLATE_ROUTES = {

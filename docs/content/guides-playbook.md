@@ -30,7 +30,8 @@ Content lives in `src/lib/seo/guides-content.ts` (`GuideContent`). For every new
    `GUIDE_SLUGS` in `src/lib/seo/public-dynamic-slug-allowlist.ts`.
 2. Add the guide object and append it to `GUIDES`.
 3. `seoTitle` + " | Auroranexis" ≤ 60 characters; `description` ≤ 155 characters.
-4. `published` and `updated` = today; `content-dates.ts` keeps the `/guides` date in sync (use the newest `updated`).
+4. `published` and `updated` = today; in `content-dates.ts`, give the new guide an exact rule with its
+   `updated` date above the `/guides` prefix rule, and give the `/guides` hub the newest date.
 5. 900+ words, at least three FAQ entries, internal links to the matching feature, solution or
    template pages.
 6. Checks: `node --experimental-strip-types --import ./scripts/_test-helpers/register-ts-alias.mjs --test scripts/*.test.mjs`,
@@ -43,7 +44,6 @@ when that data is available. Move a topic to "Published" when its PR is opened.
 
 | # | Slug | Working title | Target searches |
 |---|---|---|---|
-| 1 | customer-health-score | Customer health score: how to build one for a service business | customer health score, client health score |
 | 2 | client-churn-warning-signs | Warning signs a client is about to leave, and what to do about them | client churn warning signs, client retention agency |
 | 3 | quarterly-business-review | How to run a quarterly business review with clients | quarterly business review, QBR template |
 | 4 | monthly-client-report-template | What to include in a monthly client report (with an outline) | monthly client report template |
@@ -63,3 +63,4 @@ when that data is available. Move a topic to "Published" when its PR is opened.
 | 2026-10-23 | automated-client-reporting |
 | 2026-10-23 | client-profitability-analysis |
 | 2026-10-23 | sla-reporting |
+| 2026-10-28 | customer-health-score |
