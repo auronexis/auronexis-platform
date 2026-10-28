@@ -115,10 +115,14 @@ test("dashboard defers ops-tab hubs behind Suspense", () => {
   const panels = readSource("src/components/dashboard/dashboard-ops-tab-panels.tsx");
   const streamed = readSource("src/components/dashboard/dashboard-ops-streamed-metrics.tsx");
   assert.match(page, /Suspense/);
-  assert.match(page, /DashboardOpsIntelligenceTab/);
-  assert.match(page, /DashboardOpsAutomationTab/);
-  assert.match(page, /DashboardOpsGovernanceTab/);
-  assert.match(page, /OpsTabPanelSkeleton/);
+  // Hidden tabs load on demand through a server action (see dashboard-lazy-ops-tabs.test.mjs).
+  const action = readSource("src/app/(dashboard)/dashboard/ops-tab-actions.tsx");
+  const lazyPanel = readSource("src/components/dashboard/lazy-ops-tab-panel.tsx");
+  assert.match(page, /LazyOpsTabPanel/);
+  assert.match(action, /DashboardOpsIntelligenceTab/);
+  assert.match(action, /DashboardOpsAutomationTab/);
+  assert.match(action, /DashboardOpsGovernanceTab/);
+  assert.match(lazyPanel, /OpsTabPanelSkeleton/);
   assert.match(page, /OpsTabPanelErrorBoundary/);
   assert.match(page, /OpsIntelligenceTabBadge/);
   assert.match(page, /OpsAiTasksSummary/);

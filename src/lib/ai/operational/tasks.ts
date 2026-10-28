@@ -1,30 +1,35 @@
 import "server-only";
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { OperationalTasksResult, OperationalTaskItem } from "@/lib/ai/operational/types";
 import { OPEN_INCIDENT_STATUSES } from "@/lib/incidents/types";
 import { OPEN_RISK_STATUSES } from "@/lib/risks/types";
 import type { SessionContext } from "@/lib/tenancy/context";
 
-/** Build dashboard operational task highlights from verified DB data. */
-export async function buildOperationalTasks(
+/**
+ * Build dashboard operational task highlights from verified DB data.
+ * Cached per request: the dashboard badge and AI-task summary share one load.
+ */
+export const buildOperationalTasks = cache(async function buildOperationalTasks(
   session: SessionContext,
 ): Promise<OperationalTasksResult> {
   const supabase = await createClient();
   const orgId = session.organization.id;
   const tasks: OperationalTaskItem[] = [];
 
-  const { data: incidents } = await supabase
-    .from("incidents")
-    .select("id, title, severity, assigned_user_id, description, status")
-    .eq("organization_id", orgId)
-    .in("status", OPEN_INCIDENT_STATUSES);
-
-  const { data: risks } = await supabase
-    .from("client_risks")
-    .select("id, title, severity, mitigation_plan, due_at, status")
-    .eq("organization_id", orgId)
-    .in("status", OPEN_RISK_STATUSES);
+  const [{ data: incidents }, { data: risks }] = await Promise.all([
+    supabase
+      .from("incidents")
+      .select("id, title, severity, assigned_user_id, description, status")
+      .eq("organization_id", orgId)
+      .in("status", OPEN_INCIDENT_STATUSES),
+    supabase
+      .from("client_risks")
+      .select("id, title, severity, mitigation_plan, due_at, status")
+      .eq("organization_id", orgId)
+      .in("status", OPEN_RISK_STATUSES),
+  ]);
 
   const openIncidents = incidents ?? [];
   const openRisks = risks ?? [];
@@ -72,4 +77,4 @@ export async function buildOperationalTasks(
     tasks: tasks.slice(0, 5),
     generatedAt: new Date().toISOString(),
   };
-}
+});
