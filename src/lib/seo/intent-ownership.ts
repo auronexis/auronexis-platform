@@ -104,6 +104,7 @@ export const SEARCH_INTENT_CLUSTERS: readonly SearchIntentCluster[] = [
       FEATURE_ROUTES.aiExecutiveReports,
       FEATURE_ROUTES.reports,
       TEMPLATE_ROUTES.executiveReport,
+      TEMPLATE_ROUTES.quarterlyBusinessReview,
       "/docs/reports",
     ],
     persona: "Account / delivery teams publishing client reports",

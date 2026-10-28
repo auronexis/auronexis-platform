@@ -26,7 +26,7 @@ export type PublicSitemapRoute = (typeof PUBLIC_SITEMAP_ROUTES)[number];
 function buildRegistrySeo(pages: Record<string, LandingPageContent>): Record<string, { title: string; description: string }> {
   const entries: Record<string, { title: string; description: string }> = {};
   for (const page of Object.values(pages)) {
-    entries[page.path] = { title: page.title, description: page.metaDescription };
+    entries[page.path] = { title: page.seoTitle ?? page.title, description: page.metaDescription };
   }
   return entries;
 }
@@ -43,11 +43,11 @@ function buildLandingPageSeo(): Record<string, { title: string; description: str
   const entries: Record<string, { title: string; description: string }> = {};
 
   for (const page of Object.values(SOLUTION_PAGES)) {
-    entries[page.path] = { title: page.title, description: page.metaDescription };
+    entries[page.path] = { title: page.seoTitle ?? page.title, description: page.metaDescription };
   }
 
   for (const page of Object.values(TEMPLATE_PAGES)) {
-    entries[page.path] = { title: page.title, description: page.metaDescription };
+    entries[page.path] = { title: page.seoTitle ?? page.title, description: page.metaDescription };
   }
 
   return {

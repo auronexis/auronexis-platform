@@ -22,6 +22,12 @@ export type LandingPageContent = {
   category: "feature" | "audience" | "industry" | "capability";
   eyebrow: string;
   title: string;
+  /**
+   * Optional <title> tag text when it should differ from the visible H1 — used to match the
+   * wording people search for (from Search Console and keyword research) without changing the
+   * page heading. Keep it under ~47 characters; " | Auroranexis" is appended.
+   */
+  seoTitle?: string;
   description: string;
   metaDescription: string;
   problem: string;

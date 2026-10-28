@@ -49,6 +49,7 @@ const TEMPLATE_SLUGS = new Set([
   "incident-response",
   "sla-policy",
   "executive-report",
+  "quarterly-business-review",
 ]);
 
 const USE_CASE_SLUGS = new Set([

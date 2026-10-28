@@ -1,0 +1,5 @@
+Priority,Definition,Response target,Resolution target,Measured during,Client / tier
+Critical,Service down for the client,30 minutes,4 hours,24/7 if contracted,
+High,Major function impaired,2 hours,1 business day,Service hours,
+Medium,"Function impaired, workaround exists",4 hours,3 business days,Service hours,
+Low,Question or minor issue,1 business day,10 business days,Service hours,

@@ -1,0 +1,8 @@
+ID,Risk,Client / service,Category,Likelihood (1-5),Impact (1-5),Score (L x I),Owner,Mitigation,Due,Status,Last reviewed
+R-01,Key contact at the client leaves; no replacement named,Client A - Managed IT,Relationship,3,4,12,Account lead,Identify a second sponsor; send a handover summary,,Open,
+R-02,Backup job failing silently on one site,Client B - Backup,Technical,2,5,10,Service desk lead,Add failure alerting; test a restore,,In progress,
+R-03,Monthly report delivered late three months in a row,Client C - SEO retainer,Delivery,4,3,12,Delivery manager,Fix the report date in the contract; automate the draft,,Open,
+R-04,Single engineer holds all knowledge of a custom integration,Client D - Integration,Resourcing,3,4,12,Ops lead,Document the runbook; pair a second engineer,,Open,
+R-05,Vendor price increase not passed on in the contract,Client E - Licences,Commercial,4,2,8,Finance,Review contract terms at renewal,,Accepted,
+R-06,Response-time target (SLA) breached twice this quarter,Client F - Support,Service level,4,4,16,Service manager,Add on-call cover; review ticket triage,,Escalated,
+R-07,,,,,,,,,,,
