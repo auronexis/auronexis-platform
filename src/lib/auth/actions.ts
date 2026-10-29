@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { requireTurnstileFromForm } from "@/lib/security/turnstile";
 import { authThrottleUserMessage, checkLoginThrottle, checkSignupThrottle } from "@/lib/security/login-throttle";
 import { sendWelcomeEmailAfterSignup } from "@/lib/email/welcome";

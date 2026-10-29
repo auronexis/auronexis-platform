@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { normalizeHexColor } from "@/lib/branding/defaults";
 import { requireSession } from "@/lib/auth/session";

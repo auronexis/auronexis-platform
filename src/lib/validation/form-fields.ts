@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 
 /** Shared optional form text: empty string → null. */
 export const optionalText = z

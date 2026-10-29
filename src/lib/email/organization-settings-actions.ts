@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { checkPlanFeatureSafe, resolveActionError } from "@/lib/action-errors";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { requireSession } from "@/lib/auth/session";

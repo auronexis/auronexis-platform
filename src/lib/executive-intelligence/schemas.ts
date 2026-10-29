@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 
 export const narrativeOutputSchema = z.object({
   narrative: z.string().min(1).max(4000),

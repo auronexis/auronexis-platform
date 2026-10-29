@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { dispatchAutomation } from "@/lib/automation";
 import { checkPlanFeatureSafe, resolveActionError } from "@/lib/action-errors";

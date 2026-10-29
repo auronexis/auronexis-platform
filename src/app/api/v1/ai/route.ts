@@ -4,7 +4,7 @@ import { withApiHandler } from "@/lib/api/middleware/handler";
 import { apiJson } from "@/lib/api/responses/json";
 import { parseJsonBody } from "@/lib/api/validation/body";
 import { recordApiAuditEvent } from "@/lib/api/audit";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 
 const aiBodySchema = z.object({
   module: z.enum(["usage", "echo"]),

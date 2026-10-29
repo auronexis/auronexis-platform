@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { requireSession } from "@/lib/auth/session";
 import { ACTION_DENIED_MESSAGE } from "@/lib/authorization/guards";
 import { assertCheckoutAllowed } from "@/lib/billing/checkout-guards.server";

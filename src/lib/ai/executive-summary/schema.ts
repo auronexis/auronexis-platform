@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 
 export const EXECUTIVE_SUMMARY_PROMPT_VERSION = "executive-summary-v1";
 

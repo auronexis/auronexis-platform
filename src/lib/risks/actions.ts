@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { recordRiskActivity } from "@/lib/risks/activity";
 import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import { assertPermissionSafe, sessionHasPermission } from "@/lib/authorization/guards";

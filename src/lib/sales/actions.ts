@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { GENERIC_ACTION_ERROR, requireModulePermissionSafe } from "@/lib/action-errors";
 import { requireSession } from "@/lib/auth/session";
 import { getStoredOrganizationCurrency } from "@/lib/i18n";

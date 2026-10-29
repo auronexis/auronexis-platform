@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { verifyCronAuthorization } from "@/lib/env";
 import { sendNewsletterIssue } from "@/lib/newsletter/service";
 

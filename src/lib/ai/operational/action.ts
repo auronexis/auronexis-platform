@@ -1,6 +1,6 @@
 "use server";
 
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { buildTrustedOperationalContext } from "@/lib/ai/operational/context-builder";
 import { buildKnowledgeInfluenceNotice } from "@/lib/ai/knowledge/prompts";

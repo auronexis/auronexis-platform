@@ -5,7 +5,7 @@ import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import type { ApiContext } from "@/lib/api/auth/context";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { assertCanCreateClient } from "@/lib/plans/guards";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 
 const clientBodySchema = z.object({
   name: z.string().trim().min(2),
