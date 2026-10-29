@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { requireSession } from "@/lib/auth/session";
 import { resolveActionError } from "@/lib/action-errors";
 import { canManageOrganizationSettings } from "@/lib/team/guards";

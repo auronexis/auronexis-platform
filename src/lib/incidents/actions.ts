@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { recordIncidentActivity } from "@/lib/incidents/activity";
 import { dispatchWebhookEvent } from "@/lib/webhooks/events";
 import { dispatchAutomation } from "@/lib/automation";

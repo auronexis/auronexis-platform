@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { requireSession } from "@/lib/auth/session";
 import { checkNewPassword } from "@/lib/auth/password-strength";
 import { getPasswordResetRedirectUrl } from "@/lib/auth/redirects";

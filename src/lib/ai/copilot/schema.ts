@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import type { CopilotAnswer } from "@/lib/ai/copilot/types";
 
 const confidenceSchema = z.enum(["high", "medium", "low"]);

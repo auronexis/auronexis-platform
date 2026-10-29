@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 
 const conditionSchema: z.ZodType<import("@/lib/automation/builder/types").WorkflowCondition> = z.object({
   id: z.string().min(1),
@@ -37,7 +37,7 @@ export const workflowTriggerSchema = z.object({
     "manual_trigger",
     "webhook_trigger",
   ]),
-  config: z.record(z.unknown()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const workflowActionSchema = z.object({
@@ -73,7 +73,7 @@ export const workflowActionSchema = z.object({
     "send_google_chat_message",
   ]),
   label: z.string().max(200).optional(),
-  config: z.record(z.unknown()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
   requiresConfirmation: z.boolean().optional(),
 });
 

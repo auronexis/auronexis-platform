@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 
 export async function parseJsonBody<T>(request: Request, schema: z.ZodSchema<T>): Promise<T> {
   let json: unknown;

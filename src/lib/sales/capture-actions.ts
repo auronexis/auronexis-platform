@@ -1,6 +1,6 @@
 "use server";
 
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { getSession } from "@/lib/auth/session";
 import { SALES_EMAIL } from "@/lib/company";
 import { resolveOrganizationEntitlements } from "@/lib/entitlements/resolver";

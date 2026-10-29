@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { createNotificationForOwnersAndAdmins } from "@/lib/notifications/create";
 import { requireSession } from "@/lib/auth/session";

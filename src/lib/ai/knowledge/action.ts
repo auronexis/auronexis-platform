@@ -1,6 +1,6 @@
 "use server";
 
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { toAIActionError } from "@/lib/ai/core";
 import {

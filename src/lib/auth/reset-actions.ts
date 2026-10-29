@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { AUTH_MESSAGES, isBenignPasswordResetError, sanitizeAuthError } from "@/lib/auth/messages";
 import { validatePasswordPolicy } from "@/lib/auth/password-policy";
 import { checkNewPassword } from "@/lib/auth/password-strength";

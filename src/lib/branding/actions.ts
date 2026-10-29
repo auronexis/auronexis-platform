@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { z } from "@/lib/validation/zod";
 import { recordActivityEvent } from "@/lib/activity/record";
 import { normalizeHexColor } from "@/lib/branding/defaults";
 import { getOrganizationBrandingRecord } from "@/lib/branding/queries";
@@ -38,7 +38,7 @@ const brandingSchema = z.object({
     .transform((value) => (value.length === 0 ? null : value))
     .nullable()
     .optional()
-    .refine((value) => value === null || value === undefined || z.string().url().safeParse(value).success, {
+    .refine((value) => value === null || value === undefined || z.url({ protocol: /^https?$/ }).safeParse(value).success, {
       message: "Enter a valid logo URL.",
     }),
   portalWelcomeMessage: z
