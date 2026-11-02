@@ -44,8 +44,8 @@ export default async function SettingsAboutPage() {
       <section className="mt-8 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Pilot program</h2>
         <p className="text-sm text-muted">
-          {INVITE_ONLY_PROGRAMS_NOTE} Qualified agencies receive dedicated onboarding and approved pricing
-          terms. Contact{" "}
+          {INVITE_ONLY_PROGRAMS_NOTE} Pilot participants receive guided setup and pilot terms agreed in
+          writing. Contact{" "}
           <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-primary hover:underline">
             {SUPPORT_EMAIL}
           </a>{" "}

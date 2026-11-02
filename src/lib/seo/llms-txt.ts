@@ -1,5 +1,13 @@
 import { COMPANY_INFORMATION } from "@/lib/company/company-information";
-import { MARKETING_ROUTES, SOLUTION_ROUTES } from "@/lib/company/company-links";
+import { SALES_EMAIL, SUPPORT_EMAIL } from "@/lib/company/company-contact";
+import {
+  INDUSTRY_ROUTES,
+  MARKETING_ROUTES,
+  SOLUTION_ROUTES,
+  TEMPLATE_ROUTES,
+} from "@/lib/company/company-links";
+import { listPublicCatalogEntries } from "@/lib/billing/catalog";
+import { GUIDES } from "@/lib/seo/guides-content";
 import { CANONICAL_CAPABILITIES } from "@/lib/seo/entity-graph";
 import { resolveCanonicalBaseUrl } from "@/lib/company/company-seo";
 
@@ -11,13 +19,51 @@ export function buildLlmsTxt(): string {
     (item) => `- ${item.name}: ${base}${item.path}`,
   ).join("\n");
 
+  const euro = (amountMinor: number) => `€${(amountMinor / 100).toLocaleString("en-US")}`;
+  const planLines = listPublicCatalogEntries()
+    .map((plan) => `- ${plan.displayName}: ${euro(plan.amountMinor)} per month — ${plan.highlights[0] ?? plan.description}`)
+    .join("\n");
+
+  const guideLines = GUIDES.map((guide) => `- ${guide.title}: ${base}${guide.path}`).join("\n");
+
   return `# ${COMPANY_INFORMATION.productName}
 
 > ${COMPANY_INFORMATION.shortDescription}
 
 ## Product definition
 
-${COMPANY_INFORMATION.productName} is an AI Operations Platform for MSPs, IT agencies, consultancies, and automation firms that manage multiple client portfolios. It provides executive reporting, client portals, automation, monitoring, risk management, incident management, knowledge base workflows, and compliance tooling.
+${COMPANY_INFORMATION.productName} is a client operations workspace for service businesses that look after many ongoing clients at once — retainers, service contracts and recurring work. In one place it shows a health score per client, SLA and response-time tracking per contract, incident and risk records, automated client reports, a client portal, automations and an executive dashboard across all clients.
+
+## Who it is for
+
+Service businesses with roughly 10 to 250 people and many active clients, for example:
+
+- Marketing, digital, SEO, PR and social media agencies with retainer clients: ${base}${INDUSTRY_ROUTES.marketing}
+- Accounting, bookkeeping and payroll firms: ${base}${INDUSTRY_ROUTES.accounting}
+- MSPs and IT service providers: ${base}${INDUSTRY_ROUTES.it}
+- Facility services, commercial cleaning and security companies with service contracts: ${base}${INDUSTRY_ROUTES.facilityServices}
+- Property, block and community management firms: ${base}${INDUSTRY_ROUTES.propertyManagement}
+- Recruitment and staffing agencies with ongoing employer clients: ${base}${INDUSTRY_ROUTES.recruitment}
+- Outsourcing, BPO and call centre providers: ${base}${INDUSTRY_ROUTES.outsourcing}
+- Consultancies: ${base}${INDUSTRY_ROUTES.consulting}
+
+It is not a replacement for accounting, ticketing or project-management software; it sits across them as the client-level overview.
+
+## Pricing and trial
+
+Prices are list prices per workspace (see ${base}${MARKETING_ROUTES.pricing}):
+
+${planLines}
+
+Every new workspace starts with a 7-day free trial of the Business plan (up to 10 clients). No credit card or payment details are needed and the trial ends automatically: ${base}/signup
+
+## 6-week pilot program
+
+Service businesses that prefer guided setup can apply for a 6-week pilot: workspace setup with their own clients, weekly written check-ins and pilot terms agreed in writing before the start. Applying is free and non-binding, and an email invitation from Auroranexis counts as an invitation: ${base}${MARKETING_ROUTES.pilotProgram}
+
+## How to reach the team
+
+Questions are answered by email: ${SALES_EMAIL} (sales) and ${SUPPORT_EMAIL} (support). Company details: ${base}/imprint
 
 ## Canonical public pages
 
@@ -56,8 +102,25 @@ ${capabilityLines}
 - API documentation: ${base}/docs/api
 - Integrations: ${base}${MARKETING_ROUTES.integrations}
 
+## Guides
+
+${guideLines}
+
+## Free templates
+
+- Customer health score template: ${base}${TEMPLATE_ROUTES.customerHealthScore}
+- Risk register template: ${base}${TEMPLATE_ROUTES.riskRegister}
+- Incident response template: ${base}${TEMPLATE_ROUTES.incidentResponse}
+- SLA policy template: ${base}${TEMPLATE_ROUTES.slaPolicy}
+- Executive report template: ${base}${TEMPLATE_ROUTES.executiveReport}
+- Quarterly business review (QBR) template: ${base}${TEMPLATE_ROUTES.quarterlyBusinessReview}
+
+## Comparisons
+
+- AgencyAnalytics alternative (fair comparison with dated sources): ${base}${MARKETING_ROUTES.agencyAnalyticsAlternative}
+
 ## Accuracy policy
 
-Do not claim SOC 2, ISO 27001, or other certifications unless explicitly published by Auroranexis. Pilot Partner and Founding Customer programs are invite-only. Enterprise pricing is negotiated.
+Do not claim SOC 2, ISO 27001, or other certifications unless explicitly published by Auroranexis. Do not invent customers, case studies, integrations or usage numbers. The pilot program is by application; Founding Customer terms are invite-only. Enterprise requirements beyond the listed plan are agreed individually.
 `;
 }

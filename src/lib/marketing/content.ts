@@ -212,7 +212,7 @@ export const PUBLIC_PRICING_PLANS = [
 /** Copy-only footnote for public pricing pages — invite-only programs are not listed here. */
 export const PUBLIC_PRICING_NOTE =
   "All prices in EUR per month. VAT is calculated at checkout from your company's billing details. Contact sales for custom enterprise agreements.";
-export const INVITE_ONLY_PROGRAMS_NOTE = "Pilot and Founding programs are invite-only.";
+export const INVITE_ONLY_PROGRAMS_NOTE = "The 6-week pilot program is by application. Founding Partner terms are invite-only.";
 
 export const SECURITY_HIGHLIGHTS = [
   "Encryption in transit (TLS) and encryption at rest provided by our infrastructure providers.",
@@ -258,7 +258,7 @@ export const FAQ_ITEMS = [
   {
     question: "Is there a pilot program?",
     answer:
-      "Pilot Partner is an invite-only private onboarding program — not a public plan tier. Contact sales if you received an invitation.",
+      "Yes. The 6-week pilot is for service businesses that want guided setup with their own clients. Apply on the pilot program page; an email invitation from Auroranexis counts as your invitation. Pilot terms are agreed in writing before the pilot starts.",
   },
   {
     question: "Where is data hosted?",
@@ -276,7 +276,25 @@ export const FAQ_ITEMS = [
 
 export const PILOT_PROGRAM = {
   duration: "6 weeks",
-  discount: "Invite-only beta pricing on approved Pilot Partner terms",
+  steps: [
+    {
+      title: "Apply in two minutes",
+      description: "Tell us about your service business, how many clients you manage and what you want to fix. Applying is free and non-binding.",
+    },
+    {
+      title: "Get a reply by email",
+      description: "We review every application and reply by email with the pilot terms in writing. No calls or meetings needed.",
+    },
+    {
+      title: "Set up with your own clients",
+      description: "We help you set up the workspace with your first clients: health scores, SLAs, open incidents and the first client report.",
+    },
+    {
+      title: "Six weeks, then you decide",
+      description: "Weekly written check-ins during the pilot. At the end you choose whether to continue on a public plan.",
+    },
+  ],
+  discount: "Pilot terms are agreed in writing by email before the pilot starts. Applying is free and non-binding.",
   targets: [
     "Agencies",
     "MSPs and IT providers",
@@ -287,14 +305,14 @@ export const PILOT_PROGRAM = {
   ],
   includes: [
     "Dedicated onboarding and workspace setup",
-    "Weekly check-ins with product team",
+    "Weekly written check-ins by email",
     "Priority support channel",
     "Approved pricing terms for the pilot period",
-    "Roadmap influence and feedback sessions",
+    "Roadmap influence through structured written feedback",
     "Early access to upcoming modules",
   ],
   requirements: [
-    "Direct invitation or approved application",
+    "An email invitation from Auroranexis or an approved application",
     "Active client portfolio (minimum 3 managed clients)",
     "Designated operations owner for the pilot",
     "Willingness to provide structured feedback",
@@ -303,7 +321,7 @@ export const PILOT_PROGRAM = {
   benefits: [
     "Dedicated onboarding",
     "Roadmap influence",
-    "Invite-only pricing terms",
+    "Pilot terms agreed in writing",
     "Early access to new capabilities",
   ],
   emails: PRIMARY_CONTACT_EMAILS.map((entry) => entry.email),
@@ -331,7 +349,7 @@ export const HELP_TOPICS = [
   { title: "Documentation hub", href: "/docs", description: "Module guides and API reference." },
   { title: "Release notes", href: "/docs/release-notes", description: "Product updates and changes." },
   { title: "System status", href: MARKETING_ROUTES.status, description: "Platform component health." },
-  { title: "Pilot program", href: MARKETING_ROUTES.pilotProgram, description: "Invite-only Pilot Partner application." },
+  { title: "Pilot program", href: MARKETING_ROUTES.pilotProgram, description: "Apply for the 6-week guided pilot." },
   { title: "Contact support", href: MARKETING_ROUTES.contact, description: "Reach sales, support, or security." },
 ] as const;
 

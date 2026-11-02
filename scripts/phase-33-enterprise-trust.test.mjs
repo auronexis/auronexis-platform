@@ -92,12 +92,17 @@ test("all documentation slugs are in sitemap and PAGE_SEO registry", () => {
   assert.ok(slugCount >= 17, "expected full documentation registry");
 });
 
-test("pilot program CTA uses invite-only request invitation wording", () => {
+test("pilot program page explains the application path without offering calls", () => {
   const cta = readSource("src/lib/marketing/cta.ts");
   const pilot = readSource("src/app/(marketing)/pilot-program/page.tsx");
+  const content = readSource("src/lib/marketing/content.ts");
   assert.match(cta, /Request invitation/);
   assert.doesNotMatch(cta, /Join pilot program/);
-  assert.match(pilot, /Invite-only/i);
+  assert.match(pilot, /Apply for the pilot/);
+  assert.match(pilot, /that email is your invitation/);
+  assert.match(pilot, /PILOT_PROGRAM\.steps/);
+  assert.match(content, /No calls or meetings needed/);
+  assert.doesNotMatch(content, /Weekly check-ins with product team/);
 });
 
 test("status page uses public status resolution without inventing uptime claims", () => {

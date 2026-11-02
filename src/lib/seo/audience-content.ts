@@ -221,7 +221,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       "Business: up to 100 clients with risk, incident, SLA, escalation rules, and automation engine",
       "Enterprise: custom client limits, dedicated onboarding, priority support, and plan overrides",
       "White-label portal branding on Professional and above for client-facing delivery",
-      "Invite-only Pilot Partner path for qualified operators evaluating with sales guidance",
+      "6-week pilot program with guided setup for operators who prefer help getting started",
     ],
     benefits: [
       {
@@ -286,7 +286,7 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       {
         question: "What should an MSP do next?",
         answer:
-          "Book an MSP demo to walk portfolio health, SLA, incident, risk, and reporting workflows; compare Professional vs Business/Enterprise on the pricing page; or create a workspace for self-serve registration. Pilot Partner remains invite-only for qualified operators.",
+          "Book an MSP demo to walk portfolio health, SLA, incident, risk, and reporting workflows; compare Professional vs Business/Enterprise on the pricing page; or create a workspace for self-serve registration. Operators who prefer guided setup can apply for the 6-week pilot.",
       },
     ],
     relatedLinks: [
@@ -299,14 +299,14 @@ export const AUDIENCE_PAGES: Record<string, LandingPageContent> = {
       { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
       { label: "Compare plans", href: MARKETING_ROUTES.pricing },
       { label: "Create workspace", href: "/signup" },
-      { label: "Pilot Partner (invite-only)", href: MARKETING_ROUTES.pilotProgram },
+      { label: "6-week pilot program", href: MARKETING_ROUTES.pilotProgram },
     ],
     primaryCta: "bookMspDemo",
     secondaryCta: "comparePlans",
     tertiaryCta: "startFreeTrial",
     ctaTitle: "Evaluate Auroranexis for your MSP portfolio",
     ctaDescription:
-      "Book an MSP demo for qualified discovery, compare Professional vs Business/Enterprise on pricing, or create a workspace for legitimate self-serve registration. Pilot Partner remains invite-only.",
+      "Book an MSP demo for qualified discovery, compare Professional vs Business/Enterprise on pricing, or create a workspace for legitimate self-serve registration. Or apply for the 6-week pilot program.",
   }),
 
   consultancies: buildLandingPage({
