@@ -336,10 +336,10 @@ export default async function MarketingHomePage() {
       />
 
       <MarketingCta
-        title="Request a Pilot Partner invitation"
-        description="Pilot Partner is invite-only — six weeks of dedicated onboarding, roadmap influence, and approved beta pricing for qualified agencies."
+        title="Prefer guided setup? Join the 6-week pilot"
+        description="Run Auroranexis with your own clients for six weeks: guided workspace setup, weekly written check-ins and pilot terms agreed in writing. Applying is free and non-binding."
         href={MARKETING_ROUTES.pilotProgram}
-        label="Learn about Pilot Partner"
+        label="Apply for the pilot"
       />
     </MarketingShell>
   );

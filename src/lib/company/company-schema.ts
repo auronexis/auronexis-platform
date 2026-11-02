@@ -254,8 +254,8 @@ export function pilotProgramJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Offer",
-    name: "Auroranexis Pilot Partner Program",
-    description: "Invite-only Pilot Partner program for qualified MSPs and agencies.",
+    name: "Auroranexis 6-Week Pilot Program",
+    description: "Six-week guided pilot for service businesses that manage many ongoing clients. By application; pilot terms agreed in writing.",
     category: "Pilot Program",
     url: getCanonicalUrl(MARKETING_ROUTES.pilotProgram).toString(),
     availability: "https://schema.org/LimitedAvailability",

@@ -11,7 +11,7 @@ export const GETTING_STARTED_DOC: DocPageInput = {
     {
       variant: "tip",
       title: "Pilot program",
-      body: "Pilot Partner and Founding Customer are invite-only private onboarding programs and early access cohorts. They are not public plan tiers. Visit the Pilot Program page only if you received an invitation, or contact sales from Settings → About.",
+      body: "The 6-week pilot program is by application: apply on the Pilot Program page (an email invitation from Auroranexis counts as your invitation). Founding Customer terms are invite-only. Neither is a public plan tier.",
     },
     {
       variant: "info",

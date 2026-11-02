@@ -26,7 +26,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Is there a pilot program?",
-        answer: `Pilot Partner is an invite-only onboarding program — not a public plan tier. Visit ${MARKETING_ROUTES.pilotProgram} or contact sales if you received an invitation.`,
+        answer: `Yes. The 6-week pilot gives you guided setup with your own clients, weekly written check-ins and pilot terms agreed in writing. Apply at ${MARKETING_ROUTES.pilotProgram}; an email invitation from Auroranexis counts as your invitation.`,
       },
     ],
   },
@@ -201,7 +201,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
     items: [
       {
         question: "Is there a free trial?",
-        answer: "Yes. Every new workspace gets a 7-day free trial of the Business plan (up to 10 clients and 3 team members). No credit card or payment details are needed, and the trial ends automatically — nothing is charged unless you choose a plan. One trial per company. Pilot Partner offers invite-only terms for qualified agencies.",
+        answer: "Yes. Every new workspace gets a 7-day free trial of the Business plan (up to 10 clients and 3 team members). No credit card or payment details are needed, and the trial ends automatically — nothing is charged unless you choose a plan. One trial per company. If you prefer guided setup, apply for the 6-week pilot program instead.",
       },
       {
         question: "What is included in Enterprise?",

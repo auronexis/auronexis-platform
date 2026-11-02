@@ -140,9 +140,9 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
     description: AGENCYANALYTICS_ALTERNATIVE.metaDescription,
   },
   [MARKETING_ROUTES.pilotProgram]: {
-    title: "Pilot Partner Program",
+    title: "6-Week Pilot Program for Service Businesses",
     description:
-      "Invite-only Pilot Partner program for service businesses evaluating Auroranexis.",
+      "Apply for the 6-week Auroranexis pilot: guided setup with your own clients, weekly written check-ins and pilot terms agreed in writing. Free to apply.",
   },
   [MARKETING_ROUTES.status]: {
     title: "Platform Status",

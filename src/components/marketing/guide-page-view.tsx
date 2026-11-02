@@ -165,7 +165,7 @@ export function GuidePageView({ guide }: { guide: GuideContent }) {
 
       <MarketingCta
         title="Run client operations from one place"
-        description="Join the invite-only pilot program: six weeks of dedicated onboarding, influence on the roadmap and pilot pricing."
+        description="Join the 6-week pilot: guided setup with your own clients, weekly written check-ins and pilot terms agreed in writing."
         href={MARKETING_ROUTES.pilotProgram}
         label="Apply for the pilot"
       />
