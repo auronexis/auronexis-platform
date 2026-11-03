@@ -123,6 +123,8 @@ export function organizationJsonLd() {
     founder: {
       "@type": "Person",
       name: COMPANY_INFORMATION.owner,
+      jobTitle: "Founder & CEO",
+      sameAs: [COMPANY_INFORMATION.founderLinkedInUrl],
     },
     contactPoint: contactPoints(),
   };
