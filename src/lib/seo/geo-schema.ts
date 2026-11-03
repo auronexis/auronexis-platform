@@ -266,7 +266,7 @@ type GuidePageGraphInput = {
   path: string;
   published: string;
   updated: string;
-  author: { name: string; role: string };
+  author: { name: string; role: string; linkedInUrl?: string };
   faq: ReadonlyArray<{ question: string; answer: string }>;
   breadcrumbs: readonly BreadcrumbItem[];
 };
@@ -288,6 +288,7 @@ export function guidePageGraphJsonLd(input: GuidePageGraphInput) {
         "@type": "Person",
         name: input.author.name,
         jobTitle: input.author.role,
+        ...(input.author.linkedInUrl ? { sameAs: [input.author.linkedInUrl] } : {}),
         worksFor: { "@id": GRAPH_ENTITY_IDS.organization },
       },
       publisher: { "@id": GRAPH_ENTITY_IDS.organization },

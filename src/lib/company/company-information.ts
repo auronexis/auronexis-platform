@@ -13,6 +13,8 @@ export const COMPANY_INFORMATION = {
   country: "Germany",
   vatId: "DE449657077",
   website: "https://www.auroranexis.com",
+  /** Founder's public LinkedIn profile — used for schema sameAs and visible author links. */
+  founderLinkedInUrl: "https://www.linkedin.com/in/istvan-tamas-schneller-75b56941a/",
   shortDescription:
     "Auroranexis is client operations software for service businesses: client health scores, SLA tracking, incident and risk records, and automated client reporting in one workspace.",
 } as const;

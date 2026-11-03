@@ -63,7 +63,17 @@ export default function AboutPage() {
           </div>
           <div>
             <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Founder</dt>
-            <dd className="mt-1 text-sm text-foreground">{COMPANY_INFORMATION.owner}</dd>
+            <dd className="mt-1 text-sm text-foreground">
+              {COMPANY_INFORMATION.owner} ·{" "}
+              <a
+                href={COMPANY_INFORMATION.founderLinkedInUrl}
+                target="_blank"
+                rel="noopener noreferrer me"
+                className="font-medium text-primary hover:underline"
+              >
+                LinkedIn
+              </a>
+            </dd>
           </div>
           <div>
             <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Headquarters</dt>

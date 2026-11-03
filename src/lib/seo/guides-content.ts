@@ -56,6 +56,7 @@ export type GuideContent = {
 export const GUIDES_AUTHOR = {
   name: COMPANY_INFORMATION.owner,
   role: "Founder, Auroranexis",
+  linkedInUrl: COMPANY_INFORMATION.founderLinkedInUrl,
 } as const;
 
 const automatedClientReporting: GuideContent = {

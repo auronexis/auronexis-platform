@@ -62,7 +62,16 @@ export function GuidePageView({ guide }: { guide: GuideContent }) {
             </nav>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-5xl">{guide.title}</h1>
             <p className="mt-5 text-sm text-primary-foreground/75">
-              By {GUIDES_AUTHOR.name}, {GUIDES_AUTHOR.role} · Updated{" "}
+              By{" "}
+              <a
+                href={GUIDES_AUTHOR.linkedInUrl}
+                target="_blank"
+                rel="noopener noreferrer author"
+                className={cn("text-white underline-offset-4 hover:underline", focusRing, "rounded")}
+              >
+                {GUIDES_AUTHOR.name}
+              </a>
+              , {GUIDES_AUTHOR.role} · Updated{" "}
               <time dateTime={guide.updated}>{formatDate(guide.updated)}</time> · {guide.readingMinutes} min read
             </p>
           </div>
