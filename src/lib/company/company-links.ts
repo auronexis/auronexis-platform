@@ -108,6 +108,7 @@ export const GUIDE_ROUTES = {
   clientProfitabilityAnalysis: "/guides/client-profitability-analysis",
   slaReporting: "/guides/sla-reporting",
   customerHealthScore: "/guides/customer-health-score",
+  clientChurnWarningSigns: "/guides/client-churn-warning-signs",
 } as const;
 
 export const TEMPLATE_ROUTES = {

@@ -44,7 +44,6 @@ when that data is available. Move a topic to "Published" when its PR is opened.
 
 | # | Slug | Working title | Target searches |
 |---|---|---|---|
-| 2 | client-churn-warning-signs | Warning signs a client is about to leave, and what to do about them | client churn warning signs, client retention agency |
 | 3 | quarterly-business-review | How to run a quarterly business review with clients | quarterly business review, QBR template |
 | 4 | monthly-client-report-template | What to include in a monthly client report (with an outline) | monthly client report template |
 | 5 | msp-client-reporting | Client reporting for MSPs: what to show every month | MSP client reporting, MSP monthly report |
@@ -64,3 +63,4 @@ when that data is available. Move a topic to "Published" when its PR is opened.
 | 2026-10-23 | client-profitability-analysis |
 | 2026-10-23 | sla-reporting |
 | 2026-10-28 | customer-health-score |
+| 2026-11-04 | client-churn-warning-signs |
