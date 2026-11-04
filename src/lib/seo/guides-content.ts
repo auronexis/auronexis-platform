@@ -629,11 +629,214 @@ const customerHealthScore: GuideContent = {
   ],
 };
 
+const clientChurnWarningSigns: GuideContent = {
+  slug: "client-churn-warning-signs",
+  path: GUIDE_ROUTES.clientChurnWarningSigns,
+  title: "Warning signs a client is about to leave, and what to do about them",
+  seoTitle: "Client Churn Warning Signs and What to Do",
+  description:
+    "The warning signs that a service client is about to leave, how to check them, and a step-by-step plan to keep the account or let it go well.",
+  summary:
+    "Thirteen warning signs that a recurring client may leave, how to tell a real signal from noise, and what to do in the first week after you spot one.",
+  published: "2026-11-04",
+  updated: "2026-11-04",
+  readingMinutes: 9,
+  intro: [
+    "Clients of service businesses rarely leave without warning. An agency, an IT service provider, an accounting firm or a facility services company usually loses a client after weeks or months of small changes: shorter replies, a cancelled review meeting, a new contact who asks basic questions, an invoice that is suddenly questioned. Each change looks harmless on its own. Together, they are a pattern.",
+    "The problem is that these signals are spread across different people and tools. The account manager notices the tone, finance notices the late payment, and the delivery team notices the extra escalations — but nobody puts the pieces together until the notice of termination arrives. This guide lists the warning signs that matter most, shows how to check whether they are real, and gives you a practical plan for the first week after you spot one.",
+  ],
+  sections: [
+    {
+      heading: "Why service clients leave",
+      paragraphs: [
+        "Before looking at the signs, it helps to know the usual causes. In service businesses, clients rarely leave because of one bad month. They leave because they stop seeing the value, because the relationship has weakened, or because something changed on their side.",
+      ],
+      bullets: [
+        "Value is no longer visible: the work is being done, but the client cannot see what it achieves, so the invoice starts to feel expensive.",
+        "Delivery has slipped: missed deadlines, repeated incidents or rework have used up the client's patience.",
+        "The relationship has changed: the person who chose you has left, or a new manager wants to bring in their own providers.",
+        "The client's situation has changed: budget cuts, a merger, a new strategy or a decision to take the work in-house.",
+        "A competitor made a better offer: often after the client started looking because of one of the reasons above.",
+      ],
+      closing:
+        "Only the last two are mostly outside your control. The first three are where warning signs appear early and where your response makes the biggest difference.",
+    },
+    {
+      heading: "Thirteen warning signs to watch",
+      paragraphs: [
+        "Group the signs by where they appear. One sign alone is a reason to pay attention, not to panic. Two or more from different groups within a few weeks is a reason to act.",
+      ],
+      bullets: [
+        "Communication: replies get shorter and slower, or questions stay unanswered.",
+        "Communication: review meetings are cancelled, moved again and again, or attended by someone more junior.",
+        "Communication: feedback stops. A client who used to complain about details and now says nothing is not necessarily happy.",
+        "People: your main contact leaves, changes role or is replaced by someone who does not know your history.",
+        "People: a new decision-maker, such as a new head of marketing, IT or finance, appears in conversations.",
+        "Delivery: escalations increase, or the client starts copying their manager into routine emails.",
+        "Delivery: the same type of incident or mistake happens more than once in a short period.",
+        "Commercial: the client questions invoices, asks for a discount or wants to reduce the scope.",
+        "Commercial: payments arrive later than usual without an explanation.",
+        "Commercial: renewal talks are postponed, or the client asks for a shorter contract term.",
+        "Information: the client asks for exports of their data, copies of documents, passwords or admin access to accounts you manage.",
+        "Information: the client asks detailed questions about the notice period or the exit terms in the contract.",
+        "Engagement: reports are no longer opened, portal logins stop, and nobody gives input on plans.",
+      ],
+      closing:
+        "Requests for data, access or exit terms deserve the fastest response. They do not always mean the client is leaving — some clients simply tidy up their documentation — but they are among the clearest signs, because they are exactly what a client needs to prepare an exit.",
+    },
+    {
+      heading: "How to tell a real signal from noise",
+      paragraphs: [
+        "Not every short email means trouble. People go on holiday, have busy quarters and change their habits. To avoid both overreacting and ignoring a real problem, check each sign against three questions.",
+      ],
+      steps: [
+        {
+          title: "Is it a change from this client's normal behaviour?",
+          text: "Compare with the same client over the last six to twelve months, not with your other clients. A client who always pays on day 40 is not a risk when they pay on day 40.",
+        },
+        {
+          title: "Does it repeat or combine with other signs?",
+          text: "One cancelled meeting is noise. A cancelled meeting, a late payment and a question about the notice period in the same month are a pattern.",
+        },
+        {
+          title: "Is there a simple explanation you can confirm?",
+          text: "Ask. A short, friendly message such as \"We noticed the last two reviews were moved — is there a better time or format for you?\" often answers the question within a day.",
+        },
+      ],
+    },
+    {
+      heading: "Write signals down in one place",
+      paragraphs: [
+        "Warning signs only form a pattern when someone can see them together. Keep a simple signal log per client — a shared spreadsheet is enough to start — and ask everyone who works with the client to add what they notice. Review the log for every client before the monthly report and before any renewal discussion.",
+      ],
+      example: {
+        title: "Example — signal log for one client",
+        lines: [
+          "3 Sep · Account manager · Monthly review moved for the second time",
+          "17 Sep · Finance · Invoice paid 21 days later than usual",
+          "24 Sep · Delivery · Client copied their manager into a routine ticket",
+          "2 Oct · Account manager · New operations manager joined the review meeting",
+          "Pattern: four signs from four groups in one month → owner contacts the client this week",
+        ],
+      },
+      closing:
+        "The entries above are invented for illustration. The point is the structure: date, who noticed it, and what exactly happened, written as a fact rather than a feeling.",
+    },
+    {
+      heading: "What to do in the first week",
+      paragraphs: [
+        "Once you see a pattern, speed matters more than a perfect plan. The goal of the first week is to understand what the client thinks, not to defend yourself or offer a discount.",
+      ],
+      steps: [
+        {
+          title: "Name one owner",
+          text: "One person is responsible for the client until the situation is clear. Usually that is the account manager, with a senior person in the background.",
+        },
+        {
+          title: "Prepare the facts",
+          text: "Collect what you delivered in the last three to six months, the service levels you reached, the incidents and how you handled them, and anything still open. You need this to have an honest conversation.",
+        },
+        {
+          title: "Ask for a conversation about the relationship, not the project",
+          text: "Say openly that you want to make sure the service still fits the client's needs. Ask what has changed on their side, what they would like to be different, and how they judge the value of your work today.",
+        },
+        {
+          title: "Listen and write down what you hear",
+          text: "Do not argue during the conversation. Repeat the main points back to the client so they know you understood, and agree on when you will come back with a proposal.",
+        },
+        {
+          title: "Come back with a written plan",
+          text: "Within a few days, send a short plan: what you will change, who is responsible and by when. Keep promises small enough that you can deliver all of them.",
+        },
+      ],
+      links: [{ label: "Quarterly business review template", href: TEMPLATE_ROUTES.quarterlyBusinessReview }],
+    },
+    {
+      heading: "Mind the notice period",
+      paragraphs: [
+        "Most recurring service contracts have a notice period, and clients usually decide well before it. If you only start paying attention when the renewal date is close, the decision may already be made. Work backwards from the notice deadline of every contract.",
+      ],
+      example: {
+        title: "Example — working back from a notice deadline",
+        lines: [
+          "Contract ends: 30 June",
+          "Notice period: 3 months → notice must be given by 31 March",
+          "Assume the client needs about 2 months to decide and find an alternative → the decision forms from about the end of January",
+          "Your latest sensible point for a relationship review: early January, before that decision starts",
+        ],
+      },
+      closing:
+        "The dates are an example; check the terms in your own contracts. Put each client's notice deadline in your calendar with a reminder several months earlier, and hold a review before that reminder, not after the notice arrives.",
+    },
+    {
+      heading: "When to let a client go",
+      paragraphs: [
+        "Not every client should be saved. If a client has been unprofitable for a long time, keeps asking for work outside the agreed scope, or treats your team badly, a respectful exit can be the better decision. Look at the client's profitability before you offer discounts or extra work to keep them.",
+        "If a client does leave, make the exit professional: hand over data and access quickly and completely, confirm the last date of service in writing, and ask for a short exit conversation. Ask what made them decide and when they started thinking about it. The answer to the second question tells you which warning signs you missed.",
+      ],
+      links: [
+        { label: "Client profitability analysis", href: GUIDE_ROUTES.clientProfitabilityAnalysis },
+        { label: "Customer health score", href: GUIDE_ROUTES.customerHealthScore },
+      ],
+    },
+    {
+      heading: "Common mistakes",
+      bullets: [
+        "Waiting for proof: by the time a client says they are unhappy, they have often already decided. Act on patterns, not on certainty.",
+        "Leading with a discount: a lower price does not fix missing value or a broken relationship, and it teaches the client that complaining pays.",
+        "Keeping it in one head: if only the account manager knows the client is drifting, nobody else can help, and the knowledge leaves with that person.",
+        "Hiding problems: a client who discovers an incident you did not mention loses trust much faster than one you told early.",
+        "Forgetting quiet clients: the clients who never complain and never attend reviews are often the ones who leave without warning.",
+      ],
+    },
+  ],
+  productFit: {
+    heading: "Where Auroranexis fits",
+    paragraphs: [
+      "Auroranexis is client operations software for service businesses. It brings many of the signals in this guide into one workspace: client health indicators built from operational records, incidents, open risks, SLA performance, report engagement and portal usage where configured, plus an activity history for every client. Health scoring is rule-based and shows the evidence behind each rating, so your team can see which clients show declining signals and why, and prepare account reviews with facts rather than notes.",
+      "Auroranexis does not read your email or judge the tone of client messages, and it is not a CRM. Signals such as a changed contact or a question about the notice period still need to be noticed and recorded by your team. Plans start at €179 per month for up to 25 clients; the incident, risk and SLA modules are part of the Business and Enterprise plans, starting at €599 per month. You can also start a 7-day free trial or apply for the 6-week pilot program.",
+    ],
+    links: [
+      { label: "Customer success tools", href: FEATURE_ROUTES.customerSuccess },
+      { label: "Customer health score software", href: SOLUTION_ROUTES.customerHealthScore },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+    ],
+  },
+  faq: [
+    {
+      question: "What are the most common signs that a client is about to leave?",
+      answer:
+        "Slower and shorter communication, cancelled review meetings, a new main contact or decision-maker, questioned invoices or late payments, more escalations, and requests for data exports, access or the exit terms of the contract.",
+    },
+    {
+      question: "How early can you spot client churn?",
+      answer:
+        "Often several months before the notice arrives, if someone collects the signals in one place. Work backwards from each contract's notice deadline and hold a relationship review well before the client has to decide.",
+    },
+    {
+      question: "What should I say to a client who seems unhappy?",
+      answer:
+        "Ask for a conversation about whether the service still fits their needs. Ask what has changed on their side and what they would like to be different, listen without defending yourself, and come back with a short written plan.",
+    },
+    {
+      question: "Should I offer a discount to keep a client?",
+      answer:
+        "Usually not as the first step. A discount does not solve missing value or a weakened relationship. Understand the reason first, fix what you can, and check the client's profitability before changing the price.",
+    },
+    {
+      question: "What is the difference between warning signs and a customer health score?",
+      answer:
+        "Warning signs are individual events you notice, such as a cancelled meeting or a late payment. A health score combines a few measurable signals into one regular rating. The two work best together: the score shows the trend, the signal log explains it.",
+    },
+  ],
+};
+
 export const GUIDES: readonly GuideContent[] = [
   automatedClientReporting,
   clientProfitabilityAnalysis,
   slaReporting,
   customerHealthScore,
+  clientChurnWarningSigns,
 ];
 
 export const GUIDE_PAGES: Record<string, GuideContent> = Object.fromEntries(
@@ -647,5 +850,5 @@ export const GUIDES_HUB = {
   title: "Guides for service businesses with recurring clients",
   seoTitle: "Client Operations Guides",
   description:
-    "Practical guides on client reporting, profitability, SLA reporting and customer health scores for service businesses with recurring clients.",
+    "Practical guides on client reporting, profitability, SLA reporting, customer health and churn warning signs for service businesses with recurring clients.",
 } as const;
