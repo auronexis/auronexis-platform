@@ -761,8 +761,8 @@ const clientChurnWarningSigns: GuideContent = {
         lines: [
           "Contract ends: 30 June",
           "Notice period: 3 months → notice must be given by 31 March",
-          "Assume the client needs about 2 months to decide and find an alternative → the decision forms in January and February",
-          "Your latest sensible point for a relationship review: early January",
+          "Assume the client needs about 2 months to decide and find an alternative → the decision forms from about the end of January",
+          "Your latest sensible point for a relationship review: early January, before that decision starts",
         ],
       },
       closing:
