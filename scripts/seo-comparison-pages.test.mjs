@@ -42,9 +42,26 @@ describe("AgencyAnalytics alternative page", () => {
     assert.match(page.costExample.note, /without conversion/);
   });
 
+  it("answers pricing and alternatives searches with dated, sourced facts", () => {
+    assert.match(page.pricingSnapshot.heading, /AgencyAnalytics pricing/);
+    assert.ok(page.pricingSnapshot.items.some((item) => /USD 20 per client per month/.test(item)));
+    assert.equal(page.pricingSnapshot.sourceHref, "https://agencyanalytics.com/pricing");
+    const names = page.otherAlternatives.items.map((item) => item.name);
+    assert.deepEqual(names, ["Swydo", "DashThis", "Databox", "Whatagraph", "Auroranexis"]);
+    for (const item of page.otherAlternatives.items) {
+      assert.ok(item.pricing.length > 10 && item.bestFor.length > 10, item.name);
+      if (item.name !== "Auroranexis") {
+        assert.ok(page.sources.some((source) => source.href === item.href), `${item.name} is cited`);
+      }
+    }
+    assert.ok(page.faq.some((entry) => /How much does AgencyAnalytics cost/.test(entry.question)));
+    assert.ok(page.metaDescription.length <= 160);
+    assert.match(page.trademarkNote, /Swydo, DashThis, Databox and Whatagraph are trademarks/);
+  });
+
   it("has a public, indexable route with its own title", () => {
     assert.equal(page.path, "/alternatives/agencyanalytics");
-    assert.equal(PAGE_SEO[page.path]?.title, "AgencyAnalytics Alternative: Fair Comparison");
+    assert.equal(PAGE_SEO[page.path]?.title, "AgencyAnalytics Alternatives & Pricing (2026)");
     assert.ok(PAGE_SEO[page.path].title.length + " | Auroranexis".length <= 60);
     assert.match(readSource("src/lib/deployment/domain-routing.ts"), /pathname\.startsWith\("\/alternatives\/"\)/);
     assert.match(readSource("src/app/(marketing)/alternatives/agencyanalytics/page.tsx"), /createPageMetadataForPath\(page\.path\)/);

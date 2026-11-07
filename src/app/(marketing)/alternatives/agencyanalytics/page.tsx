@@ -145,6 +145,30 @@ export default function AgencyAnalyticsAlternativePage() {
       </MarketingSection>
 
       <MarketingSection
+        title={page.pricingSnapshot.heading}
+        className="border-t border-white/10"
+      >
+        <p className="max-w-3xl text-sm leading-relaxed text-primary-foreground/80">
+          {page.pricingSnapshot.intro}
+        </p>
+        <div className="mt-4">
+          <Bullets items={page.pricingSnapshot.items} />
+        </div>
+        <p className="mt-3 max-w-3xl text-xs text-primary-foreground/65">
+          Checked on {page.pricingSnapshot.checkedOn} on{" "}
+          <a
+            href={page.pricingSnapshot.sourceHref}
+            rel="nofollow noopener noreferrer"
+            target="_blank"
+            className={linkClass}
+          >
+            AgencyAnalytics&apos; pricing page
+          </a>
+          .
+        </p>
+      </MarketingSection>
+
+      <MarketingSection
         title={`${page.competitorName} vs Auroranexis`}
         className="border-t border-white/10"
       >
@@ -162,6 +186,54 @@ export default function AgencyAnalyticsAlternativePage() {
           rows={page.costExample.rows}
           caption={page.costExample.note}
         />
+      </MarketingSection>
+
+      <MarketingSection
+        title={page.otherAlternatives.heading}
+        className="border-t border-white/10"
+      >
+        <p className="max-w-3xl text-sm leading-relaxed text-primary-foreground/80">
+          {page.otherAlternatives.intro}
+        </p>
+        <ul className="mt-4 grid gap-3 md:grid-cols-2">
+          {page.otherAlternatives.items.map((item) => (
+            <li
+              key={item.name}
+              className="rounded-xl border border-white/10 p-4 text-sm"
+            >
+              <h3 className="font-semibold text-white">{item.name}</h3>
+              <p className="mt-2 text-primary-foreground/80">
+                <span className="font-medium text-primary-foreground">Best for: </span>
+                {item.bestFor}
+              </p>
+              <p className="mt-1 text-primary-foreground/80">
+                <span className="font-medium text-primary-foreground">Pricing: </span>
+                {item.pricing}
+              </p>
+              {item.href.startsWith("http") ? (
+                <a
+                  href={item.href}
+                  rel="nofollow noopener noreferrer"
+                  target="_blank"
+                  className={cn(linkClass, "mt-2 inline-block text-xs")}
+                >
+                  {item.name} pricing page
+                </a>
+              ) : (
+                <Link
+                  href={item.href}
+                  className={cn(linkClass, "mt-2 inline-block text-xs")}
+                >
+                  Auroranexis pricing
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 max-w-3xl text-xs text-primary-foreground/65">
+          Checked on {page.otherAlternatives.checkedOn}. Entry prices only; check
+          each vendor for current terms.
+        </p>
       </MarketingSection>
 
       <MarketingSection

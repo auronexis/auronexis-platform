@@ -27,6 +27,21 @@ export type ComparisonPageContent = {
   together: string;
   sources: ReadonlyArray<{ label: string; href: string }>;
   faq: ReadonlyArray<{ question: string; answer: string }>;
+  /** Competitor pricing at a glance — answers "<competitor> pricing" searches with dated facts. */
+  pricingSnapshot: {
+    heading: string;
+    checkedOn: string;
+    intro: string;
+    items: readonly string[];
+    sourceHref: string;
+  };
+  /** Other tools people compare, each fact from that vendor's own pricing page on `checkedOn`. */
+  otherAlternatives: {
+    heading: string;
+    checkedOn: string;
+    intro: string;
+    items: ReadonlyArray<{ name: string; href: string; bestFor: string; pricing: string }>;
+  };
   relatedLinks: ReadonlyArray<{ label: string; href: string }>;
   trademarkNote: string;
 };
@@ -35,12 +50,12 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
   path: MARKETING_ROUTES.agencyAnalyticsAlternative,
   competitorName: "AgencyAnalytics",
   checkedOn: "28 October 2026",
-  title: "AgencyAnalytics alternative for client operations",
-  seoTitle: "AgencyAnalytics Alternative: Fair Comparison",
+  title: "AgencyAnalytics alternatives and pricing: a fair comparison",
+  seoTitle: "AgencyAnalytics Alternatives & Pricing (2026)",
   description:
     "AgencyAnalytics is built for marketing reports. Auroranexis is built for running client accounts: health scores, SLAs, incidents, risks and client reports in one workspace. Here is an honest comparison, including when AgencyAnalytics is the better choice.",
   metaDescription:
-    "Looking for an AgencyAnalytics alternative? A fair, dated comparison with Auroranexis: focus, pricing, trial, integrations, SLAs, health scores, and when each fits.",
+    "AgencyAnalytics pricing in 2026, the main alternatives by need (Swydo, DashThis, Databox, Whatagraph, Auroranexis) and a fair, dated comparison.",
   intro:
     "Agencies usually search for an AgencyAnalytics alternative for one of two reasons: the per-client price adds up as the client list grows, or they need more than marketing dashboards — a way to see which clients are at risk, whether service levels are met and what was delivered. The two products overlap only partly. This page compares them on published facts so you can decide which one fits your work.",
   rows: [
@@ -145,11 +160,25 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
   together:
     "Some marketing agencies use both: a marketing reporting tool for channel performance, and Auroranexis for account health, service levels and the client relationship. Auroranexis does not import marketing metrics, so in that setup the marketing report stays in the reporting tool.",
   sources: [
-    { label: "AgencyAnalytics pricing and feature list (checked 28 October 2026)", href: "https://agencyanalytics.com/pricing" },
+    { label: "AgencyAnalytics pricing and feature list (feature list checked 28 October 2026, pricing re-checked 7 November 2026)", href: "https://agencyanalytics.com/pricing" },
+    { label: "Swydo pricing (checked 7 November 2026)", href: "https://www.swydo.com/pricing/" },
+    { label: "DashThis pricing (checked 7 November 2026)", href: "https://dashthis.com/pricing/" },
+    { label: "Databox pricing (checked 7 November 2026)", href: "https://databox.com/pricing" },
+    { label: "Whatagraph pricing (checked 7 November 2026)", href: "https://whatagraph.com/pricing" },
     { label: "Auroranexis pricing", href: MARKETING_ROUTES.pricing },
     { label: "Auroranexis integrations", href: MARKETING_ROUTES.integrations },
   ],
   faq: [
+    {
+      question: "How much does AgencyAnalytics cost?",
+      answer:
+        "As of 7 November 2026, AgencyAnalytics lists its Core plan at USD 20 per client per month, billed annually, with 20% saved on annual billing, a free 14-day trial and discounted per-client pricing from 25 clients. Add-ons such as AI Tracker and Rank Tracker cost extra.",
+    },
+    {
+      question: "What are the main AgencyAnalytics competitors?",
+      answer:
+        "For marketing reporting, people most often compare Swydo, DashThis, Databox and Whatagraph. Auroranexis is an alternative when the need is running client accounts — health scores, SLAs, incidents and client reports — rather than marketing dashboards.",
+    },
     {
       question: "What is the best AgencyAnalytics alternative?",
       answer:
@@ -176,6 +205,61 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
         "You can add clients in Auroranexis and set up their SLA policies, risks and report templates. There is no automatic import from AgencyAnalytics.",
     },
   ],
+  pricingSnapshot: {
+    heading: "AgencyAnalytics pricing in 2026",
+    checkedOn: "7 November 2026",
+    intro:
+      "AgencyAnalytics charges per client. This is what its public pricing page shows; prices are in USD and may differ by region and currency.",
+    items: [
+      "Core plan: USD 20 per client per month, billed annually (annual billing saves 20% compared with monthly).",
+      "Monthly plans have no commitment; annual plans have a one-year commitment.",
+      "Unlimited staff users and client users are included.",
+      "From 25 clients: discounted per-client pricing on request, with dedicated onboarding and priority support.",
+      "Optional add-ons (billed annually): AI Tracker USD 20.83 per month for 250 credits, Rank Tracker USD 41.67 per month for 500 keywords.",
+      "Free 14-day trial, no credit card required.",
+      "Billing currencies: USD, CAD, AUD, NZD, GBP and EUR.",
+    ],
+    sourceHref: "https://agencyanalytics.com/pricing",
+  },
+  otherAlternatives: {
+    heading: "Other AgencyAnalytics alternatives, by need",
+    checkedOn: "7 November 2026",
+    intro:
+      "Most AgencyAnalytics alternatives are marketing reporting tools. Pick by what you need to show clients. Prices are the entry prices on each vendor's own pricing page on the date shown.",
+    items: [
+      {
+        name: "Swydo",
+        href: "https://www.swydo.com/pricing/",
+        bestFor: "Marketing reports priced by data source instead of by client, with unlimited clients, users and reports",
+        pricing: "From USD/EUR 69 per month for 10 data sources; 14-day free trial, no credit card",
+      },
+      {
+        name: "DashThis",
+        href: "https://dashthis.com/pricing/",
+        bestFor: "Simple marketing dashboards for a small number of clients",
+        pricing: "Individual plan from USD 44 per month for 3 dashboards and 15 sources; 14-day free trial",
+      },
+      {
+        name: "Databox",
+        href: "https://databox.com/pricing",
+        bestFor: "KPI dashboards and analytics across business tools, not only marketing",
+        pricing: "Free plan available; paid plans listed from USD 71 per month billed annually; 14-day trial",
+      },
+      {
+        name: "Whatagraph",
+        href: "https://whatagraph.com/pricing",
+        bestFor: "Larger agencies that want cross-channel marketing data in one governed layer",
+        pricing: "Max plan from EUR 699 per month billed annually; Prime on request; demo instead of a listed free trial",
+      },
+      {
+        name: "Auroranexis",
+        href: MARKETING_ROUTES.pricing,
+        bestFor:
+          "Running client accounts rather than marketing reports: health score per client, SLAs, incidents, risks, client reports and a client portal",
+        pricing: "Professional EUR 179 per month for up to 25 clients; Business EUR 599 per month for up to 100 clients; 7-day free trial without payment details",
+      },
+    ],
+  },
   relatedLinks: [
     { label: "Customer health score software", href: SOLUTION_ROUTES.customerHealthScore },
     { label: "SLA management software", href: SOLUTION_ROUTES.slaManagement },
@@ -185,5 +269,5 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
     { label: "Pricing", href: MARKETING_ROUTES.pricing },
   ],
   trademarkNote:
-    "AgencyAnalytics is a trademark of its owner. Auroranexis is not affiliated with or endorsed by AgencyAnalytics. Competitor information is taken from its public website on the date shown and may have changed since — check the source before deciding.",
+    "AgencyAnalytics, Swydo, DashThis, Databox and Whatagraph are trademarks of their owners. Auroranexis is not affiliated with or endorsed by any of them. Competitor information is taken from its public website on the date shown and may have changed since — check the source before deciding.",
 };
