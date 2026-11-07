@@ -29,7 +29,7 @@ export const CONTENT_DATE_RULES: readonly ContentDateRule[] = [
   { match: exact("/guides", "/guides/client-churn-warning-signs"), date: "2026-11-04" },
   { match: exact("/guides/customer-health-score"), date: "2026-10-28" },
   { match: prefix("/guides"), date: "2026-10-23" },
-  { match: exact("/alternatives/agencyanalytics"), date: "2026-10-28" },
+  { match: exact("/alternatives/agencyanalytics"), date: "2026-11-07" },
   // Templates rewritten with examples and CSV downloads; retitled feature/solution pages.
   {
     match: (route: string) =>
