@@ -10,6 +10,7 @@ import { resolveOrganizationEntitlements } from "@/lib/entitlements/resolver";
 import { PILOT_PROGRAM } from "@/lib/marketing/content";
 import { JsonLdScript, pilotProgramJsonLd } from "@/lib/marketing/seo";
 import { evaluatePilotApplicationEligibility } from "@/lib/sales/pilot-eligibility";
+import { PILOT_OFFER_INCLUDES_SENTENCE } from "@/lib/marketing/pilot-offer";
 
 export const metadata: Metadata = createPageMetadataForPath("/pilot-program");
 
@@ -35,7 +36,7 @@ export default async function PilotProgramPage() {
       <MarketingHero
         eyebrow="6-week pilot program"
         title="Run Auroranexis with your own clients for six weeks"
-        description="Guided workspace setup, weekly written check-ins and pilot terms agreed in writing. If you received an email from Tamas at Auroranexis, that email is your invitation — apply below."
+        description={`${PILOT_OFFER_INCLUDES_SENTENCE} If you received an email from Tamas at Auroranexis, that email is your invitation — apply below.`}
         primaryHref="#apply"
         primaryLabel="Apply for the pilot"
         secondaryHref="/signup"

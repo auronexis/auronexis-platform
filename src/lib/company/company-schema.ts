@@ -15,6 +15,7 @@ import {
   entityId,
   pageEntityId,
 } from "@/lib/seo/entity-graph";
+import { PILOT_OFFER } from "@/lib/marketing/pilot-offer";
 
 function absoluteAsset(path: string): string {
   return new URL(path, resolveCanonicalBaseUrl()).toString();
@@ -257,7 +258,7 @@ export function pilotProgramJsonLd() {
     "@context": "https://schema.org",
     "@type": "Offer",
     name: "Auroranexis 6-Week Pilot Program",
-    description: "Six-week guided pilot for service businesses that manage many ongoing clients. By application; pilot terms agreed in writing.",
+    description: `Six-week pilot for service businesses that manage many ongoing clients: ${PILOT_OFFER.includes}. By application. ${PILOT_OFFER.applyTerms}`,
     category: "Pilot Program",
     url: getCanonicalUrl(MARKETING_ROUTES.pilotProgram).toString(),
     availability: "https://schema.org/LimitedAvailability",

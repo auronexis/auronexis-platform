@@ -4,6 +4,7 @@ import {
   SUPPORT_EMAIL,
 } from "@/lib/company/contact";
 import { COMPANY_NAME } from "@/lib/company/company-information";
+import { PILOT_OFFER } from "@/lib/marketing/pilot-offer";
 
 export type FaqTopic = {
   id: string;
@@ -26,7 +27,7 @@ export const FAQ_TOPICS: readonly FaqTopic[] = [
       },
       {
         question: "Is there a pilot program?",
-        answer: `Yes. The 6-week pilot gives you guided setup with your own clients, weekly written check-ins and pilot terms agreed in writing. Apply at ${MARKETING_ROUTES.pilotProgram}; an email invitation from Auroranexis counts as your invitation.`,
+        answer: `Yes. The ${PILOT_OFFER.durationLabel} includes ${PILOT_OFFER.includes}. ${PILOT_OFFER.applyTerms} Apply at ${MARKETING_ROUTES.pilotProgram}. ${PILOT_OFFER.invitation}`,
       },
     ],
   },

@@ -8,6 +8,7 @@ import { guidePageGraphJsonLd } from "@/lib/seo/geo-schema";
 import { GUIDES, GUIDES_AUTHOR, type GuideContent, type GuideLink } from "@/lib/seo/guides-content";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
+import { PILOT_OFFER } from "@/lib/marketing/pilot-offer";
 
 const DATE_FORMAT = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -174,7 +175,7 @@ export function GuidePageView({ guide }: { guide: GuideContent }) {
 
       <MarketingCta
         title="Run client operations from one place"
-        description="Join the 6-week pilot: guided setup with your own clients, weekly written check-ins and pilot terms agreed in writing."
+        description={`Join the ${PILOT_OFFER.durationLabel}: ${PILOT_OFFER.includes}.`}
         href={MARKETING_ROUTES.pilotProgram}
         label="Apply for the pilot"
       />
