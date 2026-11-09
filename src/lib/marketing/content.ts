@@ -6,6 +6,7 @@ import {
   SECURITY_EMAIL,
   SUPPORT_EMAIL,
 } from "@/lib/company/contact";
+import { PILOT_OFFER } from "@/lib/marketing/pilot-offer";
 
 export const MARKETING_NAV = [
   { label: "Features", href: MARKETING_ROUTES.features },
@@ -253,12 +254,12 @@ export const COMPLIANCE_READINESS = [
 export const FAQ_ITEMS = [
   {
     question: "Who is Auroranexis for?",
-    answer: `${COMPANY_NAME} is built for MSPs, IT agencies, consultancies, and automation firms that manage multiple client operations.`,
+    answer: `${COMPANY_NAME} is built for service businesses that look after many clients at once: agencies, accounting and payroll firms, MSPs and IT providers, facility and property managers, recruiters and outsourcing providers.`,
   },
   {
     question: "Is there a pilot program?",
     answer:
-      "Yes. The 6-week pilot is for service businesses that want guided setup with their own clients. Apply on the pilot program page; an email invitation from Auroranexis counts as your invitation. Pilot terms are agreed in writing before the pilot starts.",
+      `Yes. The ${PILOT_OFFER.durationLabel} includes ${PILOT_OFFER.includes}. Apply on the pilot program page. ${PILOT_OFFER.invitation}`,
   },
   {
     question: "Where is data hosted?",
@@ -279,7 +280,7 @@ export const PILOT_PROGRAM = {
   steps: [
     {
       title: "Apply in two minutes",
-      description: "Tell us about your service business, how many clients you manage and what you want to fix. Applying is free and non-binding.",
+      description: `Tell us about your service business, how many clients you manage and what you want to fix. ${PILOT_OFFER.applyTerms}`,
     },
     {
       title: "Get a reply by email",
@@ -294,7 +295,7 @@ export const PILOT_PROGRAM = {
       description: "Weekly written check-ins during the pilot. At the end you choose whether to continue on a public plan.",
     },
   ],
-  discount: "Pilot terms are agreed in writing by email before the pilot starts. Applying is free and non-binding.",
+  discount: `Pilot terms are agreed in writing by email before the pilot starts. ${PILOT_OFFER.applyTerms}`,
   targets: [
     "Agencies",
     "MSPs and IT providers",

@@ -10,6 +10,7 @@ import { listPublicCatalogEntries } from "@/lib/billing/catalog";
 import { GUIDES } from "@/lib/seo/guides-content";
 import { CANONICAL_CAPABILITIES } from "@/lib/seo/entity-graph";
 import { resolveCanonicalBaseUrl } from "@/lib/company/company-seo";
+import { PILOT_OFFER } from "@/lib/marketing/pilot-offer";
 
 /** AI crawler guidance — factual, verifiable public surfaces only. */
 export function buildLlmsTxt(): string {
@@ -59,7 +60,7 @@ Every new workspace starts with a 7-day free trial of the Business plan (up to 1
 
 ## 6-week pilot program
 
-Service businesses that prefer guided setup can apply for a 6-week pilot: workspace setup with their own clients, weekly written check-ins and pilot terms agreed in writing before the start. Applying is free and non-binding, and an email invitation from Auroranexis counts as an invitation: ${base}${MARKETING_ROUTES.pilotProgram}
+Service businesses that prefer guided setup can apply for a 6-week pilot: ${PILOT_OFFER.includes}. ${PILOT_OFFER.applyTerms} ${PILOT_OFFER.invitation} Apply here: ${base}${MARKETING_ROUTES.pilotProgram}
 
 ## How to reach the team
 

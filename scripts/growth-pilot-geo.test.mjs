@@ -14,6 +14,7 @@ const { buildLlmsTxt } = await import("@/lib/seo/llms-txt");
 const { listPublicCatalogEntries } = await import("@/lib/billing/catalog");
 const { PILOT_PROGRAM, INVITE_ONLY_PROGRAMS_NOTE } = await import("@/lib/marketing/content");
 const { PAGE_SEO } = await import("@/lib/seo/routes");
+const { PILOT_OFFER } = await import("@/lib/marketing/pilot-offer");
 
 describe("llms.txt", () => {
   const llms = buildLlmsTxt();
@@ -35,7 +36,7 @@ describe("llms.txt", () => {
 
   it("explains the pilot as an application and never as invite-only", () => {
     assert.match(llms, /## 6-week pilot program/);
-    assert.match(llms, /email invitation from Auroranexis counts as an invitation/);
+    assert.ok(llms.includes(PILOT_OFFER.invitation));
     assert.doesNotMatch(llms, /Pilot Partner and Founding Customer programs are invite-only/);
   });
 

@@ -40,6 +40,7 @@ import {
 } from "@/lib/marketing/seo";
 import { cn } from "@/lib/utils/cn";
 import { focusRing } from "@/lib/ui/tokens";
+import { PILOT_OFFER } from "@/lib/marketing/pilot-offer";
 
 export const metadata: Metadata = createPageMetadataForPath("/");
 
@@ -337,7 +338,7 @@ export default async function MarketingHomePage() {
 
       <MarketingCta
         title="Prefer guided setup? Join the 6-week pilot"
-        description="Run Auroranexis with your own clients for six weeks: guided workspace setup, weekly written check-ins and pilot terms agreed in writing. Applying is free and non-binding."
+        description={`Run Auroranexis with your own clients for six weeks: ${PILOT_OFFER.includes}. ${PILOT_OFFER.applyTerms}`}
         href={MARKETING_ROUTES.pilotProgram}
         label="Apply for the pilot"
       />

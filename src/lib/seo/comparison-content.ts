@@ -46,10 +46,18 @@ export type ComparisonPageContent = {
   trademarkNote: string;
 };
 
+/**
+ * Date every competitor fact on the AgencyAnalytics page was last checked against the vendor's
+ * own pricing page. Change it only together with the facts, and keep the page's entry in
+ * content-dates.ts on the same day (a test enforces this).
+ */
+export const AGENCYANALYTICS_FACTS_CHECKED_ON = "9 November 2026";
+const CHECKED = AGENCYANALYTICS_FACTS_CHECKED_ON;
+
 export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
   path: MARKETING_ROUTES.agencyAnalyticsAlternative,
   competitorName: "AgencyAnalytics",
-  checkedOn: "28 October 2026",
+  checkedOn: CHECKED,
   title: "AgencyAnalytics alternatives and pricing: a fair comparison",
   seoTitle: "AgencyAnalytics Alternatives & Pricing (2026)",
   description:
@@ -160,11 +168,11 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
   together:
     "Some marketing agencies use both: a marketing reporting tool for channel performance, and Auroranexis for account health, service levels and the client relationship. Auroranexis does not import marketing metrics, so in that setup the marketing report stays in the reporting tool.",
   sources: [
-    { label: "AgencyAnalytics pricing and feature list (feature list checked 28 October 2026, pricing re-checked 7 November 2026)", href: "https://agencyanalytics.com/pricing" },
-    { label: "Swydo pricing (checked 7 November 2026)", href: "https://www.swydo.com/pricing/" },
-    { label: "DashThis pricing (checked 7 November 2026)", href: "https://dashthis.com/pricing/" },
-    { label: "Databox pricing (checked 7 November 2026)", href: "https://databox.com/pricing" },
-    { label: "Whatagraph pricing (checked 7 November 2026)", href: "https://whatagraph.com/pricing" },
+    { label: `AgencyAnalytics pricing and feature list (checked ${CHECKED})`, href: "https://agencyanalytics.com/pricing" },
+    { label: `Swydo pricing (checked ${CHECKED})`, href: "https://www.swydo.com/pricing/" },
+    { label: `DashThis pricing (checked ${CHECKED})`, href: "https://dashthis.com/pricing/" },
+    { label: `Databox pricing (checked ${CHECKED})`, href: "https://databox.com/pricing" },
+    { label: `Whatagraph pricing (checked ${CHECKED})`, href: "https://whatagraph.com/pricing" },
     { label: "Auroranexis pricing", href: MARKETING_ROUTES.pricing },
     { label: "Auroranexis integrations", href: MARKETING_ROUTES.integrations },
   ],
@@ -172,7 +180,7 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
     {
       question: "How much does AgencyAnalytics cost?",
       answer:
-        "As of 7 November 2026, AgencyAnalytics lists its Core plan at USD 20 per client per month, billed annually, with 20% saved on annual billing, a free 14-day trial and discounted per-client pricing from 25 clients. Add-ons such as AI Tracker and Rank Tracker cost extra.",
+        `As of ${CHECKED}, AgencyAnalytics lists its Core plan at USD 20 per client per month, billed annually, with 20% saved on annual billing, a free 14-day trial and discounted per-client pricing from 25 clients. Add-ons such as AI Tracker and Rank Tracker cost extra.`,
     },
     {
       question: "What are the main AgencyAnalytics competitors?",
@@ -187,7 +195,7 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
     {
       question: "Is Auroranexis cheaper than AgencyAnalytics?",
       answer:
-        "The pricing models differ: AgencyAnalytics charges per client (USD 20 per client per month on annual billing as of 28 October 2026), Auroranexis charges per workspace (EUR 179 per month for up to 25 clients). Which is cheaper depends on your client count, team size and currency.",
+        `The pricing models differ: AgencyAnalytics charges per client (USD 20 per client per month on annual billing as of ${CHECKED}), Auroranexis charges per workspace (EUR 179 per month for up to 25 clients). Which is cheaper depends on your client count, team size and currency.`,
     },
     {
       question: "Can Auroranexis pull data from Google Analytics or Google Ads?",
@@ -207,7 +215,7 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
   ],
   pricingSnapshot: {
     heading: "AgencyAnalytics pricing in 2026",
-    checkedOn: "7 November 2026",
+    checkedOn: CHECKED,
     intro:
       "AgencyAnalytics charges per client. This is what its public pricing page shows; prices are in USD and may differ by region and currency.",
     items: [
@@ -223,7 +231,7 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
   },
   otherAlternatives: {
     heading: "Other AgencyAnalytics alternatives, by need",
-    checkedOn: "7 November 2026",
+    checkedOn: CHECKED,
     intro:
       "Most AgencyAnalytics alternatives are marketing reporting tools. Pick by what you need to show clients. Prices are the entry prices on each vendor's own pricing page on the date shown.",
     items: [
@@ -231,13 +239,13 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
         name: "Swydo",
         href: "https://www.swydo.com/pricing/",
         bestFor: "Marketing reports priced by data source instead of by client, with unlimited clients, users and reports",
-        pricing: "From USD/EUR 69 per month for 10 data sources; 14-day free trial, no credit card",
+        pricing: "From USD 69 per month, or USD 62 per month billed annually, for the first 10 data sources; 14-day free trial, no credit card",
       },
       {
         name: "DashThis",
         href: "https://dashthis.com/pricing/",
         bestFor: "Simple marketing dashboards for a small number of clients",
-        pricing: "Individual plan from USD 44 per month for 3 dashboards and 15 sources; 14-day free trial",
+        pricing: "Individual plan USD 54 per month, or USD 44 per month billed annually, for 3 dashboards and 15 sources; 14-day free trial",
       },
       {
         name: "Databox",
@@ -249,7 +257,7 @@ export const AGENCYANALYTICS_ALTERNATIVE: ComparisonPageContent = {
         name: "Whatagraph",
         href: "https://whatagraph.com/pricing",
         bestFor: "Larger agencies that want cross-channel marketing data in one governed layer",
-        pricing: "Max plan from EUR 699 per month billed annually; Prime on request; demo instead of a listed free trial",
+        pricing: "Max plan from USD 812 per month billed annually (the price shown can differ by region and currency); Prime on request; demo instead of a listed free trial",
       },
       {
         name: "Auroranexis",

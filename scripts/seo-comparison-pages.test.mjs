@@ -11,6 +11,9 @@ import { readSource } from "./_test-helpers/read-source.mjs";
 
 const { AGENCYANALYTICS_ALTERNATIVE: page } = await import("@/lib/seo/comparison-content");
 const { PAGE_SEO } = await import("@/lib/seo/routes");
+const { AGENCYANALYTICS_FACTS_CHECKED_ON } = await import("@/lib/seo/comparison-content");
+const { contentLastModified } = await import("@/lib/seo/content-dates");
+const { isMarketingPublicPath } = await import("@/lib/deployment/domain-routing");
 
 describe("AgencyAnalytics alternative page", () => {
   it("is dated and cites the competitor's own pricing page", () => {
@@ -63,7 +66,20 @@ describe("AgencyAnalytics alternative page", () => {
     assert.equal(page.path, "/alternatives/agencyanalytics");
     assert.equal(PAGE_SEO[page.path]?.title, "AgencyAnalytics Alternatives & Pricing (2026)");
     assert.ok(PAGE_SEO[page.path].title.length + " | Auroranexis".length <= 60);
-    assert.match(readSource("src/lib/deployment/domain-routing.ts"), /pathname\.startsWith\("\/alternatives\/"\)/);
+    assert.equal(isMarketingPublicPath(page.path), true);
     assert.match(readSource("src/app/(marketing)/alternatives/agencyanalytics/page.tsx"), /createPageMetadataForPath\(page\.path\)/);
+  });
+
+  it("uses one check date everywhere, matching the sitemap lastmod", () => {
+    const checked = AGENCYANALYTICS_FACTS_CHECKED_ON;
+    assert.equal(page.checkedOn, checked);
+    assert.equal(page.pricingSnapshot.checkedOn, checked);
+    assert.equal(page.otherAlternatives.checkedOn, checked);
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const [day, month, year] = checked.split(" ");
+    const iso = `${year}-${String(months.indexOf(month) + 1).padStart(2, "0")}-${day.padStart(2, "0")}`;
+    assert.equal(contentLastModified(page.path), iso, "content-dates.ts entry must match the check date");
+    const everyDate = JSON.stringify(page).match(/\b\d{1,2} (?:January|February|March|April|May|June|July|August|September|October|November|December) 20\d\d\b/g) ?? [];
+    assert.deepEqual([...new Set(everyDate)], [checked], "no stale check dates left in the copy");
   });
 });
