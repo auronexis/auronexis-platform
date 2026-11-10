@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { MarketingButton } from "@/components/marketing/marketing-button";
+import { BRANDING_ASSETS } from "@/lib/branding/assets";
 import { resolveMarketingHeroActions } from "@/lib/marketing/auth-context";
 import { getPublicNavState } from "@/lib/marketing/public-nav";
 import { cn } from "@/lib/utils/cn";
@@ -38,9 +40,16 @@ export async function MarketingHero({
     <section className={cn("relative overflow-hidden border-b border-white/10", marketingMotionEnter)}>
       {withBanner ? (
         <>
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url(/branding/hero-banner.png)" }}
+          {/* A real image (not a CSS background) so the browser finds it in the HTML, preloads it
+              with high priority and paints it early: it is the largest element on the homepage. */}
+          <Image
+            src={BRANDING_ASSETS.heroBanner}
+            alt=""
+            fill
+            priority
+            unoptimized
+            sizes="100vw"
+            className="object-cover object-center"
             aria-hidden
           />
           <div

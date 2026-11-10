@@ -25,7 +25,8 @@ export const BRANDING_ASSETS = {
   faviconSvg: "/favicon.svg",
   appleTouchIcon: "/apple-icon.png",
   pwaIconCompact: "/icon-512-compact.png",
-  heroBanner: "/branding/hero-banner.png",
+  /** Marketing and docs hero background — WebP, about 90 kB (the PNG original is 1.6 MB). */
+  heroBanner: "/branding/hero-banner.webp",
   splashScreen: "/branding/splash-screen.png",
   linkedinBanner: "/branding/linkedin-banner.png",
   openGraph: "/branding/opengraph-1200x630.png",
