@@ -42,6 +42,7 @@ const GUIDE_SLUGS = new Set([
   "sla-reporting",
   "customer-health-score",
   "client-churn-warning-signs",
+  "quarterly-business-review",
 ]);
 
 const TEMPLATE_SLUGS = new Set([

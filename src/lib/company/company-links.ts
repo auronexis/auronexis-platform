@@ -109,6 +109,7 @@ export const GUIDE_ROUTES = {
   slaReporting: "/guides/sla-reporting",
   customerHealthScore: "/guides/customer-health-score",
   clientChurnWarningSigns: "/guides/client-churn-warning-signs",
+  quarterlyBusinessReview: "/guides/quarterly-business-review",
 } as const;
 
 export const TEMPLATE_ROUTES = {

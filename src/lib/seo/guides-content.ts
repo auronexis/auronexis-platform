@@ -831,12 +831,219 @@ const clientChurnWarningSigns: GuideContent = {
   ],
 };
 
+const quarterlyBusinessReview: GuideContent = {
+  slug: "quarterly-business-review",
+  path: GUIDE_ROUTES.quarterlyBusinessReview,
+  title: "How to run a quarterly business review with clients",
+  seoTitle: "How to Run a Quarterly Business Review",
+  description:
+    "How to run a quarterly business review (QBR) with clients of a service business: who to invite, what to prepare, how to show results and how to follow up.",
+  summary:
+    "A practical way to prepare, run and follow up a QBR with recurring clients, including how to present bad news and how to decide which clients need one.",
+  published: "2026-11-11",
+  updated: "2026-11-11",
+  readingMinutes: 10,
+  intro: [
+    "A quarterly business review, or QBR, is a planned meeting with a client every three months to look back at the last quarter and agree what comes next. Many agencies, IT service providers, accounting firms and facility services companies hold them, but often in a way that does not help much: a long slide deck of completed tasks, a polite \"any questions?\", and no change afterwards.",
+    "A good QBR is different. It starts with the client's goals, shows honestly how the last quarter contributed to them, deals openly with problems, and ends with a short list of decisions and actions. Done well, it is one of the best tools a service business has to show its value and to catch an unhappy client early. This guide explains how to prepare, run and follow up a QBR, and how to adapt it to small and large clients.",
+  ],
+  sections: [
+    {
+      heading: "What a QBR is for",
+      paragraphs: [
+        "A QBR has three jobs. It shows the client what your work achieved, in their terms. It checks whether the client's goals, people or budget have changed. And it agrees on the priorities for the next quarter, so both sides know what to expect.",
+        "A QBR is not a status meeting, a sales pitch or a monthly report read aloud. Your monthly reports cover the details. The QBR steps back and asks whether the relationship is still heading in the right direction. If you use the meeting mainly to present new services, clients learn to skip it.",
+      ],
+    },
+    {
+      heading: "Decide which clients get a QBR",
+      paragraphs: [
+        "A full QBR takes preparation time, so not every client needs the same format. Decide once per client and write the decision down, so the rhythm does not depend on who has time this month.",
+      ],
+      bullets: [
+        "Full QBR (45–60 minutes, with slides): your largest clients, clients with SLAs or complex delivery, and any client with a renewal in the next six months.",
+        "Short review (20–30 minutes, a one-page summary): smaller recurring clients. Same structure, fewer slides.",
+        "Written review only: very small clients who prefer email. Send the one-page summary and offer a conversation if they want one.",
+        "Extra review, whatever the size: any client who shows warning signs, such as cancelled meetings, a new main contact or repeated incidents.",
+      ],
+      links: [{ label: "Client churn warning signs", href: GUIDE_ROUTES.clientChurnWarningSigns }],
+    },
+    {
+      heading: "Who should attend",
+      paragraphs: [
+        "On your side, keep it small: the person responsible for the account, and the delivery or service lead if service performance is on the agenda. Bring a senior person when the client brings one, or when there is a serious problem to discuss.",
+        "On the client's side, the most important attendee is the person who decides whether to renew, not only the person you work with day to day. If the decision-maker never attends, ask your main contact openly who should see the results and whether a shorter slot would make it easier for them. A QBR that only reaches the operational contact cannot do its main job.",
+      ],
+    },
+    {
+      heading: "How to prepare in two weeks",
+      steps: [
+        {
+          title: "Two weeks before: collect the facts",
+          text: "Pull the quarter's numbers from the systems you already use: work delivered against the plan, service levels, incidents, open risks, and the client's health trend if you track one. Read the last QBR summary and check which actions were completed.",
+        },
+        {
+          title: "Ten days before: ask the client what they want to discuss",
+          text: "Send a short message: \"We are preparing our quarterly review. Is there anything you would like us to cover, or anything that has changed on your side?\" The answer often tells you more than your own data.",
+        },
+        {
+          title: "One week before: choose three main messages",
+          text: "Agree internally on the three things the client should remember. For example: one result you are proud of, one problem and how you fixed it, and one recommendation for the next quarter.",
+        },
+        {
+          title: "Three days before: build the slides",
+          text: "Keep the main part short. Put detailed task lists and full metric tables in an appendix. Every main slide should answer the question \"so what does this mean for the client?\"",
+        },
+        {
+          title: "Two days before: send the material",
+          text: "Send the slides or the one-page summary in advance, so the meeting can be spent on discussion rather than reading.",
+        },
+      ],
+      links: [{ label: "QBR template with a 60-minute agenda", href: TEMPLATE_ROUTES.quarterlyBusinessReview }],
+    },
+    {
+      heading: "Show results against the client's goals",
+      paragraphs: [
+        "The most common QBR mistake is to report activity instead of outcomes. \"We closed 412 tickets\" describes your effort. \"Your team waited less for IT support than last quarter\" describes the client's benefit. Start from the goals the client named at the beginning of the year, and show for each one what changed and what you did.",
+        "Compare with the previous quarter, so the client sees a trend rather than a single number. Where you cannot measure the effect yourself, say so, and ask the client how they see it.",
+      ],
+      example: {
+        title: "Example — one goal, two quarters",
+        lines: [
+          "Client goal: faster IT support for staff",
+          "Previous quarter: 352 of 400 tickets answered within target = 88.0%",
+          "This quarter: 391 of 412 tickets answered within target = 94.9%",
+          "Change: +6.9 percentage points, with 12 more tickets than last quarter",
+          "What we changed: a second person on the morning shift and a new process for password resets",
+        ],
+      },
+      closing:
+        "The numbers are invented for illustration. The structure is what matters: the goal, the result over time, and the reason behind the change.",
+      links: [{ label: "SLA reporting guide", href: GUIDE_ROUTES.slaReporting }],
+    },
+    {
+      heading: "How to present bad news",
+      paragraphs: [
+        "Every client has quarters with problems: a missed deadline, a major incident, a service level below target. Do not hide them in the appendix. The client usually knows already, and a QBR that skips them loses credibility for everything else on the slides.",
+      ],
+      steps: [
+        {
+          title: "Name it first",
+          text: "Raise the problem yourself, early in the meeting, in one plain sentence. Do not wait for the client to ask.",
+        },
+        {
+          title: "Explain the cause briefly",
+          text: "Say what happened and why, without blaming the client, a supplier or a colleague.",
+        },
+        {
+          title: "Show what you changed",
+          text: "Describe the fix and what prevents the same problem from happening again. If the fix is not finished, give a date.",
+        },
+        {
+          title: "Agree on how you will report progress",
+          text: "Tell the client where they will see whether the fix works, for example in the next two monthly reports.",
+        },
+      ],
+    },
+    {
+      heading: "Run the meeting",
+      paragraphs: [
+        "Open by asking whether the client's goals or situation have changed since the last review. Then go through results, service performance, risks and next quarter's plan. Leave at least a quarter of the time for discussion and feedback; if the slides take the whole hour, the QBR has become a presentation.",
+        "Ask open questions and write down the answers. Useful questions include:",
+      ],
+      bullets: [
+        "What has changed in your business since our last review?",
+        "Which part of our work is most valuable to you right now — and which least?",
+        "Is there anything we do that creates extra work on your side?",
+        "Who else in your organisation should see these results?",
+        "What would make the next quarter a success from your point of view?",
+      ],
+      closing:
+        "Close the meeting by reading back the actions you agreed, with an owner and a date for each. If you made a recommendation that needs a decision, agree when the client will decide.",
+    },
+    {
+      heading: "Follow up within two working days",
+      paragraphs: [
+        "The follow-up is what turns a QBR from a meeting into a plan. Send a short written summary within two working days and store it with the client's records, so the next QBR can start from it.",
+      ],
+      example: {
+        title: "Example — QBR follow-up summary",
+        lines: [
+          "Thank you for the review on [date]. Here is a short summary.",
+          "What went well: [one or two results against your goals]",
+          "What we are fixing: [problem, fix, date]",
+          "Changes on your side we noted: [for example a new contact or a new priority]",
+          "Agreed actions: [action — owner — date], [action — owner — date]",
+          "Next review: [date]. We will start with the status of these actions.",
+        ],
+      },
+      closing:
+        "Open the next QBR with the status of these actions. Clients notice when promises from the last review are checked, and they notice even more when they are quietly forgotten.",
+    },
+    {
+      heading: "Common mistakes",
+      bullets: [
+        "Too many slides: if you cannot explain the quarter in five or six main slides, the client will not remember it either.",
+        "Activity instead of outcomes: hours, tickets and tasks belong in the appendix. Lead with what changed for the client.",
+        "Selling first: a QBR that opens with a new offer feels like a sales meeting. Make recommendations at the end, based on the client's goals.",
+        "The wrong people: if the decision-maker never attends, the results never reach the person who decides about renewal.",
+        "No follow-up: without a written summary and owners, the same issues come back three months later.",
+        "Only good news: leaving out problems the client already knows about makes the whole review less credible.",
+      ],
+      links: [
+        { label: "Automated client reporting", href: GUIDE_ROUTES.automatedClientReporting },
+        { label: "Customer health score", href: GUIDE_ROUTES.customerHealthScore },
+      ],
+    },
+  ],
+  productFit: {
+    heading: "Where Auroranexis fits",
+    paragraphs: [
+      "Auroranexis is client operations software for service businesses. It keeps much of what you need for a QBR in one workspace: published client reports with a history per client, SLA results, incidents and open risks, client health indicators with the signals behind each rating, and an activity timeline. Reports are built from templates, can be scheduled, reviewed before publishing, exported as PDF and shared in the client portal, where you control what each client sees.",
+      "Auroranexis does not run the meeting for you, and it is not a presentation or slide tool: the conversation, the questions and the follow-up are still your team's work. Plans start at €179 per month for up to 25 clients; SLA tracking and the risk and incident modules are part of the Business and Enterprise plans, starting at €599 per month. You can start a 7-day free trial or apply for the 6-week pilot program.",
+    ],
+    links: [
+      { label: "Report templates and publishing", href: FEATURE_ROUTES.reports },
+      { label: "Automated client reporting software", href: SOLUTION_ROUTES.aiReporting },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+    ],
+  },
+  faq: [
+    {
+      question: "What is a quarterly business review?",
+      answer:
+        "A quarterly business review (QBR) is a planned meeting with a client every three months. It looks back at what the last quarter achieved against the client's goals, discusses problems and changes, and agrees on priorities and actions for the next quarter.",
+    },
+    {
+      question: "How long should a QBR be?",
+      answer:
+        "Forty-five to sixty minutes is enough for most large clients, and twenty to thirty minutes for smaller ones. Keep at least a quarter of the time for discussion, and send the material two days in advance so the meeting is not spent reading slides.",
+    },
+    {
+      question: "What should be included in a QBR?",
+      answer:
+        "The client's goals and whether they changed, results against those goals compared with the previous quarter, service performance and incidents, open risks and what you need from the client, a plan for the next quarter, and agreed actions with owners and dates.",
+    },
+    {
+      question: "Who should attend a QBR?",
+      answer:
+        "On your side, the account owner and, if needed, the delivery lead. On the client's side, your day-to-day contact and, ideally, the person who decides about renewing the contract.",
+    },
+    {
+      question: "What is the difference between a QBR and a monthly report?",
+      answer:
+        "A monthly report documents what happened in the month. A QBR steps back: it looks at trends over the quarter, checks whether the client's goals are still the same, and agrees on direction. The monthly reports are the input; the QBR is the conversation about them.",
+    },
+  ],
+};
+
 export const GUIDES: readonly GuideContent[] = [
   automatedClientReporting,
   clientProfitabilityAnalysis,
   slaReporting,
   customerHealthScore,
   clientChurnWarningSigns,
+  quarterlyBusinessReview,
 ];
 
 export const GUIDE_PAGES: Record<string, GuideContent> = Object.fromEntries(
@@ -850,5 +1057,5 @@ export const GUIDES_HUB = {
   title: "Guides for service businesses with recurring clients",
   seoTitle: "Client Operations Guides",
   description:
-    "Practical guides on client reporting, profitability, SLA reporting, customer health and churn warning signs for service businesses with recurring clients.",
+    "Practical guides on client reporting, QBRs, profitability, SLA reporting, customer health and churn signs for service businesses with recurring clients.",
 } as const;
