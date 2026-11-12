@@ -119,6 +119,7 @@ ${guideLines}
 ## Comparisons
 
 - AgencyAnalytics alternative (fair comparison with dated sources): ${base}${MARKETING_ROUTES.agencyAnalyticsAlternative}
+- Free SLA & uptime calculator (allowed downtime per period, achieved uptime, combined SLAs): ${base}${MARKETING_ROUTES.slaCalculator}
 
 ## Accuracy policy
 

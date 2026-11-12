@@ -271,6 +271,7 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
       { label: "NIS2 incident management for IT service providers", href: SOLUTION_ROUTES.incidentManagement },
       { label: "SLA documentation", href: "/docs/sla" },
       { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
+      { label: "Free SLA & uptime calculator", href: MARKETING_ROUTES.slaCalculator },
       { label: "Automated client reporting for agencies", href: SOLUTION_ROUTES.aiReporting },
       { label: "Customer health score software for MSPs", href: SOLUTION_ROUTES.customerHealthScore },
       { label: "MSP portfolio operations", href: USE_CASE_ROUTES.msps },
@@ -882,12 +883,12 @@ export const TEMPLATE_PAGES: Record<string, TemplatePageContent> = {
     slug: "sla-policy",
     path: "/templates/sla-policy",
     eyebrow: "Free template",
-    title: "SLA policy template",
-    seoTitle: "SLA Policy Template: Response & Resolution",
+    title: "SLA template: service level agreement policy",
+    seoTitle: "SLA Template (Free): Service Level Agreement",
     description:
-      "An SLA policy template with response and resolution targets per priority, service hours, exclusions and how breaches are measured and reported. Download the CSV.",
+      "A free SLA template with response and resolution targets per priority, service hours, exclusions and how breaches are measured and reported. Download the CSV.",
     metaDescription:
-      "Free SLA policy template: response and resolution times per priority, service hours, exclusions and breach reporting for MSPs, agencies and service firms.",
+      "Free SLA template (service level agreement): response and resolution times per priority, service hours, exclusions and breach reporting. CSV for Excel/Sheets.",
     intro:
       "A service level agreement (SLA) policy states how fast you respond to and resolve client requests, during which hours, and how performance is measured. Clear targets protect both sides. The targets below are examples — set them to what your team can reliably deliver.",
     example: {
@@ -913,6 +914,22 @@ export const TEMPLATE_PAGES: Record<string, TemplatePageContent> = {
           "How time is measured (when the clock starts, pauses and stops)",
           "Exclusions such as planned maintenance or client-caused delays",
           "How breaches are reported and what happens next (for example service credits, if contracted)",
+        ],
+      },
+      {
+        heading: "Service level agreement outline (copy into your document)",
+        items: [
+          "1. Parties and effective date — who provides the service, who receives it, from when",
+          "2. Services covered — the services and systems in scope, and what is out of scope",
+          "3. Service hours and time zone — for example Monday–Friday, 08:00–18:00 client time; 24/7 for critical issues if contracted",
+          "4. Priority definitions — critical, high, medium, low, each with an example",
+          "5. Service levels — response and resolution targets per priority, and availability targets (for example 99.9% per month) where you run systems for the client",
+          "6. Measurement — when the clock starts, pauses (waiting for the client) and stops; which tool is the source of truth",
+          "7. Exclusions — announced maintenance windows, client-caused delays, third-party outages outside your control",
+          "8. Reporting — monthly SLA report with the share of tickets within target, breaches and their causes",
+          "9. Breaches and remedies — what happens on a miss (review, improvement plan, service credits if agreed)",
+          "10. Responsibilities of the client — named contacts, access, timely approvals",
+          "11. Review and changes — how and when the SLA is reviewed (for example in each quarterly business review)",
         ],
       },
     ],
@@ -946,6 +963,7 @@ export const TEMPLATE_PAGES: Record<string, TemplatePageContent> = {
     ],
     relatedLinks: [
       { label: "SLA management software", href: SOLUTION_ROUTES.slaManagement },
+      { label: "SLA & uptime calculator", href: MARKETING_ROUTES.slaCalculator },
       { label: "SLA reporting guide", href: GUIDE_ROUTES.slaReporting },
       { label: "Incident response playbook template", href: TEMPLATE_ROUTES.incidentResponse },
     ],

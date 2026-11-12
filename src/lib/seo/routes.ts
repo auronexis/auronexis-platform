@@ -19,6 +19,7 @@ export {
   isPrivateRoute,
 } from "@/lib/seo/private-routes";
 import { AGENCYANALYTICS_ALTERNATIVE } from "@/lib/seo/comparison-content";
+import { SLA_CALCULATOR_PAGE } from "@/lib/seo/tools-content";
 import { PILOT_OFFER } from "@/lib/marketing/pilot-offer";
 
 export { PUBLIC_SITEMAP_ROUTES, SOLUTION_ROUTES, TEMPLATE_ROUTES };
@@ -139,6 +140,10 @@ const STATIC_PAGE_SEO: Record<string, { title: string; description: string }> = 
   [MARKETING_ROUTES.agencyAnalyticsAlternative]: {
     title: AGENCYANALYTICS_ALTERNATIVE.seoTitle,
     description: AGENCYANALYTICS_ALTERNATIVE.metaDescription,
+  },
+  [MARKETING_ROUTES.slaCalculator]: {
+    title: SLA_CALCULATOR_PAGE.seoTitle,
+    description: SLA_CALCULATOR_PAGE.metaDescription,
   },
   [MARKETING_ROUTES.pilotProgram]: {
     title: "6-Week Pilot Program for Service Businesses",
