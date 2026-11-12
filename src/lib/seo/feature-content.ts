@@ -465,11 +465,11 @@ export const FEATURE_PAGES: Record<string, LandingPageContent> = {
     category: "feature",
     eyebrow: "Feature",
     title: "Portfolio KPI dashboards for operations teams",
-    seoTitle: "Executive Portfolio Dashboard for Agencies",
+    seoTitle: "Portfolio KPI Dashboards for Operations Teams",
     description:
       "Give operations teams a portfolio-level view of delivery performance, open exceptions, and client status without manual reporting.",
     metaDescription:
-      "Executive portfolio dashboard for agencies and MSPs: client health, delivery exceptions, SLA results and risks across every account in one view.",
+      "Portfolio KPI dashboards for operations teams at agencies and MSPs: delivery exceptions, client health and SLA results per account, with drill-down.",
     problem:
       "Executives rely on slide decks that take days to compile and are outdated on arrival. Without live dashboards, leadership decisions lag behind operational reality.",
     solution:

@@ -282,10 +282,10 @@ export const SOLUTION_PAGES: Record<string, SolutionPageContent> = {
     path: SOLUTION_ROUTES.executiveDashboard,
     eyebrow: "Solution",
     title: "Executive dashboard for agency operations",
-    seoTitle: "Executive Dashboard Software for Agencies",
+    seoTitle: "Executive Portfolio Dashboard for Agencies",
     description: "Give leadership a portfolio view of clients, risks, incidents, and delivery health.",
     metaDescription:
-      "Executive dashboard software for agencies and MSPs: portfolio health, incidents, risks, SLA results and reporting status for every client in one place.",
+      "Executive portfolio dashboard for agencies and MSPs: client health, incidents, risks, SLA results and reporting status for every account in one view.",
     intro:
       "Operations leaders need a concise view of what matters across the client portfolio. Auroranexis aggregates signals from clients, incidents, risks, and SLAs into an executive-ready dashboard without building custom BI projects.",
     problem:
