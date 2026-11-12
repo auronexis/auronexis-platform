@@ -389,7 +389,10 @@ const slaReporting: GuideContent = {
           "Low (question or small change): first response 1 business day, resolution 10 business days",
         ],
       },
-      links: [{ label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy }],
+      links: [
+        { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
+        { label: "SLA & uptime calculator", href: MARKETING_ROUTES.slaCalculator },
+      ],
     },
     {
       heading: "How to present SLA results to clients",

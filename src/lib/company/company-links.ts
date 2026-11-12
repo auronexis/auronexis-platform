@@ -45,6 +45,8 @@ export const MARKETING_ROUTES = {
   guides: "/guides",
   /** Fair comparison page (src/lib/seo/comparison-content.ts). */
   agencyAnalyticsAlternative: "/alternatives/agencyanalytics",
+  /** Free SLA / uptime calculator (src/lib/tools/sla-calculator.ts). */
+  slaCalculator: "/tools/sla-calculator",
 } as const;
 
 export const FEATURE_ROUTES = {
@@ -231,6 +233,7 @@ export const FOOTER_SECTIONS = {
     { label: "Risk register template", href: TEMPLATE_ROUTES.riskRegister },
     { label: "Incident response template", href: TEMPLATE_ROUTES.incidentResponse },
     { label: "SLA policy template", href: TEMPLATE_ROUTES.slaPolicy },
+    { label: "SLA & uptime calculator", href: MARKETING_ROUTES.slaCalculator },
     { label: "Executive report template", href: TEMPLATE_ROUTES.executiveReport },
     { label: "QBR template", href: TEMPLATE_ROUTES.quarterlyBusinessReview },
     { label: "AgencyAnalytics alternative", href: MARKETING_ROUTES.agencyAnalyticsAlternative },
