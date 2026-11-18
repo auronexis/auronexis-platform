@@ -1040,6 +1040,191 @@ const quarterlyBusinessReview: GuideContent = {
   ],
 };
 
+const monthlyClientReportTemplate: GuideContent = {
+  slug: "monthly-client-report-template",
+  path: GUIDE_ROUTES.monthlyClientReportTemplate,
+  title: "What to include in a monthly client report (with an outline)",
+  seoTitle: "Monthly Client Report Template and Outline",
+  description:
+    "A monthly client report outline for service businesses: the seven sections, example wording for each, a one-page version, a cover email and a checklist.",
+  summary:
+    "A seven-section outline for monthly client reports, with example wording, a one-page version for small clients, a cover email and a pre-send checklist.",
+  published: "2026-11-18",
+  updated: "2026-11-18",
+  readingMinutes: 9,
+  intro: [
+    "Most monthly client report templates you find online are slide designs for marketing agencies: colourful charts of clicks, leads and ad spend. That is useful if you run campaigns. If you run an IT service, an accounting or payroll practice, a cleaning or facility contract, or a property portfolio, your clients want to know something else: was the work done, did the service meet what was agreed, did anything go wrong, and do they need to decide anything.",
+    "This guide gives you a plain outline for that kind of report. It covers the seven sections that belong in it, what to write in each one with example wording, how long the report should be, a one-page version for small clients, a short cover email, and a checklist to run before you send. You can copy the outline into a document today and use it for next month's reports.",
+  ],
+  sections: [
+    {
+      heading: "What a monthly client report is for",
+      paragraphs: [
+        "A monthly report has two jobs. It gives the client an honest record of what happened in the month, and it shows the value of the service in a form they can pass on to their own manager. A third job is quieter but just as important: over a year, your reports become the evidence you rely on at renewal.",
+        "That means the report is not a list of everything your team touched. It is a short answer to the questions a busy client actually has. If a section does not help answer one of those questions, leave it out or move it to an appendix.",
+      ],
+    },
+    {
+      heading: "The outline: seven sections",
+      paragraphs: [
+        "Use the same sections in the same order every month and for every client. Clients learn where to look, and changes from one month to the next become easy to spot. You can change what goes into a section; keep the structure stable.",
+      ],
+      steps: [
+        { title: "1. Header", text: "Client name, reporting period, date of the report, and who prepared it. One line each." },
+        { title: "2. Summary", text: "Three to five sentences in plain language: how the month went and the one thing the client should know." },
+        { title: "3. Work delivered", text: "What you did, compared with what was agreed for the month or in the contract." },
+        { title: "4. Service levels", text: "Results against the targets in your contract, if you have them, with the previous month for comparison." },
+        { title: "5. Issues and incidents", text: "What went wrong, what you did about it, and what prevents it from happening again." },
+        { title: "6. Open risks and decisions", text: "Anything that needs the client's attention, approval or input, with a date." },
+        { title: "7. Next month", text: "Planned work and key dates, so next month's report has something to measure against." },
+      ],
+      closing:
+        "Put detailed ticket lists, timesheets or full metric tables in an appendix at the end. Most readers will never open it, but the few who want the detail will know where it is.",
+    },
+    {
+      heading: "How to write the summary",
+      paragraphs: [
+        "The summary is the only part many clients read, so write it last, after you have seen all the numbers. It should make sense to someone who reads nothing else. Start with an overall verdict, mention the most important result, name any problem in plain words, and end with what you need from the client, if anything.",
+        "Avoid internal terms, ticket numbers and abbreviations the client does not use. Write the way you would explain the month to the client's manager in a short conversation.",
+      ],
+      example: {
+        title: "Example summary — IT services client",
+        lines: [
+          "November was a stable month. All planned updates were installed on schedule, and support requests were answered faster than in October.",
+          "One problem: the backup of the file server failed on two nights in the second week. We found the cause, fixed it on 14 November, and tested a full restore on 15 November.",
+          "One decision for you: three laptops reach the end of their warranty in January. Please confirm by 10 December whether we should order replacements.",
+        ],
+      },
+      closing: "This summary is invented for illustration. Notice that it states the problem openly and gives the client a specific question with a date.",
+    },
+    {
+      heading: "What to write in each section",
+      bullets: [
+        "Work delivered: compare with the plan, not just a list of tasks. \"Agreed: 24 hours of project work. Delivered: 21 hours; 3 hours moved to December at your request.\" If you work on a fixed scope, list the recurring items and mark each as done, partly done or not done, with a reason.",
+        "Service levels: show the target, the result and last month's result side by side. If you missed a target, say so in the same line and point to the issues section for the reason.",
+        "Issues and incidents: for each one, give the date, what the client noticed, the cause in one sentence, the fix, and what you changed to prevent it. Do not leave out problems the client already knows about.",
+        "Open risks and decisions: write each item as a question the client can answer, with an owner and a date. \"Please approve\" is clearer than \"for your information\".",
+        "Next month: list the planned work and any dates that matter to the client, such as maintenance windows, filing deadlines, inspections or contract milestones.",
+      ],
+      example: {
+        title: "Example — service levels section",
+        lines: [
+          "Urgent requests answered within 1 hour: 4 of 4 (100%). October: 3 of 3 (100%).",
+          "All requests resolved within the agreed time: 183 of 197 = 92.9%. Target: 95%. October: 96.1%.",
+          "Below target by 2.1 percentage points. Most of the late requests were caused by the backup problem described under Issues.",
+        ],
+      },
+      closing: "The numbers are invented for illustration. Check your own arithmetic before every report: a wrong percentage is the fastest way to lose a client's trust in the whole document.",
+      links: [{ label: "SLA reporting guide", href: GUIDE_ROUTES.slaReporting }],
+    },
+    {
+      heading: "Adapting the outline to your type of service",
+      paragraphs: [
+        "The seven sections work across most recurring services. What changes is the content of sections 3 to 6. Some examples of what usually belongs there:",
+      ],
+      bullets: [
+        "IT and managed services: requests and response times, patching and backup status, security incidents, devices or licences that need a decision.",
+        "Accounting, bookkeeping and payroll: filings and payroll runs completed, upcoming deadlines, documents still missing from the client, and questions that block your work.",
+        "Cleaning and facility services: visits or shifts completed against the schedule, inspection results, complaints and how they were handled, access or supply problems on site.",
+        "Property management: maintenance requests and their status, rent and arrears figures, vacancies, upcoming inspections, and spending that needs the owner's approval.",
+        "Agencies on a retainer: work delivered against the retainer, hours or credits used, results the client cares about, and approvals you are waiting for.",
+      ],
+    },
+    {
+      heading: "How long should the report be?",
+      paragraphs: [
+        "As short as it can be while still answering the client's questions. For most clients, two to four pages plus an optional appendix is enough. A larger client with service level agreements and several locations may need more, but the summary still belongs on the first page.",
+        "For small clients, a one-page version works well. Use the same sections, but limit each one to one or two lines. If nothing happened in a section, say so in one line, for example \"No incidents this month.\" An empty section tells the client something useful too; a missing one makes them wonder.",
+        "Whatever the length, send reports on the same working day every month, for example by the fifth working day. Regular delivery is part of the message: it shows that the service is under control.",
+      ],
+    },
+    {
+      heading: "A short cover email",
+      paragraphs: [
+        "Many clients see the email before they open the report, so put the summary in the email too. Keep it short and make the next step clear.",
+      ],
+      example: {
+        title: "Example — cover email",
+        lines: [
+          "Subject: [Client name] — monthly report for [month]",
+          "Hello [name], your report for [month] is attached [or: is available in your client portal].",
+          "In short: [one or two sentences from the summary].",
+          "One thing we need from you: [decision or input] by [date].",
+          "If anything in the report is unclear, just reply to this email.",
+        ],
+      },
+    },
+    {
+      heading: "Checklist before you send",
+      bullets: [
+        "The reporting period and the client name are correct everywhere, including the file name.",
+        "Every number matches the source system, and every percentage has been recalculated.",
+        "Last month's figures are shown where the client will want to compare.",
+        "Every missed target and every incident the client knows about is mentioned and explained.",
+        "Each open decision has an owner and a date.",
+        "Nothing in the report belongs to another client. Check copied text and attachments twice.",
+        "No internal notes, abbreviations or ticket comments that were not written for the client.",
+        "A colleague or the account owner has read it before it goes out.",
+        "A copy of exactly what was sent is stored with the client's records.",
+      ],
+      links: [
+        { label: "Executive report template", href: TEMPLATE_ROUTES.executiveReport },
+        { label: "Automated client reporting guide", href: GUIDE_ROUTES.automatedClientReporting },
+      ],
+    },
+    {
+      heading: "Common mistakes",
+      bullets: [
+        "Activity instead of outcomes: \"We closed 197 requests\" says little. \"Requests were resolved faster than last month\" says what the client gets.",
+        "A different structure every month: clients cannot compare months if the sections move around.",
+        "Only good news: a report that skips a known problem makes the client doubt everything else in it.",
+        "No questions for the client: if decisions are buried in the text, they do not get made, and the same item appears again next month.",
+        "Too much detail up front: long tables before the summary push the important part where nobody reads it.",
+      ],
+      links: [{ label: "How to run a quarterly business review", href: GUIDE_ROUTES.quarterlyBusinessReview }],
+    },
+  ],
+  productFit: {
+    heading: "Where Auroranexis fits",
+    paragraphs: [
+      "Auroranexis is client operations software for service businesses, and recurring client reports are one of its core modules. Report templates have configurable sections and branding, so you can set up an outline like the one above once and use it for every client. Depending on the template, reports can include incidents, risks, SLA outcomes and delivery metrics from your workspace. Your team generates a draft, reviews and edits it, then publishes it to the client portal, where you control what each client sees, or exports it as a PDF. Schedules create recurring reports, and a history of every published report is kept per client.",
+      "Auroranexis prepares the structure and the figures; the summary and the judgement in it remain your team's work. It is not a slide design or marketing analytics tool. AI-assisted narrative is optional and available for executive reports, and a person still reviews before anything is published. Plans start at €179 per month for up to 25 clients; SLA tracking and the risk and incident modules are part of the Business and Enterprise plans, starting at €599 per month. You can start a 7-day free trial or apply for the 6-week pilot program.",
+    ],
+    links: [
+      { label: "Report templates and publishing", href: FEATURE_ROUTES.reports },
+      { label: "Client portal", href: FEATURE_ROUTES.clientPortal },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+    ],
+  },
+  faq: [
+    {
+      question: "What should be included in a monthly client report?",
+      answer:
+        "A header with the client and period, a short plain-language summary, work delivered against what was agreed, service levels against targets, issues and incidents with what you did about them, open risks and decisions for the client, and the plan for next month.",
+    },
+    {
+      question: "How long should a monthly client report be?",
+      answer:
+        "Two to four pages plus an optional appendix is enough for most clients, and one page often works for small ones. Keep the same sections every month and put the summary on the first page.",
+    },
+    {
+      question: "When should I send monthly client reports?",
+      answer:
+        "On a fixed working day early in the following month, for example by the fifth working day. Pick a date you can keep for every client, every month.",
+    },
+    {
+      question: "Should I include problems and missed targets in a client report?",
+      answer:
+        "Yes. State the problem plainly, explain the cause in one sentence, and say what you changed. Clients usually know about problems already, and a report that leaves them out loses credibility.",
+    },
+    {
+      question: "What is the difference between a monthly report and a QBR?",
+      answer:
+        "A monthly report records what happened in the month. A quarterly business review is a conversation every three months that looks at trends across those reports, checks whether the client's goals have changed and agrees on priorities.",
+    },
+  ],
+};
+
 export const GUIDES: readonly GuideContent[] = [
   automatedClientReporting,
   clientProfitabilityAnalysis,
@@ -1047,6 +1232,7 @@ export const GUIDES: readonly GuideContent[] = [
   customerHealthScore,
   clientChurnWarningSigns,
   quarterlyBusinessReview,
+  monthlyClientReportTemplate,
 ];
 
 export const GUIDE_PAGES: Record<string, GuideContent> = Object.fromEntries(
