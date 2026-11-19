@@ -29,6 +29,36 @@
       "permanent": true
     },
     {
+      "source": "/tiktok",
+      "destination": "/?utm_source=tiktok&utm_medium=social&utm_campaign=bio",
+      "permanent": false
+    },
+    {
+      "source": "/ig",
+      "destination": "/?utm_source=instagram&utm_medium=social&utm_campaign=bio",
+      "permanent": false
+    },
+    {
+      "source": "/x",
+      "destination": "/?utm_source=x&utm_medium=social&utm_campaign=bio",
+      "permanent": false
+    },
+    {
+      "source": "/li",
+      "destination": "/?utm_source=linkedin&utm_medium=social&utm_campaign=bio",
+      "permanent": false
+    },
+    {
+      "source": "/tiktok-pilot",
+      "destination": "/pilot-program?utm_source=tiktok&utm_medium=social&utm_campaign=pilot",
+      "permanent": false
+    },
+    {
+      "source": "/ig-pilot",
+      "destination": "/pilot-program?utm_source=instagram&utm_medium=social&utm_campaign=pilot",
+      "permanent": false
+    },
+    {
       "source": "/documentation",
       "has": [
         {
