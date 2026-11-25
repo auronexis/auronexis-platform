@@ -44,6 +44,7 @@ const GUIDE_SLUGS = new Set([
   "client-churn-warning-signs",
   "quarterly-business-review",
   "monthly-client-report-template",
+  "msp-client-reporting",
 ]);
 
 const TEMPLATE_SLUGS = new Set([

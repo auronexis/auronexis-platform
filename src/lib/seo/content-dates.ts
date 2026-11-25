@@ -27,7 +27,8 @@ export const CONTENT_DATE_RULES: readonly ContentDateRule[] = [
   // Long-form guides — keep in sync with `updated` in guides-content.ts. The hub uses the
   // newest guide date; guides added later get their own exact rule above the prefix rule.
   { match: exact("/tools/sla-calculator"), date: "2026-11-12" },
-  { match: exact("/guides", "/guides/monthly-client-report-template"), date: "2026-11-18" },
+  { match: exact("/guides", "/guides/msp-client-reporting"), date: "2026-11-25" },
+  { match: exact("/guides/monthly-client-report-template"), date: "2026-11-18" },
   { match: exact("/guides/quarterly-business-review"), date: "2026-11-11" },
   { match: exact("/guides/client-churn-warning-signs"), date: "2026-11-04" },
   { match: exact("/guides/customer-health-score"), date: "2026-10-28" },

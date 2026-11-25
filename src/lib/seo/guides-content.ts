@@ -5,6 +5,7 @@ import {
   MARKETING_ROUTES,
   SOLUTION_ROUTES,
   TEMPLATE_ROUTES,
+  USE_CASE_ROUTES,
 } from "@/lib/company/company-links";
 
 /**
@@ -1225,6 +1226,188 @@ const monthlyClientReportTemplate: GuideContent = {
   ],
 };
 
+const mspClientReporting: GuideContent = {
+  slug: "msp-client-reporting",
+  path: GUIDE_ROUTES.mspClientReporting,
+  title: "Client reporting for MSPs: what to show every month",
+  seoTitle: "MSP Client Reporting: What to Show Monthly",
+  description:
+    "What an MSP should show clients every month: service desk, patching, backups, security, assets and decisions, with clear metric definitions and an example.",
+  summary:
+    "What managed service providers should report to clients every month, how to turn PSA and RMM exports into numbers clients trust, and a one-page example.",
+  published: "2026-11-25",
+  updated: "2026-11-25",
+  readingMinutes: 9,
+  intro: [
+    "A managed IT service is easy to forget when it works. Updates install at night, backups run, threats are blocked, and the client sees nothing. Then one bad week happens, and the client remembers only that. A good monthly report fixes this imbalance: it makes the quiet work visible and gives the client a fair picture of the whole month.",
+    "Most MSPs already have plenty of data. The service desk tool, the remote monitoring tool, the backup console and the security products can all export reports. The problem is that these exports are written for technicians. A business owner does not want forty pages of device lists. They want to know whether their IT is safe and working, what went wrong, and what they need to decide.",
+    "This guide explains what to show every month, how to define each number so it stays comparable, how to write for two different readers, and what to leave out. It ends with a one-page example you can adapt.",
+  ],
+  sections: [
+    {
+      heading: "Two readers, two layers",
+      paragraphs: [
+        "Most MSP clients have two kinds of readers. The first is the owner, director or office manager who pays for the service. They read the first page and look for problems and decisions. The second is the internal IT contact or a technically minded manager, who may want device-level detail.",
+        "Write for both by using two layers. Page one is a short summary in plain business language: how the month went, what went wrong, and what the client needs to decide. Everything after that is supporting detail that a technical reader can check. Keep raw tool exports in an appendix, or leave them out and offer them on request.",
+        "If you only have time to do one layer well, do the first page. It is the part that shapes how the client feels about your service at renewal.",
+      ],
+    },
+    {
+      heading: "What to show every month",
+      paragraphs: [
+        "Use the same areas in the same order every month, so the client learns where to look and changes stand out. For most managed IT contracts, seven areas cover what matters:",
+      ],
+      steps: [
+        { title: "1. Service desk", text: "Requests received and resolved, response and resolution times against the agreed targets, and the main themes behind the requests." },
+        { title: "2. Service levels", text: "Results against each target in the contract, with last month's result next to it. If there is no formal SLA, show response and resolution times against what you promised." },
+        { title: "3. Patching and updates", text: "How many managed devices are fully up to date, how many are waiting for a restart, and how many could not be updated and why." },
+        { title: "4. Backups and recovery", text: "Successful and failed backup jobs, how failures were fixed, and the date and result of the last restore test." },
+        { title: "5. Security", text: "Security events that needed action, confirmed incidents, and the status of protection such as endpoint security and multi-factor sign-in, if you manage them." },
+        { title: "6. Devices, licences and lifecycle", text: "Devices added or removed, warranties and contracts that end soon, and licence counts that no longer match the number of users." },
+        { title: "7. Decisions and recommendations", text: "Anything that needs the client's approval or budget, each with a short reason, an estimated cost if you know it, and a date." },
+      ],
+      closing:
+        "Projects, if the client has any running, can be one extra line: what was planned for the month, what was delivered, and the next milestone.",
+    },
+    {
+      heading: "Define each number once and keep it stable",
+      paragraphs: [
+        "Clients lose trust in a report when numbers change meaning from one month to the next. Before the first report, write down a short definition for every figure you show, and use the same definition every month.",
+      ],
+      bullets: [
+        "Patch status: say which devices count. For example, \"all managed workstations and servers that were online at least once in the last 14 days\". Show offline devices as a separate line rather than quietly dropping them.",
+        "Backup success: count scheduled jobs, not devices. A server that failed on three nights is three failed jobs, not one problem device.",
+        "Response time: say whether it is measured in business hours or around the clock, and whether the clock pauses while you wait for the client.",
+        "Device counts: your monitoring tool, backup console and licence portal will rarely show the same total. Pick one as the reference list, and explain any difference in one line.",
+        "Exclusions: if you leave something out, such as test machines or devices the client manages itself, say so in a footnote.",
+      ],
+      closing:
+        "When you change a definition, say so in the report and show last month's figure under the new definition too. Otherwise the client will read the change as an improvement or a decline.",
+      links: [{ label: "SLA reporting guide", href: GUIDE_ROUTES.slaReporting }],
+    },
+    {
+      heading: "Example: a one-page monthly summary",
+      paragraphs: [
+        "The example below is invented for illustration. The client has around 140 managed devices and an agreed response time target. Note that the summary states the problem openly and ends with decisions that have dates.",
+      ],
+      example: {
+        title: "Example — November summary for a client with 142 managed devices",
+        lines: [
+          "Overall: a stable month with one backup problem, now fixed and tested.",
+          "Service desk: 86 requests received. 79 of 86 answered within the agreed response time = 91.9% (target 90%; October 74 of 78 = 94.9%).",
+          "Updates: 131 of 142 managed devices fully up to date = 92.3%. 7 are waiting for a restart; 4 have been offline for more than 14 days (list attached).",
+          "Backups: 12 protected servers and cloud services, one job each per night for 30 nights = 360 jobs. 354 successful = 98.3%. The 6 failed jobs were all on the accounting server from 9 to 14 November; the cause was a full storage disk, fixed on 15 November. A full restore test on 20 November succeeded.",
+          "Security: 2 suspicious emails reported by staff, both checked and removed. No confirmed security incident.",
+          "Decisions for you: 9 laptops reach the end of their warranty by 31 March — please confirm by 12 December whether we should quote replacements. We also found 3 unused software licences; shall we cancel them at renewal?",
+        ],
+      },
+      closing:
+        "Check the arithmetic before every report: 79 ÷ 86 = 91.9%, 131 ÷ 142 = 92.3% and 354 ÷ 360 = 98.3%. A wrong percentage on page one makes the client doubt every other number.",
+    },
+    {
+      heading: "Turn activity into outcomes",
+      paragraphs: [
+        "Tool exports describe activity: patches deployed, alerts processed, scripts run. Clients care about outcomes: are we protected, can we recover, is our team able to work. For each area, add one sentence that translates the activity into what it means for the client.",
+      ],
+      bullets: [
+        "Instead of \"1,240 patches deployed\", write \"92% of devices are fully up to date; the rest are listed with a reason.\"",
+        "Instead of \"360 backup jobs monitored\", write \"All business data could be restored; we proved it with a test on 20 November.\"",
+        "Instead of \"312 alerts processed\", write \"Two issues needed action; neither affected your staff.\"",
+        "Instead of a list of request categories, write \"Most requests this month were about the new printer; we have fixed the driver so this should drop in December.\"",
+      ],
+    },
+    {
+      heading: "What to leave out",
+      bullets: [
+        "Raw alert counts. A large number looks either alarming or meaningless, and it says nothing about risk.",
+        "Ticket numbers, internal codes and technician notes that were not written for the client.",
+        "Charts without a takeaway. If you cannot say in one sentence what a chart shows, remove it.",
+        "Device lists on page one. Put them in an appendix or attach them separately.",
+        "Detailed security information that would help an attacker, such as unpatched vulnerabilities by device name, in a document that may be forwarded. Share that detail with the IT contact through a safer channel.",
+        "Anything from another client. When you copy last month's report or a colleague's template, check names, figures and attachments twice.",
+      ],
+    },
+    {
+      heading: "Reporting problems and incidents",
+      paragraphs: [
+        "The monthly report is not the place to tell a client about a serious incident for the first time. Serious problems should be communicated when they happen. The report then records them: the date, what the client noticed, the cause in one sentence, what you did, and what you changed to prevent it from happening again.",
+        "Do not leave out problems the client already knows about, and do not hide a missed target in a footnote. Put the missed target in the same line as the result and point to the explanation. Clients tend to forgive a problem that is explained; they rarely forgive one they discover themselves.",
+        "If your contract or a regulation requires specific incident reporting, follow those terms separately. The monthly report is a summary, not a replacement for any formal notice.",
+      ],
+      links: [{ label: "Incident response template", href: TEMPLATE_ROUTES.incidentResponse }],
+    },
+    {
+      heading: "A monthly reporting routine that holds",
+      paragraphs: [
+        "Reports that depend on one person finding a free afternoon arrive late. A fixed routine keeps them on time as the number of clients grows.",
+      ],
+      steps: [
+        { title: "Day 1: export", text: "Pull the same exports from the service desk, monitoring, backup and security tools for every client, for the same calendar month." },
+        { title: "Days 2–3: check and fill in", text: "Reconcile device counts, recalculate percentages, and fill in the seven areas. Mark anything unusual for the account owner." },
+        { title: "Day 4: write the summary", text: "The account owner writes the first page and the decisions, because they know the client's priorities." },
+        { title: "Day 5: review and send", text: "A second person checks the report, then it is sent or published with a short cover email. Store a copy of exactly what was sent." },
+      ],
+      closing:
+        "Use working days and pick a delivery date you can keep for every client. Regular delivery is part of the message: it shows that the service is under control.",
+      links: [
+        { label: "Monthly client report outline", href: GUIDE_ROUTES.monthlyClientReportTemplate },
+        { label: "Automated client reporting guide", href: GUIDE_ROUTES.automatedClientReporting },
+      ],
+    },
+    {
+      heading: "Monthly reports and quarterly reviews",
+      paragraphs: [
+        "The monthly report records what happened. A quarterly business review uses three monthly reports to look at trends, talk about the client's plans for the next months, and agree on priorities such as replacements, security improvements or budget. If your monthly reports use stable definitions, preparing the quarterly review becomes mostly a matter of comparing three pages.",
+      ],
+      links: [
+        { label: "How to run a quarterly business review", href: GUIDE_ROUTES.quarterlyBusinessReview },
+        { label: "Customer health score guide", href: GUIDE_ROUTES.customerHealthScore },
+      ],
+    },
+  ],
+  productFit: {
+    heading: "Where Auroranexis fits",
+    paragraphs: [
+      "Auroranexis is client operations software for service businesses, including MSPs and IT service providers. It is not a remote monitoring, backup or service desk tool, and it does not have native connectors to them; your technical data stays in those systems. Auroranexis sits on top of the client relationship: report templates with configurable sections and branding, scheduled reports, a draft-review-publish workflow, PDF export, and a client portal where you control what each client sees. Depending on the template, reports can include incidents, risks, SLA outcomes and delivery metrics you track in the workspace, and a history of every published report is kept per client.",
+      "Plans start at €179 per month for up to 25 clients. SLA tracking per contract and the risk and incident modules are part of the Business and Enterprise plans, starting at €599 per month. You can start a 7-day free trial of the Business plan without a credit card, or apply for the 6-week pilot program with your own clients.",
+    ],
+    links: [
+      { label: "Report templates and publishing", href: FEATURE_ROUTES.reports },
+      { label: "SLA tracking for MSPs", href: SOLUTION_ROUTES.slaManagement },
+      { label: "Auroranexis for MSPs", href: USE_CASE_ROUTES.msps },
+      { label: "Pricing", href: MARKETING_ROUTES.pricing },
+      { label: "Pilot program", href: MARKETING_ROUTES.pilotProgram },
+    ],
+  },
+  faq: [
+    {
+      question: "What should an MSP include in a monthly client report?",
+      answer:
+        "A short summary, service desk results, service levels against targets, patch status, backup results and the last restore test, security events that needed action, devices and licences that need attention, and the decisions the client has to make, each with a date.",
+    },
+    {
+      question: "How long should an MSP monthly report be?",
+      answer:
+        "One page of summary is enough for most small and mid-sized clients, followed by a few pages of supporting detail for the IT contact. Put device lists and raw tool exports in an appendix or share them on request.",
+    },
+    {
+      question: "Should I send the reports from my RMM or PSA tool directly to clients?",
+      answer:
+        "They are a useful source, but they are written for technicians. Most clients understand a report better when you add a plain-language summary, explain what the numbers mean for them, and list the decisions they need to make.",
+    },
+    {
+      question: "How do I report patch compliance fairly?",
+      answer:
+        "Define which devices count, for example managed devices that were online in the last 14 days, and show devices that are offline or waiting for a restart as separate lines. Keep the same definition every month.",
+    },
+    {
+      question: "Should security incidents go in the monthly report?",
+      answer:
+        "Yes, as a record: date, impact, cause, fix and prevention. A serious incident should be communicated when it happens, not first in the monthly report, and any formal reporting duties in the contract or in law apply separately.",
+    },
+  ],
+};
+
 export const GUIDES: readonly GuideContent[] = [
   automatedClientReporting,
   clientProfitabilityAnalysis,
@@ -1233,6 +1416,7 @@ export const GUIDES: readonly GuideContent[] = [
   clientChurnWarningSigns,
   quarterlyBusinessReview,
   monthlyClientReportTemplate,
+  mspClientReporting,
 ];
 
 export const GUIDE_PAGES: Record<string, GuideContent> = Object.fromEntries(
