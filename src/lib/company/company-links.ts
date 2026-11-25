@@ -113,6 +113,7 @@ export const GUIDE_ROUTES = {
   clientChurnWarningSigns: "/guides/client-churn-warning-signs",
   quarterlyBusinessReview: "/guides/quarterly-business-review",
   monthlyClientReportTemplate: "/guides/monthly-client-report-template",
+  mspClientReporting: "/guides/msp-client-reporting",
 } as const;
 
 export const TEMPLATE_ROUTES = {
